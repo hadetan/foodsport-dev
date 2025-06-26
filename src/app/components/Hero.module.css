@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+.hero {
+    width: 100%;
+    min-height: 50vh;
+    height: 720px;
+    background: url('/bg-1.png') center center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+}
+
+.overlay {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background: rgba(0, 0, 0, 0.10);
+    padding-left: 5vw;
+    /* subtle overlay for text readability */
+}
+
+@media (max-width: 900px) {
+    .hero {
+        min-height: 30vh;
+        height: 200px;
+    }
+}
+
+.title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-style: italic;
+    color: #444;
+    font-size: 7rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-align: left;
+    text-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
+}
