@@ -451,55 +451,99 @@
 
 ## Technical Infrastructure
 
-### Story #15: Database Integration and Setup
-**Title**: Set up Supabase database and integrate with API routes  
-**Description**: Implement database schema and integrate with Next.js API routes  
+### Story #15: Database Creation and Initialization
+**Title**: Create and initialize Supabase database with schema and seed data  
+**Description**: Set up the complete database infrastructure for the Foodsport application  
 **Scope**:
-- Supabase project setup
-- Database schema design
-- API route integration
-- Data migration and seeding
+- Create Supabase project
+- Execute database schema creation
+- Run seed data insertion
+- Configure Row Level Security (RLS)
+- Set up database indexes and triggers
+- Test database connectivity
+- Document database setup process
+
+**Files Involved**:
+- `src/lib/supabase/schema.sql` - Database schema
+- `src/lib/supabase/seed.sql` - Seed data
+- Environment configuration
+- Database connection setup
 
 **Acceptance Criteria**:
-- [ ] Supabase project is configured
-- [ ] Database schema is implemented
-- [ ] All API routes connect to database
-- [ ] Data seeding scripts work
-- [ ] Database backups are configured
-- [ ] Performance optimization
-- [ ] Security rules are implemented
-- [ ] Environment variables are configured
+- [ ] Supabase project is created and configured
+- [ ] All tables are created successfully with proper relationships
+- [ ] All custom types and enums are defined
+- [ ] All indexes are created for performance optimization
+- [ ] All triggers are set up for updated_at fields
+- [ ] Row Level Security (RLS) policies are implemented
+- [ ] Seed data is inserted successfully
+- [ ] Database connection is tested from Next.js application
+- [ ] All foreign key constraints are working properly
+- [ ] Database backup is configured
+- [ ] Environment variables are documented
+- [ ] Database setup process is documented
 
 **Current Status**: Not Started  
-**Notes**: Consider implementing database migrations and versioning
+**Notes**: This story must be completed before any API development can begin. Consider using Supabase CLI for local development.
 
 ---
 
-### Story #16: Authentication Middleware and Security
-**Title**: Implement authentication middleware and security measures  
-**Description**: Create secure authentication system with proper middleware  
+### Story #16: Database Integration and Setup
+**Title**: Integrate database with Next.js API routes and implement data access layer  
+**Description**: Connect the database to Next.js API routes and implement proper data access patterns  
+**Scope**:
+- Supabase client configuration
+- API route database integration
+- Data access layer implementation
+- Query optimization
+- Error handling for database operations
+
+**APIs Involved**:
+- All API routes will connect to database
+- Supabase client setup
+- Database utility functions
+
+**Acceptance Criteria**:
+- [ ] Supabase client is properly configured
+- [ ] All API routes connect to database successfully
+- [ ] Database queries are optimized for performance
+- [ ] Proper error handling for database operations
+- [ ] Database connection pooling is configured
+- [ ] Real-time subscriptions work correctly
+- [ ] Database migrations can be run
+- [ ] Environment-specific database configuration
+
+**Current Status**: Not Started  
+**Notes**: This story depends on Story #15 being completed first. Consider implementing database migrations and versioning
+
+---
+
+### Story #17: Authentication Middleware and Security
+**Title**: Implement authentication middleware and security measures for Next.js API routes  
+**Description**: Create secure authentication system with proper middleware for internal API routes  
 **Scope**:
 - JWT token management
-- Authentication middleware
-- Route protection
-- Security headers and CORS
+- Next.js middleware for API route protection
+- Internal route protection (no external exposure)
+- Security headers for same-origin requests
+- Input validation and sanitization
 
 **Acceptance Criteria**:
-- [ ] JWT tokens are properly managed
-- [ ] Authentication middleware works
-- [ ] Protected routes are secured
-- [ ] Security headers are implemented
-- [ ] CORS is configured properly
-- [ ] Rate limiting is implemented
-- [ ] Input validation and sanitization
-- [ ] Error handling is secure
+- [ ] JWT tokens are properly managed and validated
+- [ ] Next.js middleware protects API routes
+- [ ] Internal routes are secured (no external access needed)
+- [ ] Security headers are implemented for same-origin requests
+- [ ] Input validation and sanitization is implemented
+- [ ] Rate limiting is implemented for API routes
+- [ ] Error handling is secure and doesn't leak sensitive information
+- [ ] Session management works correctly within the same domain
 
 **Current Status**: Not Started  
-**Notes**: Consider implementing refresh tokens and session management
+**Notes**: Since APIs are internal (same domain as frontend), CORS is not needed. Focus on Next.js middleware and internal security measures.
 
 ---
 
-### Story #17: File Upload and Storage System
+### Story #18: File Upload and Storage System
 **Title**: Implement secure file upload and storage system  
 **Description**: Create system for handling profile pictures and calorie photos  
 **Scope**:
@@ -525,7 +569,7 @@
 
 ## Testing and Quality Assurance
 
-### Story #18: API Testing and Documentation
+### Story #19: API Testing and Documentation
 **Title**: Implement comprehensive API testing and documentation  
 **Description**: Create tests for all API endpoints and maintain documentation  
 **Scope**:
@@ -551,7 +595,7 @@
 
 ## Deployment and DevOps
 
-### Story #19: Production Deployment Setup
+### Story #20: Production Deployment Setup
 **Title**: Set up production deployment on Vercel  
 **Description**: Configure production environment and deployment pipeline  
 **Scope**:
@@ -577,21 +621,23 @@
 
 ## Summary
 
-**Total Stories**: 19  
+**Total Stories**: 20  
 **Current Status Breakdown**:
-- Not Started: 18
+- Not Started: 19
 - In Progress: 1
 - Review: 0
 - Done: 0
 
 **Priority Order**:
 1. Stories #1-3 (Authentication & Profile) - Foundation
-2. Stories #15-16 (Database & Security) - Infrastructure
-3. Stories #6-7 (Activities) - Core Features
-4. Stories #8-9 (Calorie Tracking) - Core Features
-5. Stories #4-5 (Dashboard & Goals) - User Experience
-6. Stories #10-11 (Charity) - Social Impact
-7. Stories #12-14 (Gamification) - Engagement
-8. Stories #17-19 (Technical) - Quality & Deployment
+2. Story #15 (Database Creation) - Infrastructure
+3. Story #16 (Database Integration) - Infrastructure
+4. Story #17 (Authentication & Security) - Infrastructure
+5. Stories #6-7 (Activities) - Core Features
+6. Stories #8-9 (Calorie Tracking) - Core Features
+7. Stories #4-5 (Dashboard & Goals) - User Experience
+8. Stories #10-11 (Charity) - Social Impact
+9. Stories #12-14 (Gamification) - Engagement
+10. Stories #18-20 (Technical) - Quality & Deployment
 
 **Validation Status**: ✅ All requirements from req_doc.md and api_doc.md are now covered in the stories
