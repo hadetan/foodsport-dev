@@ -23,14 +23,25 @@ class DatabaseSetup {
             await this.executeSchema();
 
             // Verify setup
-            await this.verifySetup();
+            const setupComplete = await this.verifySetup();
 
-            this.dbUtils.logSuccess('Database setup completed successfully!');
-            console.log('');
-            console.log('📝 Next steps:');
-            console.log('   1. Run "npm run seed-db" to populate with sample data (development only)');
-            console.log('   2. Test your API routes');
-            console.log('   3. Update your environment variables for production');
+            if (setupComplete) {
+                this.dbUtils.logSuccess('Database setup completed successfully!');
+                console.log('');
+                console.log('📝 Next steps:');
+                console.log('   1. Run "npm run seed-db" to populate with sample data (development only)');
+                console.log('   2. Test your API routes');
+                console.log('   3. Update your environment variables for production');
+            } else {
+                console.log('');
+                console.log('⚠️  Database setup is incomplete');
+                console.log('   Please follow the instructions above to complete the setup');
+                console.log('');
+                console.log('📝 After manual setup:');
+                console.log('   1. Run "npm run db:setup" again to verify');
+                console.log('   2. Run "npm run seed-db" to populate with sample data');
+                console.log('   3. Test your API routes');
+            }
 
         } catch (error) {
             this.dbUtils.logError('Database setup failed', error);
@@ -50,6 +61,20 @@ class DatabaseSetup {
 
             let executedCount = 0;
             let skippedCount = 0;
+            let manualCount = 0;
+
+            console.log('');
+            console.log('📋 Database Schema Setup Instructions:');
+            console.log('=====================================');
+            console.log('Since Supabase doesn\'t support programmatic execution of complex SQL,');
+            console.log('you need to execute the schema manually in your Supabase dashboard.');
+            console.log('');
+            console.log('Follow these steps:');
+            console.log('1. Go to your Supabase dashboard: https://supabase.com/dashboard');
+            console.log('2. Select your project');
+            console.log('3. Go to SQL Editor (left sidebar)');
+            console.log('4. Copy and paste the following SQL statements one by one:');
+            console.log('');
 
             for (const statement of statements) {
                 const trimmedStatement = statement.trim();
@@ -69,8 +94,17 @@ class DatabaseSetup {
                     }
 
                     // Execute the statement
-                    await this.dbUtils.executeQuery(trimmedStatement);
-                    executedCount++;
+                    const result = await this.dbUtils.executeQuery(trimmedStatement);
+
+                    if (result.message === 'Manual execution required') {
+                        manualCount++;
+                        console.log(`--- Statement ${manualCount} ---`);
+                        console.log(trimmedStatement);
+                        console.log('--- End Statement ---');
+                        console.log('');
+                    } else {
+                        executedCount++;
+                    }
 
                     // Log progress for major operations
                     if (trimmedStatement.toLowerCase().includes('create table')) {
@@ -93,7 +127,16 @@ class DatabaseSetup {
                 }
             }
 
-            this.dbUtils.logSuccess(`Schema execution completed: ${executedCount} statements executed, ${skippedCount} skipped`);
+            console.log('');
+            console.log('✅ Schema analysis completed!');
+            console.log(`   - ${executedCount} statements executed automatically`);
+            console.log(`   - ${skippedCount} statements skipped (already exist)`);
+            console.log(`   - ${manualCount} statements need manual execution`);
+            console.log('');
+            console.log('📝 Next steps:');
+            console.log('   1. Execute the SQL statements above in your Supabase dashboard');
+            console.log('   2. Run "npm run seed-db" to populate with sample data');
+            console.log('   3. Test your API routes');
 
         } catch (error) {
             throw new Error(`Schema execution failed: ${error.message}`);
@@ -112,21 +155,33 @@ class DatabaseSetup {
         ];
 
         const missingTables = [];
+        const existingTables = [];
 
         for (const tableName of requiredTables) {
             const exists = await this.dbUtils.tableExists(tableName);
             if (!exists) {
                 missingTables.push(tableName);
             } else {
+                existingTables.push(tableName);
                 this.dbUtils.logProgress(`✅ Table ${tableName} exists`);
             }
         }
 
         if (missingTables.length > 0) {
-            throw new Error(`Missing tables: ${missingTables.join(', ')}`);
+            console.log('');
+            console.log('⚠️  Some tables are missing:');
+            console.log(`   Missing: ${missingTables.join(', ')}`);
+            console.log(`   Existing: ${existingTables.join(', ')}`);
+            console.log('');
+            console.log('📝 To complete the setup:');
+            console.log('   1. Execute the SQL statements from the previous step in your Supabase dashboard');
+            console.log('   2. Run this script again to verify the setup');
+            console.log('');
+            return false;
         }
 
         this.dbUtils.logSuccess('Database verification completed successfully');
+        return true;
     }
 
     splitSqlStatements(sql) {

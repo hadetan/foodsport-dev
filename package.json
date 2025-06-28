@@ -14,11 +14,12 @@
     "db:reset": "npm run setup-db && npm run seed-db"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.3.4",
     "@supabase/supabase-js": "^2.39.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "next": "15.3.4",
+    "pg": "^8.16.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "eslint": "^8",
