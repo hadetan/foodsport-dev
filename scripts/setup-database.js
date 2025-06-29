@@ -46,11 +46,16 @@ class DatabaseSetup {
         } catch (error) {
             this.dbUtils.logError('Database setup failed', error);
             process.exit(1);
+        } finally {
+            // Close the connection pool
+            await this.dbUtils.closePool();
         }
     }
 
     async executeSchema() {
         this.dbUtils.logProgress('Executing database schema...');
+
+        function delay(ms) { return new Promise(res => setTimeout(res, ms)); }
 
         try {
             // Read schema file
@@ -61,24 +66,14 @@ class DatabaseSetup {
 
             let executedCount = 0;
             let skippedCount = 0;
-            let manualCount = 0;
+            let errorCount = 0;
 
-            console.log('');
-            console.log('📋 Database Schema Setup Instructions:');
-            console.log('=====================================');
-            console.log('Since Supabase doesn\'t support programmatic execution of complex SQL,');
-            console.log('you need to execute the schema manually in your Supabase dashboard.');
-            console.log('');
-            console.log('Follow these steps:');
-            console.log('1. Go to your Supabase dashboard: https://supabase.com/dashboard');
-            console.log('2. Select your project');
-            console.log('3. Go to SQL Editor (left sidebar)');
-            console.log('4. Copy and paste the following SQL statements one by one:');
+            console.log(`📋 Found ${statements.length} SQL statements to execute`);
             console.log('');
 
             for (const statement of statements) {
                 const trimmedStatement = statement.trim();
-                if (!trimmedStatement || trimmedStatement.startsWith('--')) {
+                if (!trimmedStatement) {
                     continue;
                 }
 
@@ -93,18 +88,9 @@ class DatabaseSetup {
                         }
                     }
 
-                    // Execute the statement
-                    const result = await this.dbUtils.executeQuery(trimmedStatement);
-
-                    if (result.message === 'Manual execution required') {
-                        manualCount++;
-                        console.log(`--- Statement ${manualCount} ---`);
-                        console.log(trimmedStatement);
-                        console.log('--- End Statement ---');
-                        console.log('');
-                    } else {
-                        executedCount++;
-                    }
+                    // Execute the statement using pool
+                    await this.dbUtils.executeQuery(trimmedStatement);
+                    executedCount++;
 
                     // Log progress for major operations
                     if (trimmedStatement.toLowerCase().includes('create table')) {
@@ -118,25 +104,35 @@ class DatabaseSetup {
                         this.dbUtils.logProgress('Created trigger');
                     } else if (trimmedStatement.toLowerCase().includes('create policy')) {
                         this.dbUtils.logProgress('Created RLS policy');
+                    } else if (trimmedStatement.toLowerCase().includes('create type')) {
+                        this.dbUtils.logProgress('Created custom type');
+                    } else if (trimmedStatement.toLowerCase().includes('create extension')) {
+                        this.dbUtils.logProgress('Created extension');
+                    } else if (trimmedStatement.toLowerCase().includes('create function')) {
+                        this.dbUtils.logProgress('Created function');
+                    } else if (trimmedStatement.toLowerCase().includes('alter table')) {
+                        this.dbUtils.logProgress('Updated table');
                     }
 
                 } catch (error) {
                     // Log error but continue with other statements
                     this.dbUtils.logError(`Failed to execute statement: ${error.message}`, error);
                     this.dbUtils.logProgress('Continuing with remaining statements...', 'warning');
+                    errorCount++;
                 }
+                await delay(100); // Add delay between statements
             }
 
             console.log('');
-            console.log('✅ Schema analysis completed!');
-            console.log(`   - ${executedCount} statements executed automatically`);
+            console.log('✅ Schema execution completed!');
+            console.log(`   - ${executedCount} statements executed successfully`);
             console.log(`   - ${skippedCount} statements skipped (already exist)`);
-            console.log(`   - ${manualCount} statements need manual execution`);
-            console.log('');
-            console.log('📝 Next steps:');
-            console.log('   1. Execute the SQL statements above in your Supabase dashboard');
-            console.log('   2. Run "npm run seed-db" to populate with sample data');
-            console.log('   3. Test your API routes');
+            console.log(`   - ${errorCount} statements failed`);
+
+            if (errorCount > 0) {
+                console.log('');
+                console.log('⚠️  Some statements failed. Check the logs above for details.');
+            }
 
         } catch (error) {
             throw new Error(`Schema execution failed: ${error.message}`);
@@ -185,77 +181,51 @@ class DatabaseSetup {
     }
 
     splitSqlStatements(sql) {
-        // Split SQL by semicolon, but handle semicolons in strings and comments
+        // Remove block and line comments
+        let cleanSql = sql
+            .replace(/\/\*[\s\S]*?\*\//g, '')
+            .replace(/--[^\r\n]*/g, '')
+            .replace(/^\s*[\r\n]/gm, '');
+
         const statements = [];
-        let currentStatement = '';
-        let inString = false;
-        let stringChar = '';
-        let inComment = false;
-        let commentType = '';
-
-        for (let i = 0; i < sql.length; i++) {
-            const char = sql[i];
-            const nextChar = sql[i + 1];
-
-            // Handle comments
-            if (!inString && !inComment) {
-                if (char === '-' && nextChar === '-') {
-                    inComment = true;
-                    commentType = 'line';
-                    currentStatement += char;
-                    i++; // Skip next char
-                    continue;
-                } else if (char === '/' && nextChar === '*') {
-                    inComment = true;
-                    commentType = 'block';
-                    currentStatement += char;
-                    i++; // Skip next char
+        let current = '';
+        let inDollarQuote = false;
+        let dollarTag = null;
+        let i = 0;
+        while (i < cleanSql.length) {
+            // Detect start of dollar-quoted string
+            if (!inDollarQuote && cleanSql[i] === '$') {
+                const match = cleanSql.slice(i).match(/^\$[\w]*\$/);
+                if (match) {
+                    inDollarQuote = true;
+                    dollarTag = match[0];
+                    current += dollarTag;
+                    i += dollarTag.length;
                     continue;
                 }
             }
-
-            // Handle end of comments
-            if (inComment) {
-                currentStatement += char;
-                if (commentType === 'line' && char === '\n') {
-                    inComment = false;
-                    commentType = '';
-                } else if (commentType === 'block' && char === '*' && nextChar === '/') {
-                    currentStatement += nextChar;
-                    i++; // Skip next char
-                    inComment = false;
-                    commentType = '';
-                }
+            // Detect end of dollar-quoted string
+            if (inDollarQuote && cleanSql.slice(i, i + dollarTag.length) === dollarTag) {
+                inDollarQuote = false;
+                current += dollarTag;
+                i += dollarTag.length;
                 continue;
             }
-
-            // Handle strings
-            if (!inComment && (char === "'" || char === '"')) {
-                if (!inString) {
-                    inString = true;
-                    stringChar = char;
-                } else if (char === stringChar) {
-                    inString = false;
-                    stringChar = '';
-                }
+            // Split on semicolon if not in dollar-quoted string
+            if (!inDollarQuote && cleanSql[i] === ';') {
+                statements.push(current.trim());
+                current = '';
+                i++;
+                continue;
             }
-
-            // Handle statement termination
-            if (!inString && !inComment && char === ';') {
-                currentStatement += char;
-                statements.push(currentStatement.trim());
-                currentStatement = '';
-            } else {
-                currentStatement += char;
-            }
+            current += cleanSql[i];
+            i++;
         }
-
-        // Add any remaining statement
-        if (currentStatement.trim()) {
-            statements.push(currentStatement.trim());
+        if (current.trim()) {
+            statements.push(current.trim());
         }
-
-        return statements;
+        // Remove empty statements
+        return statements.filter(stmt => stmt.length > 0);
     }
 
     extractTableName(createTableStatement) {

@@ -16,7 +16,7 @@ CREATE TYPE notification_method AS ENUM ('email', 'sms');
 CREATE TYPE verification_status AS ENUM ('pending', 'approved', 'rejected');
 
 -- Users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255), -- NULL for Google OAuth users
@@ -50,7 +50,7 @@ CREATE TABLE users (
 );
 
 -- User sessions table
-CREATE TABLE user_sessions (
+CREATE TABLE IF NOT EXISTS user_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     token_hash VARCHAR(255) NOT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE user_sessions (
 );
 
 -- Referral codes table
-CREATE TABLE referral_codes (
+CREATE TABLE IF NOT EXISTS referral_codes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     code VARCHAR(20) UNIQUE NOT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE referral_codes (
 );
 
 -- Referral tracking table
-CREATE TABLE referrals (
+CREATE TABLE IF NOT EXISTS referrals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     referrer_id UUID REFERENCES users(id) ON DELETE CASCADE,
     referred_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -81,7 +81,7 @@ CREATE TABLE referrals (
 );
 
 -- Activities table
-CREATE TABLE activities (
+CREATE TABLE IF NOT EXISTS activities (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(200) NOT NULL,
     description TEXT,
@@ -107,7 +107,7 @@ CREATE TABLE activities (
 );
 
 -- User activities (tickets) table
-CREATE TABLE user_activities (
+CREATE TABLE IF NOT EXISTS user_activities (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
@@ -121,7 +121,7 @@ CREATE TABLE user_activities (
 );
 
 -- Calorie submissions table
-CREATE TABLE calorie_submissions (
+CREATE TABLE IF NOT EXISTS calorie_submissions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     activity_id UUID REFERENCES activities(id),
@@ -138,7 +138,7 @@ CREATE TABLE calorie_submissions (
 );
 
 -- Charities table
-CREATE TABLE charities (
+CREATE TABLE IF NOT EXISTS charities (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(200) NOT NULL,
     description TEXT,
@@ -154,7 +154,7 @@ CREATE TABLE charities (
 );
 
 -- Calorie donations table
-CREATE TABLE calorie_donations (
+CREATE TABLE IF NOT EXISTS calorie_donations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     charity_id UUID REFERENCES charities(id) ON DELETE CASCADE,
@@ -165,7 +165,7 @@ CREATE TABLE calorie_donations (
 );
 
 -- Badges table
-CREATE TABLE badges (
+CREATE TABLE IF NOT EXISTS badges (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100) NOT NULL,
     description TEXT,
@@ -181,7 +181,7 @@ CREATE TABLE badges (
 );
 
 -- User badges table
-CREATE TABLE user_badges (
+CREATE TABLE IF NOT EXISTS user_badges (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     badge_id UUID REFERENCES badges(id) ON DELETE CASCADE,
@@ -191,7 +191,7 @@ CREATE TABLE user_badges (
 );
 
 -- Leaderboard cache table (for performance)
-CREATE TABLE leaderboard_cache (
+CREATE TABLE IF NOT EXISTS leaderboard_cache (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     global_rank INTEGER,
@@ -205,7 +205,7 @@ CREATE TABLE leaderboard_cache (
 );
 
 -- Email verification codes table
-CREATE TABLE email_verification_codes (
+CREATE TABLE IF NOT EXISTS email_verification_codes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     email VARCHAR(255) NOT NULL,
@@ -216,7 +216,7 @@ CREATE TABLE email_verification_codes (
 );
 
 -- Password reset codes table
-CREATE TABLE password_reset_codes (
+CREATE TABLE IF NOT EXISTS password_reset_codes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     email VARCHAR(255) NOT NULL,
@@ -227,7 +227,7 @@ CREATE TABLE password_reset_codes (
 );
 
 -- SMS verification codes table
-CREATE TABLE sms_verification_codes (
+CREATE TABLE IF NOT EXISTS sms_verification_codes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     phone_number VARCHAR(20) NOT NULL,

@@ -62,6 +62,9 @@ class DatabaseSeeder {
         } catch (error) {
             this.dbUtils.logError('Database seeding failed', error);
             process.exit(1);
+        } finally {
+            // Close the connection pool
+            await this.dbUtils.closePool();
         }
     }
 
@@ -196,77 +199,63 @@ class DatabaseSeeder {
     }
 
     splitSqlStatements(sql) {
-        // Split SQL by semicolon, but handle semicolons in strings and comments
+        // Remove block and line comments
+        let cleanSql = sql
+            .replace(/\/\*[\s\S]*?\*\//g, '')
+            .replace(/--[^\r\n]*/g, '')
+            .replace(/^\s*[\r\n]/gm, '');
+
         const statements = [];
-        let currentStatement = '';
-        let inString = false;
-        let stringChar = '';
-        let inComment = false;
-        let commentType = '';
-
-        for (let i = 0; i < sql.length; i++) {
-            const char = sql[i];
-            const nextChar = sql[i + 1];
-
-            // Handle comments
-            if (!inString && !inComment) {
-                if (char === '-' && nextChar === '-') {
-                    inComment = true;
-                    commentType = 'line';
-                    currentStatement += char;
-                    i++; // Skip next char
-                    continue;
-                } else if (char === '/' && nextChar === '*') {
-                    inComment = true;
-                    commentType = 'block';
-                    currentStatement += char;
-                    i++; // Skip next char
+        let current = '';
+        let inDollarQuote = false;
+        let dollarTag = null;
+        let i = 0;
+        while (i < cleanSql.length) {
+            // Detect start of dollar-quoted string
+            if (!inDollarQuote && cleanSql[i] === '$') {
+                const match = cleanSql.slice(i).match(/^\$[\w]*\$/);
+                if (match) {
+                    inDollarQuote = true;
+                    dollarTag = match[0];
+                    current += cleanSql[i];
+                    i++;
                     continue;
                 }
             }
 
-            // Handle end of comments
-            if (inComment) {
-                currentStatement += char;
-                if (commentType === 'line' && char === '\n') {
-                    inComment = false;
-                    commentType = '';
-                } else if (commentType === 'block' && char === '*' && nextChar === '/') {
-                    currentStatement += nextChar;
-                    i++; // Skip next char
-                    inComment = false;
-                    commentType = '';
-                }
-                continue;
-            }
-
-            // Handle strings
-            if (!inComment && (char === "'" || char === '"')) {
-                if (!inString) {
-                    inString = true;
-                    stringChar = char;
-                } else if (char === stringChar) {
-                    inString = false;
-                    stringChar = '';
+            // Detect end of dollar-quoted string
+            if (inDollarQuote && cleanSql[i] === '$') {
+                const remaining = cleanSql.slice(i);
+                if (remaining.startsWith(dollarTag)) {
+                    current += cleanSql.slice(i, i + dollarTag.length);
+                    i += dollarTag.length;
+                    inDollarQuote = false;
+                    dollarTag = null;
+                    continue;
                 }
             }
 
-            // Handle statement termination
-            if (!inString && !inComment && char === ';') {
-                currentStatement += char;
-                statements.push(currentStatement.trim());
-                currentStatement = '';
+            // Handle statement termination (only when not in dollar-quoted string)
+            if (!inDollarQuote && cleanSql[i] === ';') {
+                current += cleanSql[i];
+                const trimmed = current.trim();
+                if (trimmed) {
+                    statements.push(trimmed);
+                }
+                current = '';
             } else {
-                currentStatement += char;
+                current += cleanSql[i];
             }
+            i++;
         }
 
         // Add any remaining statement
-        if (currentStatement.trim()) {
-            statements.push(currentStatement.trim());
+        const trimmed = current.trim();
+        if (trimmed) {
+            statements.push(trimmed);
         }
 
-        return statements;
+        return statements.filter(stmt => stmt.trim() && !stmt.trim().startsWith('--'));
     }
 }
 

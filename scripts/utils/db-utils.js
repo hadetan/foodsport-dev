@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs').promises;
 const path = require('path');
-const { Client: PgClient } = require('pg');
+const { Pool } = require('pg');
 
 // Database utilities for setup and seeding scripts
 class DatabaseUtils {
@@ -9,6 +9,26 @@ class DatabaseUtils {
         this.supabase = null;
         this.isConnected = false;
         this.pgUrl = process.env.SUPABASE_DB_URL;
+        this.pool = null;
+    }
+
+    // Initialize connection pool
+    async initializePool() {
+        if (!this.pgUrl) return;
+
+        this.pool = new Pool({
+            connectionString: this.pgUrl,
+            max: 5, // Maximum number of connections
+            idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+            connectionTimeoutMillis: 10000, // Return an error after 10 seconds if connection could not be established
+            maxUses: 7500, // Close (and replace) a connection after it has been used 7500 times
+        });
+
+        // Test the pool
+        const client = await this.pool.connect();
+        await client.query('SELECT 1');
+        client.release();
+        console.log('✅ PostgreSQL connection pool initialized');
     }
 
     // Initialize Supabase client
@@ -30,13 +50,9 @@ class DatabaseUtils {
         // Test connection with a simple approach that doesn't depend on existing tables
         try {
             if (this.pgUrl) {
-                // Test pg connection
-                const client = new PgClient({ connectionString: this.pgUrl });
-                await client.connect();
-                await client.query('SELECT 1');
-                await client.end();
+                // Initialize connection pool
+                await this.initializePool();
                 this.isConnected = true;
-                console.log('✅ PostgreSQL connection (pg) successful');
             } else {
                 // Try to get the current timestamp from the database
                 const { data, error } = await this.supabase.rpc('now');
@@ -78,57 +94,67 @@ class DatabaseUtils {
         }
     }
 
-    // Execute SQL query (uses pg if SUPABASE_DB_URL is set)
+    // Execute SQL query (uses pg pool if SUPABASE_DB_URL is set)
     async executeQuery(sql) {
         if (!this.isConnected) {
             throw new Error('Database not connected. Call initialize() first.');
         }
-        if (this.pgUrl) {
-            return this.executeSqlWithPg(sql);
+        if (this.pool) {
+            return this.executeSqlWithPool(sql);
         }
         // fallback to Supabase client (limited)
-        // ... existing fallback logic ...
         throw new Error('Direct SQL execution is only supported with SUPABASE_DB_URL (pg).');
     }
 
-    // Execute SQL using pg
-    async executeSqlWithPg(sql) {
-        const client = new PgClient({ connectionString: this.pgUrl });
-        try {
-            await client.connect();
-            await client.query('BEGIN');
-            await client.query(sql);
-            await client.query('COMMIT');
-            await client.end();
-            return { message: 'Executed with pg' };
-        } catch (error) {
-            await client.query('ROLLBACK').catch(() => { });
-            await client.end();
-            throw new Error(`pg SQL execution failed: ${error.message}`);
+    // Execute SQL using connection pool with retry logic
+    async executeSqlWithPool(sql, retries = 3) {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            const client = await this.pool.connect();
+            try {
+                await client.query(sql);
+                client.release();
+                return { message: 'Executed with pool' };
+            } catch (error) {
+                client.release();
+
+                // Ignore 'already exists' errors for tables, extensions, and types
+                if (error.message && (
+                    error.message.includes('already exists') ||
+                    error.message.includes('duplicate key value') ||
+                    error.message.match(/type ".+" already exists/)
+                )) {
+                    console.warn('⚠️  Warning:', error.message);
+                    return { message: 'Already exists, skipped' };
+                }
+
+                // If it's a connection error and we have retries left, try again
+                if (attempt < retries && (
+                    error.code === 'ECONNRESET' ||
+                    error.code === 'ENOTFOUND' ||
+                    error.message.includes('connection') ||
+                    error.message.includes('terminated')
+                )) {
+                    console.warn(`⚠️  Connection error (attempt ${attempt}/${retries}), retrying...`);
+                    await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+                    continue;
+                }
+
+                throw new Error(`pg SQL execution failed: ${error.message}`);
+            }
         }
     }
 
-    // Execute direct query (fallback method)
-    async executeDirectQuery(sql) {
-        console.log('⚠️  Direct SQL execution not supported in Supabase');
-        console.log('   SQL:', sql);
-        console.log('   Please execute manually in Supabase dashboard > SQL Editor');
-        return { message: 'Manual execution required' };
-    }
-
-    // Check if table exists
+    // Check if table exists using pool
     async tableExists(tableName) {
-        if (this.pgUrl) {
-            // Use pg to check
-            const client = new PgClient({ connectionString: this.pgUrl });
+        if (this.pool) {
+            const client = await this.pool.connect();
             try {
-                await client.connect();
                 const res = await client.query(
                     `SELECT to_regclass('public.${tableName}') as exists`);
-                await client.end();
+                client.release();
                 return !!res.rows[0].exists;
             } catch (error) {
-                await client.end();
+                client.release();
                 console.log(`⚠️  Could not check if table ${tableName} exists: ${error.message}`);
                 return false;
             }
@@ -149,6 +175,22 @@ class DatabaseUtils {
             console.log(`⚠️  Could not check if table ${tableName} exists: ${error.message}`);
             return false;
         }
+    }
+
+    // Close pool when done
+    async closePool() {
+        if (this.pool) {
+            await this.pool.end();
+            console.log('✅ Connection pool closed');
+        }
+    }
+
+    // Execute direct query (fallback method)
+    async executeDirectQuery(sql) {
+        console.log('⚠️  Direct SQL execution not supported in Supabase');
+        console.log('   SQL:', sql);
+        console.log('   Please execute manually in Supabase dashboard > SQL Editor');
+        return { message: 'Manual execution required' };
     }
 
     // Check if data exists in table
