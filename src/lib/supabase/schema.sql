@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS users (
     email_verified BOOLEAN DEFAULT FALSE,
     phone_verified BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
+    is_admin BOOLEAN DEFAULT FALSE, -- New column for admin checks
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -237,6 +238,21 @@ CREATE TABLE IF NOT EXISTS sms_verification_codes (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Create audit_logs table for admin and system actions
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    type VARCHAR(50) NOT NULL, -- e.g., 'user', 'activity', 'system', etc.
+    action VARCHAR(100) NOT NULL, -- e.g., 'create', 'update', 'delete', 'login', etc.
+    table_name VARCHAR(100),
+    record_id UUID,
+    details JSONB,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);
+
 -- Create indexes for performance
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_google_id ON users(google_id);
@@ -285,6 +301,7 @@ ALTER TABLE leaderboard_cache ENABLE ROW LEVEL SECURITY;
 ALTER TABLE email_verification_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE password_reset_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sms_verification_codes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own data
 CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid() = id);
@@ -308,4 +325,7 @@ CREATE POLICY "Users can insert own donations" ON calorie_donations FOR INSERT W
 CREATE POLICY "Users can view own badges" ON user_badges FOR SELECT USING (auth.uid() = user_id);
 
 -- Leaderboard cache is publicly readable
-CREATE POLICY "Leaderboard cache is publicly readable" ON leaderboard_cache FOR SELECT USING (true); 
+CREATE POLICY "Leaderboard cache is publicly readable" ON leaderboard_cache FOR SELECT USING (true);
+
+-- Admins can access audit logs
+CREATE POLICY "Admins can access audit logs" ON audit_logs FOR SELECT USING (auth.uid() IS NOT NULL AND EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_admin = TRUE));
