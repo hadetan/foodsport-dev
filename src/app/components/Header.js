@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import styles from './Header.module.css';
+import Link from 'next/link';
 
 export default function Header() {
     return (
@@ -21,11 +22,15 @@ export default function Header() {
             <nav className={styles.navBar}>
                 <ul className={styles.navList}>
                     <li className={styles.active}>HOME</li>
-                    <li>JOIN ACTIVITIES</li>
+                    <li>
+                        <Link href="/activities" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            JOIN ACTIVITIES
+                        </Link>
+                    </li>
                     <li>REDEEM REWARDS</li>
                     <li>HOW DOES IT WORK</li>
                 </ul>
             </nav>
         </header>
     );
-} 
+}
