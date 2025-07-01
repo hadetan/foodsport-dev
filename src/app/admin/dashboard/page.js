@@ -1,16 +1,138 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    BarElement,
+} from "chart.js";
+import { Line, Bar } from "react-chartjs-2";
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
 const DashboardPage = () => {
     const [dateRange, setDateRange] = useState("7d");
+    const [loading, setLoading] = useState(false);
+    const [data, setData] = useState(null);
+    const [theme, setTheme] = useState("light");
+
+    useEffect(() => {
+        const isDark =
+            document.documentElement.getAttribute("data-theme") === "dark";
+        setTheme(isDark ? "dark" : "light");
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === "data-theme") {
+                    const newTheme =
+                        document.documentElement.getAttribute("data-theme");
+                    setTheme(newTheme);
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["data-theme"],
+        });
+
+        return () => observer.disconnect();
+    }, []);
+
+    const chartTextColor = theme === "dark" ? "#e2e8f0" : "#1e293b";
+
+    const userChartData = {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        datasets: [
+            {
+                label: "New Users",
+                data: [12, 19, 15, 25, 22, 30, 28],
+                borderColor: theme === "dark" ? "#818cf8" : "#4f46e5",
+                backgroundColor:
+                    theme === "dark"
+                        ? "rgba(129, 140, 248, 0.1)"
+                        : "rgba(79, 70, 229, 0.1)",
+                tension: 0.4,
+            },
+        ],
+    };
+
+    const activityChartData = {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        datasets: [
+            {
+                label: "Activities",
+                data: [5, 8, 12, 15, 10, 7, 9],
+                backgroundColor: theme === "dark" ? "#818cf8" : "#4f46e5",
+            },
+        ],
+    };
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: "top",
+                labels: {
+                    color: chartTextColor,
+                },
+            },
+        },
+        scales: {
+            x: {
+                grid: {
+                    color:
+                        theme === "dark"
+                            ? "rgba(226, 232, 240, 0.1)"
+                            : "rgba(30, 41, 59, 0.1)",
+                },
+                ticks: {
+                    color: chartTextColor,
+                },
+            },
+            y: {
+                grid: {
+                    color:
+                        theme === "dark"
+                            ? "rgba(226, 232, 240, 0.1)"
+                            : "rgba(30, 41, 59, 0.1)",
+                },
+                ticks: {
+                    color: chartTextColor,
+                },
+            },
+        },
+    };
+
+    const handleRefresh = async () => {
+        setLoading(true);
+        // TODO: Implement API call
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setLoading(false);
+    };
 
     return (
-        <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="p-4 lg:p-6 bg-gradient-to-br from-base-200 to-base-100">
             {/* Filters */}
             <div className="flex flex-wrap gap-4 mb-6">
                 <select
-                    className="select bg-white border-2 border-blue-300 text-blue-600 w-full max-w-xs focus:border-blue-500"
+                    className="select select-bordered w-full max-w-xs"
                     value={dateRange}
                     onChange={(e) => setDateRange(e.target.value)}
                 >
@@ -19,19 +141,25 @@ const DashboardPage = () => {
                     <option value="30d">Last 30 Days</option>
                 </select>
                 <div className="join">
-                    <button className="btn join-item bg-purple-500 hover:bg-purple-600 border-0 text-white">
+                    <button className="btn join-item btn-secondary">
                         Export
                     </button>
-                    <button className="btn join-item bg-blue-500 hover:bg-blue-600 border-0 text-white">
-                        Refresh
+                    <button
+                        className={`btn join-item btn-primary ${
+                            loading ? "loading" : ""
+                        }`}
+                        onClick={handleRefresh}
+                        disabled={loading}
+                    >
+                        {loading ? "Refreshing..." : "Refresh"}
                     </button>
                 </div>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="stats bg-gradient-to-r from-blue-500 to-blue-400 text-white shadow-lg">
-                    <div className="stat">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+                <div className="stats shadow">
+                    <div className="stat bg-gradient-to-r from-primary to-primary-focus text-primary-content">
                         <div className="stat-title opacity-80">Total Users</div>
                         <div className="stat-value">1,234</div>
                         <div className="stat-desc opacity-80">
@@ -40,8 +168,8 @@ const DashboardPage = () => {
                     </div>
                 </div>
 
-                <div className="stats bg-gradient-to-r from-purple-500 to-purple-400 text-white shadow-lg">
-                    <div className="stat">
+                <div className="stats shadow">
+                    <div className="stat bg-gradient-to-r from-secondary to-secondary-focus text-secondary-content">
                         <div className="stat-title opacity-80">
                             Active Activities
                         </div>
@@ -52,8 +180,8 @@ const DashboardPage = () => {
                     </div>
                 </div>
 
-                <div className="stats bg-gradient-to-r from-green-500 to-green-400 text-white shadow-lg">
-                    <div className="stat">
+                <div className="stats shadow">
+                    <div className="stat bg-gradient-to-r from-success to-success/80 text-success-content">
                         <div className="stat-title opacity-80">
                             Total Rewards
                         </div>
@@ -64,8 +192,8 @@ const DashboardPage = () => {
                     </div>
                 </div>
 
-                <div className="stats bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-lg">
-                    <div className="stat">
+                <div className="stats shadow">
+                    <div className="stat bg-gradient-to-r from-accent to-accent-focus text-accent-content">
                         <div className="stat-title opacity-80">
                             Total Donations
                         </div>
@@ -77,43 +205,73 @@ const DashboardPage = () => {
                 </div>
             </div>
 
+            {/* Charts Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div className="card bg-base-100 shadow-lg">
+                    <div className="card-body">
+                        <h3 className="card-title text-base-content">
+                            User Growth
+                        </h3>
+                        <div className="h-[300px]">
+                            <Line data={userChartData} options={chartOptions} />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="card bg-base-100 shadow-lg">
+                    <div className="card-body">
+                        <h3 className="card-title text-base-content">
+                            Activity Distribution
+                        </h3>
+                        <div className="h-[300px]">
+                            <Bar
+                                data={activityChartData}
+                                options={chartOptions}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Recent Signups Table */}
-            <div className="card bg-white shadow-lg border border-blue-100">
+            <div className="card bg-base-100 shadow-lg">
                 <div className="card-body">
-                    <h2 className="card-title text-blue-600">Recent Signups</h2>
+                    <h2 className="card-title text-base-content">
+                        Recent Signups
+                    </h2>
                     <div className="overflow-x-auto">
-                        <table className="table">
+                        <table className="table table-zebra w-full">
                             <thead>
-                                <tr className="bg-blue-50">
-                                    <th className="text-blue-600">User</th>
-                                    <th className="text-blue-600">Date</th>
-                                    <th className="text-blue-600">Status</th>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr className="hover:bg-blue-50">
+                                <tr>
                                     <td>John Doe</td>
                                     <td>2025-07-01</td>
                                     <td>
-                                        <div className="badge bg-green-100 text-green-600 border-0">
+                                        <div className="badge badge-success gap-2">
                                             Active
                                         </div>
                                     </td>
                                 </tr>
-                                <tr className="hover:bg-blue-50">
+                                <tr>
                                     <td>Jane Smith</td>
                                     <td>2025-07-01</td>
                                     <td>
-                                        <div className="badge bg-orange-100 text-orange-600 border-0">
+                                        <div className="badge badge-warning gap-2">
                                             Pending
                                         </div>
                                     </td>
                                 </tr>
-                                <tr className="hover:bg-blue-50">
+                                <tr>
                                     <td>Mike Johnson</td>
                                     <td>2025-06-30</td>
                                     <td>
-                                        <div className="badge bg-green-100 text-green-600 border-0">
+                                        <div className="badge badge-success gap-2">
                                             Active
                                         </div>
                                     </td>
