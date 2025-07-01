@@ -14,18 +14,23 @@
     "db:reset": "npm run setup-db && npm run seed-db"
   },
   "dependencies": {
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.39.0",
+    "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/postcss": "^4.1.11",
     "dotenv": "^16.3.1",
     "next": "15.3.4",
     "pg": "^8.16.3",
-    "postcss": "^8.5.6",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "tailwindcss": "^4.1.11"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "daisyui": "^5.0.43",
     "eslint": "^8",
-    "eslint-config-next": "15.3.4"
+    "eslint-config-next": "15.3.4",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11"
   }
 }
