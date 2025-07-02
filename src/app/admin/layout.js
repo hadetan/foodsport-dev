@@ -4,6 +4,15 @@ import { usePathname } from "next/navigation";
 
 export default function RootLayout({ children }) {
     const pathname = usePathname();
+    const isLoginPage = pathname === "/admin/login";
+
+    if (isLoginPage) {
+        return (
+            <html lang="en" data-theme="light" className="light">
+                <body className="min-h-screen bg-base-100">{children}</body>
+            </html>
+        );
+    }
 
     return (
         <html lang="en" data-theme="light" className="light">
@@ -34,7 +43,7 @@ export default function RootLayout({ children }) {
                                             strokeLinejoin="round"
                                             strokeWidth="2"
                                             d="M4 6h16M4 12h16M4 18h16"
-                                        ></path>
+                                        />
                                     </svg>
                                 </label>
                             </div>

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import ErrorAlert from "@/app/components/ErrorAlert";
 
 const UserProfilePage = ({ params }) => {
     const [activeTab, setActiveTab] = useState("details");
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     // Mock user data - Replace with API call
     const user = {
@@ -34,13 +36,23 @@ const UserProfilePage = ({ params }) => {
 
     const handleStatusChange = async (newStatus) => {
         setLoading(true);
-        // Implement status change logic here
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setLoading(false);
+        setError("");
+        try {
+            // Implement status change logic here
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            throw new Error("Status change functionality not implemented yet");
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="p-4">
+            {/* Error Alert */}
+            <ErrorAlert message={error} onClose={() => setError("")} />
+
             {/* User Profile Header */}
             <div className="card bg-base-100 shadow-xl mb-6">
                 <div className="card-body">
