@@ -1,29 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    BarElement,
-} from "chart.js";
-import { Line, Bar } from "react-chartjs-2";
-
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend
-);
 
 const DashboardPage = () => {
     const [dateRange, setDateRange] = useState("7d");
@@ -56,70 +33,6 @@ const DashboardPage = () => {
 
     const chartTextColor = theme === "dark" ? "#e2e8f0" : "#1e293b";
 
-    const userChartData = {
-        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        datasets: [
-            {
-                label: "New Users",
-                data: [12, 19, 15, 25, 22, 30, 28],
-                borderColor: theme === "dark" ? "#818cf8" : "#4f46e5",
-                backgroundColor:
-                    theme === "dark"
-                        ? "rgba(129, 140, 248, 0.1)"
-                        : "rgba(79, 70, 229, 0.1)",
-                tension: 0.4,
-            },
-        ],
-    };
-
-    const activityChartData = {
-        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        datasets: [
-            {
-                label: "Activities",
-                data: [5, 8, 12, 15, 10, 7, 9],
-                backgroundColor: theme === "dark" ? "#818cf8" : "#4f46e5",
-            },
-        ],
-    };
-
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: "top",
-                labels: {
-                    color: chartTextColor,
-                },
-            },
-        },
-        scales: {
-            x: {
-                grid: {
-                    color:
-                        theme === "dark"
-                            ? "rgba(226, 232, 240, 0.1)"
-                            : "rgba(30, 41, 59, 0.1)",
-                },
-                ticks: {
-                    color: chartTextColor,
-                },
-            },
-            y: {
-                grid: {
-                    color:
-                        theme === "dark"
-                            ? "rgba(226, 232, 240, 0.1)"
-                            : "rgba(30, 41, 59, 0.1)",
-                },
-                ticks: {
-                    color: chartTextColor,
-                },
-            },
-        },
-    };
-
     const handleRefresh = async () => {
         setLoading(true);
         // TODO: Implement API call
@@ -128,9 +41,9 @@ const DashboardPage = () => {
     };
 
     return (
-        <div className="p-4 lg:p-6 bg-gradient-to-br from-base-200 to-base-100">
+        <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6 bg-gradient-to-br from-base-200 to-base-100">
             {/* Filters */}
-            <div className="flex flex-wrap gap-4 mb-6">
+            <div className="flex flex-wrap gap-4 mb-6 w-full">
                 <select
                     className="select select-bordered w-full max-w-xs"
                     value={dateRange}
@@ -157,7 +70,7 @@ const DashboardPage = () => {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 w-full">
                 <div className="stats shadow">
                     <div className="stat bg-gradient-to-r from-primary to-primary-focus text-primary-content">
                         <div className="stat-title opacity-80">Total Users</div>
@@ -205,36 +118,8 @@ const DashboardPage = () => {
                 </div>
             </div>
 
-            {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <div className="card bg-base-100 shadow-lg">
-                    <div className="card-body">
-                        <h3 className="card-title text-base-content">
-                            User Growth
-                        </h3>
-                        <div className="h-[300px]">
-                            <Line data={userChartData} options={chartOptions} />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="card bg-base-100 shadow-lg">
-                    <div className="card-body">
-                        <h3 className="card-title text-base-content">
-                            Activity Distribution
-                        </h3>
-                        <div className="h-[300px]">
-                            <Bar
-                                data={activityChartData}
-                                options={chartOptions}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             {/* Recent Signups Table */}
-            <div className="card bg-base-100 shadow-lg">
+            <div className="card bg-base-100 shadow-lg w-full">
                 <div className="card-body">
                     <h2 className="card-title text-base-content">
                         Recent Signups
