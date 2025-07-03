@@ -3,10 +3,12 @@ import styles from "./page.module.css";
 import Activity from "./components/Activity";
 import ActivityItem from "./components/ActivityItem";
 import activities from "@/app/data/activities";
+import Hero from "./components/Hero";
 
 export default function Home() {
   return (
     <>
+      <Hero />
       <Activity />
       <div className={styles.grid3}>
         {activities.map((item, idx) => (

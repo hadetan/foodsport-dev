@@ -1,18 +1,21 @@
 import Activity from '@/app/components/Activity';
 import ActivityItem from '@/app/components/ActivityItem';
 import styles from '../page.module.css';
+import Headers from "@/app/components/Header";
 
 async function fetchActivities() {
-  const res = await fetch('http://localhost:3001/api/activities', {
-    cache: 'no-store',
-  });
-  return res.json();
+  // const res = await fetch("localhost:3000/api/activities", {
+  //   cache: "no-store",
+  // });
+  // return res.json();
+  return [];
 }
 
 export default async function ActivitiesPage() {
   const activities = await fetchActivities();
   return (
     <>
+      <h1>something</h1>
       <Activity />
       <div className={styles.grid3}>
         {activities.map((item) => (
