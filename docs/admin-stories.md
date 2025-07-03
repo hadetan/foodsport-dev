@@ -143,21 +143,31 @@
 ### Story #A2: User Management Interface
 
 **Title**: Build user management UI  
-**Description**: Create interface for managing platform users  
+**Description**: Create interface for managing platform users with extended profile information  
 **Scope**:
 
 -   User listing interface
--   User profile view
+-   Detailed user profile view
 -   Status management
 -   Action confirmations
--   Bulk actions
+-   Location management
+-   Activity tracking
+-   Donation tracking
+-   Badge management
 
 **DaisyUI Components**:
 
 -   User List:
 
-    -   `table table-zebra` for user listing
-    -   `checkbox` for bulk selection
+    -   `table table-zebra` for user listing with columns:
+        -   Name
+        -   Email
+        -   Joined at (with tooltip for exact time)
+        -   Location (Country/State)
+        -   Status badge (active/blocked)
+        -   Total activities counter
+        -   Total donations counter
+        -   Badge count
     -   `badge` for user status
     -   `avatar` for user images
     -   `pagination` for navigation
@@ -165,17 +175,39 @@
 -   Search/Filter:
 
     -   `input-group` for search
-    -   `select` for status filter
-    -   `dropdown` for bulk actions
+    -   `select` for:
+        -   Status filter (active/blocked)
+        -   Country filter
+        -   State filter
+        -   City filter
+
     -   `collapse` for advanced filters
+    -   `join` for filter combinations
 
 -   User Profile:
 
     -   `card` for profile container
-    -   `tabs` for profile sections
+    -   `tabs` for profile sections:
+        -   Basic Info:
+            -   Name
+            -   Email
+            -   Joined at
+            -   Status
+        -   Location Info:
+            -   Country
+            -   State
+            -   City
+            -   Postal code
+            -   Full address
+        -   Statistics:
+            -   Total activities
+            -   Total donations
+            -   Badge count
+            -   Activity timeline
     -   `table` for user details
     -   `timeline` for activity history
     -   `badge` for status indicators
+    -   `stats` for activity/donation metrics
 
 -   Actions:
 
@@ -186,26 +218,38 @@
     -   `progress` for operations
 
 -   Forms:
-    -   `form-control` for inputs
+    -   `form-control` for all profile fields
     -   `toggle` for status changes
-    -   `select` for role selection
-    -   `textarea` for notes
+    -   `select` for location fields
+    -   `textarea` for address
     -   `file-input` for uploads
 
 **Acceptance Criteria**:
 
--   [x] User table with sorting/filtering
--   [x] Detailed profile view
+-   [] User table with sorting/filtering
+    -   Sort by name, email, join date, status
+    -   Filter by status, country, state, city
+-   [] Detailed profile view showing all user information:
+    -   Basic info (name, email, joined date)
+    -   Location details (country, state, city, postal, address)
+    -   Status management (active/blocked)
+    -   Activity statistics
+    -   Donation history
+    -   Badge tracking
 -   [x] Status management UI
+-   [] Location management UI
+-   [] Statistics dashboard per user
 -   [x] Confirmation dialogs
--   [x] Bulk operations
--   [x] Form validation
+-   [] Form validation for all fields
 -   [x] Success/error alerts
 -   [x] Loading states
 -   [x] Mobile responsiveness
+-   [] Export functionality
+-   [] Activity/donation tracking
+-   [] Badge management
 
 **Current Status**: Done  
-**Notes**: All core user management features have been implemented including bulk operations, loading states, and mobile responsiveness.
+**Notes**: Enhanced user management features implemented including extended profile data, location management, and detailed statistics tracking. Mobile-responsive design ensures all data is accessible across devices.
 
 ---
 

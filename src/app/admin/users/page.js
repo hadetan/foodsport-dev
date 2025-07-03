@@ -6,18 +6,37 @@ import ErrorAlert from "@/app/components/ErrorAlert";
 
 const UserManagementPage = () => {
     const router = useRouter();
-    const [selectedUsers, setSelectedUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [tableLoading, setTableLoading] = useState(true);
-    const [actionLoading, setActionLoading] = useState(false);
     const [notification, setNotification] = useState({
         show: false,
         message: "",
         type: "",
     });
+
+    // Hong Kong regions
+    const hongKongRegions = [
+        "Central and Western",
+        "Eastern",
+        "Southern",
+        "Wan Chai",
+        "Kowloon City",
+        "Kwun Tong",
+        "Sham Shui Po",
+        "Wong Tai Sin",
+        "Yau Tsim Mong",
+        "Islands",
+        "Kwai Tsing",
+        "North",
+        "Sai Kung",
+        "Sha Tin",
+        "Tai Po",
+        "Tsuen Wan",
+        "Tuen Mun",
+        "Yuen Long",
+    ];
 
     // Mock data - Replace with actual API call
     const users = [
@@ -26,60 +45,22 @@ const UserManagementPage = () => {
             name: "John Doe",
             email: "john@example.com",
             status: "active",
-            role: "user",
+            joinedAt: "2025-06-01",
+            location: {
+                country: "Hong Kong",
+                state: "Central and Western",
+                city: "Central",
+                postal: "999077",
+                address: "123 Finance Street",
+            },
+            stats: {
+                totalActivities: 45,
+                totalDonations: 1200,
+                badgeCount: 8,
+            },
             avatar: "/default-avatar.png",
         },
-        {
-            id: 2,
-            name: "Jane Smith",
-            email: "jane@example.com",
-            status: "inactive",
-            role: "admin",
-            avatar: "/default-avatar.png",
-        },
-        // Add more mock users as needed
     ];
-
-    const handleSelectAll = (e) => {
-        if (e.target.checked) {
-            setSelectedUsers(users.map((user) => user.id));
-        } else {
-            setSelectedUsers([]);
-        }
-    };
-
-    const handleSelectUser = (userId) => {
-        setSelectedUsers((prev) =>
-            prev.includes(userId)
-                ? prev.filter((id) => id !== userId)
-                : [...prev, userId]
-        );
-    };
-
-    const handleBulkAction = async (action) => {
-        setActionLoading(true);
-        try {
-            // Implement bulk action logic here
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Mock API call
-            setNotification({
-                show: true,
-                message: `Successfully ${action}ed ${selectedUsers.length} users`,
-                type: "success",
-            });
-            setSelectedUsers([]);
-            if (action === "delete") {
-                setIsDeleteModalOpen(false);
-            }
-        } catch (error) {
-            setNotification({
-                show: true,
-                message: `Failed to ${action} users`,
-                type: "error",
-            });
-        } finally {
-            setActionLoading(false);
-        }
-    };
 
     // Simulate initial data loading
     useState(() => {
@@ -155,64 +136,38 @@ const UserManagementPage = () => {
                     </svg>
                 </div>
 
-                <select
-                    className="select select-bordered w-full lg:w-48"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="suspended">Suspended</option>
-                </select>
+                {/* Enhanced Filters */}
+                <div className="flex flex-wrap gap-2">
+                    <select
+                        className="select select-bordered w-full lg:w-48"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="blocked">Blocked</option>
+                    </select>
 
-                <div className="dropdown dropdown-end">
-                    <label
-                        tabIndex={0}
-                        className={`btn btn-secondary w-full lg:w-auto ${
-                            selectedUsers.length === 0 ? "btn-disabled" : ""
-                        }`}
-                        data-tip={
-                            selectedUsers.length === 0
-                                ? "Select users to enable actions"
-                                : ""
-                        }
+                    <select
+                        className="select select-bordered w-full lg:w-48"
+                        defaultValue="Hong Kong"
+                        disabled
                     >
-                        Bulk Actions ({selectedUsers.length})
-                    </label>
-                    <ul
-                        tabIndex={0}
-                        className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
-                    >
-                        <li>
-                            <a
-                                onClick={() => handleBulkAction("activate")}
-                                className={actionLoading ? "loading" : ""}
-                            >
-                                Activate Selected
-                            </a>
-                        </li>
-                        <li>
-                            <a
-                                onClick={() => handleBulkAction("deactivate")}
-                                className={actionLoading ? "loading" : ""}
-                            >
-                                Deactivate Selected
-                            </a>
-                        </li>
-                        <li>
-                            <a
-                                onClick={() => setIsDeleteModalOpen(true)}
-                                className="text-error"
-                            >
-                                Delete Selected
-                            </a>
-                        </li>
-                    </ul>
+                        <option value="Hong Kong">Hong Kong</option>
+                    </select>
+
+                    <select className="select select-bordered w-full lg:w-48">
+                        <option value="">All Districts</option>
+                        {hongKongRegions.map((region) => (
+                            <option key={region} value={region}>
+                                {region}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
-            {/* User Table with Loading State */}
+            {/* User Table */}
             <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
                 {tableLoading ? (
                     <div className="min-h-[300px] flex items-center justify-center">
@@ -223,26 +178,10 @@ const UserManagementPage = () => {
                         <table className="table table-zebra w-full">
                             <thead className="sticky top-0 bg-base-100">
                                 <tr>
-                                    <th className="w-16">
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                className="checkbox"
-                                                checked={
-                                                    selectedUsers.length ===
-                                                    users.length
-                                                }
-                                                onChange={handleSelectAll}
-                                            />
-                                        </label>
-                                    </th>
-                                    <th>User</th>
-                                    <th className="hidden md:table-cell">
-                                        Role
-                                    </th>
-                                    <th className="hidden sm:table-cell">
-                                        Status
-                                    </th>
+                                    <th>User Info</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Statistics</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -252,22 +191,6 @@ const UserManagementPage = () => {
                                         key={user.id}
                                         className="hover:bg-base-200"
                                     >
-                                        <td>
-                                            <label>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={selectedUsers.includes(
-                                                        user.id
-                                                    )}
-                                                    onChange={() =>
-                                                        handleSelectUser(
-                                                            user.id
-                                                        )
-                                                    }
-                                                />
-                                            </label>
-                                        </td>
                                         <td>
                                             <div className="flex items-center space-x-3">
                                                 <div className="avatar">
@@ -285,27 +208,47 @@ const UserManagementPage = () => {
                                                     <div className="text-sm opacity-50">
                                                         {user.email}
                                                     </div>
+                                                    <div className="text-xs opacity-50">
+                                                        Joined: {user.joinedAt}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="hidden md:table-cell">
-                                            <span className="badge badge-ghost">
-                                                {user.role}
-                                            </span>
+                                        <td>
+                                            <div className="text-sm">
+                                                <div>{user.location.state}</div>
+                                                <div className="text-xs opacity-50">
+                                                    {user.location.city},{" "}
+                                                    {user.location.postal}
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td className="hidden sm:table-cell">
+                                        <td>
                                             <span
                                                 className={`badge ${
                                                     user.status === "active"
                                                         ? "badge-success"
-                                                        : user.status ===
-                                                          "inactive"
-                                                        ? "badge-warning"
                                                         : "badge-error"
                                                 }`}
                                             >
                                                 {user.status}
                                             </span>
+                                        </td>
+                                        <td>
+                                            <div className="text-sm">
+                                                <div>
+                                                    Activities:{" "}
+                                                    {user.stats.totalActivities}
+                                                </div>
+                                                <div>
+                                                    Donations:{" "}
+                                                    {user.stats.totalDonations}
+                                                </div>
+                                                <div>
+                                                    Badges:{" "}
+                                                    {user.stats.badgeCount}
+                                                </div>
+                                            </div>
                                         </td>
                                         <td>
                                             <div className="btn-group">
@@ -358,25 +301,6 @@ const UserManagementPage = () => {
                                                         />
                                                     </svg>
                                                 </button>
-                                                <button
-                                                    className="btn btn-sm btn-ghost text-error tooltip"
-                                                    data-tip="Delete User"
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className="h-4 w-4"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                        />
-                                                    </svg>
-                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -396,45 +320,8 @@ const UserManagementPage = () => {
                 </div>
             </div>
 
-            {/* Delete Confirmation Modal */}
-            <dialog
-                id="delete_modal"
-                className={`modal ${isDeleteModalOpen ? "modal-open" : ""}`}
-            >
-                <div className="modal-box">
-                    <h3 className="font-bold text-lg">Confirm Delete</h3>
-                    <p className="py-4">
-                        Are you sure you want to delete {selectedUsers.length}{" "}
-                        selected users? This action cannot be undone.
-                    </p>
-                    <div className="modal-action">
-                        <button
-                            className="btn"
-                            onClick={() => setIsDeleteModalOpen(false)}
-                            disabled={actionLoading}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            className={`btn btn-error ${
-                                actionLoading ? "loading" : ""
-                            }`}
-                            onClick={() => handleBulkAction("delete")}
-                            disabled={actionLoading}
-                        >
-                            Delete
-                        </button>
-                    </div>
-                </div>
-                <form method="dialog" className="modal-backdrop">
-                    <button onClick={() => setIsDeleteModalOpen(false)}>
-                        close
-                    </button>
-                </form>
-            </dialog>
-
-            {/* Loading Overlay for Bulk Actions */}
-            {actionLoading && (
+            {/* Loading Overlay */}
+            {loading && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-base-100 rounded-lg p-4 flex flex-col items-center space-y-2">
                         <span className="loading loading-spinner loading-lg"></span>

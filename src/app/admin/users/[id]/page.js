@@ -14,22 +14,41 @@ const UserProfilePage = ({ params }) => {
         name: "John Doe",
         email: "john@example.com",
         status: "active",
-        role: "user",
+        joinedAt: "2025-06-01",
+        location: {
+            country: "Hong Kong",
+            state: "Central and Western",
+            city: "Central",
+            postal: "999077",
+            address: "123 Finance Street",
+        },
+        stats: {
+            totalActivities: 45,
+            totalDonations: 1200,
+            badgeCount: 8,
+        },
         avatar: "/default-avatar.png",
-        joinDate: "2023-01-01",
-        lastLogin: "2023-06-30",
         activities: [
             {
                 id: 1,
-                type: "login",
-                date: "2023-06-30 15:00",
-                description: "Logged in successfully",
+                type: "Yoga",
+                date: "2025-06-30 15:00",
+                duration: "60 mins",
+                calories: 200,
             },
             {
                 id: 2,
-                type: "profile_update",
-                date: "2023-06-29 10:30",
-                description: "Updated profile picture",
+                type: "Trekking",
+                date: "2025-06-29 10:30",
+                duration: "120 mins",
+                calories: 500,
+            },
+            {
+                id: 3,
+                type: "Swimming",
+                date: "2025-06-28 08:00",
+                duration: "45 mins",
+                calories: 300,
             },
         ],
     };
@@ -38,9 +57,8 @@ const UserProfilePage = ({ params }) => {
         setLoading(true);
         setError("");
         try {
-            // Implement status change logic here
+            // Implementation will be added
             await new Promise((resolve) => setTimeout(resolve, 1000));
-            throw new Error("Status change functionality not implemented yet");
         } catch (err) {
             setError(err.message);
         } finally {
@@ -50,7 +68,6 @@ const UserProfilePage = ({ params }) => {
 
     return (
         <div className="p-4">
-            {/* Error Alert */}
             <ErrorAlert message={error} onClose={() => setError("")} />
 
             {/* User Profile Header */}
@@ -66,19 +83,17 @@ const UserProfilePage = ({ params }) => {
                             <h2 className="card-title text-2xl">{user.name}</h2>
                             <p className="text-base-content/60">{user.email}</p>
                             <div className="mt-2 flex flex-wrap gap-2">
-                                <span className="badge badge-primary">
-                                    {user.role}
-                                </span>
                                 <span
                                     className={`badge ${
                                         user.status === "active"
                                             ? "badge-success"
-                                            : user.status === "inactive"
-                                            ? "badge-warning"
                                             : "badge-error"
                                     }`}
                                 >
                                     {user.status}
+                                </span>
+                                <span className="badge badge-ghost">
+                                    Joined: {user.joinedAt}
                                 </span>
                             </div>
                         </div>
@@ -109,24 +124,42 @@ const UserProfilePage = ({ params }) => {
                                     <li>
                                         <a
                                             onClick={() =>
-                                                handleStatusChange("inactive")
+                                                handleStatusChange("blocked")
                                             }
                                         >
-                                            Deactivate
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            onClick={() =>
-                                                handleStatusChange("suspended")
-                                            }
-                                            className="text-error"
-                                        >
-                                            Suspend
+                                            Block
                                         </a>
                                     </li>
                                 </ul>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="stats shadow">
+                    <div className="stat">
+                        <div className="stat-title">Total Activities</div>
+                        <div className="stat-value text-primary">
+                            {user.stats.totalActivities}
+                        </div>
+                    </div>
+                </div>
+                <div className="stats shadow">
+                    <div className="stat">
+                        <div className="stat-title">Total Donations</div>
+                        <div className="stat-value text-secondary">
+                            {user.stats.totalDonations}
+                        </div>
+                    </div>
+                </div>
+                <div className="stats shadow">
+                    <div className="stat">
+                        <div className="stat-title">Badge Count</div>
+                        <div className="stat-value text-accent">
+                            {user.stats.badgeCount}
                         </div>
                     </div>
                 </div>
@@ -152,11 +185,11 @@ const UserProfilePage = ({ params }) => {
                 </a>
                 <a
                     className={`tab ${
-                        activeTab === "settings" ? "tab-active" : ""
+                        activeTab === "location" ? "tab-active" : ""
                     }`}
-                    onClick={() => setActiveTab("settings")}
+                    onClick={() => setActiveTab("location")}
                 >
-                    Settings
+                    Location
                 </a>
             </div>
 
@@ -168,106 +201,111 @@ const UserProfilePage = ({ params }) => {
                             <table className="table">
                                 <tbody>
                                     <tr>
-                                        <th>Join Date</th>
-                                        <td>{user.joinDate}</td>
+                                        <th>Name</th>
+                                        <td>{user.name}</td>
                                     </tr>
                                     <tr>
-                                        <th>Last Login</th>
-                                        <td>{user.lastLogin}</td>
+                                        <th>Email</th>
+                                        <td>{user.email}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Joined At</th>
+                                        <td>{user.joinedAt}</td>
                                     </tr>
                                     <tr>
                                         <th>Status</th>
-                                        <td>{user.status}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Role</th>
-                                        <td>{user.role}</td>
+                                        <td>
+                                            <span
+                                                className={`badge ${
+                                                    user.status === "active"
+                                                        ? "badge-success"
+                                                        : "badge-error"
+                                                }`}
+                                            >
+                                                {user.status}
+                                            </span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     )}
 
-                    {activeTab === "activity" && (
-                        <div className="overflow-x-auto">
-                            <ul className="timeline timeline-vertical">
-                                {user.activities.map((activity) => (
-                                    <li key={activity.id}>
-                                        <div className="timeline-start">
-                                            {activity.date}
-                                        </div>
-                                        <div className="timeline-middle">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                                className="w-5 h-5"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                        </div>
-                                        <div className="timeline-end timeline-box">
-                                            {activity.description}
-                                        </div>
-                                        <hr />
-                                    </li>
-                                ))}
-                            </ul>
+                    {activeTab === "location" && (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h3 className="font-semibold mb-2">
+                                        Address Details
+                                    </h3>
+                                    <table className="table">
+                                        <tbody>
+                                            <tr>
+                                                <th>Country</th>
+                                                <td>{user.location.country}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>State</th>
+                                                <td>{user.location.state}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>City</th>
+                                                <td>{user.location.city}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Postal Code</th>
+                                                <td>{user.location.postal}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Address</th>
+                                                <td>{user.location.address}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div className="card bg-base-200">
+                                    <div className="card-body">
+                                        <h3 className="card-title">
+                                            Location Map
+                                        </h3>
+                                        <p className="text-sm opacity-70">
+                                            Map integration will be added here
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
 
-                    {activeTab === "settings" && (
-                        <div className="space-y-4">
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Role</span>
-                                </label>
-                                <select className="select select-bordered w-full max-w-xs">
-                                    <option>User</option>
-                                    <option>Admin</option>
-                                    <option>Moderator</option>
-                                </select>
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label cursor-pointer">
-                                    <span className="label-text">
-                                        Email Notifications
-                                    </span>
-                                    <input
-                                        type="checkbox"
-                                        className="toggle"
-                                        defaultChecked
-                                    />
-                                </label>
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label cursor-pointer">
-                                    <span className="label-text">
-                                        Two-Factor Authentication
-                                    </span>
-                                    <input type="checkbox" className="toggle" />
-                                </label>
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Notes</span>
-                                </label>
-                                <textarea
-                                    className="textarea textarea-bordered h-24"
-                                    placeholder="Admin notes about this user"
-                                ></textarea>
-                            </div>
-
-                            <button className="btn btn-primary">
-                                Save Settings
-                            </button>
+                    {activeTab === "activity" && (
+                        <div className="overflow-x-auto">
+                            <table className="table table-zebra w-full">
+                                <thead>
+                                    <tr>
+                                        <th>Activity</th>
+                                        <th>Date</th>
+                                        <th>Duration</th>
+                                        <th>Calories</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {user.activities.map((activity) => (
+                                        <tr
+                                            key={activity.id}
+                                            className="hover:bg-base-200"
+                                        >
+                                            <td>
+                                                <div className="font-medium">
+                                                    {activity.type}
+                                                </div>
+                                            </td>
+                                            <td>{activity.date}</td>
+                                            <td>{activity.duration}</td>
+                                            <td>{activity.calories} cal</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>
