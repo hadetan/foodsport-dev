@@ -176,6 +176,7 @@
 
     -   `input-group` for search
     -   `select` for:
+
         -   Status filter (active/blocked)
         -   Country filter
         -   State filter
@@ -302,11 +303,36 @@
     -   `loading` for operations
 
 -   Participant Management:
+
     -   `table` for participant list
     -   `avatar` for user images
     -   `badge` for status
     -   `progress` for capacity
     -   `stats` for metrics
+
+-   Edit Actions:
+    -   `modal` for edit form containing:
+        -   Activity basic details:
+            -   Title input
+            -   Description textarea
+            -   Category select
+            -   Location details
+            -   Date and time inputs
+            -   Status dropdown (Active/Draft/Cancelled)
+        -   Image management section:
+            -   Current images carousel
+            -   Delete image option
+            -   Add new images upload
+            -   Reorder images functionality
+        -   Participant management:
+            -   Maximum participants input
+            -   Current participants list
+            -   Option to remove participants
+        -   Save actions:
+            -   `btn-group` for save/cancel
+            -   `loading` state during update
+            -   `alert` for validation errors
+            -   `toast` for success/failure
 
 **Acceptance Criteria**:
 
@@ -320,6 +346,30 @@
 -   [x] Error handling
 -   [x] Responsive design
 -   [x] Success notifications
+-   [ ] Edit modal with form pre-filled with current activity data
+-   [ ] Image management within edit modal:
+    -   [ ] View existing images
+    -   [ ] Delete individual images
+    -   [ ] Add new images
+    -   [ ] Reorder images via drag and drop
+-   [ ] Validate required fields:
+    -   [ ] Title (required, max length)
+    -   [ ] Description (required, max length)
+    -   [ ] Category (required)
+    -   [ ] Location (required)
+    -   [ ] Date and time (required, future date)
+    -   [ ] Maximum participants (required, number)
+-   [ ] Participant management:
+    -   [ ] View current participants
+    -   [ ] Remove participants if needed
+    -   [ ] Update maximum participant limit
+-   [ ] Status management:
+    -   [ ] Change activity status
+    -   [ ] Confirmation for status changes
+-   [ ] Loading states during update
+-   [ ] Success/error notifications
+-   [ ] Unsaved changes warning
+-   [ ] Mobile responsive edit form
 
 **Current Status**: Done  
 **Notes**: Use multi-step form for activity creation
