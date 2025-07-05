@@ -1,4 +1,4 @@
-import activities from '@/app/data/activities';
+import activities from '@/data/activities';
 import Image from 'next/image';
 
 export default async function ActivityDetailPage({ params }) {

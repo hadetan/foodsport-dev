@@ -1,4 +1,4 @@
-import styles from './Activity.module.css';
+import styles from '@/components/Activity.module.css';
 
 export default function Activity() {
     return (
