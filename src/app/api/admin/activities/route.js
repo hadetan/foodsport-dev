@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/client';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import { requireAdmin } from '@/lib/supabase/require-admin';
-
-const cache = new Map();
-const CACHE_TTL = 60 * 1000;
 
 function parseQueryParams(searchParams) {
   return {
@@ -15,7 +12,7 @@ function parseQueryParams(searchParams) {
 }
 
 export async function GET(req) {
-  const supabase = createServerClient();
+  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
 
@@ -23,14 +20,6 @@ export async function GET(req) {
   const { searchParams } = url;
   const { status, page, limit, type } = parseQueryParams(searchParams);
   const offset = (page - 1) * limit;
-  const cacheKey = `activity-list:${status}:${type}:${page}:${limit}`;
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return new NextResponse(JSON.stringify(cached.data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' }
-    });
-  }
   let query = supabase.from('activities').select('id, title, status, activity_type, current_participants, start_date, end_date, location');
   if (status) {
     query = query.eq('status', status);
@@ -62,15 +51,14 @@ export async function GET(req) {
       total: total || activitiesList.length
     }
   };
-  cache.set(cacheKey, { data: responseData, timestamp: Date.now() });
   return new NextResponse(JSON.stringify(responseData), {
     status: 200,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' }
+    headers: { 'Content-Type': 'application/json' }
   });
 }
 
 export async function POST(req) {
-  const supabase = createServerClient();
+  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
 
@@ -78,6 +66,7 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Content-Type must be multipart/form-data' }, { status: 400 });
   }
 
+  const allowedStatus = ['draft', 'active', 'closed', 'upcoming', 'completed', 'cancelled'];
   const formData = await req.formData();
   const title = formData.get('title');
   const description = formData.get('description') || '';
@@ -90,6 +79,10 @@ export async function POST(req) {
   const status = formData.get('status') || 'draft';
   const image = formData.get('image') || null;
   const participant_limit = formData.get('participantLimit') ? parseInt(formData.get('participantLimit'), 10) : null;
+
+  if (!allowedStatus.includes(status)) {
+    return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+  }
 
   if (!title || !activity_type || !location || !start_date || !end_date || !start_time || !end_time) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -132,20 +125,11 @@ export async function POST(req) {
     return NextResponse.json({ error: createError.message }, { status: 500 });
   }
 
-  await supabase.from('audit_logs').insert({
-    type: 'activity',
-    action: 'create',
-    table_name: 'activities',
-    record_id: activity.id,
-    details: activity,
-    timestamp: new Date().toISOString()
-  });
-
   return NextResponse.json(activity, { status: 201 });
 }
 
 export async function PATCH(req, { params }) {
-  const supabase = createServerClient();
+  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
 
@@ -195,17 +179,6 @@ export async function PATCH(req, { params }) {
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
-
-  await supabase.from('audit_logs').insert({
-    type: 'activity',
-    action: 'update',
-    table_name: 'activities',
-    record_id: params.activityId,
-    details: updates,
-    timestamp: new Date().toISOString()
-  });
-
-  cache.clear();
 
   return NextResponse.json(updatedActivity, { status: 200 });
 }

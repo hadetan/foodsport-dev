@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/client';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import { requireAdmin } from '@/lib/supabase/require-admin';
-
-const cache = new Map();
-const CACHE_TTL = 60 * 1000;
 
 function parseQueryParams(searchParams) {
   return {
@@ -17,7 +14,7 @@ function parseQueryParams(searchParams) {
 }
 
 export async function GET(req) {
-  const supabase = createServerClient();
+  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
 
@@ -25,15 +22,7 @@ export async function GET(req) {
   const { searchParams } = url;
   const { search, status, page, limit, sortBy, sortOrder } = parseQueryParams(searchParams);
   const offset = (page - 1) * limit;
-  const cacheKey = `user-list:${search}:${status}:${page}:${limit}:${sortBy}:${sortOrder}`;
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return new NextResponse(JSON.stringify(cached.data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' }
-    });
-  }
-  let query = supabase.from('users').select('id, name, email, is_active, created_at, updated_at');
+  let query = supabase.from('users').select('id, name, email, status, created_at, updated_at, total_activities, total_calories_donated, badge_count');
   if (search) {
     query = query.ilike('name', `%${search}%`);
   }
@@ -50,13 +39,13 @@ export async function GET(req) {
     id: u.id,
     name: u.name,
     email: u.email,
-    status: u.is_active ? 'active' : 'inactive',
+    status: u.status,
     joinDate: u.created_at,
     lastActive: u.updated_at,
     stats: {
-      totalActivities: u.total_activities ?? 0,
-      totalDonations: u.total_calories_donated ?? 0,
-      badgeCount: u.badge_count ?? 0
+      totalActivities: u.total_activities,
+      totalDonations: u.total_calories_donated,
+      badgeCount: u.badge_count
     }
   }));
   const responseData = {
@@ -67,16 +56,15 @@ export async function GET(req) {
       total: total || usersWithStats.length
     }
   };
-  cache.set(cacheKey, { data: responseData, timestamp: Date.now() });
   return new NextResponse(JSON.stringify(responseData), {
     status: 200,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' }
+    headers: { 'Content-Type': 'application/json' }
   });
 }
 
 export async function PATCH(req, { params }) {
-  const supabase = createServerClient();
-  const { user, error } = await requireAdmin(supabase, NextResponse);
+  const supabase = createSupabaseClient();
+  const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
 
   if (!params || !params.userId) {
@@ -123,16 +111,6 @@ export async function PATCH(req, { params }) {
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
-
-  await supabase.from('audit_logs').insert({
-    user_id: params.userId,
-    admin_id: user.id,
-    action: 'user_update',
-    details: updates,
-    timestamp: new Date().toISOString()
-  });
-
-  cache.delete(`user-detail:${params.userId}`);
 
   return NextResponse.json(updatedUser, { status: 200 });
 }

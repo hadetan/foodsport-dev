@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/client';
+import { createSupabaseClient } from '@/lib/supabase/client';
 import { requireAdmin } from '@/lib/supabase/require-admin';
-
-const cache = new Map();
-const CACHE_TTL = 60 * 1000;
+import { getCache, setCache, CACHE_TTL } from '@/utils/cache';
 
 function getDateRange(dateRange) {
   const now = new Date();
@@ -24,20 +22,20 @@ function getDateRange(dateRange) {
 }
 
 export async function GET(req) {
-    const supabase = createServerClient();
-    const { searchParams } = new URL(req.url);
-    const dateRange = searchParams.get('dateRange') || '7d';
-    const fromDate = getDateRange(dateRange);
+  const supabase = createServerClient();
+  const { searchParams } = new URL(req.url);
+  const dateRange = searchParams.get('dateRange') || '7d';
+  const fromDate = getDateRange(dateRange);
 
-    const { user, error } = await requireAdmin(supabase, NextResponse);
-    if (error) return error;
-    
-  const cacheKey = `${user.id}:${dateRange}`;
-  const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return new NextResponse(JSON.stringify(cached.data), {
+  const { error } = await requireAdmin(supabase, NextResponse);
+  if (error) return error;
+
+  const cacheKey = `dashboard`;
+  const cached = getCache(cacheKey);
+  if (cached) {
+    return new NextResponse(JSON.stringify(cached), {
       status: 200,
-      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' }
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${CACHE_TTL}` }
     });
   }
 
@@ -83,21 +81,6 @@ export async function GET(req) {
     status: u.is_active ? 'active' : 'inactive'
   }));
 
-  const { data: activityLogsData } = await supabase
-    .from('audit_logs')
-    .select('id, type, action, user_id, details, timestamp')
-    .gte('timestamp', fromDate)
-    .order('timestamp', { ascending: false })
-    .limit(20);
-  const activityLogs = (activityLogsData || []).map(log => ({
-    id: log.id,
-    type: log.type,
-    action: log.action,
-    userId: log.user_id,
-    details: log.details,
-    timestamp: log.timestamp
-  }));
-
   const responseData = {
     stats: {
       totalUsers: totalUsers || 0,
@@ -111,13 +94,12 @@ export async function GET(req) {
       }
     },
     recentSignups,
-    activityLogs
   };
 
-  cache.set(cacheKey, { data: responseData, timestamp: Date.now() });
+  setCache(cacheKey, responseData, CACHE_TTL);
 
   return new NextResponse(JSON.stringify(responseData), {
     status: 200,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' }
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': `public, max-age=${CACHE_TTL}` }
   });
 }

@@ -8,22 +8,21 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Create custom types
 CREATE TYPE user_gender AS ENUM ('male', 'female', 'other');
 CREATE TYPE activity_level AS ENUM ('low', 'medium', 'high');
-CREATE TYPE activity_status AS ENUM ('upcoming', 'active', 'open', 'closed', 'completed', 'cancelled');
+CREATE TYPE activity_status AS ENUM ('upcoming', 'active', 'closed', 'completed', 'cancelled');
 CREATE TYPE activity_type AS ENUM ('kayak', 'hiking', 'yoga', 'fitness', 'running', 'cycling', 'swimming', 'dancing', 'boxing', 'other');
 CREATE TYPE ticket_status AS ENUM ('active', 'expired', 'used', 'cancelled');
 CREATE TYPE badge_type AS ENUM ('streak', 'calorie', 'seasonal', 'achievement', 'referral');
-CREATE TYPE notification_method AS ENUM ('email', 'sms');
+CREATE TYPE notification_method AS ENUM ('email');
 CREATE TYPE verification_status AS ENUM ('pending', 'approved', 'rejected');
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255), -- NULL for Google OAuth users
     name VARCHAR(100) NOT NULL,
     date_of_birth DATE NOT NULL,
-    weight DECIMAL(5,2), -- in kg
-    height DECIMAL(5,2), -- in cm
+    weight DECIMAL(5,2),
+    height DECIMAL(5,2),
     gender user_gender,
     activity_level activity_level DEFAULT 'medium',
     phone_number VARCHAR(20),
@@ -31,6 +30,9 @@ CREATE TABLE IF NOT EXISTS users (
     border VARCHAR(50) DEFAULT 'default',
     title VARCHAR(100) DEFAULT 'Newcomer',
     bio TEXT,
+    total_activities INTEGER DEFAULT 0,
+    total_donations INTEGER DEFAULT 0,
+    badge_count INTEGER DEFAULT 0,
     level INTEGER DEFAULT 1,
     current_streak INTEGER DEFAULT 0,
     total_points INTEGER DEFAULT 0,
@@ -45,20 +47,30 @@ CREATE TABLE IF NOT EXISTS users (
     email_verified BOOLEAN DEFAULT FALSE,
     phone_verified BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE,
-    is_admin BOOLEAN DEFAULT FALSE, -- New column for admin checks
+    has_referred_before BOOLEAN DEFAULT FALSE, -- If the user has referred someone before then we do not send them the reward again.
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- User sessions table
-CREATE TABLE IF NOT EXISTS user_sessions (
+CREATE TABLE IF NOT EXISTS admin_user (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    token_hash VARCHAR(255) NOT NULL,
-    refresh_token_hash VARCHAR(255),
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role VARCHAR(20) DEFAULT 'admin',
+    status VARCHAR(20) DEFAULT 'active',
+    reason TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- (We do not need to handle user sessions I suppose)
+-- CREATE TABLE IF NOT EXISTS user_sessions (
+--     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+--     token_hash VARCHAR(255) NOT NULL,
+--     refresh_token_hash VARCHAR(255),
+--     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- );
 
 -- Referral codes table
 CREATE TABLE IF NOT EXISTS referral_codes (
@@ -86,15 +98,13 @@ CREATE TABLE IF NOT EXISTS activities (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(200) NOT NULL,
     description TEXT,
-    chinese_title VARCHAR(200),
-    english_description TEXT,
     activity_type activity_type NOT NULL,
     location VARCHAR(255) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
-    status activity_status DEFAULT 'upcoming',
+    status activity_status DEFAULT 'draft',
     participant_limit INTEGER,
     current_participants INTEGER DEFAULT 0,
     organizer_name VARCHAR(100),
@@ -107,16 +117,27 @@ CREATE TABLE IF NOT EXISTS activities (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Tickets table
+CREATE TABLE IF NOT EXISTS tickets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ticket_code VARCHAR(50) UNIQUE NOT NULL,
+    activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    status ticket_status DEFAULT 'active',
+    ticket_sent BOOLEAN DEFAULT FALSE,
+    issued_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    used_at TIMESTAMP WITH TIME ZONE,
+    revoked BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- User activities (tickets) table
 CREATE TABLE IF NOT EXISTS user_activities (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
-    ticket_code VARCHAR(50) UNIQUE NOT NULL,
-    status ticket_status DEFAULT 'active',
-    notification_preference notification_method DEFAULT 'email',
-    ticket_sent BOOLEAN DEFAULT FALSE,
-    expires_at TIMESTAMP WITH TIME ZONE,
+    ticket_id UUID REFERENCES tickets(id) ON DELETE SET NULL,
     joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(user_id, activity_id)
 );
@@ -148,7 +169,7 @@ CREATE TABLE IF NOT EXISTS charities (
     website_url TEXT,
     current_goal INTEGER DEFAULT 1000000,
     current_donations INTEGER DEFAULT 0,
-    is_active BOOLEAN DEFAULT TRUE,
+    is_active BOOLEAN GENERATED ALWAYS AS (current_donations < current_goal) STORED -- This will dynamically return true or false depending on current_donation value is equal to or larger than current_goal which will make this false and inactive once then goal has been reached is_active BOOLEAN DEFAULT TRUE,or passed accidentally.
     featured BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -160,8 +181,6 @@ CREATE TABLE IF NOT EXISTS calorie_donations (
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     charity_id UUID REFERENCES charities(id) ON DELETE CASCADE,
     calories_donated INTEGER NOT NULL,
-    donation_date DATE NOT NULL,
-    donation_time TIME NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -169,7 +188,6 @@ CREATE TABLE IF NOT EXISTS calorie_donations (
 CREATE TABLE IF NOT EXISTS badges (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100) NOT NULL,
-    description TEXT,
     image_url TEXT,
     badge_type badge_type NOT NULL,
     criteria_value INTEGER, -- e.g., streak days, calories burned, etc.
@@ -191,19 +209,20 @@ CREATE TABLE IF NOT EXISTS user_badges (
     UNIQUE(user_id, badge_id)
 );
 
--- Leaderboard cache table (for performance)
-CREATE TABLE IF NOT EXISTS leaderboard_cache (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    global_rank INTEGER,
-    community_rank INTEGER,
-    friends_rank INTEGER,
-    total_calories INTEGER DEFAULT 0,
-    total_badges INTEGER DEFAULT 0,
-    total_calories_donated INTEGER DEFAULT 0,
-    last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE(user_id)
-);
+-- Leaderboard cache table (for performance) 
+-- WELL LET'S NOT GO THIS WAY.
+-- CREATE TABLE IF NOT EXISTS leaderboard_cache (
+--     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+--     global_rank INTEGER,
+--     community_rank INTEGER,
+--     friends_rank INTEGER,
+--     total_calories INTEGER DEFAULT 0,
+--     total_badges INTEGER DEFAULT 0,
+--     total_calories_donated INTEGER DEFAULT 0,
+--     last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+--     UNIQUE(user_id)
+-- );
 
 -- Email verification codes table
 CREATE TABLE IF NOT EXISTS email_verification_codes (
@@ -228,30 +247,16 @@ CREATE TABLE IF NOT EXISTS password_reset_codes (
 );
 
 -- SMS verification codes table
-CREATE TABLE IF NOT EXISTS sms_verification_codes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    phone_number VARCHAR(20) NOT NULL,
-    code VARCHAR(6) NOT NULL,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    used BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Create audit_logs table for admin and system actions
-CREATE TABLE IF NOT EXISTS audit_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    type VARCHAR(50) NOT NULL, -- e.g., 'user', 'activity', 'system', etc.
-    action VARCHAR(100) NOT NULL, -- e.g., 'create', 'update', 'delete', 'login', etc.
-    table_name VARCHAR(100),
-    record_id UUID,
-    details JSONB,
-    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
-CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);
+-- WE WILL NOT HAVE SMS SUPPORT I SUPPOSE
+-- CREATE TABLE IF NOT EXISTS sms_verification_codes (
+--     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+--     phone_number VARCHAR(20) NOT NULL,
+--     code VARCHAR(6) NOT NULL,
+--     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+--     used BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- );
 
 -- Create indexes for performance
 CREATE INDEX idx_users_email ON users(email);
@@ -267,8 +272,8 @@ CREATE INDEX idx_calorie_submissions_date ON calorie_submissions(submission_date
 CREATE INDEX idx_calorie_donations_user_id ON calorie_donations(user_id);
 CREATE INDEX idx_calorie_donations_charity_id ON calorie_donations(charity_id);
 CREATE INDEX idx_user_badges_user_id ON user_badges(user_id);
-CREATE INDEX idx_leaderboard_cache_global_rank ON leaderboard_cache(global_rank);
-CREATE INDEX idx_leaderboard_cache_community_rank ON leaderboard_cache(community_rank);
+-- CREATE INDEX idx_leaderboard_cache_global_rank ON leaderboard_cache(global_rank);
+-- CREATE INDEX idx_leaderboard_cache_community_rank ON leaderboard_cache(community_rank);
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -287,7 +292,6 @@ CREATE TRIGGER update_charities_updated_at BEFORE UPDATE ON charities FOR EACH R
 
 -- Row Level Security (RLS) policies
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referral_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
@@ -297,11 +301,8 @@ ALTER TABLE charities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE calorie_donations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE badges ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_badges ENABLE ROW LEVEL SECURITY;
-ALTER TABLE leaderboard_cache ENABLE ROW LEVEL SECURITY;
 ALTER TABLE email_verification_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE password_reset_codes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE sms_verification_codes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own data
 CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid() = id);
@@ -323,9 +324,3 @@ CREATE POLICY "Users can insert own donations" ON calorie_donations FOR INSERT W
 
 -- Users can only see their own badges
 CREATE POLICY "Users can view own badges" ON user_badges FOR SELECT USING (auth.uid() = user_id);
-
--- Leaderboard cache is publicly readable
-CREATE POLICY "Leaderboard cache is publicly readable" ON leaderboard_cache FOR SELECT USING (true);
-
--- Admins can access audit logs
-CREATE POLICY "Admins can access audit logs" ON audit_logs FOR SELECT USING (auth.uid() IS NOT NULL AND EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_admin = TRUE));

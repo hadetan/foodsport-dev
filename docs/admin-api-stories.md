@@ -74,10 +74,10 @@ Response Structure:
 -   [x] All counts and statistics are accurate
 -   [x] Response includes recent user signups
 -   [x] Response includes recent activity logs
--   [x] Proper security and authentication checks (admin-only access)
+-   [x] Proper security and authentication checks (admin-only access, checked via admin_user table)
 
 **Current Status**: Done  
-**Notes**: All acceptance criteria met. API is admin-only, returns all required dashboard data, supports caching, and is production-ready.
+**Notes**: All acceptance criteria met. API is admin-only (checked via admin_user table), returns all required dashboard data, supports caching, and is production-ready.
 
 ---
 
@@ -122,7 +122,6 @@ Response: {
 PATCH /api/admin/users/{userId}
 Request: {
   status?: "active" | "banned" | "locked",
-  role?: "admin" | "user",
   reason?: string
 }
 Response: Updated user object with audit log entry
@@ -131,15 +130,15 @@ Response: Updated user object with audit log entry
 **Acceptance Criteria**:
 
 -   [x] User listing endpoint with filtering and pagination (returns all users, not single user by id)
--   [x] PATCH endpoint for user updates (status, role, reason)
+-   [x] PATCH endpoint for user updates (status, reason)
 -   [x] Proper validation of inputs
 -   [x] Error handling with meaningful messages
--   [x] Audit logging for status/role changes
+-   [x] Audit logging for status changes
 -   [x] Response caching where appropriate
--   [x] Security and permission checks (admin-only)
+-   [x] Security and permission checks (admin-only, checked via admin_user table)
 
 **Current Status**: Done  
-**Notes**: User listing endpoint returns all users for admin. PATCH endpoint for user updates is implemented. Filtering, pagination, admin-only access, input validation, audit logging, and caching are all in place. Stats fields and related data are included.
+**Notes**: User listing endpoint returns all users for admin. PATCH endpoint for user updates is implemented. Filtering, pagination, admin-only access (checked via admin_user table), input validation, audit logging, and caching are all in place. Stats fields and related data are included.
 
 ---
 
@@ -222,39 +221,131 @@ Response: Updated activity object with audit log entry
 -   [x] Status management functionality
 -   [x] Input validation (including startTime and endTime required)
 -   [x] Error handling
--   [x] Security checks
+-   [x] Security checks (admin-only, checked via admin_user table)
 -   [x] Audit logging
 -   [x] Response caching where appropriate
 
 **Current Status**: Done  
-**Notes**: All endpoints (listing, creation, update) implemented with validation, file upload, audit logging, error handling, security, and caching. participantLimit, startTime, and endTime are now supported and required as per schema.
+**Notes**: All endpoints (listing, creation, update) implemented with validation, file upload, audit logging, error handling, security (checked via admin_user table), and caching. participantLimit, startTime, and endTime are now supported and required as per schema.
+
+---
+
+## Admin Authentication API
+
+### Story #AA4: Admin Login API
+
+**Title**: Admin-only login endpoint  
+**Description**: Implement an API endpoint that allows only users with an entry in the admin_user table to log in to the admin panel. Regular users should not be able to log in via this endpoint.
+**Scope**:
+- Admin login with email and password
+- Only users with a record in `admin_user` can authenticate as admin
+- Returns Supabase Auth session on success (no manual JWT or password handling)
+- Proper error messages for non-admins or invalid credentials
+- Audit logging for all login attempts (success and failure)
+- Uses Supabase Auth for session/token management and password security
+
+**API Endpoint**:
+```
+POST /api/admin/login
+Request: {
+  email: string,
+  password: string
+}
+Response (success): {
+  session: object, // Supabase Auth session object
+  admin: {
+    id: string, // admin_user id
+    user_id: string, // reference to users.id
+    name: string,
+    email: string
+  }
+}
+Response (failure): {
+  error: string
+}
+```
+
+**Acceptance Criteria**:
+- [x] Only users with an entry in admin_user can log in via this endpoint
+- [x] Returns Supabase Auth session and admin info on success
+- [x] Returns error for non-admins or invalid credentials
+- [x] No manual password or JWT handling; all authentication and password security is managed by Supabase Auth
+- [x] Audit logging for login attempts
+
+**Current Status**: Done  
+**Notes**: Endpoint implemented with Supabase Auth for authentication and password security. Admin check is now performed via admin_user table, audit logging, and error handling are in place. No manual password or JWT/session handling is performed.
+
+---
+
+### Story #AA5: Admin Creation API
+
+**Title**: Create new admin users  
+**Description**: Implement an API endpoint that allows existing admins (checked via admin_user table) to create new admin users who can log in via the admin login API.
+**Scope**:
+- Only authenticated admins (checked via admin_user table) can create new admins
+- New admin must have unique email (returns a simple error message if email exists)
+- Uses Supabase Auth's signUp method to create the user, then inserts a record into admin_user table
+- Only name, email, password, and admin fields are set (no extra fields in users table)
+- Audit logging for admin creation (success and failure)
+- On success, returns a success message and the Supabase Auth session if available (no need to return full user object)
+
+**API Endpoint**:
+```
+POST /api/admin/users
+Request: {
+  name: string,
+  email: string,
+  password: string
+}
+Response (success): {
+  message: string, // e.g. "Admin user created successfully."
+  session?: object // Supabase Auth session object if available
+}
+Response (failure): {
+  error: string // e.g. "Email already exists."
+}
+```
+
+**Acceptance Criteria**:
+- [x] Only authenticated admins (checked via admin_user table) can create new admins
+- [x] New admin must have unique email (returns a simple error message if not)
+- [x] Uses Supabase Auth signUp and inserts into admin_user table
+- [x] Only name, email, password fields are set in users table; admin fields are in admin_user
+- [x] Audit logging for admin creation (success and failure)
+- [x] On success, returns a message and session if available (no need for full user object)
+- [x] New admin can log in via admin login API
+
+**Current Status**: Done  
+**Notes**: Endpoint implemented using Supabase Auth signUp, admin check (via admin_user table), audit logging, and error handling. Only required fields are set. Returns a message and session if available.
 
 ---
 
 ## Implementation Notes (Decisions & Clarifications)
 
-- **Authentication/Authorization:** All admin and user authentication/authorization will use Supabase Auth.
+- **Authentication/Authorization:** All admin and user authentication/authorization will use Supabase Auth. Admin status is determined by presence in the `admin_user` table, not by a field in `users`.
+- **Admin Role Model:** The `admin_user` table contains all admin-specific fields (role, status, reason, etc). The `users` table contains only general user profile fields.
 - **File Uploads:** Supabase Storage will be used for file uploads (a bucket will be created as needed).
-- **Admin Role Model:** The `users` table will be updated to include an `is_admin BOOLEAN DEFAULT FALSE` column for admin checks.
-- **Audit Logging:** A simple `audit_logs` table will be added for admin actions, to keep audit logging straightforward and easy to query.
+- **Audit Logging:** A simple `audit_logs` table will be used for admin actions, to keep audit logging straightforward and easy to query.
 
 ---
 
 ## Summary
 
-**Total API Stories**: 3  
+**Total API Stories**: 5  
 **Current Status Breakdown**:
 
--   Not Started: 3
+-   Not Started: 0
 -   In Progress: 0
 -   Review: 0
--   Done: 0
+-   Done: 5
 
 **Priority Order**:
 
 1. Story #AA1 (Dashboard API) - Core Functionality
 2. Story #AA2 (User Management API) - User Administration
 3. Story #AA3 (Activity Management API) - Content Management
+4. Story #AA4 (Admin Login API) - Authentication
+5. Story #AA5 (Admin Creation API) - User Management
 
 **Technical Requirements**:
 
@@ -269,7 +360,7 @@ Response: Updated activity object with audit log entry
 **Security Requirements**:
 
 -   Authentication
--   Authorization
+-   Authorization (admin checked via admin_user table)
 -   Input Sanitization
 -   Rate Limiting
 -   Secure File Upload
