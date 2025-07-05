@@ -1,9 +1,10 @@
 import Image from "next/image";
 import styles from "./page.module.css";
-import Activity from "./components/Activity";
-import ActivityItem from "./components/ActivityItem";
-import activities from "@/app/data/activities";
-import Hero from "./components/Hero";
+import Activity from "@/components/Activity";
+import ActivityItem from "@/components/ActivityItem";
+import activities from "@/data/activities";
+import Hero from "@/components/Hero";
+import ComingSoon from "@/components/ComingSoon";
 
 export default function Home() {
   return (
@@ -24,6 +25,7 @@ export default function Home() {
           />
         ))}
       </div>
+      <ComingSoon />
     </>
   );
 }

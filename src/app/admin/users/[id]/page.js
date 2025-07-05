@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import ErrorAlert from "@/app/components/ErrorAlert";
+import ErrorAlert from "@/components/ErrorAlert";
 
 const UserProfilePage = ({ params }) => {
     const [activeTab, setActiveTab] = useState("details");

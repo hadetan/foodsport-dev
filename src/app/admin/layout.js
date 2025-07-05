@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import SidebarItem from "@/admin-components/sidebar/sidebar-item";
+import { Users, Calendar1, CircleGauge } from "lucide-react";
 
 export default function RootLayout({ children }) {
     const pathname = usePathname();
@@ -84,7 +86,7 @@ export default function RootLayout({ children }) {
                     </div>
 
                     {/* Sidebar */}
-                    <div className="drawer-side">
+                    <div className="drawer-side bg-[#2D2F39]">
                         <label
                             htmlFor="admin-drawer"
                             className="drawer-overlay"
@@ -92,84 +94,9 @@ export default function RootLayout({ children }) {
                         <aside className="w-64 bg-base-200 min-h-screen">
                             <div className="p-4">
                                 <ul className="menu menu-lg gap-2 p-0">
-                                    <li>
-                                        <Link
-                                            href="/admin/dashboard"
-                                            className={
-                                                pathname === "/admin/dashboard"
-                                                    ? "active"
-                                                    : ""
-                                            }
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-5 w-5"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                                                />
-                                            </svg>
-                                            Dashboard
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="/admin/users"
-                                            className={
-                                                pathname === "/admin/users"
-                                                    ? "active"
-                                                    : ""
-                                            }
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-5 w-5"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                                                />
-                                            </svg>
-                                            User Management
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link
-                                            href="/admin/activities"
-                                            className={
-                                                pathname === "/admin/activities"
-                                                    ? "active"
-                                                    : ""
-                                            }
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-5 w-5"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth="2"
-                                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                                />
-                                            </svg>
-                                            Activity Management
-                                        </Link>
-                                    </li>
+                                    <SidebarItem href="/admin/dashboard" icon={<CircleGauge />} label="New Dashboard" isSelected={pathname === "/admin/dashboard"} />
+                                    <SidebarItem href="/admin/users" icon={<Users />} label="New Users" isSelected={pathname === "/admin/users"} />
+                                    <SidebarItem href="/admin/activities" icon={<Calendar1 />} label="New Activities" isSelected={pathname === "/admin/activities"} />
                                 </ul>
                             </div>
                         </aside>

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import ErrorAlert from "@/app/components/ErrorAlert";
+import ErrorAlert from "@/components/ErrorAlert";
 
 const LoginPage = () => {
     const [loading, setLoading] = useState(false);

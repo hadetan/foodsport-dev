@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import ErrorAlert from "@/app/components/ErrorAlert";
+import ErrorAlert from "@/components/ErrorAlert";
 
 const UserManagementPage = () => {
     const router = useRouter();

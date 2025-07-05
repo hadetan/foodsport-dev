@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import ErrorAlert from "@/app/components/ErrorAlert";
+import ErrorAlert from "@/components/ErrorAlert";
 
 const EditActivityPage = ({ params }) => {
     const router = useRouter();
