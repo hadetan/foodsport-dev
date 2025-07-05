@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/supabase/client';
-import { requireAdmin } from '@/lib/supabase/require-admin';
+import { prisma } from '@/lib/prisma/client';
+import { requireAdmin } from '@/lib/prisma/require-admin';
 
 // POST /api/admin/register
 export async function POST(req) {
-  const supabase = createServerClient();
+  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
 
@@ -28,13 +29,18 @@ export async function POST(req) {
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
-  const newUserId = signUpData.user.id;
-  const { error: updateError } = await supabase
-    .from('users')
-    .update({ is_admin: true, name })
-    .eq('id', newUserId);
-  if (updateError) {
-    return NextResponse.json({ error: 'Failed to set admin role.' }, { status: 500 });
+  // Create admin user in Prisma AdminUser table
+  try {
+    await prisma.adminUser.create({
+      data: {
+        id: signUpData.user.id,
+        name,
+        email,
+        status: 'active',
+      },
+    });
+  } catch (prismaError) {
+    return NextResponse.json({ error: 'Failed to create admin record.' }, { status: 500 });
   }
 
   return NextResponse.json({

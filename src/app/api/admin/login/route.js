@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client';
+import { prisma } from '@/lib/prisma/client';
 import { NextResponse } from 'next/server';
 
 // POST /api/admin/login
@@ -13,24 +14,20 @@ export async function POST(req) {
     if (authError || !session || !session.user) {
       return NextResponse.json({ error: 'Invalid credentials.' }, { status: 401 });
     }
-
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('id, name, email')
-      .eq('id', session.user.id)
-      .match({ id: session.user.id, is_admin: true })
-      .single();
-
-    if (userError || !user || !user.is_admin) {
+    // Prisma: check admin status
+    const adminUser = await prisma.adminUser.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, name: true, email: true, status: true }
+    });
+    if (!adminUser || adminUser.status !== 'active') {
       return NextResponse.json({ error: 'Access denied.' }, { status: 403 });
     }
-
     return NextResponse.json({
       session: session.session,
       admin: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
+        id: adminUser.id,
+        name: adminUser.name,
+        email: adminUser.email,
       },
     });
   } catch (err) {

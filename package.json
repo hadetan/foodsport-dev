@@ -7,13 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup-db": "node scripts/setup-database.js",
-    "seed-db": "node scripts/seed-database.js",
-    "db:setup": "npm run setup-db",
-    "db:seed": "npm run seed-db",
-    "db:reset": "npm run setup-db && npm run seed-db"
+    "m-dev": "npx prisma migrate dev"
   },
   "dependencies": {
+    "@prisma/client": "^6.11.1",
     "@supabase/supabase-js": "^2.39.0",
     "@tailwindcss/postcss": "^4.1.11",
     "dotenv": "^16.3.1",
@@ -21,6 +18,7 @@
     "node-cache": "^5.1.2",
     "pg": "^8.16.3",
     "postcss": "^8.5.6",
+    "prisma": "^6.11.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.1.11"
