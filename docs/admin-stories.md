@@ -310,6 +310,125 @@
     -   `progress` for capacity
     -   `stats` for metrics
 
+**Create Activity Page Structure**:
+
+1. **Basic Information (Step 1)**
+
+    - Title
+        - Required field
+        - Maximum 100 characters
+        - No special characters
+    - Activity Type/Category
+        - Required field
+        - Select from predefined list
+    - Description
+        - Required field
+        - Rich text editor
+        - Minimum 50 characters
+    - Status
+        - Default: Draft
+        - Options: Draft/Active/Cancelled
+
+2. **Activity Details (Step 2)**
+
+    - Date
+        - Required field
+        - Must be future date
+        - Calendar picker
+    - Time
+        - Required field
+        - 24-hour format
+        - Time picker
+    - Location
+        - Required field
+        - Text input with address validation
+    - Maximum Participant Capacity
+        - Required field
+        - Numeric input
+        - Range: 1-1000
+
+3. **Image Management (Step 3)**
+
+    - Image Upload
+        - Multiple file selection
+        - Maximum 5 images
+        - Supported formats: JPG, PNG
+        - Maximum size: 5MB per image
+    - Image Preview
+        - Grid layout
+        - Thumbnail view
+        - Delete option
+    - Image Order
+        - Drag and drop reordering
+        - Set primary image
+
+4. **Review & Submit (Step 4)**
+    - Summary Display
+        - All entered information
+        - Image previews
+        - Participant capacity
+    - Final Validation
+        - Check all required fields
+        - Validate image requirements
+    - Submission Options
+        - Save as Draft
+        - Publish Activity
+        - Cancel Creation
+
+**Validation Requirements**:
+
+1. **Field Validations**
+
+    - Title
+        - Required
+        - 5-100 characters
+        - Alphanumeric with basic punctuation
+    - Description
+        - Required
+        - Minimum 50 characters
+        - Rich text allowed
+    - Type/Category
+        - Required
+        - From predefined list
+    - Date & Time
+        - Required
+        - Future date/time only
+    - Location
+        - Required
+        - Valid address format
+    - Capacity
+        - Required
+        - Positive integer
+        - Maximum 1000
+
+2. **Image Validations**
+    - File type: JPG, PNG only
+    - File size: Maximum 5MB each
+    - Total images: Maximum 5
+    - Required resolution: Minimum 800x600px
+
+**Additional Features**:
+
+-   Form Progress
+
+    -   Step completion tracking
+    -   Save progress functionality
+    -   Resume editing capability
+
+-   User Experience
+
+    -   Unsaved changes warning
+    -   Auto-save draft
+    -   Form validation messages
+    -   Loading indicators
+    -   Success/error notifications
+
+-   Responsive Design
+
+    -   Mobile-friendly forms
+    -   Touch-friendly image handling
+    -   Adaptive layout for all screens
+
 -   Edit Actions:
     -   `modal` for edit form containing:
         -   Activity basic details:
@@ -336,43 +455,61 @@
 
 **Acceptance Criteria**:
 
--   [x] Activity creation wizard
--   [x] Image upload/preview
--   [x] Activity list with filters
--   [x] Status management
--   [x] Participant tracking
--   [x] Form validation
--   [x] Loading indicators
--   [x] Error handling
--   [x] Responsive design
--   [x] Success notifications
--   [ ] Edit modal with form pre-filled with current activity data
--   [ ] Image management within edit modal:
-    -   [ ] View existing images
-    -   [ ] Delete individual images
-    -   [ ] Add new images
-    -   [ ] Reorder images via drag and drop
--   [ ] Validate required fields:
-    -   [ ] Title (required, max length)
-    -   [ ] Description (required, max length)
-    -   [ ] Category (required)
-    -   [ ] Location (required)
-    -   [ ] Date and time (required, future date)
-    -   [ ] Maximum participants (required, number)
--   [ ] Participant management:
-    -   [ ] View current participants
-    -   [ ] Remove participants if needed
-    -   [ ] Update maximum participant limit
--   [ ] Status management:
-    -   [ ] Change activity status
-    -   [ ] Confirmation for status changes
--   [ ] Loading states during update
--   [ ] Success/error notifications
--   [ ] Unsaved changes warning
--   [ ] Mobile responsive edit form
+1. **Activity Management Screen**
 
-**Current Status**: Done  
-**Notes**: Use multi-step form for activity creation
+    - Activity List View:
+
+        - [x] Filterable table with columns: Title, Type, Date, Time, Location, Capacity, Status
+        - [x] Quick action buttons (Edit, Delete, View)
+        - [x] Status badges (Active/Draft/Cancelled)
+        - [x] Pagination and items per page
+        - [x] Search by title/location
+        - [x] Filter by type/status/date
+        - [x] Sort by any column
+        - [x] Create Activity button linking to create page
+        - [x] Image thumbnail preview
+        - [x] Participant count indicator
+        - [ ] Export to CSV/Excel
+
+    - Create/Edit Activity Page:
+
+        - [x] Full-page multi-step wizard form
+        - [x] Progress tracking between steps
+        - [x] Form validation on each step
+        - [x] Image upload with preview grid
+        - [x] Save as draft option
+        - [x] Mobile responsive layout
+        - [x] Field validations with error messages
+        - [x] Success/error notifications
+        - [x] Unsaved changes warning
+        - [ ] Auto-save functionality
+        - [x] Back to list navigation
+        - [x] Step-by-step progress indicator
+        - [x] Cancel/Save actions
+        - [x] Preview before submission
+
+    - Activity Details Page:
+
+        - [x] View all activity information
+        - [x] Current images gallery
+        - [x] Participant list management
+        - [x] Status update controls
+        - [x] Edit button to edit page
+        - [ ] Activity history log
+        - [ ] Version tracking
+        - [ ] Comments/Notes section
+
+    - Shared Features:
+        - [x] Loading states with spinners
+        - [x] Error handling with messages
+        - [x] Success notifications
+        - [x] Confirmation dialogs
+        - [x] Responsive design
+        - [x] Keyboard navigation
+        - [x] Form validations
+        - [ ] Accessibility compliance
+        - [ ] Data caching
+        - [x] Performance optimization
 
 ---
 

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/components/ErrorAlert";
 
 const ActivityManagementPage = () => {
+    const router = useRouter();
     const [activeStep, setActiveStep] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
@@ -27,8 +29,6 @@ const ActivityManagementPage = () => {
         images: [],
         status: "draft",
     });
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [selectedActivity, setSelectedActivity] = useState(null);
 
     // Mock data - Replace with actual API call
     const activities = [
@@ -74,37 +74,7 @@ const ActivityManagementPage = () => {
         }));
     };
 
-    const removeImage = (index) => {
-        setFormData((prev) => ({
-            ...prev,
-            images: prev.images.filter((_, i) => i !== index),
-        }));
-    };
-
-    const handleEditActivity = (activity) => {
-        setFormData({
-            title: activity.title,
-            type: activity.type.toLowerCase(),
-            description: activity.description || "",
-            date: activity.date,
-            time: activity.time,
-            location: activity.location,
-            capacity: activity.capacity,
-            images: [],
-            status: activity.status,
-        });
-        setSelectedActivity(activity);
-        setActiveStep(1);
-        document.getElementById("edit_activity_modal").showModal();
-    };
-
-    // Simulate initial data loading
-    useState(() => {
-        setTimeout(() => {
-            setTableLoading(false);
-        }, 1000);
-    }, []);
-
+    // Auto-dismiss notifications
     useEffect(() => {
         if (notification.show) {
             const timer = setTimeout(() => {
@@ -113,6 +83,13 @@ const ActivityManagementPage = () => {
             return () => clearTimeout(timer);
         }
     }, [notification.show]);
+
+    // Simulate initial data loading
+    useEffect(() => {
+        setTimeout(() => {
+            setTableLoading(false);
+        }, 1000);
+    }, []);
 
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
@@ -129,22 +106,18 @@ const ActivityManagementPage = () => {
                 </div>
             )}
 
-            {/* Create Activity Button */}
-            <div className="flex justify-between mb-6">
-                <h2 className="text-2xl font-bold">Activities</h2>
-                <button
-                    className="btn btn-primary"
-                    onClick={() =>
-                        document
-                            .getElementById("create_activity_modal")
-                            .showModal()
-                    }
-                >
-                    Create Activity
-                </button>
-            </div>
+            {/* /* Create Activity Button */ }
+                        <div className="flex justify-between mb-6">
+                            <h2 className="text-2xl font-bold">Activities</h2>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => router.push('/admin/activities/createActivity')}
+                            >
+                                Create Activity
+                            </button>
+                        </div>
 
-            {/* Search and Filters */}
+                        {/* Search and Filters */}
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
                 <div className="flex-1 relative">
                     <input
@@ -304,8 +277,8 @@ const ActivityManagementPage = () => {
                                                 <button
                                                     className="btn btn-sm btn-ghost"
                                                     onClick={() =>
-                                                        handleEditActivity(
-                                                            activity
+                                                        router.push(
+                                                            `/admin/activities/${activity.id}`
                                                         )
                                                     }
                                                 >
@@ -399,6 +372,7 @@ const ActivityManagementPage = () => {
                                     </span>
                                 </label>
                                 <input
+                                
                                     type="text"
                                     name="title"
                                     placeholder="Enter activity title"
@@ -540,7 +514,7 @@ const ActivityManagementPage = () => {
                                             <button
                                                 className="btn btn-circle btn-sm btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                                                 onClick={() =>
-                                                    removeImage(index)
+                                                    handleRemoveImage(index)
                                                 }
                                             >
                                                 ×
@@ -694,354 +668,6 @@ const ActivityManagementPage = () => {
                             }}
                         >
                             {activeStep === 4 ? "Create Activity" : "Next"}
-                        </button>
-                    </div>
-                </div>
-                <form method="dialog" className="modal-backdrop">
-                    <button>close</button>
-                </form>
-            </dialog>
-
-            {/* Edit Activity Modal */}
-            <dialog id="edit_activity_modal" className="modal">
-                <div className="modal-box w-11/12 max-w-3xl">
-                    <h3 className="font-bold text-lg mb-4">Edit Activity</h3>
-
-                    {/* Stepper */}
-                    <ul className="steps steps-horizontal w-full mb-6">
-                        <li
-                            className={`step ${
-                                activeStep >= 1 ? "step-primary" : ""
-                            }`}
-                        >
-                            Basic Info
-                        </li>
-                        <li
-                            className={`step ${
-                                activeStep >= 2 ? "step-primary" : ""
-                            }`}
-                        >
-                            Details
-                        </li>
-                        <li
-                            className={`step ${
-                                activeStep >= 3 ? "step-primary" : ""
-                            }`}
-                        >
-                            Images
-                        </li>
-                        <li
-                            className={`step ${
-                                activeStep >= 4 ? "step-primary" : ""
-                            }`}
-                        >
-                            Review
-                        </li>
-                    </ul>
-
-                    {/* Step 1: Basic Info */}
-                    {activeStep === 1 && (
-                        <div className="space-y-4">
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">
-                                        Activity Title
-                                    </span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="title"
-                                    placeholder="Enter activity title"
-                                    className="input input-bordered"
-                                    value={formData.title}
-                                    onChange={handleFormChange}
-                                />
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">
-                                        Activity Type
-                                    </span>
-                                </label>
-                                <select
-                                    name="type"
-                                    className="select select-bordered"
-                                    value={formData.type}
-                                    onChange={handleFormChange}
-                                >
-                                    <option value="">
-                                        Select activity type
-                                    </option>
-                                    <option value="yoga">Yoga</option>
-                                    <option value="running">Running</option>
-                                    <option value="cycling">Cycling</option>
-                                    <option value="swimming">Swimming</option>
-                                </select>
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">
-                                        Description
-                                    </span>
-                                </label>
-                                <textarea
-                                    name="description"
-                                    className="textarea textarea-bordered h-24"
-                                    placeholder="Enter activity description"
-                                    value={formData.description}
-                                    onChange={handleFormChange}
-                                ></textarea>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Step 2: Details */}
-                    {activeStep === 2 && (
-                        <div className="space-y-4">
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Date</span>
-                                </label>
-                                <input
-                                    type="date"
-                                    name="date"
-                                    className="input input-bordered"
-                                    value={formData.date}
-                                    onChange={handleFormChange}
-                                />
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Time</span>
-                                </label>
-                                <input
-                                    type="time"
-                                    name="time"
-                                    className="input input-bordered"
-                                    value={formData.time}
-                                    onChange={handleFormChange}
-                                />
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Location</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="location"
-                                    placeholder="Enter activity location"
-                                    className="input input-bordered"
-                                    value={formData.location}
-                                    onChange={handleFormChange}
-                                />
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Capacity</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    name="capacity"
-                                    placeholder="Enter participant limit"
-                                    className="input input-bordered"
-                                    value={formData.capacity}
-                                    onChange={handleFormChange}
-                                    min="1"
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Step 3: Images */}
-                    {activeStep === 3 && (
-                        <div className="space-y-4">
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">
-                                        Upload Images
-                                    </span>
-                                </label>
-                                <input
-                                    type="file"
-                                    className="file-input file-input-bordered w-full"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={handleImageUpload}
-                                />
-                            </div>
-
-                            {formData.images.length > 0 && (
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                                    {formData.images.map((image, index) => (
-                                        <div
-                                            key={index}
-                                            className="relative group"
-                                        >
-                                            <img
-                                                src={URL.createObjectURL(image)}
-                                                alt={`Preview ${index + 1}`}
-                                                className="w-full h-32 object-cover rounded-lg"
-                                            />
-                                            <button
-                                                className="btn btn-circle btn-sm btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                onClick={() =>
-                                                    removeImage(index)
-                                                }
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Step 4: Review */}
-                    {activeStep === 4 && (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <h4 className="font-semibold mb-2">
-                                        Basic Information
-                                    </h4>
-                                    <div className="space-y-2">
-                                        <p>
-                                            <span className="font-medium">
-                                                Title:
-                                            </span>{" "}
-                                            {formData.title}
-                                        </p>
-                                        <p>
-                                            <span className="font-medium">
-                                                Type:
-                                            </span>{" "}
-                                            {formData.type}
-                                        </p>
-                                        <p>
-                                            <span className="font-medium">
-                                                Description:
-                                            </span>{" "}
-                                            {formData.description}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <h4 className="font-semibold mb-2">
-                                        Details
-                                    </h4>
-                                    <div className="space-y-2">
-                                        <p>
-                                            <span className="font-medium">
-                                                Date:
-                                            </span>{" "}
-                                            {formData.date}
-                                        </p>
-                                        <p>
-                                            <span className="font-medium">
-                                                Time:
-                                            </span>{" "}
-                                            {formData.time}
-                                        </p>
-                                        <p>
-                                            <span className="font-medium">
-                                                Location:
-                                            </span>{" "}
-                                            {formData.location}
-                                        </p>
-                                        <p>
-                                            <span className="font-medium">
-                                                Capacity:
-                                            </span>{" "}
-                                            {formData.capacity}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {formData.images.length > 0 && (
-                                <div>
-                                    <h4 className="font-semibold mb-2">
-                                        Images ({formData.images.length})
-                                    </h4>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {formData.images.map((image, index) => (
-                                            <img
-                                                key={index}
-                                                src={URL.createObjectURL(image)}
-                                                alt={`Preview ${index + 1}`}
-                                                className="w-full h-20 object-cover rounded-lg"
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="alert alert-info">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="stroke-current shrink-0 h-6 w-6"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    />
-                                </svg>
-                                <span>
-                                    Review the information above before updating
-                                    the activity.
-                                </span>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Navigation Buttons */}
-                    <div className="modal-action">
-                        <button
-                            className="btn"
-                            onClick={() =>
-                                activeStep > 1
-                                    ? setActiveStep((prev) => prev - 1)
-                                    : document
-                                          .getElementById("edit_activity_modal")
-                                          .close()
-                            }
-                        >
-                            {activeStep === 1 ? "Cancel" : "Back"}
-                        </button>
-                        <button
-                            className="btn btn-primary"
-                            onClick={() => {
-                                if (activeStep === 4) {
-                                    // TODO: Implement activity update
-                                    setNotification({
-                                        show: true,
-                                        message:
-                                            "Activity updated successfully",
-                                        type: "success",
-                                    });
-                                    document
-                                        .getElementById("edit_activity_modal")
-                                        .close();
-                                    setActiveStep(1);
-                                } else {
-                                    setActiveStep((prev) =>
-                                        Math.min(prev + 1, 4)
-                                    );
-                                }
-                            }}
-                        >
-                            {activeStep === 4 ? "Update Activity" : "Next"}
                         </button>
                     </div>
                 </div>
