@@ -8,12 +8,13 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Create custom types
 CREATE TYPE user_gender AS ENUM ('male', 'female', 'other');
 CREATE TYPE activity_level AS ENUM ('low', 'medium', 'high');
-CREATE TYPE activity_status AS ENUM ('upcoming', 'active', 'closed', 'completed', 'cancelled');
+CREATE TYPE activity_status AS ENUM ('upcoming', 'active', 'closed', 'completed', 'cancelled', 'draft');
 CREATE TYPE activity_type AS ENUM ('kayak', 'hiking', 'yoga', 'fitness', 'running', 'cycling', 'swimming', 'dancing', 'boxing', 'other');
 CREATE TYPE ticket_status AS ENUM ('active', 'expired', 'used', 'cancelled');
 CREATE TYPE badge_type AS ENUM ('streak', 'calorie', 'seasonal', 'achievement', 'referral');
 CREATE TYPE notification_method AS ENUM ('email');
 CREATE TYPE verification_status AS ENUM ('pending', 'approved', 'rejected');
+CREATE TYPE otp_entity_type AS ENUM ('mobile_verification', 'email_verification', 'password_reset');
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
@@ -52,9 +53,11 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Admin users table (independent from users table)
 CREATE TABLE IF NOT EXISTS admin_user (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
     role VARCHAR(20) DEFAULT 'admin',
     status VARCHAR(20) DEFAULT 'active',
     reason TEXT,
@@ -209,59 +212,24 @@ CREATE TABLE IF NOT EXISTS user_badges (
     UNIQUE(user_id, badge_id)
 );
 
--- Leaderboard cache table (for performance) 
--- WELL LET'S NOT GO THIS WAY.
--- CREATE TABLE IF NOT EXISTS leaderboard_cache (
---     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
---     global_rank INTEGER,
---     community_rank INTEGER,
---     friends_rank INTEGER,
---     total_calories INTEGER DEFAULT 0,
---     total_badges INTEGER DEFAULT 0,
---     total_calories_donated INTEGER DEFAULT 0,
---     last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
---     UNIQUE(user_id)
--- );
-
--- Email verification codes table
-CREATE TABLE IF NOT EXISTS email_verification_codes (
+-- OTPs table (combined email verification, mobile verification, and password reset)
+CREATE TABLE IF NOT EXISTS otps (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    email VARCHAR(255) NOT NULL,
+    entity_type otp_entity_type NOT NULL,
+    entity_name VARCHAR(255) NOT NULL, -- email or mobile number
     code VARCHAR(10) NOT NULL,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    used BOOLEAN DEFAULT FALSE,
+    expiry_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    is_used BOOLEAN DEFAULT FALSE,
+    used_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
-
--- Password reset codes table
-CREATE TABLE IF NOT EXISTS password_reset_codes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    email VARCHAR(255) NOT NULL,
-    code VARCHAR(10) NOT NULL,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    used BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- SMS verification codes table
--- WE WILL NOT HAVE SMS SUPPORT I SUPPOSE
--- CREATE TABLE IF NOT EXISTS sms_verification_codes (
---     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
---     phone_number VARCHAR(20) NOT NULL,
---     code VARCHAR(6) NOT NULL,
---     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
---     used BOOLEAN DEFAULT FALSE,
---     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
--- );
 
 -- Create indexes for performance
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_google_id ON users(google_id);
 CREATE INDEX idx_users_phone_number ON users(phone_number);
+CREATE INDEX idx_admin_user_email ON admin_user(email);
 CREATE INDEX idx_activities_status ON activities(status);
 CREATE INDEX idx_activities_type ON activities(activity_type);
 CREATE INDEX idx_activities_date ON activities(start_date, end_date);
@@ -272,55 +240,44 @@ CREATE INDEX idx_calorie_submissions_date ON calorie_submissions(submission_date
 CREATE INDEX idx_calorie_donations_user_id ON calorie_donations(user_id);
 CREATE INDEX idx_calorie_donations_charity_id ON calorie_donations(charity_id);
 CREATE INDEX idx_user_badges_user_id ON user_badges(user_id);
--- CREATE INDEX idx_leaderboard_cache_global_rank ON leaderboard_cache(global_rank);
--- CREATE INDEX idx_leaderboard_cache_community_rank ON leaderboard_cache(community_rank);
+CREATE INDEX idx_otps_user_id ON otps(user_id);
+CREATE INDEX idx_otps_entity_name ON otps(entity_name);
+CREATE INDEX idx_otps_entity_type ON otps(entity_type);
+CREATE INDEX idx_otps_expiry_time ON otps(expiry_time);
 
--- Create updated_at trigger function
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- Create triggers for updated_at
-CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_activities_updated_at BEFORE UPDATE ON activities FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_calorie_submissions_updated_at BEFORE UPDATE ON calorie_submissions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_charities_updated_at BEFORE UPDATE ON charities FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Trigger functions and triggers removed
+-- Manual updated_at field management required in application code
 
 -- Row Level Security (RLS) policies
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE referral_codes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
-ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_activities ENABLE ROW LEVEL SECURITY;
-ALTER TABLE calorie_submissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE charities ENABLE ROW LEVEL SECURITY;
-ALTER TABLE calorie_donations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE badges ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_badges ENABLE ROW LEVEL SECURITY;
-ALTER TABLE email_verification_codes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE password_reset_codes ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE referral_codes ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE user_activities ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE calorie_submissions ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE charities ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE calorie_donations ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE badges ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE user_badges ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE otps ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own data
-CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = id);
+-- CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid() = id);
+-- CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = id);
 
 -- Activities are publicly readable
-CREATE POLICY "Activities are publicly readable" ON activities FOR SELECT USING (true);
+-- CREATE POLICY "Activities are publicly readable" ON activities FOR SELECT USING (true);
 
 -- Users can only see their own submissions
-CREATE POLICY "Users can view own calorie submissions" ON calorie_submissions FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own calorie submissions" ON calorie_submissions FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- CREATE POLICY "Users can view own calorie submissions" ON calorie_submissions FOR SELECT USING (auth.uid() = user_id);
+-- CREATE POLICY "Users can insert own calorie submissions" ON calorie_submissions FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Charities are publicly readable
-CREATE POLICY "Charities are publicly readable" ON charities FOR SELECT USING (true);
+-- CREATE POLICY "Charities are publicly readable" ON charities FOR SELECT USING (true);
 
 -- Users can only see their own donations
-CREATE POLICY "Users can view own donations" ON calorie_donations FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert own donations" ON calorie_donations FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- CREATE POLICY "Users can view own donations" ON calorie_donations FOR SELECT USING (auth.uid() = user_id);
+-- CREATE POLICY "Users can insert own donations" ON calorie_donations FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Users can only see their own badges
-CREATE POLICY "Users can view own badges" ON user_badges FOR SELECT USING (auth.uid() = user_id);
+-- CREATE POLICY "Users can view own badges" ON user_badges FOR SELECT USING (auth.uid() = user_id);
