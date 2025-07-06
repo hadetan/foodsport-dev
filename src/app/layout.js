@@ -21,9 +21,8 @@ export const metadata = {
 let currentURL = "";
 export default async function RootLayout({ children }) {
     const headersList = await headers();
-    console.log('headersList', JSON.stringify(headersList, null, 2));
     const pathname = headersList.get('x-pathname') || '';
-    console.log('pathname', pathname);
+
     return (
         <html lang="en">
             <body

@@ -58,7 +58,187 @@ const UserManagementPage = () => {
                 totalDonations: 1200,
                 badgeCount: 8,
             },
-            avatar: "/default-avatar.png",
+            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+        },
+        {
+            id: 2,
+            name: "Sarah Chen",
+            email: "sarah.chen@example.com",
+            status: "active",
+            joinedAt: "2025-05-15",
+            location: {
+                country: "Hong Kong",
+                state: "Wan Chai",
+                city: "Wan Chai",
+                postal: "999077",
+                address: "456 Hennessy Road",
+            },
+            stats: {
+                totalActivities: 32,
+                totalDonations: 850,
+                badgeCount: 5,
+            },
+            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+        },
+        {
+            id: 3,
+            name: "Michael Wong",
+            email: "michael.wong@example.com",
+            status: "inactive",
+            joinedAt: "2025-04-20",
+            location: {
+                country: "Hong Kong",
+                state: "Kowloon City",
+                city: "Kowloon City",
+                postal: "999077",
+                address: "789 Nathan Road",
+            },
+            stats: {
+                totalActivities: 18,
+                totalDonations: 420,
+                badgeCount: 3,
+            },
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face    ",
+        },
+        {
+            id: 4,
+            name: "Emily Liu",
+            email: "emily.liu@example.com",
+            status: "active",
+            joinedAt: "2025-03-10",
+            location: {
+                country: "Hong Kong",
+                state: "Sha Tin",
+                city: "Sha Tin",
+                postal: "999077",
+                address: "321 Sha Tin Road",
+            },
+            stats: {
+                totalActivities: 67,
+                totalDonations: 2100,
+                badgeCount: 12,
+            },
+            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+        },
+        {
+            id: 5,
+            name: "David Chan",
+            email: "david.chan@example.com",
+            status: "active",
+            joinedAt: "2025-02-28",
+            location: {
+                country: "Hong Kong",
+                state: "Tsuen Wan",
+                city: "Tsuen Wan",
+                postal: "999077",
+                address: "654 Tsuen Wan Street",
+            },
+            stats: {
+                totalActivities: 23,
+                totalDonations: 680,
+                badgeCount: 4,
+            },
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+        },
+        {
+            id: 6,
+            name: "Lisa Ho",
+            email: "lisa.ho@example.com",
+            status: "inactive",
+            joinedAt: "2025-01-15",
+            location: {
+                country: "Hong Kong",
+                state: "Yuen Long",
+                city: "Yuen Long",
+                postal: "999077",
+                address: "987 Yuen Long Road",
+            },
+            stats: {
+                totalActivities: 12,
+                totalDonations: 250,
+                badgeCount: 2,
+            },
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+        },
+        {
+            id: 7,
+            name: "Alex Thompson",
+            email: "alex.thompson@example.com",
+            status: "active",
+            joinedAt: "2024-12-05",
+            location: {
+                country: "Hong Kong",
+                state: "Islands",
+                city: "Discovery Bay",
+                postal: "999077",
+                address: "147 Discovery Bay Road",
+            },
+            stats: {
+                totalActivities: 89,
+                totalDonations: 3200,
+                badgeCount: 15,
+            },
+            avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+        },
+        {
+            id: 8,
+            name: "Grace Lam",
+            email: "grace.lam@example.com",
+            status: "active",
+            joinedAt: "2024-11-20",
+            location: {
+                country: "Hong Kong",
+                state: "Kwun Tong",
+                city: "Kwun Tong",
+                postal: "999077",
+                address: "258 Kwun Tong Road",
+            },
+            stats: {
+                totalActivities: 41,
+                totalDonations: 1100,
+                badgeCount: 7,
+            },
+            avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
+        },
+        {
+            id: 9,
+            name: "Ryan Kwok",
+            email: "ryan.kwok@example.com",
+            status: "inactive",
+            joinedAt: "2024-10-12",
+            location: {
+                country: "Hong Kong",
+                state: "Tai Po",
+                city: "Tai Po",
+                postal: "999077",
+                address: "369 Tai Po Road",
+            },
+            stats: {
+                totalActivities: 8,
+                totalDonations: 150,
+                badgeCount: 1,
+            },
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+        },
+        {
+            id: 10,
+            name: "Sophie Yeung",
+            email: "sophie.yeung@example.com",
+            status: "active",
+            joinedAt: "2024-09-08",
+            location: {
+                country: "Hong Kong",
+                state: "Southern",
+                city: "Aberdeen",
+                postal: "999077",
+                address: "741 Aberdeen Road",
+            },
+            stats: {
+                totalActivities: 56,
+                totalDonations: 1800,
+                badgeCount: 9,
+            },
+            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
         },
     ];
 
@@ -111,12 +291,12 @@ const UserManagementPage = () => {
                 ))}
 
             {/* Search and Filters */}
-            <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                <div className="flex-1 relative">
+            <div className="flex flex-col lg:flex-row gap-4 mb-6 bg-white p-4 rounded-xl outline outline-black/10">
+                <label className="flex-1 relative input">
                     <input
                         type="text"
                         placeholder="Search users..."
-                        className="input input-bordered w-full md:max-w-md pr-10"
+                        className="grow input-bordered w-full md:max-w-md pr-10"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -134,7 +314,7 @@ const UserManagementPage = () => {
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                         />
                     </svg>
-                </div>
+                </label>
 
                 {/* Enhanced Filters */}
                 <div className="flex flex-wrap gap-2">
@@ -175,8 +355,8 @@ const UserManagementPage = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="table table-zebra w-full">
-                            <thead className="sticky top-0 bg-base-100">
+                            <table className="table table-zebra w-full bg-white">
+                                <thead className="sticky top-0 bg-base-900  ">
                                 <tr>
                                     <th>User Info</th>
                                     <th>Location</th>
