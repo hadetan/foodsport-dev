@@ -1,6 +1,6 @@
 import React from "react";
-import Status from "./status";
-import Avatar from "./avatar";
+import Status from "@/app/admin/users/status";
+import Avatar from "@/app/admin/users/avatar";
 
 export const UserRow = ({ user }) => {
     return (

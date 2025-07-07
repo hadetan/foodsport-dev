@@ -1,5 +1,4 @@
 import React from "react";
-import userTable from "./userRow";
 
 export const Status = ({ statusOfUser }) => {
     let uppercase = statusOfUser.charAt(0).toUpperCase();
