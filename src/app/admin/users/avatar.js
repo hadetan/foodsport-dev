@@ -1,12 +1,11 @@
 import React from "react";
-import userTable from "./userRow";
 const Avatar = ({ srcAvatar, nameOfUser }) => {
     let letter = nameOfUser.charAt(0);
     return (
         <>
             {srcAvatar === "" ? (
-                <div class="avatar avatar-online avatar-placeholder">
-                    <div class="bg-neutral text-neutral-content w-16 rounded-full">
+                <div className="avatar avatar-online avatar-placeholder">
+                    <div className="bg-neutral text-neutral-content w-16 rounded-full">
                         <span className="text-xl">{letter}</span>
                     </div>
                 </div>
