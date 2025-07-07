@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/components/ErrorAlert";
-
+import Avatar from "@/app/admin/users/avatar";
 const UserManagementPage = () => {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
@@ -78,7 +78,7 @@ const UserManagementPage = () => {
                 totalDonations: 850,
                 badgeCount: 5,
             },
-            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+            avatar: "",
         },
         {
             id: 3,
@@ -355,8 +355,8 @@ const UserManagementPage = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                            <table className="table table-zebra w-full bg-white">
-                                <thead className="sticky top-0 bg-base-900  ">
+                        <table className="table table-zebra w-full bg-white">
+                            <thead className="sticky top-0 bg-base-900  ">
                                 <tr>
                                     <th>User Info</th>
                                     <th>Location</th>
@@ -375,9 +375,14 @@ const UserManagementPage = () => {
                                             <div className="flex items-center space-x-3">
                                                 <div className="avatar">
                                                     <div className="mask mask-squircle w-12 h-12">
-                                                        <img
-                                                            src={user.avatar}
-                                                            alt={user.name}
+                                                        <Avatar
+                                                            userImage={""}
+                                                            srcAvatar={
+                                                                user.avatar
+                                                            }
+                                                            nameOfUser={
+                                                                user.name
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
