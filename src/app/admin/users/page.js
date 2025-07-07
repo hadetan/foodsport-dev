@@ -251,53 +251,15 @@ const UserManagementPage = () => {
     }, []);
 
     return (
-        <div className="p-4">
-            {/* Success/Error Alert */}
-            {notification.show &&
-                (notification.type === "error" ? (
-                    <ErrorAlert
-                        message={notification.message}
-                        onClose={() =>
-                            setNotification({ ...notification, show: false })
-                        }
-                    />
-                ) : (
-                    <div className="alert alert-success mb-4">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="stroke-current shrink-0 h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                        </svg>
-                        <span>{notification.message}</span>
-                        <button
-                            className="btn btn-sm btn-ghost"
-                            onClick={() =>
-                                setNotification({
-                                    ...notification,
-                                    show: false,
-                                })
-                            }
-                        >
-                            ×
-                        </button>
-                    </div>
-                ))}
-
+        <>
+            <div className="text-2xl mb-5 text-base-content">Manage Users</div>
             {/* Search and Filters */}
-            <div className="flex flex-col lg:flex-row gap-4 mb-6 bg-white p-4 rounded-xl outline outline-black/10">
+            <div className="flex flex-col lg:flex-row gap-4 mb-6">
                 <label className="flex-1 relative input">
                     <input
                         type="text"
                         placeholder="Search users..."
-                        className="grow input-bordered w-full md:max-w-md pr-10"
+                        className="grow h-10 input-bordered w-full md:max-w-md pr-10"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -349,15 +311,15 @@ const UserManagementPage = () => {
             </div>
 
             {/* User Table */}
-            <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
+            <div className="overflow-x-auto rounded-lg shadow relative">
                 {tableLoading ? (
                     <div className="min-h-[300px] flex items-center justify-center">
                         <span className="loading loading-spinner loading-lg"></span>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="table table-zebra w-full bg-white">
-                            <thead className="sticky top-0 bg-base-900  ">
+                        <div className="overflow-x-auto rounded-box border border-primary/60">
+                            <table className="table table-zebra w-full">
+                                <thead className="sticky top-0 bg-primary text-primary-content  ">
                                 <tr>
                                     <th>User Info</th>
                                     <th>Location</th>
@@ -374,8 +336,6 @@ const UserManagementPage = () => {
                                     >
                                         <td>
                                             <div className="flex items-center space-x-3">
-                                                <div className="avatar">
-                                                    <div className="mask mask-squircle w-12 h-12">
                                                         <Avatar
                                                             userImage={""}
                                                             srcAvatar={
@@ -384,9 +344,7 @@ const UserManagementPage = () => {
                                                             nameOfUser={
                                                                 user.name
                                                             }
-                                                        />
-                                                    </div>
-                                                </div>
+                                                />
                                                 <div>
                                                     <div className="font-bold">
                                                         {user.name}
@@ -509,7 +467,7 @@ const UserManagementPage = () => {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 };
 

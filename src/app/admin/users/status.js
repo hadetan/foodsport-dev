@@ -7,8 +7,7 @@ export const Status = ({ statusOfUser }) => {
     return (
         <>
             <span
-                className={`badge ${
-                    statusOfUser === "active" ? "bg-green-500" : "bg-red-500"
+                className={`badge badge-outline ${statusOfUser === "active" ? "badge-success" : "badge-error"
                 }`}
             >
                 {updatedStatus}

@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [
-        "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/admin-components/**/*.{js,ts,jsx,tsx,mdx}",
         "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
         "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     ],
@@ -9,12 +9,20 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                primary: "#4f46e5",
-                "primary-focus": "#4338ca",
-                secondary: "#f97316",
-                "secondary-focus": "#ea580c",
-                accent: "#14b8a6",
-                "accent-focus": "#0d9488",
+                primary: 'hsl(var(--p) / <alpha-value>)',
+                'primary-focus': 'hsl(var(--pf) / <alpha-value>)',
+                secondary: 'hsl(var(--s) / <alpha-value>)',
+                'secondary-focus': 'hsl(var(--sf) / <alpha-value>)',
+                accent: 'hsl(var(--a) / <alpha-value>)',
+                'accent-focus': 'hsl(var(--af) / <alpha-value>)',
+                neutral: 'hsl(var(--n) / <alpha-value>)',
+                'base-100': 'hsl(var(--b1) / <alpha-value>)',
+                'base-200': 'hsl(var(--b2) / <alpha-value>)',
+                'base-300': 'hsl(var(--b3) / <alpha-value>)',
+                info: 'hsl(var(--in) / <alpha-value>)',
+                success: 'hsl(var(--su) / <alpha-value>)',
+                warning: 'hsl(var(--wa) / <alpha-value>)',
+                error: 'hsl(var(--er) / <alpha-value>)',
             },
             fontFamily: {
                 sans: ["var(--font-geist-sans)", "sans-serif"],

@@ -5,8 +5,8 @@ export default function SidebarItem({ href, icon, label, isSelected }) {
         <li>
             <Link href={href} className={
                 isSelected
-                    ? "active bg-[#8A8C91] text-white rounded-lg"
-                    : "text-[#8A8C91]"
+                    ? "bg-primary text-primary-content rounded-lg"
+                    : "text-base-content"
             }>
                 {icon}
                 {label}
