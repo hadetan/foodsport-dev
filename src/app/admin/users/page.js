@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/components/ErrorAlert";
 import Avatar from "@/app/admin/users/avatar";
+import Status from "@/app/admin/users/status";
 const UserManagementPage = () => {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
@@ -64,7 +65,7 @@ const UserManagementPage = () => {
             id: 2,
             name: "Sarah Chen",
             email: "sarah.chen@example.com",
-            status: "active",
+            status: "inactive",
             joinedAt: "2025-05-15",
             location: {
                 country: "Hong Kong",
@@ -409,7 +410,10 @@ const UserManagementPage = () => {
                                             </div>
                                         </td>
                                         <td>
-                                            <span
+                                            <Status
+                                                statusOfUser={user.status}
+                                            />
+                                            {/* <span
                                                 className={`badge ${
                                                     user.status === "active"
                                                         ? "badge-success"
@@ -417,7 +421,7 @@ const UserManagementPage = () => {
                                                 }`}
                                             >
                                                 {user.status}
-                                            </span>
+                                            </span> */}
                                         </td>
                                         <td>
                                             <div className="text-sm">
