@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/components/ErrorAlert";
-import UserRow from "./userRow";
+import UserRow from "@/app/admin/users/userRow";
 const UserManagementPage = () => {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");

@@ -11,7 +11,6 @@ export const UserRow = ({ user }) => {
                         <div className="avatar">
                             <div className="mask mask-squircle w-12 h-12">
                                 <Avatar
-                                    userImage={""}
                                     srcAvatar={user.avatar}
                                     nameOfUser={user.name}
                                 />

@@ -48,7 +48,7 @@ const ActivityManagementPage = () => {
             id: 2,
             title: "Evening Run Club",
             type: "Running",
-            status: "pending",
+            status: "inactive",
             date: "2025-07-11",
             time: "06:00 PM",
             location: "City Track",
