@@ -1,5 +1,5 @@
 import React from "react";
-
+import userTable from "./userRow";
 const Avatar = ({ srcAvatar, nameOfUser }) => {
     let letter = nameOfUser.charAt(0);
     return (
