@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/components/ErrorAlert";
+import { Users, Pencil, Trash2, Search } from "lucide-react";
 
 const ActivityManagementPage = () => {
     const router = useRouter();
@@ -106,18 +107,20 @@ const ActivityManagementPage = () => {
                 </div>
             )}
 
-            {/* /* Create Activity Button */ }
-                        <div className="flex justify-between mb-6">
-                            <h2 className="text-2xl font-bold">Activities</h2>
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => router.push('/admin/activities/createActivity')}
-                            >
-                                Create Activity
-                            </button>
-                        </div>
+            {/* /* Create Activity Button */}
+            <div className="flex justify-between mb-6">
+                <h2 className="text-2xl font-bold">Activities</h2>
+                <button
+                    className="btn btn-primary"
+                    onClick={() =>
+                        router.push("/admin/activities/createActivity")
+                    }
+                >
+                    Create Activity
+                </button>
+            </div>
 
-                        {/* Search and Filters */}
+            {/* Search and Filters */}
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
                 <div className="flex-1 relative">
                     <input
@@ -127,21 +130,8 @@ const ActivityManagementPage = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                    </svg>
                 </div>
+                <Search />
 
                 <select
                     className="select select-bordered w-full lg:w-48"
@@ -259,20 +249,7 @@ const ActivityManagementPage = () => {
                                                             .showModal()
                                                     }
                                                 >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className="h-4 w-4"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                                                        />
-                                                    </svg>
+                                                    <Users />
                                                 </button>
                                                 <button
                                                     className="btn btn-sm btn-ghost"
@@ -282,36 +259,10 @@ const ActivityManagementPage = () => {
                                                         )
                                                     }
                                                 >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className="h-4 w-4"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                                        />
-                                                    </svg>
+                                                    <Pencil />
                                                 </button>
                                                 <button className="btn btn-sm btn-ghost text-error">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className="h-4 w-4"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                        />
-                                                    </svg>
+                                                    <Trash2 />
                                                 </button>
                                             </div>
                                         </td>
@@ -372,7 +323,6 @@ const ActivityManagementPage = () => {
                                     </span>
                                 </label>
                                 <input
-                                
                                     type="text"
                                     name="title"
                                     placeholder="Enter activity title"
@@ -608,19 +558,6 @@ const ActivityManagementPage = () => {
                             )}
 
                             <div className="alert alert-info">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="stroke-current shrink-0 h-6 w-6"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    />
-                                </svg>
                                 <span>
                                     Review the information above before creating
                                     the activity.
