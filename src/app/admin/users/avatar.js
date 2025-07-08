@@ -1,5 +1,4 @@
 import React from "react";
-
 const Avatar = ({ srcAvatar, nameOfUser }) => {
     let initial = nameOfUser.charAt(0);
     return (
