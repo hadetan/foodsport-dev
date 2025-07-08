@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/components/ErrorAlert";
 import UserRow from "@/app/admin/users/userRow";
+import { Search, CheckCircle2, Menu } from "lucide-react";
+
 const UserManagementPage = () => {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
@@ -262,19 +264,7 @@ const UserManagementPage = () => {
                     />
                 ) : (
                     <div className="alert alert-success mb-4">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="stroke-current shrink-0 h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                        </svg>
+                        <CheckCircle2 className="stroke-current shrink-0 h-6 w-6" />
                         <span>{notification.message}</span>
                         <button
                             className="btn btn-sm btn-ghost"
@@ -300,20 +290,7 @@ const UserManagementPage = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                    </svg>
+                    <Search className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 </label>
 
                 {/* Enhanced Filters */}
