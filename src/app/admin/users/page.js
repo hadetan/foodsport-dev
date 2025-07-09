@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import ErrorAlert from "@/components/ErrorAlert";
 import UserRow from "@/app/admin/users/userRow";
 import { Search, CheckCircle2, Menu } from "lucide-react";
-// import SearchBar from "@/app/admin/users/searchBar";
-import SearchBar  from "../users/SearchBar";
+import SearchBar from "@/admin-components/SearchBar";
 
 const UserManagementPage = () => {
     const router = useRouter();
@@ -257,8 +256,8 @@ const UserManagementPage = () => {
         <>
             <div className="text-2xl mb-5 text-base-content">Manage Users</div>
             {/* Search and Filters */}
-            <div>
-            <SearchBar placeholderName="Search Users" />
+            <div className="flex gap-4">
+                <SearchBar placeholderName="Search Users" />
 
                 {/* Enhanced Filters */}
                 <div className="flex flex-wrap gap-2">
