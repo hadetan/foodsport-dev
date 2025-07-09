@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/components/ErrorAlert";
 import { Users, Pencil, Trash2, Search } from "lucide-react";
-
+import SearchBar from "@/admin-components/SearchBar";
 const ActivityManagementPage = () => {
     const router = useRouter();
     const [activeStep, setActiveStep] = useState(1);
@@ -122,16 +122,9 @@ const ActivityManagementPage = () => {
 
             {/* Search and Filters */}
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                <div className="flex-1 relative">
-                    <input
-                        type="text"
-                        placeholder="Search activities..."
-                        className="input input-bordered w-full md:max-w-md pr-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                <div className="flex relative">
+                    <SearchBar placeholderName="Search Activities" />
                 </div>
-                <Search />
 
                 <select
                     className="select select-bordered w-full lg:w-48"

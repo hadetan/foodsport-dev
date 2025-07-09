@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import ErrorAlert from "@/components/ErrorAlert";
 import UserRow from "@/app/admin/users/userRow";
 import { Search, CheckCircle2, Menu } from "lucide-react";
+import SearchBar from "@/admin-components/SearchBar";
 
 const UserManagementPage = () => {
     const router = useRouter();
@@ -255,17 +256,8 @@ const UserManagementPage = () => {
         <>
             <div className="text-2xl mb-5 text-base-content">Manage Users</div>
             {/* Search and Filters */}
-            <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                <label className="flex-1 relative input">
-                    <input
-                        type="text"
-                        placeholder="Search users..."
-                        className="grow h-10 input-bordered w-full md:max-w-md pr-10"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <Search className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                </label>
+            <div className="flex gap-4">
+                <SearchBar placeholderName="Search Users" />
 
                 {/* Enhanced Filters */}
                 <div className="flex flex-wrap gap-2">
@@ -305,9 +297,9 @@ const UserManagementPage = () => {
                         <span className="loading loading-spinner loading-lg"></span>
                     </div>
                 ) : (
-                        <div className="overflow-x-auto rounded-box border border-primary/60">
-                            <table className="table table-zebra w-full">
-                                <thead className="sticky top-0 bg-primary text-primary-content  ">
+                    <div className="overflow-x-auto rounded-box border border-primary/60">
+                        <table className="table table-zebra w-full">
+                            <thead className="sticky top-0 bg-primary text-primary-content  ">
                                 <tr>
                                     <th>User Info</th>
                                     <th>Location</th>
