@@ -22,11 +22,16 @@ export async function GET(req) {
   if (error) return error;
   const url = new URL(req.url);
   const { searchParams } = url;
-  const { search, status, page, limit, sortBy, sortOrder } =
-    parseQueryParams(searchParams);
+  const { search, status, page, limit, sortBy, sortOrder } = parseQueryParams(searchParams);
   const skip = (page - 1) * limit;
   const filters = {};
-  if (search) filters.name = { contains: search, mode: 'insensitive' };
+  if (search) {
+    filters.OR = [
+      { firstname: { contains: search, mode: 'insensitive' } },
+      { lastname: { contains: search, mode: 'insensitive' } },
+      { email: { contains: search, mode: 'insensitive' } },
+    ];
+  }
   if (status) filters.status = status;
   const options = {
     limit,
@@ -38,7 +43,8 @@ export async function GET(req) {
     filters,
     {
       id: true,
-      name: true,
+      firstname: true,
+      lastname: true,
       email: true,
       status: true,
       created_at: true,
@@ -51,7 +57,8 @@ export async function GET(req) {
   );
   const usersWithStats = (users || []).map((u) => ({
     id: u.id,
-    name: u.name,
+    firstname: u.firstname,
+    lastname: u.lastname,
     email: u.email,
     status: u.status,
     joinDate: u.created_at,

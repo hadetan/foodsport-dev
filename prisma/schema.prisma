@@ -72,7 +72,8 @@ enum OtpEntityType {
 model User {
   id                    String   @id @default(uuid())
   email                 String   @unique
-  name                  String
+  firstname             String?  @map("firstname")
+  lastname              String?  @map("lastname")
   dateOfBirth           DateTime @map("date_of_birth")
   weight                Decimal? @db.Decimal(5, 2)
   height                Decimal? @db.Decimal(5, 2)

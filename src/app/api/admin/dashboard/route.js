@@ -40,33 +40,28 @@ export async function GET(req) {
     });
   }
 
-  // Prisma-based queries
   const totalUsers = await getCount('user');
   const activeActivities = await getCount('activity', { status: 'active' });
   const totalRewards = await getCount('user_badge');
 
-  // Total donations (sum)
   const { prisma } = await import('@/lib/prisma/client');
   const donations = await prisma.calorieDonation.findMany({ select: { calories_donated: true } });
   const totalDonations = donations.reduce((sum, d) => sum + (d.calories_donated || 0), 0);
 
-  // New users in range
   const newUsers = await getCount('user', { created_at: { gte: fromDate } });
-  // Completed activities in range
   const completedActivities = await getCount('activity', { status: 'completed', updated_at: { gte: fromDate } });
-  // Calories donated in range
   const donationsRange = await prisma.calorieDonation.findMany({ where: { created_at: { gte: fromDate } }, select: { calories_donated: true } });
   const caloriesDonated = donationsRange.reduce((sum, d) => sum + (d.calories_donated || 0), 0);
 
-  // Recent signups
   const recentSignupsData = await prisma.user.findMany({
     orderBy: { created_at: 'desc' },
     take: 10,
-    select: { id: true, name: true, email: true, created_at: true, is_active: true }
+    select: { id: true, firstname: true, lastname: true, email: true, created_at: true, is_active: true }
   });
   const recentSignups = (recentSignupsData || []).map(u => ({
     id: u.id,
-    name: u.name,
+    firstname: u.firstname,
+    lastname: u.lastname,
     email: u.email,
     signupDate: u.created_at,
     status: u.is_active ? 'active' : 'inactive'
