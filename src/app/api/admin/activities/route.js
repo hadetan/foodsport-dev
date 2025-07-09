@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/prisma/require-admin';
+import { getMany, insert, updateById } from '@/lib/prisma/db-utils';
+import { validateRequiredFields } from '@/utils/validation';
+import { sanitizeData } from '@/utils/sanitize';
+import { formatDbError } from '@/utils/formatDbError';
 import { createSupabaseClient } from '@/lib/supabase/client';
-import { requireAdmin } from '@/lib/supabase/require-admin';
 
 function parseQueryParams(searchParams) {
   return {
@@ -19,25 +23,23 @@ export async function GET(req) {
   const url = new URL(req.url);
   const { searchParams } = url;
   const { status, page, limit, type } = parseQueryParams(searchParams);
-  const offset = (page - 1) * limit;
-  let query = supabase.from('activities').select('id, title, status, activity_type, current_participants, start_date, end_date, location');
-  if (status) {
-    query = query.eq('status', status);
-  }
-  if (type) {
-    query = query.eq('activity_type', type);
-  }
-  query = query.order('start_date', { ascending: false });
-  query = query.range(offset, offset + limit - 1);
-  const { data: activities, error: activitiesError, count: total } = await query;
-  if (activitiesError) {
-    return NextResponse.json({ error: activitiesError.message }, { status: 500 });
-  }
+  const skip = (page - 1) * limit;
+  const filters = {};
+  if (status) filters.status = status;
+  if (type) filters.type = type;
+  const options = {
+    limit,
+    skip,
+    orderBy: { start_date: 'desc' }
+  };
+  const activities = await getMany('activity', filters, {
+    id: true, title: true, status: true, type: true, current_participants: true, start_date: true, end_date: true, location: true
+  }, options);
   const activitiesList = (activities || []).map(a => ({
     id: a.id,
     title: a.title,
     status: a.status,
-    type: a.activity_type,
+    type: a.type,
     participantCount: a.current_participants,
     startDate: a.start_date,
     endDate: a.end_date,
@@ -48,7 +50,7 @@ export async function GET(req) {
     pagination: {
       page,
       limit,
-      total: total || activitiesList.length
+      total: activitiesList.length
     }
   };
   return new NextResponse(JSON.stringify(responseData), {
@@ -62,69 +64,26 @@ export async function POST(req) {
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
 
-  if (!req.headers.get('content-type')?.includes('multipart/form-data')) {
-    return NextResponse.json({ error: 'Content-Type must be multipart/form-data' }, { status: 400 });
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
-
-  const allowedStatus = ['draft', 'active', 'closed', 'upcoming', 'completed', 'cancelled'];
-  const formData = await req.formData();
-  const title = formData.get('title');
-  const description = formData.get('description') || '';
-  const activity_type = formData.get('type');
-  const location = formData.get('location');
-  const start_date = formData.get('startDate');
-  const end_date = formData.get('endDate');
-  const start_time = formData.get('startTime');
-  const end_time = formData.get('endTime');
-  const status = formData.get('status') || 'draft';
-  const image = formData.get('image') || null;
-  const participant_limit = formData.get('participantLimit') ? parseInt(formData.get('participantLimit'), 10) : null;
-
-  if (!allowedStatus.includes(status)) {
-    return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+  const requiredFields = ['title', 'type', 'location', 'start_date', 'end_date', 'start_time', 'end_time'];
+  const validation = validateRequiredFields(body, requiredFields);
+  if (!validation.isValid) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
-
-  if (!title || !activity_type || !location || !start_date || !end_date || !start_time || !end_time) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  const allowedFields = [
+    'title', 'description', 'type', 'location', 'start_date', 'end_date', 'start_time', 'end_time', 'status', 'image_url', 'participant_limit'
+  ];
+  const insertObj = sanitizeData(body, allowedFields);
+  if (!insertObj.status) insertObj.status = 'draft';
+  const activity = await insert('activity', insertObj);
+  if (activity && activity.error) {
+    return NextResponse.json({ error: formatDbError(activity.error) }, { status: 500 });
   }
-  if (participant_limit !== null && (isNaN(participant_limit) || participant_limit < 1)) {
-    return NextResponse.json({ error: 'Invalid participantLimit' }, { status: 400 });
-  }
-
-  let image_url = null;
-  if (image && image.name) {
-    const fileExt = image.name.split('.').pop();
-    const filePath = `activities/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage.from('activity-images').upload(filePath, image, { contentType: image.type });
-    if (uploadError) {
-      return NextResponse.json({ error: 'Image upload failed' }, { status: 500 });
-    }
-    image_url = supabase.storage.from('activity-images').getPublicUrl(uploadData.path).data.publicUrl;
-  }
-
-  const insertObj = {
-    title,
-    description,
-    activity_type,
-    location,
-    start_date,
-    end_date,
-    start_time,
-    end_time
-  };
-  if (status) insertObj.status = status;
-  if (image_url) insertObj.image_url = image_url;
-  if (participant_limit !== null) insertObj.participant_limit = participant_limit;
-
-  const { data: activity, error: createError } = await supabase
-    .from('activities')
-    .insert(insertObj)
-    .select()
-    .single();
-  if (createError) {
-    return NextResponse.json({ error: createError.message }, { status: 500 });
-  }
-
   return NextResponse.json(activity, { status: 201 });
 }
 
@@ -132,53 +91,25 @@ export async function PATCH(req, { params }) {
   const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
-
   if (!params || !params.activityId) {
     return NextResponse.json({ error: 'Missing activityId' }, { status: 400 });
   }
-
   let body;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
-
-  const allowedStatus = ['draft', 'active', 'closed', 'upcoming', 'completed', 'cancelled', 'open'];
-  const updates = {};
-  if (body.status) {
-    if (!allowedStatus.includes(body.status)) {
-      return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
-    }
-    updates.status = body.status;
-  }
-  if (body.title) updates.title = body.title;
-  if (body.description) updates.description = body.description;
-  if (body.type) updates.activity_type = body.type;
-  if (body.location) updates.location = body.location;
-  if (body.startDate) updates.start_date = body.startDate;
-  if (body.endDate) updates.end_date = body.endDate;
-  if (body.participantLimit !== undefined) {
-    const participant_limit = parseInt(body.participantLimit, 10);
-    if (isNaN(participant_limit) || participant_limit < 1) {
-      return NextResponse.json({ error: 'Invalid participantLimit' }, { status: 400 });
-    }
-    updates.participant_limit = participant_limit;
-  }
-
+  const allowedFields = [
+    'title', 'description', 'type', 'location', 'start_date', 'end_date', 'start_time', 'end_time', 'status', 'image_url', 'participant_limit'
+  ];
+  const updates = sanitizeData(body, allowedFields);
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
   }
-
-  const { data: updatedActivity, error: updateError } = await supabase
-    .from('activities')
-    .update(updates)
-    .eq('id', params.activityId)
-    .select()
-    .single();
-  if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+  const updatedActivity = await updateById('activity', params.activityId, updates);
+  if (updatedActivity && updatedActivity.error) {
+    return NextResponse.json({ error: formatDbError(updatedActivity.error) }, { status: 500 });
   }
-
   return NextResponse.json(updatedActivity, { status: 200 });
 }

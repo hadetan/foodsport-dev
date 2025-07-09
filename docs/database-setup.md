@@ -61,7 +61,7 @@ npm run setup-db
 This command will:
 - Connect to your Supabase database
 - Execute the schema from `src/lib/supabase/schema.sql`
-- Create all tables, indexes, triggers, and RLS policies
+- Create all tables, indexes, and foreign key constraints
 - Verify the setup
 
 ### 3. Seed Database (Development Only)
@@ -89,267 +89,171 @@ This command will run both setup and seed in sequence.
 
 | Table | Purpose | Key Features |
 |-------|---------|--------------|
-| `users` | User profiles and authentication | Email, profile data, goals |
-| `user_sessions` | Session management | JWT tokens, expiration |
-| `activities` | Fitness activities | Types, locations, participant limits |
-| `user_activities` | Activity participation | Tickets, status tracking |
-| `calorie_submissions` | Calorie tracking | Photo uploads, verification |
-| `charities` | Charity organizations | Donation goals, descriptions |
+| `users` | User profiles and authentication | Email, profile data, goals, streaks, points |
+| `admin_user` | Admin user management | Independent admin accounts with roles |
+| `activities` | Fitness activities | Types, locations, participant limits, points |
+| `tickets` | Activity tickets | Ticket codes, status tracking, usage |
+| `user_activities` | Activity participation | User-activity relationships |
+| `calorie_submissions` | Calorie tracking | Photo uploads, verification status |
+| `charities` | Charity organizations | Donation goals, mission, featured status |
 | `calorie_donations` | Donation tracking | User donations to charities |
-| `badges` | Achievement system | Streak, calorie, seasonal badges |
-| `user_badges` | User badge assignments | Earned badges, dates |
+| `badges` | Achievement system | Streak, calorie, seasonal, achievement badges |
+| `user_badges` | User badge assignments | Earned badges, dates, earned values |
 | `referral_codes` | Referral system | Code generation, expiration |
 | `referrals` | Referral tracking | User referrals, rewards |
-| `leaderboard_cache` | Performance optimization | Cached leaderboard data |
+| `otps` | OTP management | Email verification, mobile verification, password reset |
+
+### Custom Types
+
+The database uses several custom ENUM types for data consistency:
+
+- `user_gender`: 'male', 'female', 'other'
+- `activity_level`: 'low', 'medium', 'high'
+- `activity_status`: 'upcoming', 'active', 'closed', 'completed', 'cancelled', 'draft'
+- `activity_type`: 'kayak', 'hiking', 'yoga', 'fitness', 'running', 'cycling', 'swimming', 'dancing', 'boxing', 'other'
+- `ticket_status`: 'active', 'expired', 'used', 'cancelled'
+- `badge_type`: 'streak', 'calorie', 'seasonal', 'achievement', 'referral'
+- `notification_method`: 'email'
+- `verification_status`: 'pending', 'approved', 'rejected'
+- `otp_entity_type`: 'mobile_verification', 'email_verification', 'password_reset'
 
 ### Key Features
 
-1. **Row Level Security (RLS)**: All tables have RLS policies for data protection
-2. **Automatic Timestamps**: `created_at` and `updated_at` fields are automatically managed
-3. **Foreign Key Constraints**: Proper relationships between tables
-4. **Indexes**: Optimized for common query patterns
-5. **Triggers**: Automatic data updates and calculations
+1. **Foreign Key Constraints**: Proper relationships between tables
+2. **Indexes**: Optimized for common query patterns
+3. **Generated Columns**: Dynamic fields like `is_active` in charities table
+4. **UUID Primary Keys**: All tables use UUID primary keys for security
+5. **Manual Timestamp Management**: `updated_at` fields must be managed in application code
 
-## API Integration
+### Table Relationships
 
-### Database Client Setup
+- **Users** → **Referral Codes** (one-to-many)
+- **Users** → **Activities** (organizer relationship)
+- **Users** → **User Activities** (participation)
+- **Activities** → **Tickets** (one-to-many)
+- **Users** → **Tickets** (one-to-many)
+- **Users** → **Calorie Submissions** (one-to-many)
+- **Users** → **Calorie Donations** (one-to-many)
+- **Charities** → **Calorie Donations** (one-to-many)
+- **Users** → **User Badges** (one-to-many)
+- **Badges** → **User Badges** (one-to-many)
+- **Users** → **OTPs** (one-to-many)
 
-The application uses two Supabase clients:
+**Note**: `admin_user` table is independent and has no relationships with the `users` table.
 
-1. **Server Client** (`src/lib/supabase/client.js`):
-   - Used in API routes
-   - Has full database access
-   - Uses service role key
+## Database Schema Details
 
-2. **Client Client** (`src/lib/supabase/client.js`):
-   - Used in React components
-   - Limited by RLS policies
-   - Uses anon key
+### Users Table
+- Primary key: `id` (UUID)
+- Unique constraints: `email`, `google_id`
+- Profile fields: name, date_of_birth, weight, height, gender
+- Activity tracking: total_activities, total_donations, badge_count, level
+- Streak and points: current_streak, total_points, total_calories_burned
+- Goals: calorie_goal, daily_goal, weekly_goal, monthly_goal, yearly_goal
+- Verification: email_verified, phone_verified
+- Timestamps: created_at, updated_at
 
-### Database Utilities
+### Admin User Table
+- Primary key: `id` (UUID)
+- Unique constraint: `email`
+- Fields: name, role, status, reason
+- Independent from users table
+- Timestamps: created_at, updated_at
 
-Common database operations are abstracted in `src/lib/supabase/db-utils.js`:
+### Activities Table
+- Primary key: `id` (UUID)
+- Activity details: title, description, activity_type, location
+- Scheduling: start_date, end_date, start_time, end_time
+- Management: status, participant_limit, current_participants
+- Organizer: organizer_name, organizer_id (references users)
+- Rewards: points_per_participant, calories_per_hour
+- Features: is_featured, image_url
+- Timestamps: created_at, updated_at
 
-```javascript
-import { 
-  getById, 
-  getMany, 
-  insert, 
-  updateById, 
-  deleteById,
-  validateRequiredFields,
-  sanitizeData,
-  formatDbError 
-} from '@/lib/supabase/db-utils';
+### Tickets Table
+- Primary key: `id` (UUID)
+- Unique constraint: `ticket_code`
+- Relationships: activity_id, user_id
+- Status tracking: status, ticket_sent, used_at, revoked
+- Timestamps: created_at, updated_at
 
-// Example usage in API route
-export async function GET(request) {
-  const { data, error } = await getMany('activities', 
-    { status: 'active' }, 
-    ['id', 'title', 'description']
-  );
-  
-  if (error) {
-    return Response.json({ error: formatDbError(error) }, { status: 500 });
-  }
-  
-  return Response.json({ activities: data });
-}
-```
+### Calorie Submissions Table
+- Primary key: `id` (UUID)
+- Relationships: user_id, activity_id, verified_by
+- Content: photo_url, submitted_calories, verified_calories
+- Verification: verification_status, verified_at, points_earned
+- Date tracking: submission_date
+- Timestamps: created_at, updated_at
 
-### Error Handling
+### Charities Table
+- Primary key: `id` (UUID)
+- Information: name, description, mission, website_url
+- Media: image_url
+- Goals: current_goal, current_donations
+- Generated column: is_active (based on donations vs goal)
+- Features: featured
+- Timestamps: created_at, updated_at
 
-The database utilities provide consistent error handling:
+### Badges Table
+- Primary key: `id` (UUID)
+- Information: name, image_url, badge_type
+- Criteria: criteria_value, is_seasonal, seasonal_start_date, seasonal_end_date
+- Rarity: rarity (common, rare, epic, legendary)
+- Status: is_active
+- Timestamp: created_at
 
-```javascript
-// Validation
-const validation = validateRequiredFields(data, ['title', 'description']);
-if (!validation.isValid) {
-  return Response.json({ error: validation.error }, { status: 400 });
-}
+### OTPs Table
+- Primary key: `id` (UUID)
+- Relationships: user_id
+- Entity information: entity_type, entity_name (email or mobile)
+- OTP details: code, expiry_time
+- Usage tracking: is_used, used_at
+- Timestamp: created_at
 
-// Database errors
-if (error) {
-  const formattedError = formatDbError(error);
-  return Response.json({ error: formattedError }, { status: 400 });
-}
-```
+## Indexes
 
-## Security Features
+The database includes optimized indexes for performance:
 
-### Row Level Security (RLS)
+- `idx_users_email`: User email lookups
+- `idx_users_google_id`: Google OAuth user lookups
+- `idx_users_phone_number`: Phone number searches
+- `idx_admin_user_email`: Admin email lookups
+- `idx_activities_status`: Activity status filtering
+- `idx_activities_type`: Activity type filtering
+- `idx_activities_date`: Date range queries on activities
+- `idx_user_activities_user_id`: User activity relationships
+- `idx_user_activities_activity_id`: Activity participation queries
+- `idx_calorie_submissions_user_id`: User submission lookups
+- `idx_calorie_submissions_date`: Date-based submission queries
+- `idx_calorie_donations_user_id`: User donation lookups
+- `idx_calorie_donations_charity_id`: Charity donation queries
+- `idx_user_badges_user_id`: User badge lookups
+- `idx_otps_user_id`: OTP user lookups
+- `idx_otps_entity_name`: OTP entity (email/mobile) lookups
+- `idx_otps_entity_type`: OTP type filtering
+- `idx_otps_expiry_time`: OTP expiration queries
 
-All tables have RLS policies that ensure:
+## Database Commands
 
-1. **Users can only access their own data**
-2. **Public data is readable by all authenticated users**
-3. **Sensitive operations require proper authentication**
-
-### Authentication
-
-- JWT-based authentication
-- Session management with expiration
-- Secure password handling
-- Email verification system
-
-### Data Validation
-
-- Input sanitization
-- Required field validation
-- Type checking
-- SQL injection prevention
-
-## Development Workflow
-
-### 1. Local Development
+### Development Commands
 
 ```bash
-# Start development server
-npm run dev
-
-# Setup database (first time only)
+# Setup database schema
 npm run setup-db
 
 # Seed with sample data
 npm run seed-db
+
+# Complete database reset
+npm run db:reset
 ```
 
-### 2. Database Changes
+## Database Extensions
 
-When making schema changes:
+The schema uses the following PostgreSQL extensions:
 
-1. Update `src/lib/supabase/schema.sql`
-2. Run `npm run setup-db` to apply changes
-3. Update seed data if needed
-4. Test API routes
-
-### 3. Testing Database Connection
-
-```bash
-# Test connection
-curl http://localhost:3000/api/activities
-```
-
-## Production Deployment
-
-### 1. Environment Setup
-
-1. Create production Supabase project
-2. Update environment variables for production
-3. Set `NODE_ENV=production`
-
-### 2. Database Migration
-
-```bash
-# Setup production database
-NODE_ENV=production npm run setup-db
-
-# Do NOT run seed-db in production unless specifically needed
-```
-
-### 3. Verification
-
-1. Test all API endpoints
-2. Verify RLS policies work correctly
-3. Check database performance
-4. Monitor error logs
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Connection Failed**
-   - Check environment variables
-   - Verify Supabase project is active
-   - Check network connectivity
-
-2. **Permission Denied**
-   - Verify RLS policies
-   - Check user authentication
-   - Review service role key
-
-3. **Schema Errors**
-   - Check SQL syntax in schema.sql
-   - Verify table dependencies
-   - Review foreign key constraints
-
-### Debug Commands
-
-```bash
-# Check environment
-echo $NODE_ENV
-echo $NEXT_PUBLIC_SUPABASE_URL
-
-# Test database connection
-node -e "
-const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config();
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-supabase.from('users').select('count').then(console.log).catch(console.error);
-"
-```
-
-## Performance Optimization
-
-### 1. Connection Pooling
-
-Supabase handles connection pooling automatically.
-
-### 2. Query Optimization
-
-- Use indexes for frequently queried columns
-- Limit result sets with pagination
-- Use specific column selection
-
-### 3. Caching
-
-- Leaderboard data is cached
-- Consider implementing Redis for additional caching
-
-## Monitoring
-
-### 1. Supabase Dashboard
-
-- Monitor database performance
-- Check query logs
-- Review error rates
-
-### 2. Application Logs
-
-- Database errors are logged
-- API request/response logging
-- Performance metrics
-
-## Backup and Recovery
-
-### 1. Automatic Backups
-
-Supabase provides automatic daily backups.
-
-### 2. Manual Backups
-
-```sql
--- Export data (run in Supabase SQL editor)
-COPY (SELECT * FROM users) TO 'users_backup.csv' WITH CSV HEADER;
-```
-
-### 3. Restore Process
-
-1. Create new Supabase project
-2. Run schema setup
-3. Import backup data
-4. Update environment variables
-
-## Support
-
-For database-related issues:
-
-1. Check this documentation
-2. Review Supabase documentation
-3. Check application logs
-4. Contact development team
-
----
+- `uuid-ossp`: For UUID generation
+- `pgcrypto`: For cryptographic functions
 
 **Last Updated**: December 2024  
-**Version**: 1.0.0 
+**Version**: 2.1.0 

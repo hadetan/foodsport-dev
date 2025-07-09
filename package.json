@@ -1,40 +1,31 @@
 {
-    "name": "foodsport-frontend",
-    "version": "0.1.0",
-    "private": true,
-    "scripts": {
-        "dev": "next dev --turbopack",
-        "build": "next build",
-        "start": "next start",
-        "lint": "next lint",
-        "setup-db": "node scripts/setup-database.js",
-        "seed-db": "node scripts/seed-database.js",
-        "db:setup": "npm run setup-db",
-        "db:seed": "npm run seed-db",
-        "db:reset": "npm run setup-db && npm run seed-db"
-    },
-    "dependencies": {
-        "@supabase/auth-helpers-nextjs": "^0.10.0",
-        "@supabase/ssr": "^0.6.1",
-        "@supabase/supabase-js": "^2.39.0",
-        "@tailwindcss/forms": "^0.5.10",
-        "@tailwindcss/postcss": "^4.1.11",
-        "chart.js": "^4.5.0",
-        "dotenv": "^16.3.1",
-        "lucide-react": "^0.525.0",
-        "next": "15.3.4",
-        "node-cache": "^5.1.2",
-        "pg": "^8.16.3",
-        "react": "^19.0.0",
-        "react-chartjs-2": "^5.3.0",
-        "react-dom": "^19.0.0"
-    },
-    "devDependencies": {
-        "autoprefixer": "^10.4.21",
-        "daisyui": "^5.0.43",
-        "eslint": "^8",
-        "eslint-config-next": "15.3.4",
-        "postcss": "^8.5.6",
-        "tailwindcss": "^4.1.11"
-    }
+  "name": "foodsport-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "m-dev": "npx prisma migrate dev"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.11.1",
+    "@supabase/supabase-js": "^2.39.0",
+    "@tailwindcss/postcss": "^4.1.11",
+    "dotenv": "^16.3.1",
+    "next": "15.3.4",
+    "node-cache": "^5.1.2",
+    "pg": "^8.16.3",
+    "postcss": "^8.5.6",
+    "prisma": "^6.11.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "^4.1.11"
+  },
+  "devDependencies": {
+    "daisyui": "^5.0.43",
+    "eslint": "^8",
+    "eslint-config-next": "15.3.4"
+  }
 }

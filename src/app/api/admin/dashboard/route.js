@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/supabase/client';
-import { requireAdmin } from '@/lib/supabase/require-admin';
+import { requireAdmin } from '@/lib/prisma/require-admin';
+import { getCount } from '@/lib/prisma/db-utils';
 import { getCache, setCache, CACHE_TTL } from '@/utils/cache';
 
 function getDateRange(dateRange) {
@@ -22,7 +23,7 @@ function getDateRange(dateRange) {
 }
 
 export async function GET(req) {
-  const supabase = createServerClient();
+  const supabase = createSupabaseClient();
   const { searchParams } = new URL(req.url);
   const dateRange = searchParams.get('dateRange') || '7d';
   const fromDate = getDateRange(dateRange);
@@ -39,40 +40,30 @@ export async function GET(req) {
     });
   }
 
-  const { count: totalUsers } = await supabase
-    .from('users')
-    .select('id', { count: 'exact', head: true });
-  const { count: activeActivities } = await supabase
-    .from('activities')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'active');
-  const { count: totalRewards } = await supabase
-    .from('user_badges')
-    .select('id', { count: 'exact', head: true });
-  const { data: donations, error: donationsError } = await supabase
-    .from('calorie_donations')
-    .select('calories_donated');
-  const totalDonations = donationsError || !donations ? 0 : donations.reduce((sum, d) => sum + (d.calories_donated || 0), 0);
-  const { count: newUsers } = await supabase
-    .from('users')
-    .select('id', { count: 'exact', head: true })
-    .gte('created_at', fromDate);
-  const { count: completedActivities } = await supabase
-    .from('activities')
-    .select('id', { count: 'exact', head: true })
-    .eq('status', 'completed')
-    .gte('updated_at', fromDate);
-  const { data: donationsRange, error: donationsRangeError } = await supabase
-    .from('calorie_donations')
-    .select('calories_donated')
-    .gte('created_at', fromDate);
-  const caloriesDonated = donationsRangeError || !donationsRange ? 0 : donationsRange.reduce((sum, d) => sum + (d.calories_donated || 0), 0);
+  // Prisma-based queries
+  const totalUsers = await getCount('user');
+  const activeActivities = await getCount('activity', { status: 'active' });
+  const totalRewards = await getCount('user_badge');
 
-  const { data: recentSignupsData } = await supabase
-    .from('users')
-    .select('id, name, email, created_at, is_active')
-    .order('created_at', { ascending: false })
-    .limit(10);
+  // Total donations (sum)
+  const { prisma } = await import('@/lib/prisma/client');
+  const donations = await prisma.calorieDonation.findMany({ select: { calories_donated: true } });
+  const totalDonations = donations.reduce((sum, d) => sum + (d.calories_donated || 0), 0);
+
+  // New users in range
+  const newUsers = await getCount('user', { created_at: { gte: fromDate } });
+  // Completed activities in range
+  const completedActivities = await getCount('activity', { status: 'completed', updated_at: { gte: fromDate } });
+  // Calories donated in range
+  const donationsRange = await prisma.calorieDonation.findMany({ where: { created_at: { gte: fromDate } }, select: { calories_donated: true } });
+  const caloriesDonated = donationsRange.reduce((sum, d) => sum + (d.calories_donated || 0), 0);
+
+  // Recent signups
+  const recentSignupsData = await prisma.user.findMany({
+    orderBy: { created_at: 'desc' },
+    take: 10,
+    select: { id: true, name: true, email: true, created_at: true, is_active: true }
+  });
   const recentSignups = (recentSignupsData || []).map(u => ({
     id: u.id,
     name: u.name,

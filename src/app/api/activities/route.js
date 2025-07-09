@@ -1,11 +1,12 @@
-import { getMany, insert, validateRequiredFields, sanitizeData, formatDbError } from '@/lib/supabase/db-utils';
+import { getMany, insert } from '@/lib/prisma/db-utils';
+import { validateRequiredFields } from '@/utils/validation';
+import { sanitizeData } from '@/utils/sanitize';
+import { formatDbError } from '@/utils/formatDbError';
 
 // GET /api/activities - Get all activities with optional filters
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-
-    // Extract query parameters
     const status = searchParams.get('status');
     const type = searchParams.get('type');
     const location = searchParams.get('location');
@@ -20,49 +21,29 @@ export async function GET(request) {
     if (location) filters.location = location;
     if (date) filters.date = date;
 
-    // Build options
+    // Prisma options
     const options = {
       limit,
-      range: {
-        from: page * limit,
-        to: (page + 1) * limit - 1
-      },
-      orderBy: {
-        column: 'created_at',
-        ascending: false
-      }
+      skip: page * limit,
+      orderBy: { created_at: 'desc' }
     };
 
     // Get activities from database
-    const { data: activities, error } = await getMany('activities', filters, [
-      'id', 'title', 'description', 'type', 'location', 'date', 'time',
-      'status', 'participant_limit', 'current_participants', 'organizer_id',
-      'image_url', 'created_at', 'updated_at'
-    ], options);
-
-    if (error) {
-      console.error('Database error:', error);
-      return Response.json({
-        error: {
-          code: 'DATABASE_ERROR',
-          message: 'Failed to fetch activities',
-          details: error.message
-        }
-      }, { status: 500 });
-    }
+    const activities = await getMany('activity', filters, {
+      id: true, title: true, description: true, type: true, location: true, date: true, time: true,
+      status: true, participant_limit: true, current_participants: true, organizer_id: true,
+      image_url: true, created_at: true, updated_at: true
+    }, options);
 
     // Get organizer names for each activity
     const activitiesWithOrganizers = await Promise.all(
       activities.map(async (activity) => {
         if (activity.organizer_id) {
-          const { data: organizer } = await getMany('users',
-            { id: activity.organizer_id },
-            ['name', 'profile_picture']
-          );
+          const organizer = await getMany('user', { id: activity.organizer_id }, { name: true, profile_picture: true });
           return {
             ...activity,
             organizer: organizer?.[0]?.name || 'Unknown',
-            organizerPicture: organizer?.[0]?.profile_picture
+            organizerPicture: organizer?.[0]?.profile_picture || null
           };
         }
         return {
@@ -78,12 +59,10 @@ export async function GET(request) {
       pagination: {
         page,
         limit,
-        total: activities.length
+        total: activitiesWithOrganizers.length
       }
     });
-
   } catch (error) {
-    console.error('API error:', error);
     return Response.json({
       error: {
         code: 'INTERNAL_ERROR',
@@ -98,11 +77,8 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-
-    // Validate required fields
     const requiredFields = ['title', 'description', 'type', 'location', 'date', 'time', 'organizer_id'];
     const validation = validateRequiredFields(body, requiredFields);
-
     if (!validation.isValid) {
       return Response.json({
         error: {
@@ -112,37 +88,25 @@ export async function POST(request) {
         }
       }, { status: 400 });
     }
-
-    // Sanitize data
     const allowedFields = [
       'title', 'description', 'type', 'location', 'date', 'time',
       'participant_limit', 'organizer_id', 'image_url'
     ];
     const sanitizedData = sanitizeData(body, allowedFields);
-
-    // Set default values
     sanitizedData.status = 'upcoming';
     sanitizedData.current_participants = 0;
     sanitizedData.created_at = new Date().toISOString();
     sanitizedData.updated_at = new Date().toISOString();
-
-    // Insert into database
-    const { data: activity, error } = await insert('activities', sanitizedData);
-
-    if (error) {
-      const formattedError = formatDbError(error);
-      return Response.json({
-        error: formattedError
-      }, { status: 400 });
+    const activity = await insert('activity', sanitizedData);
+    if (activity && activity.error) {
+      const formattedError = formatDbError(activity.error);
+      return Response.json({ error: formattedError }, { status: 400 });
     }
-
     return Response.json({
       message: 'Activity created successfully',
       activity
     }, { status: 201 });
-
   } catch (error) {
-    console.error('API error:', error);
     return Response.json({
       error: {
         code: 'INTERNAL_ERROR',

@@ -1,0 +1,340 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl= env("DATABASE_DIRECT_URL")
+}
+
+enum ActivityLevel {
+  low
+  medium
+  high
+}
+
+enum ActivityStatus {
+  upcoming
+  active
+  closed
+  completed
+  cancelled
+  draft
+}
+
+enum ActivityType {
+  kayak
+  hiking
+  yoga
+  fitness
+  running
+  cycling
+  swimming
+  dancing
+  boxing
+  other
+}
+
+enum TicketStatus {
+  active
+  expired
+  used
+  cancelled
+}
+
+enum BadgeType {
+  streak
+  calorie
+  seasonal
+  achievement
+  referral
+}
+
+enum VerificationStatus {
+  pending
+  approved
+  rejected
+}
+
+enum OtpEntityType {
+  mobile_verification
+  email_verification
+  password_reset
+}
+
+model User {
+  id                    String   @id @default(uuid())
+  email                 String   @unique
+  name                  String
+  dateOfBirth           DateTime @map("date_of_birth")
+  weight                Decimal? @db.Decimal(5, 2)
+  height                Decimal? @db.Decimal(5, 2)
+  gender                String?
+  activityLevel         ActivityLevel @default(medium) @map("activity_level")
+  phoneNumber           String?  @map("phone_number")
+  profilePictureUrl     String?  @map("profile_picture_url")
+  border                String?  @default("default")
+  title                 String?  @default("Newcomer")
+  bio                   String?
+  totalActivities       Int      @default(0) @map("total_activities")
+  totalDonations        Int      @default(0) @map("total_donations")
+  badgeCount            Int      @default(0) @map("badge_count")
+  level                 Int      @default(1)
+  currentStreak         Int      @default(0) @map("current_streak")
+  totalPoints           Int      @default(0) @map("total_points")
+  totalCaloriesBurned   Int      @default(0) @map("total_calories_burned")
+  totalCaloriesDonated  Int      @default(0) @map("total_calories_donated")
+  calorieGoal           Int      @default(500) @map("calorie_goal")
+  dailyGoal             Int      @default(300) @map("daily_goal")
+  weeklyGoal            Int      @default(2000) @map("weekly_goal")
+  monthlyGoal           Int      @default(8000) @map("monthly_goal")
+  yearlyGoal            Int      @default(100000) @map("yearly_goal")
+  googleId              String?  @unique @map("google_id")
+  emailVerified         Boolean  @default(false) @map("email_verified")
+  phoneVerified         Boolean  @default(false) @map("phone_verified")
+  isActive              Boolean  @default(true) @map("is_active")
+  hasReferredBefore     Boolean  @default(false) @map("has_referred_before")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  activitiesOrganized   Activity[] @relation("OrganizerActivities")
+  tickets               Ticket[]
+  userActivities        UserActivity[]
+  calorieSubmissions    CalorieSubmission[]
+  calorieDonations      CalorieDonation[] @relation("UserCalorieDonations")
+  userBadges            UserBadge[]
+  referralCodes         ReferralCode[]
+  referralsGiven        Referral[] @relation("Referrer")
+  referralsReceived     Referral[] @relation("Referred")
+  otps                  Otp[]
+
+  @@map("users")
+}
+
+model AdminUser {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  role      String?  @default("admin")
+  status    String?  @default("active")
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admin_user")
+}
+
+model Activity {
+  id                   String        @id @default(uuid())
+  title                String
+  description          String?
+  activityType         ActivityType  @map("activity_type")
+  location             String
+  startDate            DateTime      @map("start_date")
+  endDate              DateTime      @map("end_date")
+  startTime            DateTime      @map("start_time")
+  endTime              DateTime      @map("end_time")
+  status               ActivityStatus @default(draft)
+  participantLimit     Int?          @map("participant_limit")
+  currentParticipants  Int           @default(0) @map("current_participants")
+  organizerName        String?       @map("organizer_name")
+  organizerId          String?       @map("organizer_id")
+  imageUrl             String?       @map("image_url")
+  pointsPerParticipant Int           @default(10) @map("points_per_participant")
+  caloriesPerHour      Int           @default(300) @map("calories_per_hour")
+  isFeatured           Boolean       @default(false) @map("is_featured")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  organizer            User?         @relation("OrganizerActivities", fields: [organizerId], references: [id])
+  tickets              Ticket[]
+  userActivities       UserActivity[]
+  calorieSubmissions   CalorieSubmission[]
+
+  @@map("activities")
+}
+
+model Ticket {
+  id           String    @id @default(uuid())
+  ticketCode   String    @unique @map("ticket_code")
+  activityId   String    @map("activity_id")
+  userId       String    @map("user_id")
+  status       TicketStatus @default(active)
+  ticketSent   Boolean   @default(false) @map("ticket_sent")
+  issuedAt     DateTime  @default(now()) @map("issued_at")
+  usedAt       DateTime? @map("used_at")
+  revoked      Boolean   @default(false)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  activity     Activity  @relation(fields: [activityId], references: [id])
+  user         User      @relation(fields: [userId], references: [id])
+  userActivity UserActivity[]
+
+  @@map("tickets")
+}
+
+model UserActivity {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  activityId String   @map("activity_id")
+  ticketId   String?  @map("ticket_id")
+  joinedAt   DateTime @default(now()) @map("joined_at")
+
+  // Relations
+  user       User     @relation(fields: [userId], references: [id])
+  activity   Activity @relation(fields: [activityId], references: [id])
+  ticket     Ticket?  @relation(fields: [ticketId], references: [id])
+
+  @@unique([userId, activityId])
+  @@map("user_activities")
+}
+
+model CalorieSubmission {
+  id                String             @id @default(uuid())
+  userId            String             @map("user_id")
+  activityId        String?            @map("activity_id")
+  photoUrl          String             @map("photo_url")
+  submittedCalories Int?               @map("submitted_calories")
+  verifiedCalories  Int?               @map("verified_calories")
+  verificationStatus VerificationStatus @default(pending) @map("verification_status")
+  verifiedBy        String?            @map("verified_by")
+  verifiedAt        DateTime?          @map("verified_at")
+  pointsEarned      Int                @default(0) @map("points_earned")
+  submissionDate    DateTime           @map("submission_date")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  // Relations
+  user              User               @relation(fields: [userId], references: [id])
+  activity          Activity?          @relation(fields: [activityId], references: [id])
+
+  @@map("calorie_submissions")
+}
+
+model Charity {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  mission         String?
+  imageUrl        String?  @map("image_url")
+  websiteUrl      String?  @map("website_url")
+  currentGoal     Int      @default(1000000) @map("current_goal")
+  currentDonations Int     @default(0) @map("current_donations")
+  isActive        Boolean  @default(true) @map("is_active") // Prisma can't do generated columns, handle in app
+  featured        Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  calorieDonations CalorieDonation[]
+
+  @@map("charities")
+}
+
+model CalorieDonation {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  charityId       String   @map("charity_id")
+  caloriesDonated Int      @map("calories_donated")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user            User     @relation("UserCalorieDonations", fields: [userId], references: [id])
+  charity         Charity  @relation(fields: [charityId], references: [id])
+
+  @@map("calorie_donations")
+}
+
+model Badge {
+  id              String   @id @default(uuid())
+  name            String
+  imageUrl        String?  @map("image_url")
+  badgeType       BadgeType @map("badge_type")
+  criteriaValue   Int?     @map("criteria_value")
+  isSeasonal      Boolean  @default(false) @map("is_seasonal")
+  seasonalStartDate DateTime? @map("seasonal_start_date")
+  seasonalEndDate DateTime? @map("seasonal_end_date")
+  rarity          String?  @default("common")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  userBadges      UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  badgeId     String   @map("badge_id")
+  earnedAt    DateTime @default(now()) @map("earned_at")
+  earnedValue Int?     @map("earned_value")
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id])
+  badge       Badge    @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model ReferralCode {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  code       String   @unique
+  isActive   Boolean  @default(true) @map("is_active")
+  expiresAt  DateTime? @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user       User     @relation(fields: [userId], references: [id])
+  referrals  Referral[]
+
+  @@map("referral_codes")
+}
+
+model Referral {
+  id             String   @id @default(uuid())
+  referrerId     String   @map("referrer_id")
+  referredId     String   @map("referred_id")
+  referralCodeId String   @map("referral_code_id")
+  isSuccessful   Boolean  @default(false) @map("is_successful")
+  rewardGiven    Boolean  @default(false) @map("reward_given")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  referrer       User     @relation("Referrer", fields: [referrerId], references: [id])
+  referred       User     @relation("Referred", fields: [referredId], references: [id])
+  referralCode   ReferralCode @relation(fields: [referralCodeId], references: [id])
+
+  @@map("referrals")
+}
+
+model Otp {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  entityType  OtpEntityType @map("entity_type")
+  entityName  String   @map("entity_name")
+  code        String
+  expiryTime  DateTime @map("expiry_time")
+  isUsed      Boolean  @default(false) @map("is_used")
+  usedAt      DateTime? @map("used_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@map("otps")
+}
