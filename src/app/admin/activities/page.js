@@ -124,7 +124,7 @@ const ActivityManagementPage = () => {
 
             {/* Search and Filters */}
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                <Dropdown items={statusOfUser} nameOfDrop="Status" />
+                <Dropdown items={statusOfUser} name="Status" />
             </div>
 
             {/* Activities Table */}

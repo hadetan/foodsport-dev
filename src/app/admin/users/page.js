@@ -263,7 +263,7 @@ const UserManagementPage = () => {
                 {/* Enhanced Filters */}
                 <div className="flex flex-wrap gap-2">
                     <Dropdown  items={statusOfUser}
-                    nameOfDrop ='Status' />
+                    name ='Status' />
 
                     <select
                         className="select select-bordered w-full lg:w-48"
@@ -282,7 +282,7 @@ const UserManagementPage = () => {
                         ))}
                     </select> */}
                     <Dropdown items={hongKongRegions}
-                    nameOfDrop ='All Districts'/>
+                    name ='All Districts'/>
                 </div>
             </div>
 
