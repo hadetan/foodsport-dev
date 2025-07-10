@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import ErrorAlert from "@/components/ErrorAlert";
 import { Users, Pencil, Trash2, Search } from "lucide-react";
 import SearchBar from "@/admin-components/SearchBar";
+import Dropdown from "@/admin-components/Dropdown";
 const ActivityManagementPage = () => {
     const router = useRouter();
     const [activeStep, setActiveStep] = useState(1);
@@ -91,6 +92,7 @@ const ActivityManagementPage = () => {
             setTableLoading(false);
         }, 1000);
     }, []);
+    const statusOfUser = ["Active", "Inactive"];
 
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
@@ -122,21 +124,7 @@ const ActivityManagementPage = () => {
 
             {/* Search and Filters */}
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                <div className="flex relative">
-                    <SearchBar placeholderName="Search Activities" />
-                </div>
-
-                <select
-                    className="select select-bordered w-full lg:w-48"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="pending">Pending</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
+                <Dropdown items={statusOfUser} nameOfDrop="Status" />
             </div>
 
             {/* Activities Table */}
