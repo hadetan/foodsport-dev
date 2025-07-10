@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import UserRow from "@/app/admin/(logged_in)/users/userRow";
 import { Search, CheckCircle2, Menu } from "lucide-react";
-import SearchBar from "@/app/admin/(logged_in)//components/SearchBar";
+import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
+import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 
 const UserManagementPage = () => {
     const router = useRouter();
@@ -244,13 +245,13 @@ const UserManagementPage = () => {
             avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
         },
     ];
-
     // Simulate initial data loading
     useState(() => {
         setTimeout(() => {
             setTableLoading(false);
         }, 1000);
     }, []);
+    const statusOfUser = ["Active", "Inactive"];
 
     return (
         <>
@@ -261,15 +262,8 @@ const UserManagementPage = () => {
 
                 {/* Enhanced Filters */}
                 <div className="flex flex-wrap gap-2">
-                    <select
-                        className="select select-bordered w-full lg:w-48"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="blocked">Blocked</option>
-                    </select>
+                    <Dropdown  items={statusOfUser}
+                    name ='Status' />
 
                     <select
                         className="select select-bordered w-full lg:w-48"
@@ -279,14 +273,16 @@ const UserManagementPage = () => {
                         <option value="Hong Kong">Hong Kong</option>
                     </select>
 
-                    <select className="select select-bordered w-full lg:w-48">
+                    {/* <select className="select select-bordered w-full lg:w-48">
                         <option value="">All Districts</option>
                         {hongKongRegions.map((region) => (
                             <option key={region} value={region}>
                                 {region}
                             </option>
                         ))}
-                    </select>
+                    </select> */}
+                    <Dropdown items={hongKongRegions}
+                    name ='All Districts'/>
                 </div>
             </div>
 
