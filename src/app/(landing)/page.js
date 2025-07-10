@@ -1,10 +1,10 @@
 import Image from "next/image";
-import styles from "./page.module.css";
-import Activity from "@/components/Activity";
-import ActivityItem from "@/components/ActivityItem";
-import activities from "@/data/activities";
-import Hero from "@/components/Hero";
-import ComingSoon from "@/components/ComingSoon";
+import styles from "@/app/shared/css/page.module.css";
+import Activity from "@/app/shared/components/Activity";
+import ActivityItem from "@/app/shared/components/ActivityItem";
+// import activities from "@/data/activities";
+import Hero from "@/app/shared/components/Hero";
+import ComingSoon from "@/app/shared/components/ComingSoon";
 
 export default function Home() {
   return (
@@ -12,7 +12,7 @@ export default function Home() {
       <Hero />
       <Activity />
       <div className={styles.grid3}>
-        {activities.map((item, idx) => (
+        {/* {activities.map((item, idx) => (
           <ActivityItem
             key={idx}
             image={item.image}
@@ -23,7 +23,7 @@ export default function Home() {
             time={item.time}
             location={item.location}
           />
-        ))}
+        ))} */}
       </div>
       <ComingSoon />
     </>

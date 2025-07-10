@@ -1,7 +1,7 @@
 import Image from 'next/image';
-import styles from '@/components/Header.module.css';
+import styles from '@/app/shared/css/Header.module.css';
 import Link from 'next/link';
-import ThemeSelector from "@/components/ThemeSelector";
+import ThemeSelector from "@/app/shared/components/ThemeSelector";
 
 export default function Header() {
   return (

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import ErrorAlert from "@/components/ErrorAlert";
+import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import { Users, Pencil, Trash2, Search } from "lucide-react";
-import SearchBar from "@/admin-components/SearchBar";
+import SearchBar from "@/app/admin/(logged_in)//components/SearchBar";
 const ActivityManagementPage = () => {
     const router = useRouter();
     const [activeStep, setActiveStep] = useState(1);

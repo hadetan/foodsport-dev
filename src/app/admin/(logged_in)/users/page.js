@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import ErrorAlert from "@/components/ErrorAlert";
-import UserRow from "@/app/admin/users/userRow";
+import ErrorAlert from "@/app/shared/components/ErrorAlert";
+import UserRow from "@/app/admin/(logged_in)/users/userRow";
 import { Search, CheckCircle2, Menu } from "lucide-react";
-import SearchBar from "@/admin-components/SearchBar";
+import SearchBar from "@/app/admin/(logged_in)//components/SearchBar";
 
 const UserManagementPage = () => {
     const router = useRouter();

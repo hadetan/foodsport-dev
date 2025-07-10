@@ -1,7 +1,6 @@
-import Activity from '@/components/Activity';
-import ActivityItem from '@/components/ActivityItem';
-import styles from '../page.module.css';
-import Headers from "@/components/Header";
+import Activity from '@/app/shared/components/Activity';
+import ActivityItem from '@/app/shared/components/ActivityItem';
+import styles from '@/app/shared/css/page.module.css';
 
 async function fetchActivities() {
   // const res = await fetch("localhost:3000/api/activities", {

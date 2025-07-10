@@ -5,7 +5,8 @@ export default function ComingSoon() {
           src="/coming.jpg"
           alt="Coming Soon"
           width={1784}
-          height={770}          className="object-contain"
+          height={770}
+          className="object-contain"
         />
       </div>
     );
