@@ -32,11 +32,11 @@ export async function GET(req) {
       { email: { contains: search, mode: 'insensitive' } },
     ];
   }
-  if (status) filters.status = status;
+  if (status) filters.isActive = status === 'active';
   const options = {
     limit,
     skip,
-    orderBy: { [sortBy]: sortOrder },
+    orderBy: { [sortBy === 'created_at' ? 'createdAt' : sortBy === 'updated_at' ? 'updatedAt' : sortBy]: sortOrder },
   };
   const users = await getMany(
     'user',
@@ -46,21 +46,21 @@ export async function GET(req) {
       firstname: true,
       lastname: true,
       email: true,
-      status: true,
-      created_at: true,
-      updated_at: true,
-      total_activities: true,
-      total_calories_donated: true,
-      badge_count: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+      totalActivities: true,
+      totalCaloriesDonated: true,
+      badgeCount: true,
     },
     options
   );
-  const usersWithStats = (users || []).map((u) => ({
+  const usersWithStats = (users || [])?.map((u) => ({
     id: u.id,
     firstname: u.firstname,
     lastname: u.lastname,
     email: u.email,
-    status: u.status,
+    isActive: u.is_active,
     joinDate: u.created_at,
     lastActive: u.updated_at,
     stats: {
@@ -96,7 +96,7 @@ export async function PATCH(req, { params }) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
-  const allowedFields = ['status', 'role', 'reason'];
+  const allowedFields = ['isActive'];
   const updates = sanitizeData(body, allowedFields);
   if (Object.keys(updates).length === 0) {
     return NextResponse.json(
