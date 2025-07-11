@@ -55,18 +55,18 @@ export async function GET(req) {
     },
     options
   );
-  const usersWithStats = (users || [])?.map((u) => ({
+  const usersWithStats = (users || []).map((u) => ({
     id: u.id,
     firstname: u.firstname,
     lastname: u.lastname,
     email: u.email,
-    isActive: u.is_active,
-    joinDate: u.created_at,
-    lastActive: u.updated_at,
+    isActive: u.isActive,
+    joinDate: u.createdAt,
+    lastActive: u.updatedAt,
     stats: {
-      totalActivities: u.total_activities,
-      totalDonations: u.total_calories_donated,
-      badgeCount: u.badge_count,
+      totalActivities: u.totalActivities,
+      totalDonations: u.totalCaloriesDonated,
+      badgeCount: u.badgeCount,
     },
   }));
   const responseData = {
