@@ -149,13 +149,13 @@ Response (failure): {
 
 **Acceptance Criteria**:
 
--   [ ] User can log in with valid credentials
--   [ ] Returns session and user info on success
--   [ ] Returns error for invalid credentials
--   [ ] No manual password or JWT handling; all authentication managed by Auth provider
+-   [x] User can log in with valid credentials
+-   [x] Returns session and user info on success
+-   [x] Returns error for invalid credentials
+-   [x] No manual password or JWT handling; all authentication managed by Auth provider
 
-**Current Status**: Not Started  
-**Notes**: Standard user login endpoint.
+**Current Status**: Done  
+**Notes**: Standard user login endpoint. All ACs complete.
 
 ---
 
@@ -305,15 +305,15 @@ Response (failure): {
 
 **Acceptance Criteria**:
 
--   [ ] User can register with email, password, firstname, lastname
--   [ ] User can add personal details (date of birth, weight, height, gender, phone number)
--   [ ] User can add additional details (profile picture, title, bio, daily goal, calorie goal)
--   [ ] Proper validation and error handling for each step
--   [ ] No duplicate emails allowed
--   [ ] Only valid userId can proceed to next steps
+-   [x] User can register with email, password, firstname, lastname
+-   [x] User can add personal details (date of birth, weight, height, gender, phone number)
+-   [x] User can add additional details (profile picture, title, bio, daily goal, calorie goal)
+-   [x] Proper validation and error handling for each step
+-   [x] No duplicate emails allowed
+-   [x] Only valid userId can proceed to next steps
 
-**Current Status**: Not Started  
-**Notes**: Registration is a multi-step process. All fields are based on the User model in the schema.
+**Current Status**: Done  
+**Notes**: Registration is a multi-step process. All fields are based on the User model in the schema. All ACs complete.
 
 ---
 
