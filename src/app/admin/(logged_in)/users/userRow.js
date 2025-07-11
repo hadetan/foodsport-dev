@@ -1,7 +1,7 @@
 import React from "react";
 import Status from "@/app/admin/(logged_in)/users/status";
 import Avatar from "@/app/admin/(logged_in)/users/avatar";
-import {Pencil,Eye} from 'lucide-react'
+import { Pencil, Eye } from "lucide-react";
 
 export const UserRow = ({ user }) => {
     return (
@@ -13,12 +13,16 @@ export const UserRow = ({ user }) => {
                             <div className="mask mask-squircle w-12 h-12">
                                 <Avatar
                                     srcAvatar={user.avatar}
-                                    nameOfUser={user.name}
+                                    firstName={user.firstname}
+                                    lastName={user.lastname}
                                 />
                             </div>
                         </div>
                         <div>
-                            <div className="font-bold">{user.name}</div>
+                            <div className="font-bold">
+                            {user.firstname + " " + (user.lastname !== undefined ? user.lastname : "")}
+
+                            </div>
                             <div className="text-sm opacity-50">
                                 {user.email}
                             </div>
@@ -30,20 +34,20 @@ export const UserRow = ({ user }) => {
                 </td>
                 <td>
                     <div className="text-sm">
-                        <div>{user.location.state}</div>
+                        <div>{user.location?.state}</div>
                         <div className="text-xs opacity-50">
-                            {user.location.city}, {user.location.postal}
+                            {user.location?.city}, {user.location?.postal}
                         </div>
                     </div>
                 </td>
                 <td>
-                    <Status statusOfUser={user.status} />
+                    <Status statusOfUser={user.isActive} />
                 </td>
                 <td>
                     <div className="text-sm">
-                        <div>Activities: {user.stats.totalActivities}</div>
-                        <div>Donations: {user.stats.totalDonations}</div>
-                        <div>Badges: {user.stats.badgeCount}</div>
+                        <div>Activities: {user.stats?.totalActivities}</div>
+                        <div>Donations: {user.stats?.totalDonations}</div>
+                        <div>Badges: {user.stats?.badgeCount}</div>
                     </div>
                 </td>
                 <td>
@@ -55,13 +59,13 @@ export const UserRow = ({ user }) => {
                                 router.push(`/admin/users/${user.id}`)
                             }
                         >
-                            <Pencil/>
+                            <Pencil />
                         </button>
                         <button
                             className="btn btn-sm btn-ghost tooltip"
                             data-tip="Edit User"
                         >
-                            <Eye/>
+                            <Eye />
                         </button>
                     </div>
                 </td>
