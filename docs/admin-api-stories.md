@@ -306,17 +306,71 @@ Response (failure): {
 }
 ```
 
+## Social Media API Story
+
+
+### Story #SMA1: Social Media Image API Implementation
+
+**Title**: Implement social media image management APIs
+**Description**: Provide endpoints for uploading, replacing, and deleting social media images for the admin panel footer. Only image management is currently supported in the API.
+
+**Scope**:
+- Image upload (up to **MAX_SOCIAL_MEDIA_IMAGES**; images are stored in a bucket, and their links are saved in a table with an id. Only one image can be uploaded or replaced per request, specifying the id to update. The backend enforces the max number of images, editable via `MAX_SOCIAL_MEDIA_IMAGES`).
+- Each image record in the `SocialMediaImage` table also includes a `socialMediaUrl` column, which holds the URL of the related social media post (e.g., Instagram, Facebook, etc.).
+
+**API Endpoints**:
+```
+
+# Image API
+GET /api/admin/social
+POST /api/admin/social   # Upload or replace image by id (in request body)
+DELETE /api/admin/social?id=   # Removes image from table and bucket using corresponding id (in request body)
+```
+
+- **Image API**
+  - GET returns all current images (up to `MAX_SOCIAL_MEDIA_IMAGES`). Each image object includes `id`, `imageUrl` (full bucket URL), and `socialMediaUrl` (the social media post URL).
+  - POST uploads or replaces a single image by id; image is saved in bucket, link is stored in table with id, and `socialMediaUrl` is set from the request.
+  - DELETE removes image by id (removes from both table and bucket)
+
+**Response Objects:**
+
+- **GET /api/admin/social**
+  ```json
+  {
+    "images": [
+      {
+        "id": "string",
+        "imageUrl": "string", // full bucket URL
+        "socialMediaUrl": "string" // social media post URL
+      }
+    ]
+  }
+  ```
+
+- **POST /api/admin/social**
+  ```json
+  {
+    "success": true,
+    "image": {
+      "id": "string",
+      "imageUrl": "string", // partial bucket URL
+      "socialMediaUrl": "string" // social media post URL
+    }
+  }
+  ```
+
 **Acceptance Criteria**:
-- [x] Only authenticated admins (checked via admin_user table) can create new admins
-- [x] New admin must have unique email (returns a simple error message if not)
-- [x] Uses Supabase Auth signUp and inserts into admin_user table
-- [x] Only name, email, password fields are set in users table; admin fields are in admin_user
-- [x] Audit logging for admin creation (success and failure)
-- [x] On success, returns a message and session if available (no need for full user object)
-- [x] New admin can log in via admin login API
+- [x] Only authenticated admins (checked via admin_user table) can manage images
+- [x] Image API supports GET (returns up to MAX_SOCIAL_MEDIA_IMAGES), POST (upload/replace single image by id), DELETE (removes from table and bucket)
+- [x] All endpoints have proper validation and error handling
+- [x] Security: admin-only access (checked via requireAdmin util)
+- [x] Audit logging for all changes
+- [x] Response caching where appropriate
+- [x] `MAX_SOCIAL_MEDIA_IMAGES` value is easy to find and update in code
+- [x] `SocialMediaImage` table includes a `socialMediaUrl` column for each image, and this value is returned in GET and POST responses.
 
 **Current Status**: Done  
-**Notes**: Endpoint implemented using Supabase Auth signUp, admin check (via admin_user table), audit logging, and error handling. Only required fields are set. Returns a message and session if available.
+**Notes**: Image API endpoints implemented with proper validation, admin-only access (checked via admin_user table), audit logging, and caching. Supports single image upload/replace by id, deletion, and listing. MAX_SOCIAL_MEDIA_IMAGES limit is enforced on the backend and easily configurable. Each image record includes a `socialMediaUrl` field for linking to the social media post.
 
 ---
 
@@ -331,13 +385,13 @@ Response (failure): {
 
 ## Summary
 
-**Total API Stories**: 5  
+**Total API Stories**: 6  
 **Current Status Breakdown**:
 
 -   Not Started: 0
 -   In Progress: 0
 -   Review: 0
--   Done: 5
+-   Done: 6
 
 **Priority Order**:
 
@@ -346,6 +400,7 @@ Response (failure): {
 3. Story #AA3 (Activity Management API) - Content Management
 4. Story #AA4 (Admin Login API) - Authentication
 5. Story #AA5 (Admin Creation API) - User Management
+6. Story #SMA1 (Social Media API) - Footer Management
 
 **Technical Requirements**:
 
@@ -355,7 +410,6 @@ Response (failure): {
 -   Input Validation
 -   Error Handling
 -   Response Caching
--   Audit Logging
 
 **Security Requirements**:
 
