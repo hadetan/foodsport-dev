@@ -412,14 +412,14 @@ DELETE /api/admin/social?id=   # Removes image from table and bucket using corre
 
 **Acceptance Criteria**:
 
--   [ ] Axios is installed and configured with a default base URL and headers
--   [ ] API utility supports dynamic base URLs based on app state (landing, admin, my)
--   [ ] Global request interceptor retrieves the current session/token from Supabase and adds it to all requests (if present)
--   [ ] Global response interceptor handles errors and uses Supabase methods for token refresh (if needed)
--   [ ] Interceptor logic is documented and easy to extend/customize
--   [ ] All API endpoints are accessible via a centralized API utility (e.g., `src/utils/api.js`)
--   [ ] Reusable React hooks are created for common API patterns (e.g., `useFetch`, `useMutation`, `useApi`)
--   [ ] Hooks support loading, error, and data states
+-   [x] Axios is installed and configured with a default base URL and headers
+-   [x] API utility supports dynamic base URL
+-   [x] Interceptor logic is documented and easy to extend/customize
+-   [x] All API endpoints are accessible via a centralized API utility (e.g., `src/utils/api.js`)
+-   [x] Global request interceptor retrieves the current session/token from Supabase and adds it to all requests 
+-   [x] Global response interceptor handles errors and uses Supabase methods for token refresh
+-   [x] Reusable React hooks are created for common API patterns (e.g., `useFetch`, `useMutation`, `useApi`)
+-   [x] Hooks support loading, error, and data states
 -   [ ] All existing fetch or direct API calls in the frontend are migrated to use Axios or the new hooks
 -   [ ] API utility and hooks are documented with usage examples, including interceptor extension
 -   [ ] Proper error messages are displayed to users on API failure
