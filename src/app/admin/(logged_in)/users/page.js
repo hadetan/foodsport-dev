@@ -7,7 +7,7 @@ import UserRow from "@/app/admin/(logged_in)/users/userRow";
 import { Search, CheckCircle2, Menu } from "lucide-react";
 import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
-
+import Table from "@/app/admin/(logged_in)/components/Table";
 const UserManagementPage = () => {
     const router = useRouter();
     const [users, setUsers] = useState([]);
@@ -61,7 +61,13 @@ const UserManagementPage = () => {
     }, []);
 
     const statusOfUser = ["Active", "Inactive"];
-
+    const tableHeading = [
+        "User Info",
+        "Status",
+        "Location",
+        "Statistics",
+        "Actions",
+    ];
     return (
         <>
             <div className="text-2xl mb-5 text-base-content">Manage Users</div>
@@ -81,14 +87,6 @@ const UserManagementPage = () => {
                         <option value="Hong Kong">Hong Kong</option>
                     </select>
 
-                    {/* <select className="select select-bordered w-full lg:w-48">
-                        <option value="">All Districts</option>
-                        {hongKongRegions.map((region) => (
-                            <option key={region} value={region}>
-                                {region}
-                            </option>
-                        ))}
-                    </select> */}
                     <Dropdown items={hongKongRegions} name="All Districts" />
                 </div>
             </div>
@@ -101,22 +99,7 @@ const UserManagementPage = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto rounded-box border border-primary/60">
-                        <table className="table table-zebra w-full">
-                            <thead className="sticky top-0 bg-primary text-primary-content  ">
-                                <tr>
-                                    <th>User Info</th>
-                                    <th>Location</th>
-                                    <th>Status</th>
-                                    <th>Statistics</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((user) => (
-                                    <UserRow key={user.id} user={user} />
-                                ))}
-                            </tbody>
-                        </table>
+                        <Table heading={tableHeading} tableData={users} tableType ={"userPage"}/>
                     </div>
                 )}
             </div>
