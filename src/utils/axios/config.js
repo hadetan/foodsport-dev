@@ -1,4 +1,9 @@
-// Axios config for base URLs, timeout, etc.
+/**
+ * Axios Config
+ *
+ * BASE_URLS: Set base URLs for different app states (landing, admin, my)
+ * DEFAULT_TIMEOUT: Default request timeout in ms
+ */ 
 
 const BASE_URLS = {
   url: process.env.NEXT_PUBLIC_BASEURL || '/api'

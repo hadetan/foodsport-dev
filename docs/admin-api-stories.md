@@ -406,8 +406,7 @@ DELETE /api/admin/social?id=   # Removes image from table and bucket using corre
         - Handle global errors (e.g., unauthorized, network errors)
         - If token is expired, use Supabase methods to refresh and retry
         - Display user-friendly error messages on API failure
-- Implement React hooks for API calls (CRUD, list, etc.)
-- Replace all direct fetch calls with Axios/hooks
+- Replace all direct fetch calls with Axios
 - Document usage and patterns, including how to extend/customize interceptors
 
 **Acceptance Criteria**:
@@ -418,12 +417,11 @@ DELETE /api/admin/social?id=   # Removes image from table and bucket using corre
 -   [x] All API endpoints are accessible via a centralized API utility (e.g., `src/utils/api.js`)
 -   [x] Global request interceptor retrieves the current session/token from Supabase and adds it to all requests 
 -   [x] Global response interceptor handles errors and uses Supabase methods for token refresh
--   [x] Reusable React hooks are created for common API patterns (e.g., `useFetch`, `useMutation`, `useApi`)
 -   [x] Hooks support loading, error, and data states
+-   [x] API utility and hooks are documented with usage examples, including interceptor extension
+-   [x] Proper error messages are displayed to users on API failure
+-   [x] Authentication and token refresh logic is handled in one place and always uses Supabase's client/session
 -   [ ] All existing fetch or direct API calls in the frontend are migrated to use Axios or the new hooks
--   [ ] API utility and hooks are documented with usage examples, including interceptor extension
--   [ ] Proper error messages are displayed to users on API failure
--   [ ] Authentication and token refresh logic is handled in one place and always uses Supabase's client/session
 -   [ ] All API calls use the correct base URL and environment variables for their context
 
 **Project Structure**:
@@ -437,6 +435,17 @@ DELETE /api/admin/social?id=   # Removes image from table and bucket using corre
     └── axios
         ├── api.js              # Main Axios instance + interceptors
         └── config.js           # Config for base URLs, timeout, etc.
+```
+
+```javascript
+# usage example
+const fetching = async () => {
+    const data = await api.request({ method: 'GET', url: '/admin/users' });
+    setData(await data.data);
+}
+useEffect(() => {
+    fetching();
+}, []);
 ```
 
 **Current Status**: Not Started  

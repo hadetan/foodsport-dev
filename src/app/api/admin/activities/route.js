@@ -4,7 +4,7 @@ import { getMany, insert, updateById } from '@/lib/prisma/db-utils';
 import { validateRequiredFields } from '@/utils/validation';
 import { sanitizeData } from '@/utils/sanitize';
 import { formatDbError } from '@/utils/formatDbError';
-import { createSupabaseClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/server';
 
 function parseQueryParams(searchParams) {
   return {
@@ -16,7 +16,6 @@ function parseQueryParams(searchParams) {
 }
 
 export async function GET(req) {
-  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
 
@@ -60,7 +59,6 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
 
@@ -88,7 +86,6 @@ export async function POST(req) {
 }
 
 export async function PATCH(req, { params }) {
-  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
   if (!params || !params.activityId) {

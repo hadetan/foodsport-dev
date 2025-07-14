@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma/client.js';
 import { requireAdmin } from '@/lib/prisma/require-admin.js';
-import { createSupabaseClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export const MAX_SOCIAL_MEDIA_IMAGES = 5;
@@ -10,7 +10,6 @@ export const MAX_SOCIAL_MEDIA_IMAGES = 5;
  * Returns up to MAX_SOCIAL_MEDIA_IMAGES images for the admin social media section.
  */
 export async function GET() {
-    const supabase = createSupabaseClient();
     const { error } = await requireAdmin(supabase, NextResponse);
     if (error) return error;
 
@@ -42,7 +41,6 @@ export async function GET() {
  * Handles file upload to Supabase storage and database record creation/update.
  */
 export async function POST(request) {
-    const supabase = createSupabaseClient();
     const { error } = await requireAdmin(supabase, NextResponse);
     if (error) return error;
 
@@ -97,7 +95,6 @@ export async function POST(request) {
  * Removes image by id and deletes the file from Supabase Storage.
  */
 export async function DELETE(request) {
-    const supabase = createSupabaseClient();
     const { error } = await requireAdmin(supabase, NextResponse);
     if (error) return error;
 
