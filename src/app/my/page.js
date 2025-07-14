@@ -4,15 +4,15 @@ import Activity from "@/app/shared/components/Activity";
 import ActivityItem from "@/app/shared/components/ActivityItem";
 // import activities from "@/data/activities";
 import Hero from "@/app/shared/components/Hero";
-import ComingSoon from "@/app/shared/components/ComingSoon";
+import ComingSoon from "@/app/(landing)/Components/ComingSoon";
 
 export default function Home() {
-  return (
-    <>
-      <Hero />
-      <Activity />
-      <div className={styles.grid3}>
-        {/* {activities.map((item, idx) => (
+    return (
+        <>
+            <Hero />
+            <Activity />
+            <div className={styles.grid3}>
+                {/* {activities.map((item, idx) => (
           <ActivityItem
             key={idx}
             image={item.image}
@@ -24,8 +24,8 @@ export default function Home() {
             location={item.location}
           />
         ))} */}
-      </div>
-      <ComingSoon />
-    </>
-  );
+            </div>
+            <ComingSoon />
+        </>
+    );
 }
