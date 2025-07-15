@@ -1,5 +1,6 @@
 "use client";
 
+import api from "@/utils/axios/api";
 import React, { useState, useEffect } from "react";
 
 const DashboardPage = () => {
@@ -7,6 +8,14 @@ const DashboardPage = () => {
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState(null);
     const [theme, setTheme] = useState("light");
+
+    const fetch = async () => {
+		const data = await api.request({ method: 'GET', url: '/admin/users' });
+		console.log(data.data);
+	};
+	useEffect(() => {
+		fetch();
+	});
 
     useEffect(() => {
         const isDark =
