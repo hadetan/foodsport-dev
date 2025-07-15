@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
-import { Users, Pencil, Trash2, Search } from "lucide-react";
 import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
+import Table from "@/app/admin/(logged_in)/components/Table";
 const ActivityManagementPage = () => {
     const router = useRouter();
     const [activeStep, setActiveStep] = useState(1);
@@ -31,7 +31,15 @@ const ActivityManagementPage = () => {
         images: [],
         status: "draft",
     });
-
+    const tableHeading = [
+        "Activity",
+        "Type",
+        "Date & Time",
+        "Location",
+        "Capacity",
+        "Status",
+        "Actions",
+    ];
     // Mock data - Replace with actual API call
     const activities = [
         {
@@ -93,22 +101,10 @@ const ActivityManagementPage = () => {
         }, 1000);
     }, []);
     const statusOfUser = ["Active", "Inactive"];
+    // <Table heading={tableHeading} tableData={activities} />
 
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
-            {/* Brief Auto-dismissing Alert */}
-            {notification.show && (
-                <div
-                    className={`alert ${
-                        notification.type === "success"
-                            ? "alert-success"
-                            : "alert-error"
-                    } fixed top-4 right-4 z-50 w-auto min-w-[200px] transition-opacity duration-300`}
-                >
-                    <span>{notification.message}</span>
-                </div>
-            )}
-
             {/* /* Create Activity Button */}
             <div className="flex justify-between mb-6">
                 <h2 className="text-2xl font-bold">Activities</h2>
@@ -135,122 +131,8 @@ const ActivityManagementPage = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="table table-zebra w-full">
-                            <thead>
-                                <tr>
-                                    <th>Activity</th>
-                                    <th>Type</th>
-                                    <th>Date & Time</th>
-                                    <th>Location</th>
-                                    <th>Capacity</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {activities.map((activity) => (
-                                    <tr key={activity.id}>
-                                        <td>
-                                            <div className="flex items-center space-x-3">
-                                                <div className="avatar">
-                                                    <div className="mask mask-squircle w-12 h-12">
-                                                        <img
-                                                            src={activity.image}
-                                                            alt={activity.title}
-                                                            className="cursor-pointer hover:opacity-75"
-                                                            onClick={() => {
-                                                                setSelectedImage(
-                                                                    activity.image
-                                                                );
-                                                                setIsImageModalOpen(
-                                                                    true
-                                                                );
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <div className="font-bold">
-                                                        {activity.title}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>{activity.type}</td>
-                                        <td>
-                                            <div>{activity.date}</div>
-                                            <div className="text-sm opacity-50">
-                                                {activity.time}
-                                            </div>
-                                        </td>
-                                        <td>{activity.location}</td>
-                                        <td>
-                                            <div className="flex flex-col gap-1">
-                                                <div className="text-sm">
-                                                    {activity.enrolled}/
-                                                    {activity.capacity}
-                                                </div>
-                                                <progress
-                                                    className="progress progress-primary w-20"
-                                                    value={
-                                                        (activity.enrolled /
-                                                            activity.capacity) *
-                                                        100
-                                                    }
-                                                    max="100"
-                                                ></progress>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div
-                                                className={`badge ${
-                                                    activity.status === "active"
-                                                        ? "badge-success"
-                                                        : activity.status ===
-                                                          "pending"
-                                                        ? "badge-warning"
-                                                        : activity.status ===
-                                                          "completed"
-                                                        ? "badge-info"
-                                                        : "badge-error"
-                                                }`}
-                                            >
-                                                {activity.status}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="btn-group">
-                                                <button
-                                                    className="btn btn-sm btn-ghost"
-                                                    onClick={() =>
-                                                        document
-                                                            .getElementById(
-                                                                "view_participants_modal"
-                                                            )
-                                                            .showModal()
-                                                    }
-                                                >
-                                                    <Users />
-                                                </button>
-                                                <button
-                                                    className="btn btn-sm btn-ghost"
-                                                    onClick={() =>
-                                                        router.push(
-                                                            `/admin/activities/${activity.id}`
-                                                        )
-                                                    }
-                                                >
-                                                    <Pencil />
-                                                </button>
-                                                <button className="btn btn-sm btn-ghost text-error">
-                                                    <Trash2 />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <Table heading={tableHeading} tableData={activities} tableType={"acitivityPage"}/>
+                       
                     </div>
                 )}
             </div>
