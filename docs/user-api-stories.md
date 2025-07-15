@@ -102,7 +102,7 @@ Response: {
 **Acceptance Criteria**:
 
 -   [x] User can list all activities
--   [ ] User can join an activity via /my/activities/join
+-   [x] User can join an activity via /my/activities/join
 -   [ ] User can leave an activity via /my/activities/leave
 -   [ ] User can view details of a specific activity
 -   [x] GET /api/activities and GET /api/activities/{activityId} responses are cached (1-minute TTL)
