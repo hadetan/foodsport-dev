@@ -3,7 +3,7 @@ import { requireAdmin } from '@/lib/prisma/require-admin';
 import { getMany, updateById } from '@/lib/prisma/db-utils';
 import { sanitizeData } from '@/utils/sanitize';
 import { formatDbError } from '@/utils/formatDbError';
-import { createSupabaseClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/server';
 
 function parseQueryParams(searchParams) {
   return {
@@ -17,7 +17,6 @@ function parseQueryParams(searchParams) {
 }
 
 export async function GET(req) {
-  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
   const url = new URL(req.url);
@@ -84,7 +83,6 @@ export async function GET(req) {
 }
 
 export async function PATCH(req, { params }) {
-  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
   if (!params || !params.userId) {
