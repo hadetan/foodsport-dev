@@ -9,14 +9,6 @@ const DashboardPage = () => {
     const [data, setData] = useState(null);
     const [theme, setTheme] = useState("light");
 
-    const fetch = async () => {
-		const data = await api.request({ method: 'GET', url: '/admin/users' });
-		console.log(data.data);
-	};
-	useEffect(() => {
-		fetch();
-	});
-
     useEffect(() => {
         const isDark =
             document.documentElement.getAttribute("data-theme") === "dark";
