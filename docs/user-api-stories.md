@@ -101,11 +101,11 @@ Response: {
 
 **Acceptance Criteria**:
 
--   [ ] User can list all activities
+-   [x] User can list all activities
 -   [ ] User can join an activity via /my/activities/join
 -   [ ] User can leave an activity via /my/activities/leave
 -   [ ] User can view details of a specific activity
--   [ ] GET /api/activities and GET /api/activities/{activityId} responses are cached (1-minute TTL)
+-   [x] GET /api/activities and GET /api/activities/{activityId} responses are cached (1-minute TTL)
 -   [ ] Proper validation and error handling
 -   [ ] Only authenticated users can access `/my/activities/join` &  `/my/activities/leave` endpoints
 
