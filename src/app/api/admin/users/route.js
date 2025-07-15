@@ -3,7 +3,7 @@ import { requireAdmin } from '@/lib/prisma/require-admin';
 import { getMany, updateById } from '@/lib/prisma/db-utils';
 import { sanitizeData } from '@/utils/sanitize';
 import { formatDbError } from '@/utils/formatDbError';
-import { createSupabaseClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/server';
 
 function parseQueryParams(searchParams) {
   return {
@@ -17,7 +17,6 @@ function parseQueryParams(searchParams) {
 }
 
 export async function GET(req) {
-  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
   const url = new URL(req.url);
@@ -32,11 +31,11 @@ export async function GET(req) {
       { email: { contains: search, mode: 'insensitive' } },
     ];
   }
-  if (status) filters.status = status;
+  if (status) filters.isActive = status === 'active';
   const options = {
     limit,
     skip,
-    orderBy: { [sortBy]: sortOrder },
+    orderBy: { [sortBy === 'created_at' ? 'createdAt' : sortBy === 'updated_at' ? 'updatedAt' : sortBy]: sortOrder },
   };
   const users = await getMany(
     'user',
@@ -46,12 +45,12 @@ export async function GET(req) {
       firstname: true,
       lastname: true,
       email: true,
-      status: true,
-      created_at: true,
-      updated_at: true,
-      total_activities: true,
-      total_calories_donated: true,
-      badge_count: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+      totalActivities: true,
+      totalCaloriesDonated: true,
+      badgeCount: true,
     },
     options
   );
@@ -60,13 +59,13 @@ export async function GET(req) {
     firstname: u.firstname,
     lastname: u.lastname,
     email: u.email,
-    status: u.status,
-    joinDate: u.created_at,
-    lastActive: u.updated_at,
+    isActive: u.isActive,
+    joinDate: u.createdAt,
+    lastActive: u.updatedAt,
     stats: {
-      totalActivities: u.total_activities,
-      totalDonations: u.total_calories_donated,
-      badgeCount: u.badge_count,
+      totalActivities: u.totalActivities,
+      totalDonations: u.totalCaloriesDonated,
+      badgeCount: u.badgeCount,
     },
   }));
   const responseData = {
@@ -84,7 +83,6 @@ export async function GET(req) {
 }
 
 export async function PATCH(req, { params }) {
-  const supabase = createSupabaseClient();
   const { error } = await requireAdmin(supabase, NextResponse);
   if (error) return error;
   if (!params || !params.userId) {
@@ -96,7 +94,7 @@ export async function PATCH(req, { params }) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
-  const allowedFields = ['status', 'role', 'reason'];
+  const allowedFields = ['isActive'];
   const updates = sanitizeData(body, allowedFields);
   if (Object.keys(updates).length === 0) {
     return NextResponse.json(

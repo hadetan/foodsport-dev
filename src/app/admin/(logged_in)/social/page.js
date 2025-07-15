@@ -1,0 +1,285 @@
+"use client";
+
+import { useState, useRef } from "react";
+import { ImagePlus, Trash2, Upload, Info, Pencil } from "lucide-react";
+import ImageCropModal from "./components/ImageCropModal";
+import ErrorAlert from "@/app/shared/components/ErrorAlert";
+
+// Maximum number of images allowed
+const MAX_IMAGES = 5;
+// Target resolution for cropped images
+const TARGET_RESOLUTION = 200;
+
+export default function SocialMediaPage() {
+    const [images, setImages] = useState([]);
+    const [previewUrls, setPreviewUrls] = useState([]);
+    const [currentImage, setCurrentImage] = useState(null);
+    const [currentImageUrl, setCurrentImageUrl] = useState(null);
+    const [editingIndex, setEditingIndex] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [notification, setNotification] = useState({
+        show: false,
+        message: "",
+    });
+    const fileInputRef = useRef(null);
+
+    const handleFileSelect = (e) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+
+        const file = e.target.files[0];
+
+        // Reset file input
+        if (fileInputRef.current) fileInputRef.current.value = "";
+
+        // Create a URL for the image and open crop modal immediately
+        const imageUrl = URL.createObjectURL(file);
+        setCurrentImage(file);
+        setCurrentImageUrl(imageUrl);
+    };
+
+    const handleCropComplete = async (croppedImageBlob) => {
+        try {
+            setIsLoading(true);
+
+            // Simulate API call to save the image
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            if (editingIndex !== null) {
+                // If we're editing an existing image, replace it
+                setImages((prev) => {
+                    const newImages = [...prev];
+                    newImages[editingIndex] = croppedImageBlob;
+                    return newImages;
+                });
+
+                // Update preview URL
+                if (previewUrls[editingIndex]) {
+                    URL.revokeObjectURL(previewUrls[editingIndex]);
+                }
+
+                const previewUrl = URL.createObjectURL(croppedImageBlob);
+                setPreviewUrls((prev) => {
+                    const newUrls = [...prev];
+                    newUrls[editingIndex] = previewUrl;
+                    return newUrls;
+                });
+
+                // Reset editing state
+                setEditingIndex(null);
+                showNotification("Image updated successfully");
+            } else {
+                // Add the cropped image to the images array
+                setImages((prev) => [...prev, croppedImageBlob]);
+
+                // Create preview URL
+                const previewUrl = URL.createObjectURL(croppedImageBlob);
+                setPreviewUrls((prev) => [...prev, previewUrl]);
+
+                showNotification("Image saved successfully");
+            }
+
+            // Clear current image state
+            setCurrentImage(null);
+
+            // Clean up the temporary URL
+            if (currentImageUrl) {
+                URL.revokeObjectURL(currentImageUrl);
+                setCurrentImageUrl(null);
+            }
+        } catch (err) {
+            setError(err.message || "Failed to save image");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleEdit = (index) => {
+        setEditingIndex(index);
+        fileInputRef.current?.click();
+    };
+
+    const handleCancelCrop = () => {
+        // Clean up the temporary URL
+        if (currentImageUrl) {
+            URL.revokeObjectURL(currentImageUrl);
+        }
+
+        setCurrentImage(null);
+        setCurrentImageUrl(null);
+        setEditingIndex(null);
+    };
+
+    const handleRemove = (index) => {
+        // Revoke the object URL to avoid memory leaks
+        URL.revokeObjectURL(previewUrls[index]);
+
+        setImages((prev) => prev.filter((_, i) => i !== index));
+        setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+
+        showNotification("Image removed successfully");
+    };
+
+    const showNotification = (message) => {
+        setNotification({ show: true, message });
+        setTimeout(() => setNotification({ show: false, message: "" }), 3000);
+    };
+
+    return (
+        <div className="container mx-auto px-4 py-8">
+            <div className="bg-base-100 shadow-xl rounded-lg p-6">
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b pb-4">
+                    <h1 className="text-2xl font-bold mb-2 sm:mb-0 flex items-center">
+                        <ImagePlus className="mr-2 text-primary" size={24} />
+                        Social Media Images
+                    </h1>
+
+                    <div className="flex items-center text-sm text-base-content/70">
+                        <Info size={16} className="mr-1" />
+                        <span>
+                            All images will be cropped to {TARGET_RESOLUTION}×
+                            {TARGET_RESOLUTION} pixels
+                        </span>
+                    </div>
+                </div>
+
+                {/* Error Alert */}
+                {error && (
+                    <ErrorAlert message={error} onClose={() => setError("")} />
+                )}
+
+                {/* Upload Area */}
+                <div className="mb-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
+                        <label className="text-lg font-medium mb-2 sm:mb-0">
+                            Upload Images ({images.length}/{MAX_IMAGES})
+                        </label>
+
+                        <button
+                            className="btn btn-sm btn-primary"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={
+                                images.length >= MAX_IMAGES ||
+                                isLoading ||
+                                currentImage !== null
+                            }
+                        >
+                            <Upload size={16} className="mr-1" />
+                            Select Image
+                        </button>
+                    </div>
+
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png"
+                        className="hidden"
+                        onChange={handleFileSelect}
+                        disabled={
+                            images.length >= MAX_IMAGES || currentImage !== null
+                        }
+                    />
+
+                    {images.length === 0 && !currentImage && (
+                        <div className="border-2 border-dashed border-base-300 rounded-lg p-10 text-center">
+                            <ImagePlus
+                                size={40}
+                                className="mx-auto mb-3 text-base-content/50"
+                            />
+                            <p className="text-base-content/70">
+                                Upload up to 5 images for social media sharing
+                            </p>
+                            <p className="text-xs text-base-content/50 mt-2">
+                                Each image will be cropped to{" "}
+                                {TARGET_RESOLUTION}×{TARGET_RESOLUTION} pixels
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Image Gallery - Exact 200x200 size */}
+                {images.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+                        {previewUrls.map((url, index) => (
+                            <div
+                                key={index}
+                                className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow"
+                            >
+                                {/* Exact 200x200 image container with fixed dimensions */}
+                                <div className="relative w-[200px] h-[200px] mx-auto">
+                                    <img
+                                        src={url}
+                                        alt={`Social media ${index + 1}`}
+                                        className="w-[200px] h-[200px] object-cover"
+                                    />
+                                    <div className="absolute bottom-0 right-0 flex">
+                                        <button
+                                            className="btn btn-sm btn-primary btn-circle mr-2"
+                                            onClick={() => handleEdit(index)}
+                                            title="Edit Image"
+                                        >
+                                            <Pencil size={16} />
+                                        </button>
+                                        <button
+                                            className="btn btn-sm btn-error btn-circle"
+                                            onClick={() => handleRemove(index)}
+                                            title="Remove Image"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="card-body p-3">
+                                    <p className="text-xs text-center text-base-content/70">
+                                        cropped-image-{index + 1}.jpg
+                                    </p>
+                                    <p className="text-xs text-center text-base-content/50">
+                                        {(images[index].size / 1024).toFixed(1)}{" "}
+                                        KB
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Add Image Button - maintain same dimensions */}
+                        {images.length < MAX_IMAGES && !currentImage && (
+                            <div
+                                className="border-2 border-dashed border-base-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-base-200 transition-colors w-[200px] h-[200px] mx-auto"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <ImagePlus
+                                    size={32}
+                                    className="text-base-content/50 mb-2"
+                                />
+                                <p className="text-sm text-base-content/70">
+                                    Add Image
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Notification Toast */}
+                {notification.show && (
+                    <div className="toast toast-top toast-end">
+                        <div className="alert alert-success">
+                            <span>{notification.message}</span>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Crop Modal - Opens immediately when an image is selected */}
+            {currentImage && currentImageUrl && (
+                <ImageCropModal
+                    imageUrl={currentImageUrl}
+                    targetSize={TARGET_RESOLUTION}
+                    onCropComplete={handleCropComplete}
+                    onCancel={handleCancelCrop}
+                />
+            )}
+        </div>
+    );
+}

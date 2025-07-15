@@ -13,6 +13,7 @@
     "@prisma/client": "^6.11.1",
     "@supabase/supabase-js": "^2.39.0",
     "@tailwindcss/postcss": "^4.1.11",
+    "axios": "^1.10.0",
     "dotenv": "^16.3.1",
     "lucide-react": "^0.525.0",
     "next": "15.3.4",
@@ -22,11 +23,13 @@
     "prisma": "^6.11.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-image-crop": "^11.0.10",
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
     "daisyui": "^5.0.43",
     "eslint": "^8",
     "eslint-config-next": "15.3.4"
-  }
+  },
+  "packageManager": "yarn@4.9.0+sha512.5f5f00843eae735dfab6f0442524603e987ceca55e98b36eb0120f4e58908e5b1406545321e46627dca97d15d562f23dc13fb96cabd4e6bc92d379f619001e4e"
 }

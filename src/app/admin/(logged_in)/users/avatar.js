@@ -1,9 +1,11 @@
 import React from "react";
-const Avatar = ({ srcAvatar, nameOfUser }) => {
-    let initial = nameOfUser.charAt(0);
+const Avatar = ({ srcAvatar, firstName, lastName }) => {
+    let first = firstName.charAt(0);
+    let last = lastName.charAt(0);
+    let initial = first + last;
     return (
         <>
-            {srcAvatar === "" ? (
+            {srcAvatar === undefined ? (
                 <div className="avatar avatar-placeholder">
                     <div className="mask mask-squircle w-12 h-12 bg-accent text-accent-content">
                         <span className="text-xl">{initial}</span>

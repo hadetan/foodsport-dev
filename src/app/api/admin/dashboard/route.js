@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseClient } from '@/lib/supabase/client';
+import { supabase } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import { getCount } from '@/lib/prisma/db-utils';
 import { getCache, setCache, CACHE_TTL } from '@/utils/cache';
@@ -23,7 +23,6 @@ function getDateRange(dateRange) {
 }
 
 export async function GET(req) {
-  const supabase = createSupabaseClient();
   const { searchParams } = new URL(req.url);
   const dateRange = searchParams.get('dateRange') || '7d';
   const fromDate = getDateRange(dateRange);
