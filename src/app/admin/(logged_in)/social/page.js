@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ImagePlus, Trash2, Upload, Info, Pencil } from "lucide-react";
 import ImageCropModal from "./components/ImageCropModal";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
-
+import axiosClient from "@/utils/axios/api"; // alias for api
 // Maximum number of images allowed
 const MAX_IMAGES = 5;
 // Target resolution for cropped images
@@ -22,6 +22,68 @@ export default function SocialMediaPage() {
         show: false,
         message: "",
     });
+
+    const fetchImages = async () => {
+        try {
+            const response = await axiosClient.get("/admin/social");
+            // Always extract URLs from objects
+            if (Array.isArray(response.data.images)) {
+                const urls = response.data.images.map((img) => img.imageUrl);
+                setImages(urls);
+                setPreviewUrls(urls);
+            } else {
+                setImages([]);
+                setPreviewUrls([]);
+            }
+        } catch (err) {
+            setError(err.message || "Failed to fetch images");
+        }
+    };
+
+    useEffect(() => {
+        fetchImages();
+    }, []);
+    ////////////////////////POST API OF IMAGE////////////
+
+    // Uploads an image blob to the backend using FormData
+    const handlePostImage = async (imageBlob, socialMediaUrl) => {
+        try {
+            // Create a FormData object
+            const formData = new FormData();
+
+            // Create a file from the blob
+            const file = new File([imageBlob], "cropped-image.jpg", {
+                type: imageBlob.type || "image/jpeg",
+            });
+
+            // Add the file and social media URL to FormData
+            formData.append("file", file);
+            formData.append("socialMediaUrl", socialMediaUrl);
+
+            // Post the FormData to the endpoint
+            const result = await axiosClient.post("/admin/social", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+
+            // Always extract URLs from objects
+            if (Array.isArray(result.data.images)) {
+                const urls = result.data.images.map((img) => img.imageUrl);
+                setImages(urls);
+                setPreviewUrls(urls);
+            } else {
+                setImages([]);
+                setPreviewUrls([]);
+            }
+
+            // Dispatch custom event to notify footer to refresh images
+            window.dispatchEvent(new Event("socialImagesUpdated"));
+        } catch (err) {
+            setError(err.message || "Failed to upload image");
+        }
+    };
+
     const fileInputRef = useRef(null);
 
     const handleFileSelect = (e) => {
@@ -38,7 +100,7 @@ export default function SocialMediaPage() {
         setCurrentImageUrl(imageUrl);
     };
 
-    const handleCropComplete = async (croppedImageBlob) => {
+    const handleCropComplete = async (croppedImageBlob, socialMediaUrl) => {
         try {
             setIsLoading(true);
 
@@ -87,6 +149,9 @@ export default function SocialMediaPage() {
                 URL.revokeObjectURL(currentImageUrl);
                 setCurrentImageUrl(null);
             }
+
+            // Call the post API after saving/cropping
+            await handlePostImage(croppedImageBlob, socialMediaUrl);
         } catch (err) {
             setError(err.message || "Failed to save image");
         } finally {
@@ -235,10 +300,10 @@ export default function SocialMediaPage() {
                                     <p className="text-xs text-center text-base-content/70">
                                         cropped-image-{index + 1}.jpg
                                     </p>
-                                    <p className="text-xs text-center text-base-content/50">
-                                        {(images[index].size / 1024).toFixed(1)}{" "}
-                                        KB
-                                    </p>
+                                    {/* Optionally show size if available */}
+                                    {/* <p className="text-xs text-center text-base-content/50">
+                                        {(images[index].size / 1024).toFixed(1)} KB
+                                    </p> */}
                                 </div>
                             </div>
                         ))}

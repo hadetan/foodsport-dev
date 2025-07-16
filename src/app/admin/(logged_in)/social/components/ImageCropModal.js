@@ -2,13 +2,15 @@
 
 import { useState, useRef, useEffect } from "react";
 import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
-import { X, Check, Move } from "lucide-react";
+import { X, Check, Move, Link as LinkIcon } from "lucide-react";
 // Import directly from node_modules to ensure CSS is loaded properly
 import "react-image-crop/dist/ReactCrop.css";
 
 const ImageCropModal = ({ imageUrl, targetSize, onCropComplete, onCancel }) => {
     const [crop, setCrop] = useState();
+    const [completedCrop, setCompletedCrop] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [socialMediaUrl, setSocialMediaUrl] = useState("");
     const imgRef = useRef(null);
 
     // Preload the image before rendering to prevent loading issues
@@ -23,6 +25,8 @@ const ImageCropModal = ({ imageUrl, targetSize, onCropComplete, onCancel }) => {
             setIsLoading(false);
         };
     }, [imageUrl]);
+
+    // Generate a default random URL when component mounts
 
     // Initialize crop to center when image loads
     const onImageLoad = (e) => {
@@ -43,52 +47,45 @@ const ImageCropModal = ({ imageUrl, targetSize, onCropComplete, onCancel }) => {
         });
     };
 
-    // Create a canvas with the cropped image
-    const getCroppedImg = () => {
-        if (!crop || !imgRef.current) return;
+    const handleSave = async () => {
+        if (!completedCrop || !imgRef.current) return;
 
+        // Create a canvas to draw the cropped image
         const canvas = document.createElement("canvas");
-        const image = imgRef.current;
-        const scaleX = image.naturalWidth / image.width;
-        const scaleY = image.naturalHeight / image.height;
+        const ctx = canvas.getContext("2d");
 
         canvas.width = targetSize;
         canvas.height = targetSize;
 
-        const ctx = canvas.getContext("2d");
+        // Draw the cropped image onto the canvas
+        const image = imgRef.current;
+        const scaleX = image.naturalWidth / image.width;
+        const scaleY = image.naturalHeight / image.height;
 
         ctx.drawImage(
             image,
-            crop.x * scaleX,
-            crop.y * scaleY,
-            crop.width * scaleX,
-            crop.height * scaleY,
+            completedCrop.x * scaleX,
+            completedCrop.y * scaleY,
+            completedCrop.width * scaleX,
+            completedCrop.height * scaleY,
             0,
             0,
             targetSize,
             targetSize
         );
 
-        return new Promise((resolve) => {
-            canvas.toBlob(
-                (blob) => {
-                    if (!blob) return;
-                    blob.name = "cropped-image.jpg";
-                    resolve(blob);
-                },
-                "image/jpeg",
-                0.95
-            );
-        });
-    };
-
-    const handleCropApply = async () => {
-        try {
-            const croppedImageBlob = await getCroppedImg();
-            onCropComplete(croppedImageBlob);
-        } catch (err) {
-            console.error("Error cropping image:", err);
-        }
+        // Convert canvas to blob
+        canvas.toBlob(
+            (blob) => {
+                if (!blob) {
+                    console.error("Canvas is empty");
+                    return;
+                }
+                onCropComplete(blob, socialMediaUrl);
+            },
+            "image/jpeg",
+            0.95
+        );
     };
 
     return (
@@ -117,6 +114,7 @@ const ImageCropModal = ({ imageUrl, targetSize, onCropComplete, onCancel }) => {
                                 <ReactCrop
                                     crop={crop}
                                     onChange={(c) => setCrop(c)}
+                                    onComplete={(c) => setCompletedCrop(c)}
                                     aspect={1}
                                     minWidth={50}
                                     circularCrop={false}
@@ -143,6 +141,31 @@ const ImageCropModal = ({ imageUrl, targetSize, onCropComplete, onCancel }) => {
                                 Position and resize the crop area to select a{" "}
                                 {targetSize}×{targetSize} pixel square.
                             </p>
+
+                            {/* Social Media URL Input */}
+                            <div className="form-control w-full mt-4">
+                                <label className="label">
+                                    <span className="label-text flex items-center">
+                                        <LinkIcon size={16} className="mr-2" />
+                                        Social Media URL
+                                    </span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={socialMediaUrl}
+                                    onChange={(e) =>
+                                        setSocialMediaUrl(e.target.value)
+                                    }
+                                    placeholder="Enter social media URL"
+                                    className="input input-bordered w-full"
+                                />
+                                <label className="label">
+                                    <span className="label-text-alt">
+                                        This URL will be associated with the
+                                        image
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -155,8 +178,8 @@ const ImageCropModal = ({ imageUrl, targetSize, onCropComplete, onCancel }) => {
 
                     <button
                         className="btn btn-primary"
-                        onClick={handleCropApply}
-                        disabled={isLoading || !crop}
+                        onClick={handleSave}
+                        disabled={isLoading || !crop || !socialMediaUrl}
                     >
                         <Check size={16} className="mr-1" />
                         Save
