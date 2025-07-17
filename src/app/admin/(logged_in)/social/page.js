@@ -23,14 +23,16 @@ export default function SocialMediaPage() {
         message: "",
     });
 
+    console.log(images)
+
+    const fileInputRef = useRef(null);
+
     const fetchImages = async () => {
         try {
             const response = await axiosClient.get("/admin/social");
-            // Always extract URLs from objects
             if (Array.isArray(response.data.images)) {
-                const urls = response.data.images.map((img) => img.imageUrl);
-                setImages(urls);
-                setPreviewUrls(urls);
+                setImages(response.data.images); // store objects with id, imageUrl, etc.
+                setPreviewUrls(response.data.images.map((img) => img.imageUrl));
             } else {
                 setImages([]);
                 setPreviewUrls([]);
@@ -84,8 +86,6 @@ export default function SocialMediaPage() {
         }
     };
 
-    const fileInputRef = useRef(null);
-
     const handleFileSelect = (e) => {
         if (!e.target.files || e.target.files.length === 0) return;
 
@@ -103,9 +103,6 @@ export default function SocialMediaPage() {
     const handleCropComplete = async (croppedImageBlob, socialMediaUrl) => {
         try {
             setIsLoading(true);
-
-            // Simulate API call to save the image
-            await new Promise((resolve) => setTimeout(resolve, 500));
 
             if (editingIndex !== null) {
                 // If we're editing an existing image, replace it
@@ -159,7 +156,9 @@ export default function SocialMediaPage() {
         }
     };
 
-    const handleEdit = (index) => {
+    // Update handleEdit to use id instead of index
+    const handleEdit = (id) => {
+        const index = images.findIndex((img) => img.id === id);
         setEditingIndex(index);
         fileInputRef.current?.click();
     };
@@ -175,14 +174,21 @@ export default function SocialMediaPage() {
         setEditingIndex(null);
     };
 
-    const handleRemove = (index) => {
-        // Revoke the object URL to avoid memory leaks
-        URL.revokeObjectURL(previewUrls[index]);
+    // Remove handleRemove, and update all usages to use handleDeleteImage(img.id)
 
-        setImages((prev) => prev.filter((_, i) => i !== index));
-        setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
-
-        showNotification("Image removed successfully");
+    const handleDeleteImage = async (id) => {
+        try {
+            console.log(id)
+            setIsLoading(true);
+            await axiosClient.delete(`/admin/social?id=${id}`);
+            await fetchImages();
+            showNotification("Image deleted successfully");
+            window.dispatchEvent(new Event("socialImagesUpdated"));
+        } catch (err) {
+            setError(err.message || "Failed to delete image");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const showNotification = (message) => {
@@ -266,29 +272,31 @@ export default function SocialMediaPage() {
                 {/* Image Gallery - Exact 200x200 size */}
                 {images.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-                        {previewUrls.map((url, index) => (
+                        {images.map((img, index) => (
                             <div
-                                key={index}
+                                key={img.id}
                                 className="card bg-base-100 shadow-md hover:shadow-lg transition-shadow"
                             >
                                 {/* Exact 200x200 image container with fixed dimensions */}
                                 <div className="relative w-[200px] h-[200px] mx-auto">
                                     <img
-                                        src={url}
+                                        src={img.imageUrl}
                                         alt={`Social media ${index + 1}`}
                                         className="w-[200px] h-[200px] object-cover"
                                     />
                                     <div className="absolute bottom-0 right-0 flex">
                                         <button
                                             className="btn btn-sm btn-primary btn-circle mr-2"
-                                            onClick={() => handleEdit(index)}
+                                            onClick={() => handleEdit(img.id)}
                                             title="Edit Image"
                                         >
                                             <Pencil size={16} />
                                         </button>
                                         <button
                                             className="btn btn-sm btn-error btn-circle"
-                                            onClick={() => handleRemove(index)}
+                                            onClick={() =>
+                                                handleDeleteImage(img.id)
+                                            }
                                             title="Remove Image"
                                         >
                                             <Trash2 size={16} />
