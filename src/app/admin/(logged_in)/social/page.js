@@ -23,7 +23,6 @@ export default function SocialMediaPage() {
         message: "",
     });
 
-    console.log(images)
 
     const fileInputRef = useRef(null);
 
