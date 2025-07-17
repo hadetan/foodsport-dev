@@ -171,6 +171,7 @@ model Ticket {
   userId       String    @map("user_id")
   status       TicketStatus @default(active)
   ticketSent   Boolean   @default(false) @map("ticket_sent")
+  ticketUsed   Boolean   @default(false) @map("ticket_used")
   issuedAt     DateTime  @default(now()) @map("issued_at")
   usedAt       DateTime? @map("used_at")
   revoked      Boolean   @default(false)

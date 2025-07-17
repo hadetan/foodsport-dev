@@ -99,14 +99,15 @@ Response: {
 }
 ```
 
+
 **Acceptance Criteria**:
 
 -   [x] User can list all activities
 -   [x] User can join an activity via /my/activities/join
--   [ ] User can leave an activity via /my/activities/leave
+-   [x] User can leave an activity via /my/activities/leave
 -   [ ] User can view details of a specific activity
 -   [x] GET /api/activities and GET /api/activities/{activityId} responses are cached (1-minute TTL)
--   [ ] Proper validation and error handling
+-   [x] Proper validation and error handling
 -   [ ] Only authenticated users can access `/my/activities/join` &  `/my/activities/leave` endpoints
 
 **Current Status**: Not Started  

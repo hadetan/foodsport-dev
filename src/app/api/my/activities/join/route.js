@@ -41,21 +41,25 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
+    const alreadyJoined = await getById('userActivity', {
+      userId: body.userId,
+      activityId: body.activityId
+    });
+    if (alreadyJoined) {
+      return Response.json({
+        error: 'User has already joined this activity',
+      }, { status: 400 });
+    }
+
     await insert('userActivity', {
       userId: body.userId,
       activityId: body.activityId,
       joinedAt: new Date().toISOString(),
     });
 
-    await updateById('activity', {
-      where: { id: body.activityId },
-      data: { currentParticipants: { increment: 1 } }
-    });
+    await updateById('activity', body.activityId, { currentParticipants: { increment: 1 } });
 
-    await updateById('user', {
-      where: { id: body.userId },
-      data: { totalActivities: { increment: 1 } }
-    });
+    await updateById('user', body.userId, { totalActivities: { increment: 1 } });
 
     return Response.json({ message: 'Joined activity successfully.' });
   } catch (error) {

@@ -16,22 +16,18 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Database Setup (Prisma)
+## Database Migration
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Configure `.env` with your Supabase and Prisma settings.
-3. Run migrations:
-   ```bash
-   npm run m-dev
-   # equivalent to npx prisma migrate dev
-   ```
-4. Start the app:
-   ```bash
-   npm run dev
-   ```
+*Run these commands whenever theres a change in schema:*
+   1. Create migration -
+      ```bash
+         npm run m-dev
+      ```
+   
+   2. Generate code for client -
+      ```bash
+         npm run generate
+      ```
 
 ## Environment Variables
 

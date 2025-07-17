@@ -41,40 +41,55 @@ export async function GET(req) {
 
   const totalUsers = await getCount('user');
   const activeActivities = await getCount('activity', { status: 'active' });
-  const totalRewards = await getCount('user_badge');
+  const totalRewards = await getCount('userBadge');
 
   const { prisma } = await import('@/lib/prisma/client');
-  const donations = await prisma.calorieDonation.findMany({ select: { calories_donated: true } });
-  const totalDonations = donations.reduce((sum, d) => sum + (d.calories_donated || 0), 0);
+  const donations = await prisma.calorieDonation.findMany({ select: { caloriesDonated: true } });
+  const totalDonations = donations.reduce((sum, d) => sum + (d.caloriesDonated || 0), 0);
 
-  const newUsers = await getCount('user', { created_at: { gte: fromDate } });
-  const completedActivities = await getCount('activity', { status: 'completed', updated_at: { gte: fromDate } });
-  const donationsRange = await prisma.calorieDonation.findMany({ where: { created_at: { gte: fromDate } }, select: { calories_donated: true } });
-  const caloriesDonated = donationsRange.reduce((sum, d) => sum + (d.calories_donated || 0), 0);
+  const newUsers = await getCount('user', { createdAt: { gte: fromDate } });
+  const completedActivities = await getCount('activity', { status: 'completed', updatedAt: { gte: fromDate } });
+  const donationsRange = await prisma.calorieDonation.findMany({ where: { createdAt: { gte: fromDate } }, select: { caloriesDonated: true } });
+  const caloriesDonated = donationsRange.reduce((sum, d) => sum + (d.caloriesDonated || 0), 0);
 
   const recentSignupsData = await prisma.user.findMany({
-    orderBy: { created_at: 'desc' },
+    orderBy: { createdAt: 'desc' },
     take: 10,
-    select: { id: true, firstname: true, lastname: true, email: true, created_at: true, is_active: true }
+    select: {
+      id: true,
+      firstname: true,
+      lastname: true,
+      email: true,
+      createdAt: true,
+      isActive: true,
+      profilePictureUrl: true,
+      totalActivities: true,
+      totalPoints: true,
+      badgeCount: true
+    }
   });
   const recentSignups = (recentSignupsData || []).map(u => ({
     id: u.id,
     firstname: u.firstname,
     lastname: u.lastname,
     email: u.email,
-    signupDate: u.created_at,
-    status: u.is_active ? 'active' : 'inactive'
+    signupDate: u.createdAt,
+    status: u.isActive ? 'active' : 'inactive',
+    profilePictureUrl: u.profilePictureUrl,
+    totalActivities: u.totalActivities,
+    totalPoints: u.totalPoints,
+    badgeCount: u.badgeCount
   }));
 
   const responseData = {
     stats: {
-      totalUsers: totalUsers || 0,
-      activeActivities: activeActivities || 0,
-      totalRewards: totalRewards || 0,
+      totalUsers: totalUsers,
+      activeActivities: activeActivities,
+      totalRewards: totalRewards,
       totalDonations: totalDonations,
       dailyStats: {
-        newUsers: newUsers || 0,
-        completedActivities: completedActivities || 0,
+        newUsers: newUsers,
+        completedActivities: completedActivities,
         caloriesDonated: caloriesDonated
       }
     },

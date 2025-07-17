@@ -42,38 +42,53 @@ export async function GET(req) {
     filters,
     {
       id: true,
+      email: true,
       firstname: true,
       lastname: true,
-      email: true,
-      isActive: true,
-      createdAt: true,
-      updatedAt: true,
+      dateOfBirth: true,
+      weight: true,
+      height: true,
+      gender: true,
+      activityLevel: true,
+      phoneNumber: true,
+      profilePictureUrl: true,
+      border: true,
+      title: true,
+      bio: true,
       totalActivities: true,
-      totalCaloriesDonated: true,
+      totalDonations: true,
       badgeCount: true,
+      level: true,
+      currentStreak: true,
+      totalPoints: true,
+      totalCaloriesBurned: true,
+      totalCaloriesDonated: true,
+      calorieGoal: true,
+      dailyGoal: true,
+      weeklyGoal: true,
+      monthlyGoal: true,
+      yearlyGoal: true,
+      googleId: true,
+      emailVerified: true,
+      phoneVerified: true,
+      isActive: true,
+      hasReferredBefore: true,
+      createdAt: true,
+      updatedAt: true
     },
     options
   );
-  const usersWithStats = (users || []).map((u) => ({
-    id: u.id,
-    firstname: u.firstname,
-    lastname: u.lastname,
-    email: u.email,
-    isActive: u.isActive,
+  const usersWithAllFields = (users || []).map((u) => ({
+    ...u,
     joinDate: u.createdAt,
-    lastActive: u.updatedAt,
-    stats: {
-      totalActivities: u.totalActivities,
-      totalDonations: u.totalCaloriesDonated,
-      badgeCount: u.badgeCount,
-    },
+    lastActive: u.updatedAt
   }));
   const responseData = {
-    users: usersWithStats,
+    users: usersWithAllFields,
     pagination: {
       page,
       limit,
-      total: usersWithStats.length,
+      total: usersWithAllFields.length,
     },
   };
   return new NextResponse(JSON.stringify(responseData), {
