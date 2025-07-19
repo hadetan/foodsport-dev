@@ -106,7 +106,6 @@ model User {
   updatedAt             DateTime @updatedAt @map("updated_at")
 
   // Relations
-  activitiesOrganized   Activity[] @relation("OrganizerActivities")
   tickets               Ticket[]
   userActivities        UserActivity[]
   calorieSubmissions    CalorieSubmission[]
@@ -128,6 +127,8 @@ model AdminUser {
   reason    String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  activitiesOrganized   Activity[] @relation("OrganizerActivities")
 
   @@map("admin_user")
 }
@@ -155,7 +156,7 @@ model Activity {
   updatedAt            DateTime      @updatedAt @map("updated_at")
 
   // Relations
-  organizer            User?         @relation("OrganizerActivities", fields: [organizerId], references: [id])
+  organizer            AdminUser?    @relation("OrganizerActivities", fields: [organizerId], references: [id])
   tickets              Ticket[]
   userActivities       UserActivity[]
   calorieSubmissions   CalorieSubmission[]
