@@ -1,5 +1,6 @@
 "use client";
 
+import api from "@/utils/axios/api";
 import React, { useState, useEffect } from "react";
 
 const DashboardPage = () => {

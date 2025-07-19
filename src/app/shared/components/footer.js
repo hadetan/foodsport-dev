@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import styles from "@/app/shared/css/footer.module.css";
+import api from "@/utils/axios/api";
 import {
     Facebook,
     Instagram,
@@ -13,13 +17,35 @@ import {
 } from "lucide-react";
 
 export default function Footer() {
-    const galleryImages = [
-        "https://placehold.co/200x200",
-        "https://placehold.co/200x200",
-        "https://placehold.co/200x200",
-        "https://placehold.co/200x200",
-        "https://placehold.co/200x200",
-    ];
+    const [galleryImages, setGalleryImages] = useState([]);
+
+    useEffect(() => {
+        fetchImages();
+
+        // Listen for custom event to refresh images
+        const handler = () => fetchImages();
+        window.addEventListener("socialImagesUpdated", handler);
+        return () => window.removeEventListener("socialImagesUpdated", handler);
+    }, []);
+
+    // Fetch images for the footer gallery
+    async function fetchImages() {
+        try {
+            const data = await api.request({
+                method: "GET",
+                url: "/admin/social",
+            });
+            if (Array.isArray(data.data.images)) {
+                setGalleryImages(data.data.images.map((img) => img.imageUrl));
+            } else {
+                setGalleryImages([]);
+            }
+        } catch (e) {
+            setGalleryImages([]);
+        }
+    }
+
+    // Function to be called after posting an image in admin panel social
 
     return (
         <footer className={styles.footer}>
@@ -95,11 +121,26 @@ export default function Footer() {
                 </div>
 
                 <div className={styles.navLinks}>
-                    <Link href="https://www.foodsport.com.hk/aboutus "target="_blank">ABOUT FOODSPORT</Link>
+                    <Link
+                        href="https://www.foodsport.com.hk/aboutus "
+                        target="_blank"
+                    >
+                        ABOUT FOODSPORT
+                    </Link>
                     <span className={styles.separator}>|</span>
-                    <Link href="https://www.foodsport.com.hk/supportus"target="_blank">SUPPORT US</Link>
+                    <Link
+                        href="https://www.foodsport.com.hk/supportus"
+                        target="_blank"
+                    >
+                        SUPPORT US
+                    </Link>
                     <span className={styles.separator}>|</span>
-                    <Link href="https://www.foodsport.com.hk/privacy-policy" target="_blank">PRIVACY POLICY</Link>
+                    <Link
+                        href="https://www.foodsport.com.hk/privacy-policy"
+                        target="_blank"
+                    >
+                        PRIVACY POLICY
+                    </Link>
                 </div>
 
                 <div className={styles.bottomSection}>
@@ -121,8 +162,9 @@ export default function Footer() {
                         </div>
                     </div>
                     <div className={styles.copyright}>
-                        ©COPYRIGHT {new Date().getFullYear()} BY SYMBOL OF ALLIANCE LIMITED &
-                        FOODSPORT FOUNDATION LIMITED, ALL RIGHTS RESERVED.
+                        ©COPYRIGHT {new Date().getFullYear()} BY SYMBOL OF
+                        ALLIANCE LIMITED & FOODSPORT FOUNDATION LIMITED, ALL
+                        RIGHTS RESERVED.
                     </div>
                 </div>
             </div>

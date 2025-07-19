@@ -44,9 +44,11 @@ export async function POST(request) {
     const { error } = await requireAdmin(supabase, NextResponse);
     if (error) return error;
 
+    const { searchParams } = new URL(request.url);
+
     const formData = await request.formData();
     const file = formData.get('file');
-    const id = formData.get('id');
+    const id = searchParams.get('id');
     const socialMediaUrl = formData.get('socialMediaUrl');
     if (!file) {
         return NextResponse.json({ error: 'No image file provided' }, { status: 400 });
@@ -72,6 +74,11 @@ export async function POST(request) {
         const existing = await prisma.socialMediaImage.findUnique({ where: { id } });
         if (!existing) {
             return NextResponse.json({ error: 'Image not found for update' }, { status: 404 });
+        }
+        if (existing.imageUrl && existing.imageUrl !== imageUrl) {
+            const oldUrlParts = existing.imageUrl.split('/');
+            const oldFileName = oldUrlParts[oldUrlParts.length - 1];
+            await supabase.storage.from(bucket).remove([oldFileName]);
         }
         result = await prisma.socialMediaImage.update({
             where: { id },

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
-import { createSupabaseClient } from '@/lib/supabase/client';
+import { supabaseClient } from '@/lib/supabase/client';
 
 
 /**
@@ -32,7 +32,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const { data: { session } } = await createSupabaseClient.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth?.getSession();
   if (session?.access_token) {
     config.headers['Authorization'] = `Bearer ${session.access_token}`;
   }
@@ -44,7 +44,7 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response && error.response.status === 401) {
       try {
-        const { data: { session } } = await createSupabaseClient.auth.refreshSession();
+        const { data: { session } } = await supabaseClient.auth.refreshSession();
         if (session?.access_token) {
           error.config.headers['Authorization'] = `Bearer ${session.access_token}`;
           return api.request(error.config);

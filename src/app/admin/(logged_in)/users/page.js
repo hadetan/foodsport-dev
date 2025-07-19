@@ -8,9 +8,10 @@ import { Search, CheckCircle2, Menu } from "lucide-react";
 import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
+import api from "@/utils/axios/api";
 const UserManagementPage = () => {
     const router = useRouter();
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [loading, setLoading] = useState(false);
@@ -44,20 +45,16 @@ const UserManagementPage = () => {
     ];
 
     // Simulate initial data loading
+    const fetchUser = async () => {
+        const data = await api.request({ method: "GET", url: "/admin/users" });
+        console.log("asad", data.data);
+        setUsers(data.data.users);
+        setTableLoading(false);
+    };
+
     useEffect(() => {
         setTableLoading(true);
-        fetch("http://localhost:3000/api/admin/users")
-            .then(async (res) => {
-                const data = await res.json();
-                setUsers(data.users);
-            })
-
-            .catch(() => {
-                setUsers([]);
-            })
-            .finally(() => {
-                setTableLoading(false);
-            });
+        fetchUser();
     }, []);
 
     const statusOfUser = ["Active", "Inactive"];
@@ -99,7 +96,11 @@ const UserManagementPage = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto rounded-box border border-primary/60">
-                        <Table heading={tableHeading} tableData={users} tableType ={"userPage"}/>
+                        <Table
+                            heading={tableHeading}
+                            tableData={users}
+                            tableType={"userPage"}
+                        />
                     </div>
                 )}
             </div>
