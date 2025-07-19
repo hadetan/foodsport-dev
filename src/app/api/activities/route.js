@@ -1,118 +1,109 @@
-import { getMany, insert } from '@/lib/prisma/db-utils';
-import { validateRequiredFields } from '@/utils/validation';
-import { sanitizeData } from '@/utils/sanitize';
-import { formatDbError } from '@/utils/formatDbError';
+import { getMany } from '@/lib/prisma/db-utils';
+const { getCache, setCache } = await import('@/utils/cache');
 
 // GET /api/activities - Get all activities with optional filters
 export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
-    const type = searchParams.get('type');
-    const location = searchParams.get('location');
-    const date = searchParams.get('date');
-    const limit = parseInt(searchParams.get('limit')) || 50;
-    const page = parseInt(searchParams.get('page')) || 0;
+	try {
+		const cacheKey = 'all_activities';
+		const cached = getCache(cacheKey);
+		if (cached) {
+			return Response.json(cached);
+		}
 
-    // Build filters
-    const filters = {};
-    if (status) filters.status = status;
-    if (type) filters.type = type;
-    if (location) filters.location = location;
-    if (date) filters.date = date;
+		const { searchParams } = new URL(request.url);
+		const status = searchParams.get('status');
+		const type = searchParams.get('type');
+		const location = searchParams.get('location');
+		const date = searchParams.get('date');
+		const limit = parseInt(searchParams.get('limit')) || 50;
+		const page = parseInt(searchParams.get('page')) || 0;
 
-    // Prisma options
-    const options = {
-      limit,
-      skip: page * limit,
-      orderBy: { created_at: 'desc' }
-    };
+		const filters = {};
+		if (status) filters.status = status;
+		if (type) filters.type = type;
+		if (location) filters.location = location;
+		if (date) filters.date = date;
 
-    // Get activities from database
-    const activities = await getMany('activity', filters, {
-      id: true, title: true, description: true, type: true, location: true, date: true, time: true,
-      status: true, participant_limit: true, current_participants: true, organizer_id: true,
-      image_url: true, created_at: true, updated_at: true
-    }, options);
+		const options = {
+			limit,
+			skip: page * limit,
+			orderBy: { createdAt: 'desc' },
+		};
 
-    // Get organizer names for each activity
-    const activitiesWithOrganizers = await Promise.all(
-      activities.map(async (activity) => {
-        if (activity.organizer_id) {
-          const organizer = await getMany('user', { id: activity.organizer_id }, { name: true, profile_picture: true });
-          return {
-            ...activity,
-            organizer: organizer?.[0]?.name || 'Unknown',
-            organizerPicture: organizer?.[0]?.profile_picture || null
-          };
-        }
-        return {
-          ...activity,
-          organizer: 'Unknown',
-          organizerPicture: null
-        };
-      })
-    );
+		const activities = await getMany(
+			'activity',
+			filters,
+			{
+				id: true,
+				title: true,
+				description: true,
+				activityType: true,
+				location: true,
+				startDate: true,
+				endDate: true,
+				startTime: true,
+				endTime: true,
+				status: true,
+				participantLimit: true,
+				currentParticipants: true,
+				organizerName: true,
+				organizerId: true,
+				imageUrl: true,
+				pointsPerParticipant: true,
+				caloriesPerHour: true,
+				isFeatured: true,
+				createdAt: true,
+				updatedAt: true,
+			},
+			options
+		);
 
-    return Response.json({
-      activities: activitiesWithOrganizers,
-      pagination: {
-        page,
-        limit,
-        total: activitiesWithOrganizers.length
-      }
-    });
-  } catch (error) {
-    return Response.json({
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: 'Internal server error',
-        details: error.message
-      }
-    }, { status: 500 });
-  }
-}
+		const activitiesWithOrganizers = await Promise.all(
+			activities.map(async (activity) => {
+				return {
+					id: activity.id,
+					title: activity.title,
+					description: activity.description,
+					activityType: activity.activityType,
+					location: activity.location,
+					startDate: activity.startDate,
+					endDate: activity.endDate,
+					startTime: activity.startTime,
+					endTime: activity.endTime,
+					status: activity.status,
+					participantLimit: activity.participantLimit,
+					currentParticipants: activity.currentParticipants,
+					organizerId: activity.organizerId,
+					imageUrl: activity.imageUrl,
+					pointsPerParticipant: activity.pointsPerParticipant,
+					caloriesPerHour: activity.caloriesPerHour,
+					isFeatured: activity.isFeatured,
+					createdAt: activity.createdAt,
+					updatedAt: activity.updatedAt,
+				};
+			})
+		);
 
-// POST /api/activities - Create a new activity
-export async function POST(request) {
-  try {
-    const body = await request.json();
-    const requiredFields = ['title', 'description', 'type', 'location', 'date', 'time', 'organizer_id'];
-    const validation = validateRequiredFields(body, requiredFields);
-    if (!validation.isValid) {
-      return Response.json({
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Missing required fields',
-          details: validation.error
-        }
-      }, { status: 400 });
-    }
-    const allowedFields = [
-      'title', 'description', 'type', 'location', 'date', 'time',
-      'participant_limit', 'organizer_id', 'image_url'
-    ];
-    const sanitizedData = sanitizeData(body, allowedFields);
-    sanitizedData.status = 'upcoming';
-    sanitizedData.current_participants = 0;
-    sanitizedData.created_at = new Date().toISOString();
-    sanitizedData.updated_at = new Date().toISOString();
-    const activity = await insert('activity', sanitizedData);
-    if (activity && activity.error) {
-      const formattedError = formatDbError(activity.error);
-      return Response.json({ error: formattedError }, { status: 400 });
-    }
-    return Response.json({
-      message: 'Activity created successfully',
-      activity
-    }, { status: 201 });
-  } catch (error) {
-    return Response.json({
-      error: {
-        code: 'INTERNAL_ERROR',
-        message: 'Internal server error',
-        details: error.message
-      }
-    }, { status: 500 });
-  }
+		const response = {
+			activities: activitiesWithOrganizers,
+			pagination: {
+				page,
+				limit,
+				total: activitiesWithOrganizers.length,
+			},
+		};
+		setCache(cacheKey, response, 60);
+		return Response.json(response);
+	} catch (error) {
+		return Response.json(
+			{
+				error: {
+					code: 'INTERNAL_ERROR',
+					message: 'Internal server error',
+					details: error.message,
+				},
+			},
+			{ status: 500 }
+		);
+	}
 }
