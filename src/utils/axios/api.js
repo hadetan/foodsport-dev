@@ -42,7 +42,6 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Handle authentication errors (token expired)
     if (error.response && error.response.status === 401) {
       try {
         const { data: { session } } = await createSupabaseClient.auth.refreshSession();
@@ -55,7 +54,6 @@ api.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
-    // Global error handler for all API failures
     showApiError(error);
     return Promise.reject(error);
   }
@@ -72,8 +70,6 @@ function showApiError(error) {
   } else if (error.message) {
     message = error.message;
   }
-  // For now, just log. Replace with your UI notification system as needed.
-  // Example: toast.error(message);
   console.error('API Error:', message);
 }
 

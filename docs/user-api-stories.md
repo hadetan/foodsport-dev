@@ -105,7 +105,7 @@ Response: {
 -   [x] User can list all activities
 -   [x] User can join an activity via /my/activities/join
 -   [x] User can leave an activity via /my/activities/leave
--   [ ] User can view details of a specific activity
+-   [x] User can view details of a specific activity
 -   [x] GET /api/activities and GET /api/activities/{activityId} responses are cached (1-minute TTL)
 -   [x] Proper validation and error handling
 -   [ ] Only authenticated users can access `/my/activities/join` &  `/my/activities/leave` endpoints

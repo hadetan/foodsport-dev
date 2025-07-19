@@ -124,7 +124,6 @@ model AdminUser {
   id        String   @id @default(uuid())
   email     String   @unique
   name      String
-  role      String?  @default("admin")
   status    String?  @default("active")
   reason    String?
   createdAt DateTime @default(now()) @map("created_at")
