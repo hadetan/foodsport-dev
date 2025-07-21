@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import api from "@/utils/axios/api";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -31,7 +32,7 @@ export default function LoginPage() {
       }
       router.replace("/my");
     } catch (err) {
-      setError(`Something went wrong. Please try again. ${err}`);
+      setError(`Something went wrong. Please try again. ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -70,7 +71,7 @@ return (
         </button>
         <div className="text-center mt-4 text-black">
             <span>Don't have an account? </span>
-            <a href="/auth/register" className="link link-primary text-black">Register</a>
+            <Link href="/auth/register" className="link link-primary text-black">Register</Link>
         </div>
     </form>
 );
