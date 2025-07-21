@@ -1,5 +1,6 @@
 import { supabaseClient } from '@/lib/supabase/client';
 import { prisma } from '@/lib/prisma/client';
+import { cookies } from 'next/headers';
 
 export async function POST(req) {
 	try {
@@ -23,6 +24,23 @@ export async function POST(req) {
 		const user = await prisma.user.findUnique({ where: { email } });
 		if (!user) {
 			return Response.json({ error: 'User not found.' }, { status: 404 });
+		}
+		if (data.session?.access_token) {
+			const cookieStore = await cookies();
+			cookieStore.set('auth_token', data.session.access_token, {
+				httpOnly: true,
+				path: '/',
+				sameSite: 'lax',
+				maxAge: data.session.expires_in || 3600,
+			});
+			if (data.session.refresh_token) {
+				cookieStore.set('refresh_token', data.session.refresh_token, {
+					httpOnly: true,
+					path: '/',
+					sameSite: 'lax',
+					maxAge: 60 * 60 * 24 * 30,
+				});
+			}
 		}
 		return Response.json({
 			session: data.session,
