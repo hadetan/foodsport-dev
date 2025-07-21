@@ -1,7 +1,7 @@
 import React from "react";
 import { Users, Pencil, Trash2, Search } from "lucide-react";
 
-const ActivityRow = ({activity}) => {
+const ActivityRow = ({ activity }) => {
     return (
         <>
             <tr key={activity.id}>
@@ -10,12 +10,21 @@ const ActivityRow = ({activity}) => {
                         <div className="avatar">
                             <div className="mask mask-squircle w-12 h-12">
                                 <img
-                                    src={activity.image}
-                                    alt={activity.title}
+                                    src={
+                                        activity.image ||
+                                        "https://placehold.co/100x100"
+                                    }
+                                    alt={activity.title || "Placeholder"}
                                     className="cursor-pointer hover:opacity-75"
                                     onClick={() => {
-                                        setSelectedImage(activity.image);
-                                        setIsImageModalOpen(true);
+                                        if (activity.image) {
+                                            setSelectedImage(activity.image);
+                                            setIsImageModalOpen(true);
+                                        }
+                                    }}
+                                    onError={(e) => {
+                                        e.target.src =
+                                            "https://placehold.co/100";
                                     }}
                                 />
                             </div>
@@ -25,21 +34,27 @@ const ActivityRow = ({activity}) => {
                         </div>
                     </div>
                 </td>
-                <td>{activity.type}</td>
+                <td>{activity.type || "null"}</td>
                 <td>
-                    <div>{activity.date}</div>
-                    <div className="text-sm opacity-50">{activity.time}</div>
+                    <div>{activity.date || "null"}</div>
+                    <div className="text-sm opacity-50">
+                        {activity.time || "null"}
+                    </div>
                 </td>
-                <td>{activity.location}</td>
+                <td>{activity.location || "null"}</td>
                 <td>
                     <div className="flex flex-col gap-1">
                         <div className="text-sm">
-                            {activity.enrolled}/{activity.capacity}
+                            {activity.enrolled || "null"}/
+                            {activity.capacity || "null"}
                         </div>
                         <progress
                             className="progress progress-primary w-20"
                             value={
-                                (activity.enrolled / activity.capacity) * 100
+                                activity.capacity
+                                    ? (activity.enrolled / activity.capacity) *
+                                      100
+                                    : 0
                             }
                             max="100"
                         ></progress>

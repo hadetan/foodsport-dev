@@ -1,5 +1,5 @@
 "use client";
-
+import axiosClient from "@/utils/axios/api";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
@@ -7,6 +7,8 @@ import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 const ActivityManagementPage = () => {
+    const [activities, setActivities] = useState([]);
+
     const router = useRouter();
     const [activeStep, setActiveStep] = useState(1);
     const [searchQuery, setSearchQuery] = useState("");
@@ -40,33 +42,30 @@ const ActivityManagementPage = () => {
         "Status",
         "Actions",
     ];
-    // Mock data - Replace with actual API call
-    const activities = [
-        {
-            id: 1,
-            title: "Morning Yoga Session",
-            type: "Yoga",
-            status: "active",
-            date: "2025-07-10",
-            time: "08:00 AM",
-            location: "Central Park",
-            capacity: 20,
-            enrolled: 15,
-            image: "/bg-1.png",
-        },
-        {
-            id: 2,
-            title: "Evening Run Club",
-            type: "Running",
-            status: "inactive",
-            date: "2025-07-11",
-            time: "06:00 PM",
-            location: "City Track",
-            capacity: 30,
-            enrolled: 10,
-            image: "/bg-2.png",
-        },
-    ];
+    const getActivities = async () => {
+        try {
+            const response = await axiosClient.get("/admin/activities");
+            let data = response.data;
+            setActivities(data.activities);
+
+         
+        } catch (error) {
+            setNotification({
+                show: true,
+                message:
+                    error?.response?.data?.message ||
+                    "Failed to fetch activities.",
+                type: "error",
+            });
+        } finally {
+            setTableLoading(false);
+        }
+    };
+    useEffect(() => {
+        setTableLoading(true);
+
+        getActivities();
+    }, []);
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
@@ -100,8 +99,25 @@ const ActivityManagementPage = () => {
             setTableLoading(false);
         }, 1000);
     }, []);
+
+    // Auto-dismiss notifications
+    useEffect(() => {
+        if (notification.show) {
+            const timer = setTimeout(() => {
+                setNotification((prev) => ({ ...prev, show: false }));
+            }, 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [notification.show]);
+
+    // Simulate initial data loading
+    useEffect(() => {
+        setTimeout(() => {
+            setTableLoading(false);
+        }, 1000);
+    }, []);
+
     const statusOfUser = ["Active", "Inactive"];
-    // <Table heading={tableHeading} tableData={activities} />
 
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
@@ -131,8 +147,11 @@ const ActivityManagementPage = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <Table heading={tableHeading} tableData={activities} tableType={"acitivityPage"}/>
-                       
+                        <Table
+                            heading={tableHeading}
+                            tableData={activities}
+                            tableType={"acitivityPage"}
+                        />
                     </div>
                 )}
             </div>
