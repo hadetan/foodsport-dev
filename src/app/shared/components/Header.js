@@ -23,7 +23,7 @@ export default function Header() {
           <span className={styles.icon}>&#128722;</span>
           <span className={styles.login}>LOGIN / REGISTER</span>
           <span className={styles.langSwitch}>繁 / EN</span>
-          <ThemeSelector />
+          {/* <ThemeSelector /> */}
         </div>
       </div>
       <nav className={styles.navBar}>

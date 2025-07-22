@@ -128,6 +128,20 @@ export async function executeTransaction(actions) {
 }
 
 /**
+ * Remove a record by arbitrary where clause (supports composite keys)
+ * @param {keyof typeof prisma} model
+ * @param {object} where
+ * @returns {Promise<any>}
+ */
+export async function remove(model, where) {
+  try {
+    return await prisma[model].delete({ where });
+  } catch (error) {
+    return handlePrismaError(error);
+  }
+}
+
+/**
  * Handle Prisma errors and return a consistent error object
  * @param {any} error
  * @returns {object}

@@ -69,5 +69,15 @@
     --depth: 1;
     --noise: 0;
   }
-  
-  
+
+a {
+  text-decoration: none;
+}
+
+a:visited {
+  color: teal;
+}
+
+a:visited:hover {
+  color: rgb(0, 165, 165);
+}

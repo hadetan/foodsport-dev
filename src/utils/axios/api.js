@@ -32,9 +32,10 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const { data: { session } } = await supabaseClient.auth?.getSession();
-  if (session?.access_token) {
-    config.headers['Authorization'] = `Bearer ${session.access_token}`;
+  const match = document.cookie.match(/(^|;)\\s*auth_token=([^;]*)/);
+  const token = match ? decodeURIComponent(match[2]) : null;
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
   }
   return config;
 }, (error) => Promise.reject(error));
@@ -42,20 +43,21 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Handle authentication errors (token expired)
     if (error.response && error.response.status === 401) {
       try {
-        const { data: { session } } = await supabaseClient.auth.refreshSession();
-        if (session?.access_token) {
-          error.config.headers['Authorization'] = `Bearer ${session.access_token}`;
-          return api.request(error.config);
+        const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession();
+        if (refreshError || !session?.access_token) {
+          showApiError(refreshError || { message: 'Failed to refresh session.' });
+          return Promise.reject(error);
         }
+        error.config.headers['Authorization'] = `Bearer ${session.access_token}`;
+        document.cookie = `auth_token=${encodeURIComponent(session.access_token)}; path=/; max-age=${session.expires_in || 3600};`;
+        return api.request(error.config);
       } catch (refreshError) {
         showApiError(refreshError);
         return Promise.reject(refreshError);
       }
     }
-    // Global error handler for all API failures
     showApiError(error);
     return Promise.reject(error);
   }
@@ -72,8 +74,6 @@ function showApiError(error) {
   } else if (error.message) {
     message = error.message;
   }
-  // For now, just log. Replace with your UI notification system as needed.
-  // Example: toast.error(message);
   console.error('API Error:', message);
 }
 

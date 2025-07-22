@@ -2,18 +2,13 @@
 import axiosClient from "@/utils/axios/api";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import ErrorAlert from "@/app/shared/components/ErrorAlert";
-import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
+
 const ActivityManagementPage = () => {
     const [activities, setActivities] = useState([]);
 
     const router = useRouter();
-    const [activeStep, setActiveStep] = useState(1);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [statusFilter, setStatusFilter] = useState("all");
-    const [loading, setLoading] = useState(false);
     const [tableLoading, setTableLoading] = useState(true);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -48,6 +43,7 @@ const ActivityManagementPage = () => {
             setTableLoading(false);
         }
     };
+
     useEffect(() => {
         getActivities();
     }, []);
@@ -56,9 +52,8 @@ const ActivityManagementPage = () => {
 
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
-            {/* /* Create Activity Button */}
+            {/* Create Activity Button */}
             <div className="flex justify-between mb-6">
-                <h2 className="text-2xl font-bold">Activities</h2>
                 <button
                     className="btn btn-primary"
                     onClick={() =>
@@ -67,6 +62,7 @@ const ActivityManagementPage = () => {
                 >
                     Create Activity
                 </button>
+                <h2 className="text-2xl font-bold">Activities</h2>
             </div>
 
             {/* Search and Filters */}
@@ -513,8 +509,5 @@ const ActivityManagementPage = () => {
                     </div>
                 </div>
             )}
-        </div>
-    );
-};
 
 export default ActivityManagementPage;
