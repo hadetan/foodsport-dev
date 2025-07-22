@@ -2,6 +2,7 @@ import React from "react";
 import { Users, Pencil, Trash2, Search } from "lucide-react";
 
 const ActivityRow = ({ activity }) => {
+    console.log('asad',activity)
     return (
         <>
             <tr key={activity.id}>
@@ -10,11 +11,8 @@ const ActivityRow = ({ activity }) => {
                         <div className="avatar">
                             <div className="mask mask-squircle w-12 h-12">
                                 <img
-                                    src={
-                                        activity.image ||
-                                        "https://placehold.co/100x100"
-                                    }
-                                    alt={activity.title || "Placeholder"}
+                                    src={activity.image}
+                                    alt={activity.title}
                                     className="cursor-pointer hover:opacity-75"
                                     onClick={() => {
                                         if (activity.image) {
@@ -34,28 +32,24 @@ const ActivityRow = ({ activity }) => {
                         </div>
                     </div>
                 </td>
-                <td>{activity.type || "null"}</td>
+                <td>{activity.type}</td>
                 <td>
-                    <div>{activity.date || "null"}</div>
-                    <div className="text-sm opacity-50">
-                        {activity.time || "null"}
-                    </div>
+                    <div>{activity.date}</div>
+                    <div className="text-sm opacity-50">{activity.time}</div>
                 </td>
-                <td>{activity.location || "null"}</td>
+                <td>{activity.location}</td>
                 <td>
                     <div className="flex flex-col gap-1">
                         <div className="text-sm">
-                            {activity.enrolled || "null"}/
-                            {activity.capacity || "null"}
+                            {activity.participantCount}/{activity.participantLimit}
                         </div>
                         <progress
                             className="progress progress-primary w-20"
                             value={
-                                activity.capacity
-                                    ? (activity.enrolled / activity.capacity) *
-                                      100
-                                    : 0
-                            }
+                                activity.participantLimit
+                                ? (activity.participantCount / activity.participantLimit) *
+                                  100
+                                : 0                            }
                             max="100"
                         ></progress>
                     </div>

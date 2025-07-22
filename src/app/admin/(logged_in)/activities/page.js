@@ -39,30 +39,18 @@ const ActivityManagementPage = () => {
     ];
     const getActivities = async () => {
         try {
+            setTableLoading(true);
             const response = await axiosClient.get("/admin/activities");
+
             let data = response.data;
             setActivities(data.activities);
-
-         
-        }  finally {
+        } finally {
             setTableLoading(false);
         }
     };
     useEffect(() => {
-        setTableLoading(true);
-
         getActivities();
     }, []);
-
-    
-    // Simulate initial data loading
-    useEffect(() => {
-        setTimeout(() => {
-            setTableLoading(false);
-        }, 1000);
-    }, []);
-
-
 
     const statusOfUser = ["Active", "Inactive"];
 
@@ -282,7 +270,6 @@ const ActivityManagementPage = () => {
                                                 alt={`Preview ${index + 1}`}
                                                 className="w-full h-32 object-cover rounded-lg"
                                             />
-                                            
                                         </div>
                                     ))}
                                 </div>
@@ -396,7 +383,6 @@ const ActivityManagementPage = () => {
                         >
                             {activeStep === 1 ? "Cancel" : "Back"}
                         </button>
-                    
                     </div>
                 </div>
                 <form method="dialog" className="modal-backdrop">
