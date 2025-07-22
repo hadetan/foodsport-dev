@@ -17,11 +17,6 @@ const ActivityManagementPage = () => {
     const [tableLoading, setTableLoading] = useState(true);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
-    const [notification, setNotification] = useState({
-        show: false,
-        message: "",
-        type: "",
-    });
     const [formData, setFormData] = useState({
         title: "",
         type: "",
@@ -49,15 +44,7 @@ const ActivityManagementPage = () => {
             setActivities(data.activities);
 
          
-        } catch (error) {
-            setNotification({
-                show: true,
-                message:
-                    error?.response?.data?.message ||
-                    "Failed to fetch activities.",
-                type: "error",
-            });
-        } finally {
+        }  finally {
             setTableLoading(false);
         }
     };
@@ -67,32 +54,7 @@ const ActivityManagementPage = () => {
         getActivities();
     }, []);
 
-    const handleFormChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    const handleImageUpload = (e) => {
-        const files = Array.from(e.target.files);
-        setFormData((prev) => ({
-            ...prev,
-            images: [...prev.images, ...files],
-        }));
-    };
-
-    // Auto-dismiss notifications
-    useEffect(() => {
-        if (notification.show) {
-            const timer = setTimeout(() => {
-                setNotification((prev) => ({ ...prev, show: false }));
-            }, 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [notification.show]);
-
+    
     // Simulate initial data loading
     useEffect(() => {
         setTimeout(() => {
@@ -100,22 +62,7 @@ const ActivityManagementPage = () => {
         }, 1000);
     }, []);
 
-    // Auto-dismiss notifications
-    useEffect(() => {
-        if (notification.show) {
-            const timer = setTimeout(() => {
-                setNotification((prev) => ({ ...prev, show: false }));
-            }, 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [notification.show]);
 
-    // Simulate initial data loading
-    useEffect(() => {
-        setTimeout(() => {
-            setTableLoading(false);
-        }, 1000);
-    }, []);
 
     const statusOfUser = ["Active", "Inactive"];
 
@@ -210,7 +157,6 @@ const ActivityManagementPage = () => {
                                     placeholder="Enter activity title"
                                     className="input input-bordered"
                                     value={formData.title}
-                                    onChange={handleFormChange}
                                 />
                             </div>
 
@@ -224,7 +170,6 @@ const ActivityManagementPage = () => {
                                     name="type"
                                     className="select select-bordered"
                                     value={formData.type}
-                                    onChange={handleFormChange}
                                 >
                                     <option value="">
                                         Select activity type
@@ -247,7 +192,6 @@ const ActivityManagementPage = () => {
                                     className="textarea textarea-bordered h-24"
                                     placeholder="Enter activity description"
                                     value={formData.description}
-                                    onChange={handleFormChange}
                                 ></textarea>
                             </div>
                         </div>
@@ -265,7 +209,6 @@ const ActivityManagementPage = () => {
                                     name="date"
                                     className="input input-bordered"
                                     value={formData.date}
-                                    onChange={handleFormChange}
                                 />
                             </div>
 
@@ -278,7 +221,6 @@ const ActivityManagementPage = () => {
                                     name="time"
                                     className="input input-bordered"
                                     value={formData.time}
-                                    onChange={handleFormChange}
                                 />
                             </div>
 
@@ -292,7 +234,6 @@ const ActivityManagementPage = () => {
                                     placeholder="Enter activity location"
                                     className="input input-bordered"
                                     value={formData.location}
-                                    onChange={handleFormChange}
                                 />
                             </div>
 
@@ -306,7 +247,6 @@ const ActivityManagementPage = () => {
                                     placeholder="Enter participant limit"
                                     className="input input-bordered"
                                     value={formData.capacity}
-                                    onChange={handleFormChange}
                                     min="1"
                                 />
                             </div>
@@ -327,7 +267,6 @@ const ActivityManagementPage = () => {
                                     className="file-input file-input-bordered w-full"
                                     accept="image/*"
                                     multiple
-                                    onChange={handleImageUpload}
                                 />
                             </div>
 
@@ -343,14 +282,7 @@ const ActivityManagementPage = () => {
                                                 alt={`Preview ${index + 1}`}
                                                 className="w-full h-32 object-cover rounded-lg"
                                             />
-                                            <button
-                                                className="btn btn-circle btn-sm btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                onClick={() =>
-                                                    handleRemoveImage(index)
-                                                }
-                                            >
-                                                ×
-                                            </button>
+                                            
                                         </div>
                                     ))}
                                 </div>
@@ -464,30 +396,7 @@ const ActivityManagementPage = () => {
                         >
                             {activeStep === 1 ? "Cancel" : "Back"}
                         </button>
-                        <button
-                            className="btn btn-primary"
-                            onClick={() => {
-                                if (activeStep === 4) {
-                                    // TODO: Implement activity creation
-                                    setNotification({
-                                        show: true,
-                                        message:
-                                            "Activity created successfully",
-                                        type: "success",
-                                    });
-                                    document
-                                        .getElementById("create_activity_modal")
-                                        .close();
-                                    setActiveStep(1);
-                                } else {
-                                    setActiveStep((prev) =>
-                                        Math.min(prev + 1, 4)
-                                    );
-                                }
-                            }}
-                        >
-                            {activeStep === 4 ? "Create Activity" : "Next"}
-                        </button>
+                    
                     </div>
                 </div>
                 <form method="dialog" className="modal-backdrop">
