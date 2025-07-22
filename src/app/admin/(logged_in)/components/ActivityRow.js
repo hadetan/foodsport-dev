@@ -36,15 +36,18 @@ const ActivityRow = ({ activity }) => {
                 <td>
                     <div className="flex flex-col gap-1">
                         <div className="text-sm">
-                            {activity.participantCount}/{activity.participantLimit}
+                            {activity.participantCount}/
+                            {activity.participantLimit}
                         </div>
                         <progress
                             className="progress progress-primary w-20"
                             value={
                                 activity.participantLimit
-                                ? (activity.participantCount / activity.participantLimit) *
-                                  100
-                                : 0                            }
+                                    ? (activity.participantCount /
+                                          activity.participantLimit) *
+                                      100
+                                    : 0
+                            }
                             max="100"
                         ></progress>
                     </div>
