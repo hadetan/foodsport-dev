@@ -5,6 +5,15 @@ import { useRouter } from "next/navigation";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 
+const activityStatusOptions = [
+    "upcoming",
+    "active",
+    "closed",
+    "completed",
+    "cancelled",
+    "draft",
+];
+
 const ActivityManagementPage = () => {
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(false); // Added loading state
@@ -24,6 +33,21 @@ const ActivityManagementPage = () => {
         images: [],
         status: "draft",
     });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize] = useState(10);
+    const [selectedStatus, setSelectedStatus] = useState(""); // Add selected status
+
+    const filteredActivities = selectedStatus
+        ? activities.filter((a) => a.status === selectedStatus)
+        : activities;
+
+    const paginatedActivities = filteredActivities.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize
+    );
+
+    const totalPages = Math.ceil(filteredActivities.length / pageSize);
+
     const tableHeading = [
         "Activity",
         "Type",
@@ -37,7 +61,6 @@ const ActivityManagementPage = () => {
         try {
             setTableLoading(true);
             const response = await axiosClient.get("/admin/activities");
-
             let data = response.data;
             setActivities(data.activities);
         } finally {
@@ -49,29 +72,44 @@ const ActivityManagementPage = () => {
         getActivities();
     }, []);
 
-    const statusOfUser = ["Active", "Inactive"];
-
     // POST handler for creating a new activity
 
     return (
-        <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
-            <h2 className="text-5xl font-bold">Activities</h2>
+        <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6 flex flex-col">
+            <div className="flex flex-col items-center">
+                <h2 className="text-5xl font-bold text-center mb-8">
+                    Activities
+                </h2>
+            </div>
 
-            {/* Create Activity Button */}
-            <div className="flex justify-between mb-6 my-10">
+            {/* Create Activity Button and Filters */}
+            <div className="flex flex-row justify-between items-center gap-6 mb-6">
                 <button
-                    className="btn btn-primary btn-xl"
+                    className="btn btn-primary btn-xl h-16 px-10 text-xl"
                     onClick={() =>
                         router.push("/admin/activities/createActivity")
                     }
                 >
                     Create Activity
                 </button>
-            </div>
-
-            {/* Search and Filters */}
-            <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                <Dropdown items={statusOfUser} name="Status" />
+                <div className="w-full max-w-xs">
+                    <select
+                        className="select select-lg w-full text-xl"
+                        value={selectedStatus}
+                        onChange={(e) => {
+                            setSelectedStatus(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <option value="">All Status</option>
+                        {activityStatusOptions.map((status) => (
+                            <option key={status} value={status}>
+                                {status.charAt(0).toUpperCase() +
+                                    status.slice(1)}
+                            </option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* Activities Table */}
@@ -84,12 +122,39 @@ const ActivityManagementPage = () => {
                     <div className="overflow-x-auto">
                         <Table
                             heading={tableHeading}
-                            tableData={activities}
+                            tableData={paginatedActivities}
                             tableType={"acitivityPage"}
                         />
                     </div>
                 )}
             </div>
+
+            {/* Pagination Controls */}
+            {!tableLoading && totalPages > 1 && (
+                <div className="flex justify-center items-center mt-6 gap-2">
+                    <button
+                        className="btn btn-sm"
+                        onClick={() =>
+                            setCurrentPage((p) => Math.max(1, p - 1))
+                        }
+                        disabled={currentPage === 1}
+                    >
+                        Prev
+                    </button>
+                    <span>
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                        className="btn btn-sm"
+                        onClick={() =>
+                            setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
 
             <dialog id="create_activity_modal" className="modal">
                 <div className="modal-box w-11/12 max-w-3xl">

@@ -102,16 +102,16 @@ const CreateActivityPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-base-200 p-6">
+        <div className="min-h-screen bg-base-200 p-6 text-xl">
             <div className="max-w-screen-2xl mx-auto">
                 <div className="flex items-center mb-6 relative">
                     <button
-                        className="btn btn-outline absolute left-0"
+                        className="btn btn-outline btn-lg absolute left-0 text-lg"
                         onClick={() => router.push("/admin/activities")}
                     >
                         Back to Activities
                     </button>
-                    <h1 className="text-2xl font-bold mx-auto text-center w-full">
+                    <h1 className="text-4xl font-bold mx-auto text-center w-full">
                         Create Activity
                     </h1>
                 </div>
@@ -121,10 +121,10 @@ const CreateActivityPage = () => {
                 )}
 
                 <div className="card bg-base-100 shadow-xl">
-                    <div className="card-body p-6 space-y-8">
+                    <div className="card-body p-8 space-y-10 text-xl">
                         {/* Title */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">
+                            <span className="w-40 text-white text-xl">
                                 Activity Title
                             </span>
                             <label className="flex-1">
@@ -132,7 +132,7 @@ const CreateActivityPage = () => {
                                     type="text"
                                     name="title"
                                     placeholder="Enter activity title"
-                                    className="input input-md"
+                                    className="input input-lg text-lg"
                                     value={formData.title}
                                     onChange={handleFormChange}
                                 />
@@ -141,13 +141,13 @@ const CreateActivityPage = () => {
 
                         {/* Activity Type */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">
+                            <span className="w-40 text-white text-xl">
                                 Activity Type
                             </span>
                             <label className="flex-1">
                                 <select
-                                    name="activityType" // changed from type to activityType
-                                    className="select select-bordered"
+                                    name="activityType"
+                                    className="select select-bordered select-lg text-lg"
                                     value={formData.activityType}
                                     onChange={handleFormChange}
                                 >
@@ -164,7 +164,9 @@ const CreateActivityPage = () => {
 
                         {/* Description (Rich Text Editor) */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">Summary</span>
+                            <span className="w-40 text-white text-xl">
+                                Summary
+                            </span>
                             <label className="flex-1 max-w-xl w-1/2">
                                 <RichTextEditor
                                     value={formData.description}
@@ -174,21 +176,21 @@ const CreateActivityPage = () => {
                                             description: val,
                                         }))
                                     }
-                                    className="text-black dark:text-inherit"
+                                    className="text-black dark:text-inherit text-lg"
                                 />
                             </label>
                         </div>
 
                         {/* Start DateTime */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">
+                            <span className="w-40 text-white text-xl">
                                 Start Date & Time
                             </span>
                             <label className="flex-1">
                                 <input
                                     type="datetime-local"
                                     name="startDateTime"
-                                    className="input input-bordered"
+                                    className="input input-bordered input-lg text-lg"
                                     value={formData.startDateTime}
                                     onChange={handleFormChange}
                                 />
@@ -196,14 +198,14 @@ const CreateActivityPage = () => {
                         </div>
                         {/* End DateTime */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">
+                            <span className="w-40 text-white text-xl">
                                 End Date & Time
                             </span>
                             <label className="flex-1">
                                 <input
                                     type="datetime-local"
                                     name="endDateTime"
-                                    className="input input-bordered"
+                                    className="input input-bordered input-lg text-lg"
                                     value={formData.endDateTime}
                                     onChange={handleFormChange}
                                 />
@@ -212,13 +214,15 @@ const CreateActivityPage = () => {
 
                         {/* Location */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">Location</span>
+                            <span className="w-40 text-white text-xl">
+                                Location
+                            </span>
                             <label className="flex-1">
                                 <input
                                     type="text"
                                     name="location"
                                     placeholder="Enter activity location"
-                                    className="input input-bordered"
+                                    className="input input-bordered input-lg text-lg"
                                     value={formData.location}
                                     onChange={handleFormChange}
                                 />
@@ -227,13 +231,15 @@ const CreateActivityPage = () => {
 
                         {/* Capacity */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">Capacity</span>
+                            <span className="w-40 text-white text-xl">
+                                Capacity
+                            </span>
                             <label className="flex-1">
                                 <input
                                     type="number"
                                     name="capacity"
                                     placeholder="Enter participant limit"
-                                    className="input input-bordered"
+                                    className="input input-bordered input-lg text-lg"
                                     value={formData.capacity}
                                     onChange={handleFormChange}
                                     min="1"
@@ -243,13 +249,13 @@ const CreateActivityPage = () => {
 
                         {/* Images */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">
+                            <span className="w-40 text-white text-xl">
                                 Upload Images
                             </span>
                             <label className="flex-1">
                                 <input
                                     type="file"
-                                    className="file-input file-input-bordered"
+                                    className="file-input file-input-bordered file-input-lg text-lg"
                                     accept="image/*"
                                     multiple
                                     onChange={handleImageUpload}
@@ -264,10 +270,10 @@ const CreateActivityPage = () => {
                                         <img
                                             src={URL.createObjectURL(image)}
                                             alt={`Preview ${index + 1}`}
-                                            className="w-full h-32 object-cover rounded-lg"
+                                            className="w-full h-40 object-cover rounded-lg"
                                         />
                                         <button
-                                            className="btn btn-circle btn-sm btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="btn btn-circle btn-lg btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-lg"
                                             onClick={() => removeImage(index)}
                                         >
                                             ×
@@ -279,11 +285,13 @@ const CreateActivityPage = () => {
 
                         {/* Status Dropdown at the bottom */}
                         <div className="form-control flex items-center gap-4 mt-4">
-                            <span className="w-32 text-white">Status</span>
+                            <span className="w-40 text-white text-xl">
+                                Status
+                            </span>
                             <label className="flex-1">
                                 <select
                                     name="status"
-                                    className="select select-bordered"
+                                    className="select select-bordered select-lg text-lg"
                                     value={formData.status}
                                     onChange={handleFormChange}
                                 >
@@ -300,7 +308,7 @@ const CreateActivityPage = () => {
                         {/* Submit Button */}
                         <div className="flex justify-start gap-4">
                             <button
-                                className={`btn btn-primary ${
+                                className={`btn btn-primary btn-lg text-xl ${
                                     loading ? "loading" : ""
                                 }`}
                                 onClick={handleSubmit}
