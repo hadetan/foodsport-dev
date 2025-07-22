@@ -4,15 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import RichTextEditor from "@/app/shared/components/RichTextEditor";
+import axiosClient from "@/utils/axios/api";
 
 const CreateActivityPage = () => {
     const router = useRouter();
     const [formData, setFormData] = useState({
         title: "",
-        type: "",
+        activityType: "",
         description: "",
-        date: "",
-        time: "",
+        startDateTime: "",
+        endDateTime: "",
         location: "",
         capacity: "",
         images: [],
@@ -27,6 +28,23 @@ const CreateActivityPage = () => {
             ...prev,
             [name]: value,
         }));
+    };
+
+    const handlePostActivities = async (activity) => {
+        // Only include fields allowed by the POST API
+
+        try {
+            setLoading(true);
+            const response = await axiosClient.post(
+                "/admin/activities",
+                activity
+            );
+            return response.data;
+        } catch (err) {
+            throw err;
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleImageUpload = (e) => {
@@ -47,15 +65,28 @@ const CreateActivityPage = () => {
     const handleSubmit = async (isDraft = false) => {
         try {
             setLoading(true);
+            // Convert to ISO string if value exists
+            const startISO = new Date(formData.startDateTime).toISOString();
+            const endISO = new Date(formData.endDateTime).toISOString();
             const payload = {
-                ...formData,
+                title: formData.title,
+                activityType: formData.activityType,
+                location: formData.location,
+                startDate: startISO,
+                endDate: endISO,
+                startTime: startISO,
+                endTime: endISO,
+                description: formData.description,
                 status: isDraft ? "draft" : "active",
+                imageUrl: "", // handle image upload if needed
+                participantLimit: Number(formData.capacity),
             };
-            // TODO: Implement API call to create activity
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+
+            await handlePostActivities(payload);
+
             router.push("/admin/activities");
         } catch (err) {
-            setError(err.message);
+            setError(err?.response?.data?.error || err.message);
         } finally {
             setLoading(false);
         }
@@ -99,16 +130,16 @@ const CreateActivityPage = () => {
                             </label>
                         </div>
 
-                        {/* Type */}
+                        {/* Activity Type */}
                         <div className="form-control flex items-center gap-4">
                             <span className="w-32 text-white">
                                 Activity Type
                             </span>
                             <label className="flex-1">
                                 <select
-                                    name="type"
+                                    name="activityType" // changed from type to activityType
                                     className="select select-bordered"
-                                    value={formData.type}
+                                    value={formData.activityType}
                                     onChange={handleFormChange}
                                 >
                                     <option value="">
@@ -139,29 +170,32 @@ const CreateActivityPage = () => {
                             </label>
                         </div>
 
-                        {/* Date */}
+                        {/* Start DateTime */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">Date</span>
+                            <span className="w-32 text-white">
+                                Start Date & Time
+                            </span>
                             <label className="flex-1">
                                 <input
-                                    type="date"
-                                    name="date"
+                                    type="datetime-local"
+                                    name="startDateTime"
                                     className="input input-bordered"
-                                    value={formData.date}
+                                    value={formData.startDateTime}
                                     onChange={handleFormChange}
                                 />
                             </label>
                         </div>
-
-                        {/* Time */}
+                        {/* End DateTime */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">Time</span>
+                            <span className="w-32 text-white">
+                                End Date & Time
+                            </span>
                             <label className="flex-1">
                                 <input
-                                    type="time"
-                                    name="time"
+                                    type="datetime-local"
+                                    name="endDateTime"
                                     className="input input-bordered"
-                                    value={formData.time}
+                                    value={formData.endDateTime}
                                     onChange={handleFormChange}
                                 />
                             </label>

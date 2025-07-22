@@ -16,7 +16,10 @@ const Table = ({ heading, tableData, tableType }) => {
                     {tableType == "userPage"
                         ? tableData.map((user) => <UserRow user={user} />)
                         : tableData.map((activity) => (
-                              <ActivityRow activity={activity} />
+                              <ActivityRow
+                                  key={activity.id}
+                                  activity={activity}
+                              />
                           ))}
                 </tbody>
             </table>
