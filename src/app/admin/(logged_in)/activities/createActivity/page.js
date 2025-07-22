@@ -6,6 +6,15 @@ import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import RichTextEditor from "@/app/shared/components/RichTextEditor";
 import axiosClient from "@/utils/axios/api";
 
+const ActivityStatusOptions = [
+    "upcoming",
+    "active",
+    "closed",
+    "completed",
+    "cancelled",
+    "draft",
+];
+
 const CreateActivityPage = () => {
     const router = useRouter();
     const [formData, setFormData] = useState({
@@ -62,7 +71,7 @@ const CreateActivityPage = () => {
         }));
     };
 
-    const handleSubmit = async (isDraft = false) => {
+    const handleSubmit = async () => {
         try {
             setLoading(true);
             // Convert to ISO string if value exists
@@ -77,7 +86,7 @@ const CreateActivityPage = () => {
                 startTime: startISO,
                 endTime: endISO,
                 description: formData.description,
-                status: isDraft ? "draft" : "active",
+                status: formData.status,
                 imageUrl: "", // handle image upload if needed
                 participantLimit: Number(formData.capacity),
             };
@@ -268,20 +277,33 @@ const CreateActivityPage = () => {
                             </div>
                         )}
 
-                        {/* Submit Buttons */}
+                        {/* Status Dropdown at the bottom */}
+                        <div className="form-control flex items-center gap-4 mt-4">
+                            <span className="w-32 text-white">Status</span>
+                            <label className="flex-1">
+                                <select
+                                    name="status"
+                                    className="select select-bordered"
+                                    value={formData.status}
+                                    onChange={handleFormChange}
+                                >
+                                    {ActivityStatusOptions.map((status) => (
+                                        <option key={status} value={status}>
+                                            {status.charAt(0).toUpperCase() +
+                                                status.slice(1)}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        </div>
+
+                        {/* Submit Button */}
                         <div className="flex justify-start gap-4">
-                            <button
-                                className="btn btn-outline"
-                                onClick={() => handleSubmit(true)}
-                                disabled={loading}
-                            >
-                                Save as Draft
-                            </button>
                             <button
                                 className={`btn btn-primary ${
                                     loading ? "loading" : ""
                                 }`}
-                                onClick={() => handleSubmit(false)}
+                                onClick={handleSubmit}
                                 disabled={loading}
                             >
                                 SAVE

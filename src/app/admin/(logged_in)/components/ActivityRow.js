@@ -1,6 +1,16 @@
 import React from "react";
 import { Users, Pencil, Trash2, Search } from "lucide-react";
 
+// Status color mapping
+const statusBadgeClass = {
+    upcoming: "bg-yellow-400 text-black",
+    active: "bg-green-500 text-white",
+    closed: "bg-gray-500 text-white",
+    completed: "bg-blue-500 text-white",
+    cancelled: "bg-red-700 text-white",
+    draft: "bg-pink-400 text-white",
+};
+
 const ActivityRow = ({ activity }) => {
     return (
         <>
@@ -54,14 +64,9 @@ const ActivityRow = ({ activity }) => {
                 </td>
                 <td>
                     <div
-                        className={`badge ${
-                            activity.status === "active"
-                                ? "badge-success"
-                                : activity.status === "pending"
-                                ? "badge-warning"
-                                : activity.status === "completed"
-                                ? "badge-info"
-                                : "badge-error"
+                        className={`badge px-3 py-1 rounded-full font-semibold text-xs ${
+                            statusBadgeClass[activity.status] ||
+                            "bg-gray-200 text-black"
                         }`}
                     >
                         {activity.status}

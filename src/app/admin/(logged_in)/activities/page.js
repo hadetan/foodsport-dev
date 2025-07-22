@@ -52,21 +52,21 @@ const ActivityManagementPage = () => {
     const statusOfUser = ["Active", "Inactive"];
 
     // POST handler for creating a new activity
-    
 
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
+            <h2 className="text-5xl font-bold">Activities</h2>
+
             {/* Create Activity Button */}
-            <div className="flex justify-between mb-6">
+            <div className="flex justify-between mb-6 my-10">
                 <button
-                    className="btn btn-primary"
+                    className="btn btn-primary btn-xl"
                     onClick={() =>
                         router.push("/admin/activities/createActivity")
                     }
                 >
                     Create Activity
                 </button>
-                <h2 className="text-2xl font-bold">Activities</h2>
             </div>
 
             {/* Search and Filters */}
@@ -96,9 +96,6 @@ const ActivityManagementPage = () => {
                     <h3 className="font-bold text-lg mb-4">
                         Create New Activity
                     </h3>
-
-
-                
                 </div>
             </dialog>
 
@@ -229,4 +226,4 @@ const ActivityManagementPage = () => {
     );
 };
 
-export default ActivityManagementPage
+export default ActivityManagementPage;
