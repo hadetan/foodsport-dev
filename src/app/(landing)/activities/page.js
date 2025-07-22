@@ -14,7 +14,6 @@ export default async function ActivitiesPage() {
   const activities = await fetchActivities();
   return (
     <>
-      <h1>something</h1>
       <Activity />
       <div className={styles.grid3}>
         {activities.map((item) => (

@@ -1,7 +1,7 @@
 import React from "react";
 import { Users, Pencil, Trash2, Search } from "lucide-react";
 
-const ActivityRow = ({activity}) => {
+const ActivityRow = ({ activity }) => {
     return (
         <>
             <tr key={activity.id}>
@@ -14,8 +14,10 @@ const ActivityRow = ({activity}) => {
                                     alt={activity.title}
                                     className="cursor-pointer hover:opacity-75"
                                     onClick={() => {
-                                        setSelectedImage(activity.image);
-                                        setIsImageModalOpen(true);
+                                        if (activity.image) {
+                                            setSelectedImage(activity.image);
+                                            setIsImageModalOpen(true);
+                                        }
                                     }}
                                 />
                             </div>
@@ -34,12 +36,17 @@ const ActivityRow = ({activity}) => {
                 <td>
                     <div className="flex flex-col gap-1">
                         <div className="text-sm">
-                            {activity.enrolled}/{activity.capacity}
+                            {activity.participantCount}/
+                            {activity.participantLimit}
                         </div>
                         <progress
                             className="progress progress-primary w-20"
                             value={
-                                (activity.enrolled / activity.capacity) * 100
+                                activity.participantLimit
+                                    ? (activity.participantCount /
+                                          activity.participantLimit) *
+                                      100
+                                    : 0
                             }
                             max="100"
                         ></progress>
