@@ -7,7 +7,8 @@ import Table from "@/app/admin/(logged_in)/components/Table";
 
 const ActivityManagementPage = () => {
     const [activities, setActivities] = useState([]);
-
+    const [loading, setLoading] = useState(false); // Added loading state
+    const [activeStep, setActiveStep] = useState(1); // Added activeStep state
     const router = useRouter();
     const [tableLoading, setTableLoading] = useState(true);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -509,5 +510,8 @@ const ActivityManagementPage = () => {
                     </div>
                 </div>
             )}
+        </div>
+    );
+};
 
 export default ActivityManagementPage;
