@@ -2,7 +2,6 @@ import React from "react";
 import { Users, Pencil, Trash2, Search } from "lucide-react";
 
 const ActivityRow = ({ activity }) => {
-    console.log('asad',activity)
     return (
         <>
             <tr key={activity.id}>
@@ -19,10 +18,6 @@ const ActivityRow = ({ activity }) => {
                                             setSelectedImage(activity.image);
                                             setIsImageModalOpen(true);
                                         }
-                                    }}
-                                    onError={(e) => {
-                                        e.target.src =
-                                            "https://placehold.co/100";
                                     }}
                                 />
                             </div>
