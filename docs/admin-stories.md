@@ -256,147 +256,111 @@
 
 ## Activity Management
 
-### Story #A3: Activity Administration Interface
+### Story #A3: Create Activity Page Structure\*
 
-**Title**: Create activity management UI  
-**Description**: Build interface for managing platform activities  
+**Title**: Create activity page with advanced writing tools and image cropping  
+**Description**: Build a single-page interface for creating activities with a large description box, support for all writing formats, and an image cropping tool.  
 **Scope**:
 
--   Activity creation
--   Activity listing
--   Image management
--   Status controls
--   Participant management
+-   Single-page activity creation form
+-   Advanced writing tools for description
+-   Image upload and cropping functionality
+-   Validation for all fields
+-   Responsive design
 
 **DaisyUI Components**:
 
--   Activity List:
+-   Activity Form:
 
-    -   `table table-zebra` for activities
-    -   `collapse` for details view
-    -   `badge` for status
-    -   `carousel` for activity images
-    -   `pagination` for navigation
-
--   Creation Form:
-
-    -   `steps` for creation wizard
-    -   `form-control` for inputs
-    -   `file-input` for images
-    -   `textarea` for descriptions
+    -   `form-control` for all inputs
+    -   `textarea` for a large description box with rich text editor
+    -   `file-input` for image uploads
+    -   `modal` for image cropping tool
     -   `select` for categories
+    -   `toggle` for status changes
+    -   `datepicker` for date selection
+    -   `timepicker` for time selection
+    -   `input input-bordered` for title, location, and capacity fields
 
 -   Image Management:
 
     -   `card` for image previews
-    -   `modal` for image viewer
+    -   `modal` for cropping tool
     -   `carousel` for multiple images
     -   `progress` for uploads
     -   `badge` for image status
 
--   Status Controls:
+-   Actions:
 
-    -   `btn-group` for actions
-    -   `dropdown` for status
+    -   `btn-group` for save/cancel actions
     -   `alert` for notifications
-    -   `toast` for success/error
-    -   `loading` for operations
+    -   `loading` for submission states
+    -   `toast` for success/error feedback
 
--   Participant Management:
+**Form Structure**:
 
-    -   `table` for participant list
-    -   `avatar` for user images
-    -   `badge` for status
-    -   `progress` for capacity
-    -   `stats` for metrics
-
-**Create Activity Page Structure**:
-
-1. **Basic Information (Step 1)**
-
-    - Title
-        - Required field
-        - Maximum 100 characters
-        - No special characters
-    - Activity Type/Category
-        - Required field
-        - Select from predefined list
-    - Description
-        - Required field
-        - Rich text editor
-        - Minimum 50 characters
-    - Status
-        - Default: Draft
-        - Options: Draft/Active/Cancelled
-
-2. **Activity Details (Step 2)**
-
-    - Date
-        - Required field
-        - Must be future date
-        - Calendar picker
-    - Time
-        - Required field
-        - 24-hour format
-        - Time picker
-    - Location
-        - Required field
-        - Text input with address validation
-    - Maximum Participant Capacity
-        - Required field
-        - Numeric input
-        - Range: 1-1000
-
-3. **Image Management (Step 3)**
-
-    - Image Upload
-        - Multiple file selection
-        - Maximum 5 images
-        - Supported formats: JPG, PNG
-        - Maximum size: 5MB per image
-    - Image Preview
-        - Grid layout
-        - Thumbnail view
-        - Delete option
-    - Image Order
-        - Drag and drop reordering
-        - Set primary image
-
-4. **Review & Submit (Step 4)**
-    - Summary Display
-        - All entered information
-        - Image previews
-        - Participant capacity
-    - Final Validation
-        - Check all required fields
-        - Validate image requirements
-    - Submission Options
-        - Save as Draft
-        - Publish Activity
-        - Cancel Creation
+-   Title:
+    -   Required field
+    -   Maximum 100 characters
+    -   Alphanumeric with basic punctuation
+-   Description:
+    -   Required field
+    -   Large text area with rich text editor
+    -   Supports all writing formats (bold, italic, lists, links, etc.)
+    -   Minimum 50 characters
+-   Type/Category:
+    -   Required field
+    -   Select from predefined list
+-   Date & Time:
+    -   Required fields
+    -   Calendar picker for date
+    -   Time picker for time
+-   Location:
+    -   Required field
+    -   Text input with address validation
+-   Maximum Participant Capacity:
+    -   Required field
+    -   Numeric input
+    -   Range: 1-1000
+-   Image Upload:
+    -   Multiple file selection
+    -   Maximum 5 images
+    -   Supported formats: JPG, PNG
+    -   Maximum size: 5MB per image
+-   Image Cropping:
+    -   Modal with cropping tool
+    -   Aspect ratio options
+    -   Save cropped image
+-   Image Preview:
+    -   Grid layout
+    -   Thumbnail view
+    -   Delete option
+-   Image Order:
+    -   Drag and drop reordering
+    -   Set primary image
 
 **Validation Requirements**:
 
 1. **Field Validations**
 
-    - Title
+    - Title:
         - Required
         - 5-100 characters
         - Alphanumeric with basic punctuation
-    - Description
+    - Description:
         - Required
         - Minimum 50 characters
         - Rich text allowed
-    - Type/Category
+    - Type/Category:
         - Required
         - From predefined list
-    - Date & Time
+    - Date & Time:
         - Required
         - Future date/time only
-    - Location
+    - Location:
         - Required
         - Valid address format
-    - Capacity
+    - Capacity:
         - Required
         - Positive integer
         - Maximum 1000
@@ -407,111 +371,22 @@
     - Total images: Maximum 5
     - Required resolution: Minimum 800x600px
 
-**Additional Features**:
-
--   Form Progress
-
-    -   Step completion tracking
-    -   Save progress functionality
-    -   Resume editing capability
-
--   User Experience
-
-    -   Unsaved changes warning
-    -   Auto-save draft
-    -   Form validation messages
-    -   Loading indicators
-    -   Success/error notifications
-
--   Responsive Design
-
-    -   Mobile-friendly forms
-    -   Touch-friendly image handling
-    -   Adaptive layout for all screens
-
--   Edit Actions:
-    -   `modal` for edit form containing:
-        -   Activity basic details:
-            -   Title input
-            -   Description textarea
-            -   Category select
-            -   Location details
-            -   Date and time inputs
-            -   Status dropdown (Active/Draft/Cancelled)
-        -   Image management section:
-            -   Current images carousel
-            -   Delete image option
-            -   Add new images upload
-            -   Reorder images functionality
-        -   Participant management:
-            -   Maximum participants input
-            -   Current participants list
-            -   Option to remove participants
-        -   Save actions:
-            -   `btn-group` for save/cancel
-            -   `loading` state during update
-            -   `alert` for validation errors
-            -   `toast` for success/failure
-
 **Acceptance Criteria**:
 
-1. **Activity Management Screen**
-
-    - Activity List View:
-
-        - [x] Filterable table with columns: Title, Type, Date, Time, Location, Capacity, Status
-        - [x] Quick action buttons (Edit, Delete, View)
-        - [x] Status badges (Active/Draft/Cancelled)
-        - [x] Pagination and items per page
-        - [x] Search by title/location
-        - [x] Filter by type/status/date
-        - [x] Sort by any column
-        - [x] Create Activity button linking to create page
-        - [x] Image thumbnail preview
-        - [x] Participant count indicator
-        - [ ] Export to CSV/Excel
-
-    - Create/Edit Activity Page:
-
-        - [x] Full-page multi-step wizard form
-        - [x] Progress tracking between steps
-        - [x] Form validation on each step
-        - [x] Image upload with preview grid
-        - [x] Save as draft option
-        - [x] Mobile responsive layout
-        - [x] Field validations with error messages
-        - [x] Success/error notifications
-        - [x] Unsaved changes warning
-        - [ ] Auto-save functionality
-        - [x] Back to list navigation
-        - [x] Step-by-step progress indicator
-        - [x] Cancel/Save actions
-        - [x] Preview before submission
-
-    - Activity Details Page:
-
-        - [x] View all activity information
-        - [x] Current images gallery
-        - [x] Participant list management
-        - [x] Status update controls
-        - [x] Edit button to edit page
-        - [ ] Activity history log
-        - [ ] Version tracking
-        - [ ] Comments/Notes section
-
-    - Shared Features:
-        - [x] Loading states with spinners
-        - [x] Error handling with messages
-        - [x] Success notifications
-        - [x] Confirmation dialogs
-        - [x] Responsive design
-        - [x] Keyboard navigation
-        - [x] Form validations
-        - [ ] Accessibility compliance
-        - [ ] Data caching
-        - [x] Performance optimization
-
----
+-   [x] Single-page form for activity creation
+-   [x] Large description box with rich text editor supporting all writing formats
+-   [x] Image upload functionality with cropping tool
+-   [ ] Drag-and-drop image reordering
+-   [x] Form validation for all fields (title, description, date, time, location, capacity)
+-   [x] Success/error notifications for form submission
+-   [x] Mobile-responsive design for all form elements
+-   [x] Save as draft option to preserve progress
+-   [x] Cancel and save actions with confirmation dialogs
+-   [x] Preview option before final submission
+-   [ ] Export functionality for activity data
+-   [ ] Accessibility compliance for all form elements
+-   [ ] Data caching for improved performance
+-   [x] "Create Activity" button on the activity screen that navigates to the activity creation page
 
 ## Summary
 
