@@ -3,7 +3,7 @@ import styles from '@/app/shared/css/Header.module.css';
 import Link from 'next/link';
 import ThemeSelector from "@/app/shared/components/ThemeSelector";
 
-export default function Header() {
+export default function Header({url}) {
   return (
     <header className={styles.headerWrapper}>
       <div className={styles.topBar}>
@@ -31,7 +31,7 @@ export default function Header() {
           <li className={styles.active}>HOME</li>
           <li>
             <Link
-              href="/activities"
+              href={`${url}`}
               style={{ textDecoration: "none", color: "inherit" }}
             >
               JOIN ACTIVITIES

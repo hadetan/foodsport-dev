@@ -1,31 +1,38 @@
-import Image from "next/image";
-import styles from "@/app/shared/css/page.module.css";
-import Activity from "@/app/shared/components/Activity";
-import ActivityItem from "@/app/shared/components/ActivityItem";
-// import activities from "@/data/activities";
-import Hero from "@/app/shared/components/Hero";
-import ComingSoon from "@/app/(landing)/Components/ComingSoon";
+'use client';
+
+import styles from '@/app/shared/css/page.module.css';
+import Activity from '@/app/shared/components/Activity';
+import ActivityItem from '@/app/shared/components/ActivityItem';
+import Hero from '@/app/shared/components/Hero';
+import api from '@/utils/axios/api';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
-    return (
-        <>
-            <Hero />
-            <Activity />
-            <div className={styles.grid3}>
-                {/* {activities.map((item, idx) => (
-          <ActivityItem
-            key={idx}
-            image={item.image}
-            overlayText={item.activity}
-            title={item.chinese_title}
-            subtitle={item.english_description}
-            date={item.dates}
-            time={item.time}
-            location={item.location}
-          />
-        ))} */}
-            </div>
-            <ComingSoon />
-        </>
-    );
+	const [activities, setActivities] = useState([]);
+
+	const fetchActivities = async () => {
+		const res = await api.get('/admin/activities');
+		setActivities(res.data?.activities);
+	};
+
+	useEffect(() => {
+		fetchActivities();
+		return () => setActivities([]);
+	}, []);
+
+	console.log(activities);
+	return (
+		<>
+			<Hero />
+			<Activity />
+			<div className={styles.grid3}>
+				{activities.slice(0, 9).map((a) => (
+					<ActivityItem
+						key={a.id}
+						activity={a}
+					/>
+				))}
+			</div>
+		</>
+	);
 }

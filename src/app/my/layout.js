@@ -5,8 +5,10 @@ export default async function MyLayout({ children }) {
 	return (
 		<>
 			{/* Landing-specific header */}
-			<Header />
-			<main className='flex-grow'>{children}</main>
+			<Header url='/my/activities' />
+			<main className='flex-grow'>
+				{children}
+			</main>
 			{/* Landing-specific footer */}
 			<Footer />
 		</>

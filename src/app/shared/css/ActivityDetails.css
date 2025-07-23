@@ -1,0 +1,204 @@
+.activityDetailsFlexContent {
+  display: flex;
+  flex-direction: row;
+  gap: 48px;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  margin-top: 0;
+}
+
+.activityDetailsSidebar {
+  background: #fafbfc;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  padding: 32px 28px;
+  min-width: 220px;
+  max-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.activityDetailsStatRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.08rem;
+  color: #333;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  margin-bottom: 2px;
+}
+
+.activityDetailsStatusBadge {
+  background: #e3f6ff;
+  color: #0077b6;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 0.98rem;
+  text-transform: capitalize;
+}
+.status-draft {
+  background: #fffbe3;
+  color: #b68b00;
+}
+.status-active {
+  background: #e3ffe3;
+  color: #1abc9c;
+}
+.status-completed {
+  background: #e3e3ff;
+  color: #4b4bb6;
+}
+
+.activityDetailsPointsBadge {
+  background: #ffe23b;
+  color: #222;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 0.98rem;
+}
+
+.activityDetailsMain {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding-top: 12px;
+}
+.activityDetailsMain .activityDetailsTitle {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #1a1a1a;
+  margin-bottom: 18px;
+}
+.activityDetailsMain .activityDetailsSubtitle {
+  font-size: 1.25rem;
+  color: #555;
+  margin-bottom: 18px;
+}
+.activityDetailsPage {
+  width: 100vw;
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+  margin: 0;
+}
+
+.activityDetailsHero {
+  position: relative;
+  width: 100vw;
+  height: 380px;
+  background: #222;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.activityDetailsImage {
+  object-fit: cover;
+  width: 100vw !important;
+  height: 100% !important;
+  z-index: 1;
+  filter: brightness(0.85) saturate(1.1);
+}
+
+.activityDetailsOverlayText {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #fff;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 4rem;
+  font-style: italic;
+  font-weight: 900;
+  text-align: center;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.35);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.activityDetailsFeatured {
+  position: absolute;
+  top: 24px;
+  left: 32px;
+  background: #ffe23b;
+  color: #222;
+  font-weight: 700;
+  font-size: 1.2rem;
+  padding: 6px 18px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 3;
+}
+
+.activityDetailsContent {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px 32px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.activityDetailsTitle {
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.activityDetailsSubtitle {
+  font-size: 1.25rem;
+  color: #555;
+  margin-bottom: 18px;
+}
+
+.activityDetailsInfoRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.15rem;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.activityDetailsIcon {
+  font-size: 1.3rem;
+  color: #bbb;
+}
+
+.activityDetailsBackBtn {
+  margin: 32px 0 0 32px;
+  font-size: 18px;
+  background: rgba(0, 0, 0, 0.500);
+  border: none;
+  cursor: pointer;
+  color: #1abc9c;
+  font-weight: 700;
+  align-self: flex-start;
+  z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 8px;
+  padding: 8px 18px;
+  transition: background 0.2s;
+}
+.activityDetailsBackBtn:hover {
+  background: rgba(0,0,0,0.700);
+}

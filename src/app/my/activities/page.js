@@ -1,36 +1,45 @@
+'use client';
+
 import Activity from '@/app/shared/components/Activity';
 import ActivityItem from '@/app/shared/components/ActivityItem';
 import styles from '@/app/shared/css/page.module.css';
+import api from '@/utils/axios/api';
+import { useEffect, useState } from 'react';
+import ActivityDetails from '@/app/shared/components/ActivityDetails';
 
-async function fetchActivities() {
-  // const res = await fetch("localhost:3000/api/activities", {
-  //   cache: "no-store",
-  // });
-  // return res.json();
-  return [];
-}
+export default function ActivitiesPage() {
+	const [activities, setActivities] = useState([]);
+	const [activity, setActivity] = useState(null);
+	const [showActivity, setShowActivity] = useState(false);
 
-export default async function ActivitiesPage() {
-  const activities = await fetchActivities();
-  return (
-    <>
-      <h1>something</h1>
-      <Activity />
-      <div className={styles.grid3}>
-        {activities.map((item) => (
-          <ActivityItem
-            key={item.id}
-            image={item.image}
-            overlayText={item.activity}
-            title={item.chinese_title}
-            subtitle={item.english_description}
-            date={item.dates}
-            time={item.time}
-            location={item.location}
-            href={`/activities/${item.id}`}
-          />
-        ))}
-      </div>
-    </>
-  );
+	const fetchActivities = async () => {
+		const res = await api.get('/admin/activities');
+		setActivities(res.data?.activities);
+	};
+
+	useEffect(() => {
+		fetchActivities();
+		return () => setActivities([]);
+	}, []);
+	return (
+		<div className='main-activities'>
+			{!showActivity ? (
+				<>
+					<Activity />
+					<div className={styles.grid3}>
+						{activities.map((a) => (
+							<ActivityItem
+								key={a.id}
+								activity={a}
+								setActivityData={setActivity}
+                setShowActivity={setShowActivity}
+							/>
+						))}
+					</div>
+				</>
+			) : (
+				<ActivityDetails activity={activity} setShowActivity={setShowActivity}/>
+			)}
+		</div>
+	);
 }

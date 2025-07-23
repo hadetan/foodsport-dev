@@ -1,6 +1,8 @@
-import { insert, getById, updateById } from '@/lib/prisma/db-utils';
+import { insert, getById, updateById, getByIdComposite } from '@/lib/prisma/db-utils';
 import { requireUser } from '@/lib/prisma/require-user';
+import { supabase } from '@/lib/supabase/server';
 import { validateRequiredFields } from '@/utils/validation';
+import { NextResponse } from 'next/server';
 
 // POST /api/my/activities/join
 export async function POST(request) {
@@ -21,16 +23,26 @@ export async function POST(request) {
 			);
 		}
 
+
 		const activity = await getById('activity', body.activityId, {
 			status: true,
 			participantLimit: true,
 			currentParticipants: true,
 		});
-
 		if (!activity) {
 			return Response.json(
 				{
 					error: 'Activity not found',
+				},
+				{ status: 404 }
+			);
+		}
+
+		const user = await getById('user', body.userId, { id: true });
+		if (!user) {
+			return Response.json(
+				{
+					error: 'User not found',
 				},
 				{ status: 404 }
 			);
@@ -57,11 +69,11 @@ export async function POST(request) {
 			);
 		}
 
-		const alreadyJoined = await getById('userActivity', {
+		const alreadyJoined = await getByIdComposite('userActivity', {
 			userId: body.userId,
 			activityId: body.activityId,
 		});
-		if (alreadyJoined) {
+		if (alreadyJoined && !alreadyJoined.error) {
 			return Response.json(
 				{
 					error: 'User has already joined this activity',
@@ -70,11 +82,21 @@ export async function POST(request) {
 			);
 		}
 
-		await insert('userActivity', {
+		const insertResult = await insert('userActivity', {
 			userId: body.userId,
 			activityId: body.activityId,
 			joinedAt: new Date().toISOString(),
 		});
+		if (insertResult && insertResult.error) {
+			console.error('Insert userActivity error:', insertResult);
+			return Response.json(
+				{
+					error: 'Failed to join activity',
+					details: insertResult.error,
+				},
+				{ status: 500 }
+			);
+		}
 
 		await updateById('activity', body.activityId, {
 			currentParticipants: { increment: 1 },
