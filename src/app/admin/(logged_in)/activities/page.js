@@ -40,7 +40,6 @@ const ActivityManagementPage = () => {
     );
 
     const totalPages = Math.ceil(filteredActivities.length / pageSize);
-
     const tableHeading = [
         "Activity",
         "Type",

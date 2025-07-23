@@ -10,7 +10,6 @@ const statusBadgeClass = {
     cancelled: "bg-red-700 text-white btn-md",
     draft: "bg-pink-400 text-white btn-md",
 };
-
 const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
     const router = useRouter();
 
@@ -18,7 +17,6 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
         shouldShowEdit(true);
         setActivity(activity);
     };
-
     return (
         <>
             <tr key={activity.id} className="text-base">
