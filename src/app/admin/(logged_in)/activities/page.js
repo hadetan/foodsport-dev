@@ -4,16 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
-
-const activityStatusOptions = [
-    "upcoming",
-    "active",
-    "closed",
-    "completed",
-    "cancelled",
-    "draft",
-];
-
+import ActivityStatus from "@/app/constants/ActivityStatus";
 const ActivityManagementPage = () => {
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(false); // Added loading state
@@ -77,7 +68,7 @@ const ActivityManagementPage = () => {
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6 flex flex-col">
             <div className="flex flex-col items-center">
-                <h2 className="text-5xl font-bold text-center mb-8">
+                <h2 className="text-3xl font-bold text-center mb-8">
                     Activities
                 </h2>
             </div>
@@ -85,7 +76,7 @@ const ActivityManagementPage = () => {
             {/* Create Activity Button and Filters */}
             <div className="flex flex-row justify-between items-center gap-6 mb-6">
                 <button
-                    className="btn btn-primary btn-xl h-16 px-10 text-xl"
+                    className="btn btn-primary btn-md h-12 px-6 text-base"
                     onClick={() =>
                         router.push("/admin/activities/createActivity")
                     }
@@ -94,7 +85,7 @@ const ActivityManagementPage = () => {
                 </button>
                 <div className="w-full max-w-xs">
                     <select
-                        className="select select-lg w-full text-xl"
+                        className="select select-md w-full text-base"
                         value={selectedStatus}
                         onChange={(e) => {
                             setSelectedStatus(e.target.value);
@@ -102,7 +93,7 @@ const ActivityManagementPage = () => {
                         }}
                     >
                         <option value="">All Status</option>
-                        {activityStatusOptions.map((status) => (
+                        {ActivityStatus.map((status) => (
                             <option key={status} value={status}>
                                 {status.charAt(0).toUpperCase() +
                                     status.slice(1)}

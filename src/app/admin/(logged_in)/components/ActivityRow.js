@@ -3,18 +3,18 @@ import { Users, Pencil, Trash2, Search } from "lucide-react";
 
 // Status color mapping
 const statusBadgeClass = {
-    upcoming: "bg-yellow-400 text-black btn-lg",
-    active: "bg-green-500 text-white btn-lg",
-    closed: "bg-gray-500 text-white btn-lg",
-    completed: "bg-blue-500 text-white btn-lg",
-    cancelled: "bg-red-700 text-white btn-lg",
-    draft: "bg-pink-400 text-white btn-lg",
+    upcoming: "bg-yellow-400 text-black btn-md",
+    active: "bg-green-500 text-white btn-md",
+    closed: "bg-gray-500 text-white btn-md",
+    completed: "bg-blue-500 text-white btn-md",
+    cancelled: "bg-red-700 text-white btn-md",
+    draft: "bg-pink-400 text-white btn-md",
 };
 
 const ActivityRow = ({ activity }) => {
     return (
         <>
-            <tr key={activity.id} className="text-lg">
+            <tr key={activity.id} className="text-base">
                 <td>
                     <div className="flex items-center space-x-3">
                         <div className="avatar">
@@ -33,21 +33,21 @@ const ActivityRow = ({ activity }) => {
                             </div>
                         </div>
                         <div>
-                            <div className="font-bold text-xl">
+                            <div className="font-bold text-base">
                                 {activity.title}
                             </div>
                         </div>
                     </div>
                 </td>
-                <td className="text-lg">{activity.type}</td>
-                <td className="text-lg">
+                <td className="text-base">{activity.type}</td>
+                <td className="text-base">
                     <div>{activity.date}</div>
-                    <div className="text-base opacity-50">{activity.time}</div>
+                    <div className="text-sm opacity-50">{activity.time}</div>
                 </td>
-                <td className="text-lg">{activity.location}</td>
+                <td className="text-base">{activity.location}</td>
                 <td>
                     <div className="flex flex-col gap-1">
-                        <div className="text-base">
+                        <div className="text-sm">
                             {activity.participantCount}/
                             {activity.participantLimit}
                         </div>
@@ -66,9 +66,8 @@ const ActivityRow = ({ activity }) => {
                 </td>
                 <td>
                     <div
-                        className={`badge px-5 py-2 rounded-full font-bold text-lg ${
-                            statusBadgeClass[activity.status] ||
-                            "bg-gray-200 text-black btn-lg"
+                        className={`badge px-5 py-2 rounded-full font-bold text-base ${
+                            statusBadgeClass[activity.status]
                         }`}
                     >
                         {activity.status}
@@ -77,25 +76,25 @@ const ActivityRow = ({ activity }) => {
                 <td>
                     <div className="btn-group">
                         <button
-                            className="btn btn-lg btn-ghost"
+                            className="btn btn-md btn-ghost"
                             onClick={() =>
                                 document
                                     .getElementById("view_participants_modal")
                                     .showModal()
                             }
                         >
-                            <Users size={28} />
+                            <Users size={24} />
                         </button>
                         <button
-                            className="btn btn-lg btn-ghost"
+                            className="btn btn-md btn-ghost"
                             onClick={() =>
                                 router.push(`/admin/activities/${activity.id}`)
                             }
                         >
-                            <Pencil size={28} />
+                            <Pencil size={24} />
                         </button>
-                        <button className="btn btn-lg btn-ghost text-error">
-                            <Trash2 size={28} />
+                        <button className="btn btn-md btn-ghost text-error">
+                            <Trash2 size={24} />
                         </button>
                     </div>
                 </td>
