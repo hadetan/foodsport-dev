@@ -12,7 +12,6 @@ const TARGET_RESOLUTION = 200;
 
 export default function SocialMediaPage() {
     const [images, setImages] = useState([]);
-    const [previewUrls, setPreviewUrls] = useState([]);
     const [currentImage, setCurrentImage] = useState(null);
     const [currentImageUrl, setCurrentImageUrl] = useState(null);
     const [editingIndex, setEditingIndex] = useState(null);
@@ -23,18 +22,15 @@ export default function SocialMediaPage() {
         message: "",
     });
 
-
     const fileInputRef = useRef(null);
 
     const fetchImages = async () => {
         try {
             const response = await axiosClient.get("/admin/social");
             if (Array.isArray(response.data.images)) {
-                setImages(response.data.images); // store objects with id, imageUrl, etc.
-                setPreviewUrls(response.data.images.map((img) => img.imageUrl));
+                setImages(response.data.images);
             } else {
                 setImages([]);
-                setPreviewUrls([]);
             }
         } catch (err) {
             setError(err.message || "Failed to fetch images");
@@ -44,6 +40,11 @@ export default function SocialMediaPage() {
     useEffect(() => {
         fetchImages();
     }, []);
+
+    useEffect(() => {
+        console.log(images);
+    }, [images])
+
     ////////////////////////POST API OF IMAGE////////////
 
     // Uploads an image blob to the backend using FormData
@@ -69,17 +70,16 @@ export default function SocialMediaPage() {
             });
 
             // Always extract URLs from objects
-            if (Array.isArray(result.data.images)) {
-                const urls = result.data.images.map((img) => img.imageUrl);
-                setImages(urls);
-                setPreviewUrls(urls);
+            if (result.data.image) {
+                setImages((prev) => [...prev, result.data.image]);
             } else {
                 setImages([]);
-                setPreviewUrls([]);
             }
 
             // Dispatch custom event to notify footer to refresh images
             window.dispatchEvent(new Event("socialImagesUpdated"));
+
+            // Fetch latest images from backend to re-render
         } catch (err) {
             setError(err.message || "Failed to upload image");
         }
@@ -104,49 +104,16 @@ export default function SocialMediaPage() {
             setIsLoading(true);
 
             if (editingIndex !== null) {
-                // If we're editing an existing image, replace it
-                setImages((prev) => {
-                    const newImages = [...prev];
-                    newImages[editingIndex] = croppedImageBlob;
-                    return newImages;
-                });
-
-                // Update preview URL
-                if (previewUrls[editingIndex]) {
-                    URL.revokeObjectURL(previewUrls[editingIndex]);
-                }
-
-                const previewUrl = URL.createObjectURL(croppedImageBlob);
-                setPreviewUrls((prev) => {
-                    const newUrls = [...prev];
-                    newUrls[editingIndex] = previewUrl;
-                    return newUrls;
-                });
-
-                // Reset editing state
                 setEditingIndex(null);
                 showNotification("Image updated successfully");
             } else {
-                // Add the cropped image to the images array
-                setImages((prev) => [...prev, croppedImageBlob]);
-
-                // Create preview URL
-                const previewUrl = URL.createObjectURL(croppedImageBlob);
-                setPreviewUrls((prev) => [...prev, previewUrl]);
-
                 showNotification("Image saved successfully");
             }
-
-            // Clear current image state
             setCurrentImage(null);
-
-            // Clean up the temporary URL
             if (currentImageUrl) {
                 URL.revokeObjectURL(currentImageUrl);
                 setCurrentImageUrl(null);
             }
-
-            // Call the post API after saving/cropping
             await handlePostImage(croppedImageBlob, socialMediaUrl);
         } catch (err) {
             setError(err.message || "Failed to save image");
@@ -177,7 +144,7 @@ export default function SocialMediaPage() {
 
     const handleDeleteImage = async (id) => {
         try {
-            console.log(id)
+            console.log(id);
             setIsLoading(true);
             await axiosClient.delete(`/admin/social?id=${id}`);
             await fetchImages();
