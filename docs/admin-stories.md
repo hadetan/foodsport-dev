@@ -388,6 +388,94 @@
 -   [ ] Data caching for improved performance
 -   [x] "Create Activity" button on the activity screen that navigates to the activity creation page
 
+---
+
+### Story #A4: Edit Activity Page & Permissions
+
+**Title**: Edit existing activity with full field and image management  
+**Description**: Build an interface for editing existing activities, allowing admins to update all activity details, manage images, and validate changes before saving.  
+**Scope**:
+
+-   Edit all activity fields (title, description, type, date, time, location, capacity, status)
+-   Manage images (add, remove, crop, reorder, set primary)
+-   Save as draft and cancel actions
+-   Audit fields (created/updated by, timestamps)
+-   Responsive and accessible design
+-   **User Permissions**:
+    -   Only authorized admins (based on role/permissions) can edit activities
+    -   Some admins may only edit activities they created
+    -   Edit button and page access restricted by permissions
+    -   All edit actions logged with user and timestamp
+
+**DaisyUI Components**:
+
+-   Activity Form:
+    -   `form-control` for all inputs
+    -   `textarea` with rich text editor for description
+    -   `file-input` for image uploads
+    -   `modal` for image cropping tool
+    -   `select` for categories
+    -   `toggle` for status changes
+    -   `datepicker` for date selection
+    -   `timepicker` for time selection
+    -   `input input-bordered` for title, location, and capacity fields
+-   Image Management:
+    -   `card` for image previews
+    -   `modal` for cropping tool
+    -   `carousel` for multiple images
+    -   `progress` for uploads
+    -   `badge` for image status
+-   Actions:
+    -   `btn-group` for save/cancel actions
+    -   `alert` for notifications
+    -   `loading` for submission states
+    -   `toast` for success/error feedback
+
+**Fields to be Covered**:
+
+-   Title (editable, required, 5–100 chars, alphanumeric/punctuation)
+-   Description (editable, required, min 50 chars, rich text)
+-   Type/Category (editable, required, select)
+-   Date & Time (editable, required, future only)
+-   Location (editable, required, address validation)
+-   Maximum Participant Capacity (editable, required, 1–1000)
+-   Status (editable, toggle: active/inactive/draft)
+-   Images (add, remove, crop, reorder, set primary, validations)
+-   Audit Fields (created/updated by, timestamps, read-only)
+-   Save as Draft
+
+**Validation Requirements**:
+
+-   All field and image validations as per creation story
+-   Permissions enforced on both frontend and backend
+
+**Acceptance Criteria**:
+
+-   [x] Only authorized users can access the edit activity page
+-   [x] All fields are pre-filled and editable with validation
+-   [x] Rich text editor for description
+-   [x] Date/time pickers prevent past selection
+-   [x] Location input validates address
+-   [x] Capacity input restricts to 1–1000
+-   [x] Images can be added, removed, cropped, reordered, set as primary
+-   [x] Image validations enforced (type, size, resolution, count)
+-   [x] Drag-and-drop image reordering works
+-   [x] Save as draft option available
+-   [x] Cancel prompts confirmation before discarding changes
+-   [x] Success/error notifications after save/error
+-   [x] All changes reflected after saving
+-   [x] Audit fields visible (now editable)
+-   [x] Form is responsive and accessible
+-   [x] Loading and error states handled
+-   [x] Accessibility compliance for all elements
+-   [x] Only users with edit permissions see the edit button and can access the page
+-   [x] Unauthorized users are redirected or shown an error
+-   [x] All edit actions are logged with user and timestamp
+-   [x] Permissions are configurable by admin role
+
+**Current Status**: Done  
+**Notes**: "Edit Activity" page fully implemented, including all validations, image management, permissions, accessibility, and editable audit fields.
+
 ## Summary
 
 **Total Stories**: 4  

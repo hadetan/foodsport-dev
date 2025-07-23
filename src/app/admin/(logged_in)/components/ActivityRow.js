@@ -1,7 +1,9 @@
 import React from "react";
 import { Users, Pencil, Trash2, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const ActivityRow = ({ activity }) => {
+    const router = useRouter();
     return (
         <>
             <tr key={activity.id}>
@@ -82,7 +84,10 @@ const ActivityRow = ({ activity }) => {
                         <button
                             className="btn btn-sm btn-ghost"
                             onClick={() =>
-                                router.push(`/admin/activities/${activity.id}`)
+                                router.push(
+                                    "/admin/activities/editActivity?id=" +
+                                        activity.id
+                                )
                             }
                         >
                             <Pencil />
