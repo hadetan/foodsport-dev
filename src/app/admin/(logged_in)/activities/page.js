@@ -4,26 +4,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
+import EditActivityPage from "@/app/admin/(logged_in)/components/EditActivityPage";
 
 const ActivityManagementPage = () => {
+    const [showEdit, setShowEdit] = useState(false);
+    const [activity, setActivity] = useState(null);
     const [activities, setActivities] = useState([]);
-    const [loading, setLoading] = useState(false); // Added loading state
-    const [activeStep, setActiveStep] = useState(1); // Added activeStep state
     const router = useRouter();
     const [tableLoading, setTableLoading] = useState(true);
-    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [formData, setFormData] = useState({
-        title: "",
-        type: "",
-        description: "",
-        date: "",
-        time: "",
-        location: "",
-        capacity: "",
-        images: [],
-        status: "draft",
-    });
     const tableHeading = [
         "Activity",
         "Type",
@@ -54,39 +42,47 @@ const ActivityManagementPage = () => {
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
             {/* Create Activity Button */}
-            <div className="flex justify-between mb-6">
-                <button
-                    className="btn btn-primary"
-                    onClick={() =>
-                        router.push("/admin/activities/createActivity")
-                    }
-                >
-                    Create Activity
-                </button>
-                <h2 className="text-2xl font-bold">Activities</h2>
-            </div>
-
-            {/* Search and Filters */}
-            <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                <Dropdown items={statusOfUser} name="Status" />
-            </div>
-
-            {/* Activities Table */}
-            <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
-                {tableLoading ? (
-                    <div className="min-h-[300px] flex items-center justify-center">
-                        <span className="loading loading-spinner loading-lg"></span>
+            {showEdit ? (
+                <EditActivityPage activity={activity} />
+            ) : (
+                <>
+                    <div className="flex justify-between mb-6">
+                        <button
+                            className="btn btn-primary"
+                            onClick={() =>
+                                router.push("/admin/activities/createActivity")
+                            }
+                        >
+                            Create Activity
+                        </button>
+                        <h2 className="text-2xl font-bold">Activities</h2>
                     </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <Table
-                            heading={tableHeading}
-                            tableData={activities}
-                            tableType={"acitivityPage"}
-                        />
+
+                    {/* Search and Filters */}
+                    <div className="flex flex-col lg:flex-row gap-4 mb-6">
+                        <Dropdown items={statusOfUser} name="Status" />
                     </div>
-                )}
-            </div>
+
+                    {/* Activities Table */}
+                    <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
+                        {tableLoading ? (
+                            <div className="min-h-[300px] flex items-center justify-center">
+                                <span className="loading loading-spinner loading-lg"></span>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <Table
+                                    heading={tableHeading}
+                                    tableData={activities}
+                                    tableType={"acitivityPage"}
+                                    shouldShowEdit={setShowEdit}
+                                    setActivity={setActivity}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 };
