@@ -4,13 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import { ImagePlus, Trash2, Upload, Info, Pencil } from "lucide-react";
 import ImageCropModal from "./components/ImageCropModal";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
-import axiosClient from "@/utils/axios/api"; // alias for api
-// Maximum number of images allowed
-const MAX_IMAGES = 5;
-// Target resolution for cropped images
-const TARGET_RESOLUTION = 200;
+import axiosClient from "@/utils/axios/api";
 
 export default function SocialMediaPage() {
+    const MAX_IMAGES = 5;
+    const TARGET_RESOLUTION = 200;
+
     const [images, setImages] = useState([]);
     const [currentImage, setCurrentImage] = useState(null);
     const [currentImageUrl, setCurrentImageUrl] = useState(null);
@@ -41,45 +40,28 @@ export default function SocialMediaPage() {
         fetchImages();
     }, []);
 
-    useEffect(() => {
-        console.log(images);
-    }, [images])
-
-    ////////////////////////POST API OF IMAGE////////////
-
-    // Uploads an image blob to the backend using FormData
     const handlePostImage = async (imageBlob, socialMediaUrl) => {
         try {
-            // Create a FormData object
             const formData = new FormData();
-
-            // Create a file from the blob
             const file = new File([imageBlob], "cropped-image.jpg", {
                 type: imageBlob.type || "image/jpeg",
             });
-
-            // Add the file and social media URL to FormData
             formData.append("file", file);
             formData.append("socialMediaUrl", socialMediaUrl);
 
-            // Post the FormData to the endpoint
             const result = await axiosClient.post("/admin/social", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
             });
 
-            // Always extract URLs from objects
             if (result.data.image) {
                 setImages((prev) => [...prev, result.data.image]);
             } else {
                 setImages([]);
             }
 
-            // Dispatch custom event to notify footer to refresh images
             window.dispatchEvent(new Event("socialImagesUpdated"));
-
-            // Fetch latest images from backend to re-render
         } catch (err) {
             setError(err.message || "Failed to upload image");
         }
@@ -89,11 +71,7 @@ export default function SocialMediaPage() {
         if (!e.target.files || e.target.files.length === 0) return;
 
         const file = e.target.files[0];
-
-        // Reset file input
         if (fileInputRef.current) fileInputRef.current.value = "";
-
-        // Create a URL for the image and open crop modal immediately
         const imageUrl = URL.createObjectURL(file);
         setCurrentImage(file);
         setCurrentImageUrl(imageUrl);
@@ -122,7 +100,6 @@ export default function SocialMediaPage() {
         }
     };
 
-    // Update handleEdit to use id instead of index
     const handleEdit = (id) => {
         const index = images.findIndex((img) => img.id === id);
         setEditingIndex(index);
@@ -130,7 +107,6 @@ export default function SocialMediaPage() {
     };
 
     const handleCancelCrop = () => {
-        // Clean up the temporary URL
         if (currentImageUrl) {
             URL.revokeObjectURL(currentImageUrl);
         }
@@ -139,8 +115,6 @@ export default function SocialMediaPage() {
         setCurrentImageUrl(null);
         setEditingIndex(null);
     };
-
-    // Remove handleRemove, and update all usages to use handleDeleteImage(img.id)
 
     const handleDeleteImage = async (id) => {
         try {
