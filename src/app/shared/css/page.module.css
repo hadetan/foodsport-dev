@@ -187,9 +187,7 @@ a.secondary {
 .grid3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
-  max-width: 1200px;
-  margin: 40px auto 0 auto;
+  margin: 40px 0;
   padding: 0 16px 40px 16px;
 }
 

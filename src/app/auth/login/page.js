@@ -28,7 +28,6 @@ export default function LoginPage() {
       const data = res.data;
       if (data.session?.access_token) {
         localStorage.setItem("auth_token", data.session.access_token);
-        localStorage.setItem("refresh_token", data.session.refresh_token || "");
       }
       router.replace("/my");
     } catch (err) {

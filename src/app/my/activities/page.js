@@ -32,7 +32,7 @@ export default function ActivitiesPage() {
 								key={a.id}
 								activity={a}
 								setActivityData={setActivity}
-                setShowActivity={setShowActivity}
+								setShowActivity={setShowActivity}
 							/>
 						))}
 					</div>

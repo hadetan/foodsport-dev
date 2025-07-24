@@ -45,16 +45,20 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response && error.response.status === 401) {
       try {
-        const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession();
+        const refreshMatch = document.cookie.match(/(^|;)\s*refresh_token=([^;]*)/);
+        const refreshToken = refreshMatch ? decodeURIComponent(refreshMatch[2]) : null;
+        const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession({ refresh_token: refreshToken});
         if (refreshError || !session?.access_token) {
           showApiError(refreshError || { message: 'Failed to refresh session.' });
+          document.cookie = null;
           return Promise.reject(error);
         }
         error.config.headers['Authorization'] = `Bearer ${session.access_token}`;
-        document.cookie = `auth_token=${encodeURIComponent(session.access_token)}; path=/; max-age=${session.expires_in || 3600};`;
+        localStorage.setItem("auth_token", session.access_token);
         return api.request(error.config);
       } catch (refreshError) {
         showApiError(refreshError);
+        console.error(refreshError || 'no refresh error found, and you have been logged out for some reason')
         return Promise.reject(refreshError);
       }
     }

@@ -1,9 +1,24 @@
+'use client';
+
 import Image from 'next/image';
 import styles from '@/app/shared/css/Header.module.css';
 import Link from 'next/link';
-import ThemeSelector from "@/app/shared/components/ThemeSelector";
+import { useEffect, useState } from 'react';
 
-export default function Header({url}) {
+export default function Header() {
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setLoggedIn(!!localStorage.getItem('auth_token'));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    window.location.reload();
+  }
+
   return (
     <header className={styles.headerWrapper}>
       <div className={styles.topBar}>
@@ -21,17 +36,36 @@ export default function Header({url}) {
         </div>
         <div className={styles.rightIcons}>
           <span className={styles.icon}>&#128722;</span>
-          <span className={styles.login}>LOGIN / REGISTER</span>
+          {!loggedIn ? (
+            <Link href="/auth/login" className={styles.login} style={{ textDecoration: 'none', color: 'inherit' }}>
+              LOGIN / REGISTER
+            </Link>
+          ) : (
+            <button
+              className={styles.logoutBtn}
+              style={{ background: '#FFE23B', color: '#444', fontWeight: 600, border: 'none', borderRadius: 6, padding: '8px 18px', cursor: 'pointer', fontSize: 15 }}
+              onClick={handleLogout}
+            >
+              LOGOUT
+            </button>
+          )}
           <span className={styles.langSwitch}>繁 / EN</span>
           {/* <ThemeSelector /> */}
         </div>
       </div>
       <nav className={styles.navBar}>
         <ul className={styles.navList}>
-          <li className={styles.active}>HOME</li>
+          <li className={styles.active}>
+            <Link
+              href={loggedIn ? "/my/" : "/"}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              HOME
+            </Link>
+          </li>
           <li>
             <Link
-              href={`${url}`}
+              href={loggedIn ? "/my/activities" : "/activities"}
               style={{ textDecoration: "none", color: "inherit" }}
             >
               JOIN ACTIVITIES

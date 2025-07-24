@@ -26,7 +26,7 @@ export default function Home() {
 			<Hero />
 			<Activity />
 			<div className={styles.grid3}>
-				{activities.slice(0, 9).map((a) => (
+				{activities.slice(0, 6).map((a) => (
 					<ActivityItem
 						key={a.id}
 						activity={a}
