@@ -1,4 +1,4 @@
-import { insert, getById, updateById, getByIdComposite } from '@/lib/prisma/db-utils';
+import { getById, updateById } from '@/lib/prisma/db-utils';
 import { requireUser } from '@/lib/prisma/require-user';
 import { supabase } from '@/lib/supabase/server';
 import { validateRequiredFields } from '@/utils/validation';
@@ -6,13 +6,12 @@ import { NextResponse } from 'next/server';
 
 // POST /api/my/activities/join
 export async function POST(request) {
-	const { error } = await requireUser(supabase, NextResponse);
+	const { error, user: User } = await requireUser(supabase, NextResponse, request);
 	if (error) return error;
 
 	try {
 		const body = await request.json();
-		const requiredFields = ['activityId', 'userId'];
-		const validation = validateRequiredFields(body, requiredFields);
+		const validation = validateRequiredFields(body, ['activityId']);
 		if (!validation.isValid) {
 			return Response.json(
 				{
@@ -22,7 +21,6 @@ export async function POST(request) {
 				{ status: 400 }
 			);
 		}
-
 
 		const activity = await getById('activity', body.activityId, {
 			status: true,
@@ -38,7 +36,7 @@ export async function POST(request) {
 			);
 		}
 
-		const user = await getById('user', body.userId, { id: true });
+		const user = await getById('user', User.id, { id: true });
 		if (!user) {
 			return Response.json(
 				{
@@ -69,11 +67,7 @@ export async function POST(request) {
 			);
 		}
 
-		const alreadyJoined = await getByIdComposite('userActivity', {
-			userId: body.userId,
-			activityId: body.activityId,
-		});
-		if (alreadyJoined && !alreadyJoined.error) {
+		if (user.totalActivities && user.totalActivities.includes(body.activityId)) {
 			return Response.json(
 				{
 					error: 'User has already joined this activity',
@@ -82,31 +76,15 @@ export async function POST(request) {
 			);
 		}
 
-		const insertResult = await insert('userActivity', {
-			userId: body.userId,
-			activityId: body.activityId,
-			joinedAt: new Date().toISOString(),
-		});
-		if (insertResult && insertResult.error) {
-			console.error('Insert userActivity error:', insertResult);
-			return Response.json(
-				{
-					error: 'Failed to join activity',
-					details: insertResult.error,
-				},
-				{ status: 500 }
-			);
-		}
-
 		await updateById('activity', body.activityId, {
 			currentParticipants: { increment: 1 },
 		});
 
-		await updateById('user', body.userId, {
-			totalActivities: { increment: 1 },
+		const updatedUser = await updateById('user', user.id, {
+			totalActivities: { push: body.activityId },
 		});
 
-		return Response.json({ message: 'Joined activity successfully.' });
+		return Response.json({ message: 'Joined activity successfully.', user: updatedUser });
 	} catch (error) {
 		return Response.json(
 			{

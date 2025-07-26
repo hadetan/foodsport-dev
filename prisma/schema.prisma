@@ -84,7 +84,7 @@ model User {
   border                String?  @default("default")
   title                 String?  @default("Newcomer")
   bio                   String?
-  totalActivities       Int      @default(0) @map("total_activities")
+  totalActivities       String[] @default([]) @map("total_activities")
   totalDonations        Int      @default(0) @map("total_donations")
   badgeCount            Int      @default(0) @map("badge_count")
   level                 Int      @default(1)

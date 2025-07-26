@@ -179,7 +179,12 @@ export async function POST(req) {
   const activityData = {};
   for (const field of allowedFields) {
 	if (formData.get(field)) {
-	  activityData[field] = formData.get(field);
+	  if (field === 'isFeatured') {
+		const val = formData.get(field);
+		activityData.isFeatured = val === 'true' || val === '1';
+	  } else {
+		activityData[field] = formData.get(field);
+	  }
 	}
   }
   activityData.imageUrl = imageUrl;
@@ -254,7 +259,12 @@ const allowedFields = [
 let updates = {};
 for (const field of allowedFields) {
   if (formData.get(field)) {
-	updates[field] = formData.get(field);
+	if (field === 'isFeatured') {
+	  const val = formData.get(field);
+	  updates.isFeatured = val === 'true' || val === '1';
+	} else {
+	  updates[field] = formData.get(field);
+	}
   }
 }
 

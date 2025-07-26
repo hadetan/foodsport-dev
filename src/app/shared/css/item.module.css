@@ -76,10 +76,15 @@
 	margin-bottom: 8px;
 }
 .cardTitle {
-	font-size: 1.15rem;
+	font-size: 1.25rem;
 	font-weight: 700;
 	color: #222;
-	margin-bottom: 2px;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #dadada;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }
 .cardSubtitle {
 	font-size: 0.95rem;
@@ -91,9 +96,20 @@
 	background: none;
 	border: none;
 	cursor: pointer;
-	padding: 0;
+	padding: 5px;
+	border-radius: 10px;
+	background-color: #ffe23b;
 	margin-left: 8px;
 	outline: none;
+	display: block;
+}
+
+.filterBtn img {
+	width: 28px;
+	height: 28px;
+	max-width: none;
+	object-fit: contain;
+	display: block;
 }
 .detailsRow {
 	display: flex;
@@ -121,9 +137,14 @@
 }
 .actionBtn {
 	width: 100%;
+	/* background-color: red; */
 	color: #444;
 	border: none;
+	border-radius: 10px;
 	display: flex;
+	align-items: center;
+	justify-content: center;
+	align-self: center;
 	padding: 7px 18px;
 	font-size: 1rem;
 	font-weight: 600;
@@ -134,19 +155,43 @@
 }
 .actionBtn:hover {
 	background: #ffe23b;
-	border-radius: 10px;
 	color: #222;
 }
 .actionIcon {
+	padding-top: 2px;
 	font-size: 1.1rem;
 }
-/* .joinBtn {
-	background: #2ecc71;
-	color: #fff;
-	font-weight: 700;
-	border: none;
-	box-shadow: 0 2px 8px rgba(46, 204, 113, 0.08);
+
+.badges {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
-.joinBtn:hover {
-	background: #27ae60;
-} */
+
+.statusBadge {
+  color: #fff;
+  border-radius: 8px;
+  padding: 2px 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  user-select: none;
+}
+.status-upcoming {
+  background: #2ecc71;
+}
+.status-active {
+  background: #3498db;
+}
+.status-closed {
+  background: #888;
+}
+.status-completed {
+  background: #9b59b6;
+}
+.status-cancelled {
+  background: #e74c3c;
+}
+.status-draft {
+  background: #f1c40f;
+  color: #222;
+}

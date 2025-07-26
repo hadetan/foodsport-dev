@@ -4,34 +4,27 @@ import styles from '@/app/shared/css/page.module.css';
 import Activity from '@/app/shared/components/Activity';
 import ActivityItem from '@/app/shared/components/ActivityItem';
 import Hero from '@/app/shared/components/Hero';
-import api from '@/utils/axios/api';
-import { useEffect, useState } from 'react';
+import { useActivities } from '@/app/shared/contexts/ActivitiesContext';
+import { useUser } from '@/app/shared/contexts/userContext';
+import Button from '../shared/components/Button';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-	const [activities, setActivities] = useState([]);
+	const { activities } = useActivities();
+	const { user, setUser } = useUser();
+	const router = useRouter();
 
-	const fetchActivities = async () => {
-		const res = await api.get('/admin/activities');
-		setActivities(res.data?.activities);
-	};
-
-	useEffect(() => {
-		fetchActivities();
-		return () => setActivities([]);
-	}, []);
-
-	console.log(activities);
 	return (
 		<>
 			<Hero />
 			<Activity />
 			<div className={styles.grid3}>
 				{activities.slice(0, 6).map((a) => (
-					<ActivityItem
-						key={a.id}
-						activity={a}
-					/>
+					<ActivityItem key={a.id} activity={a} user={user} setUser={setUser} />
 				))}
+			</div>
+			<div className={styles.exploreCont}>
+				<Button className={styles.explore} onClick={() => router.push('/my/activities')}>EXPLORE MORE ACTIVITIES</Button>
 			</div>
 		</>
 	);

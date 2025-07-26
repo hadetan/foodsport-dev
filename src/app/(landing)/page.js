@@ -6,7 +6,7 @@ import Activity from '@/app/shared/components/Activity';
 import ActivityItem from '@/app/shared/components/ActivityItem';
 // import activities from "@/data/activities";
 import Hero from '@/app/shared/components/Hero';
-import ComingSoon from '@/app/(landing)/Components/ComingSoon';
+import ComingSoon from '@/app/(base)/(landing)/Components/ComingSoon';
 import api from '@/utils/axios/api';
 import { useEffect, useState } from 'react';
 

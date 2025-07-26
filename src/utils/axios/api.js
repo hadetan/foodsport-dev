@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
 import { supabaseClient } from '@/lib/supabase/client';
+// import { cookies } from 'next/headers';
 
 
 /**
@@ -32,8 +33,8 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const match = document.cookie.match(/(^|;)\\s*auth_token=([^;]*)/);
-  const token = match ? decodeURIComponent(match[2]) : null;
+  const tokenMatch = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/);
+  const token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : null;
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`;
   }

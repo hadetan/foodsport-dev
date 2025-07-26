@@ -1,3 +1,72 @@
+/* Empty image overlay for hero */
+.activityDetailsHeroImg--emptyOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+.activityDetailsHeroImg--emptyText {
+  font-size: 48px;
+  color: #ffffff;
+  text-shadow: 2px 2px 0 #00000010, -2px 2px 0 #00000010, 2px -2px 0 #00000010, -2px -2px 0 #00000010, 0 2px 0 #00000010, 2px 0 0 #00000010, -2px 0 0 #00000010, 0 -2px 0 #00000010;
+  font-weight: 700;
+}
+/* Featured badge */
+.activityDetailsFeaturedBadge {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  background: #ffe600;
+  color: #222;
+  border-radius: 20px;
+  padding: 10px 16px;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 2;
+}
+
+.activityDetailsMainDesc {
+  color: #444;
+  font-size: 17px;
+  margin-bottom: 18px;
+}
+.activityDetailsMainHr {
+  margin: 24px 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+/* Details section */
+.activityDetailsDetailsTitle {
+  font-weight: 600;
+  font-size: 20px;
+  margin-bottom: 18px;
+}
+.activityDetailsDetailsGrid {
+  display: grid;
+  grid-template-rows: repeat(2, 1fr);
+  grid-auto-flow: column;
+  gap: 32px;
+}
+.activityDetailsDetailsItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.activityDetailsDetailsLabel {
+  font-weight: 500;
+  font-size: 15px;
+}
+.activityDetailsDetailsValue {
+  color: #444;
+  font-size: 15px;
+}
 /* Main page container */
 .activityDetailsPage {
   background: #fff;
@@ -10,7 +79,7 @@
 .activityDetailsHero {
   position: relative;
   width: 100%;
-  height: 260px;
+  height: 460px;
   overflow: hidden;
 }
 /* Back button styles */
@@ -22,7 +91,7 @@
   background: rgba(255,255,255,0.85);
   color: #222;
   border: none;
-  border-radius: 6px;
+  border-radius: 20px;
   padding: 8px 16px;
   font-size: 16px;
   font-weight: 600;
@@ -52,7 +121,7 @@
   display: flex;
   flex-direction: row;
   gap: 32px;
-  padding: 32px 100px;
+  padding: 32px 200px;
   background: #fff;
 }
 
@@ -67,11 +136,11 @@
   flex-direction: column;
   gap: 18px;
   align-self: flex-start;
-  border-right: 1px solid #dadada;
+  border-left: 1px solid #dadada;
 }
 .activityDetailsSidebarTitle {
   font-weight: 700;
-  font-size: 18px;
+  font-size: 24px;
   margin-bottom: 8px;
   color: #222;
 }
@@ -116,7 +185,7 @@
 }
 .activityDetailsShareBtn {
   width: 100%;
-  background: #00b6e6;
+  background: #00cbe6;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -157,8 +226,8 @@
   min-height: 420px;
 }
 .activityDetailsMainTitle {
-  font-weight: 600;
-  font-size: 17px;
+  font-weight: bolder;
+  font-size: 48px;
   margin-bottom: 16px;
   color: #222;
 }
@@ -166,6 +235,8 @@
   color: #444;
   font-size: 15px;
   margin-bottom: 18px;
+  border-bottom: 1px solid #dadada;
+  padding-bottom: 10px;
 }
 
 /* Empty state */
@@ -182,4 +253,13 @@
   height: 100% !important;
   z-index: 1;
   filter: brightness(0.85) saturate(1.1);
+}
+
+.logo {
+  font-size: 24px;
+  color: #0086ac;
+}
+
+.logo-faded {
+  color: #6d6d6d;
 }
