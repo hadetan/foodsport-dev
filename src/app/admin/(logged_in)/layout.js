@@ -49,15 +49,36 @@ export default function AdminLoggedInLayout({ children }) {
 
             {/* Sidebar */}
             <div className="drawer-side bg-secondary rounded-2xl m-3">
-                <div className="flex gap-4 mt-4">
-                    <div className="text-xl font-bold px-4 py-2">
-                        Welcome Admin
+                <aside className="w-full sm:w-64 relative">
+                    {/* Close button for mobile, sticky at top */}
+                    <div className="sm:hidden sticky top-0 z-10 flex justify-end bg-secondary p-2">
+                        <label
+                            htmlFor="admin-drawer"
+                            className="btn btn-square btn-ghost"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                className="inline-block w-6 h-6 stroke-current"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            </svg>
+                        </label>
                     </div>
-                    <ThemeController />
-                </div>
-                <aside className="w-64">
+                    <div className="flex gap-4 mt-4">
+                        <div className="text-xl font-bold px-4 py-2">
+                            Welcome Admin
+                        </div>
+                        <ThemeController />
+                    </div>
                     <div className="p-4">
-                        <ul className="w-64 menu menu-lg gap-2 p-0">
+                        <ul className="menu menu-lg gap-2 p-0 w-full sm:w-64">
                             <SidebarItem
                                 href="/admin"
                                 icon={<CircleGauge />}

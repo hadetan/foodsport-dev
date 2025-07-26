@@ -4,15 +4,13 @@ import { useState, useRef, useEffect } from "react";
 import { ImagePlus, Trash2, Upload, Info, Pencil } from "lucide-react";
 import ImageCropModal from "./components/ImageCropModal";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
-import axiosClient from "@/utils/axios/api"; // alias for api
-// Maximum number of images allowed
-const MAX_IMAGES = 5;
-// Target resolution for cropped images
-const TARGET_RESOLUTION = 200;
+import axiosClient from "@/utils/axios/api";
 
 export default function SocialMediaPage() {
+    const MAX_IMAGES = 5;
+    const TARGET_RESOLUTION = 200;
+
     const [images, setImages] = useState([]);
-    const [previewUrls, setPreviewUrls] = useState([]);
     const [currentImage, setCurrentImage] = useState(null);
     const [currentImageUrl, setCurrentImageUrl] = useState(null);
     const [editingIndex, setEditingIndex] = useState(null);
@@ -23,18 +21,15 @@ export default function SocialMediaPage() {
         message: "",
     });
 
-
     const fileInputRef = useRef(null);
 
     const fetchImages = async () => {
         try {
             const response = await axiosClient.get("/admin/social");
             if (Array.isArray(response.data.images)) {
-                setImages(response.data.images); // store objects with id, imageUrl, etc.
-                setPreviewUrls(response.data.images.map((img) => img.imageUrl));
+                setImages(response.data.images);
             } else {
                 setImages([]);
-                setPreviewUrls([]);
             }
         } catch (err) {
             setError(err.message || "Failed to fetch images");
@@ -44,41 +39,28 @@ export default function SocialMediaPage() {
     useEffect(() => {
         fetchImages();
     }, []);
-    ////////////////////////POST API OF IMAGE////////////
 
-    // Uploads an image blob to the backend using FormData
     const handlePostImage = async (imageBlob, socialMediaUrl) => {
         try {
-            // Create a FormData object
             const formData = new FormData();
-
-            // Create a file from the blob
             const file = new File([imageBlob], "cropped-image.jpg", {
                 type: imageBlob.type || "image/jpeg",
             });
-
-            // Add the file and social media URL to FormData
             formData.append("file", file);
             formData.append("socialMediaUrl", socialMediaUrl);
 
-            // Post the FormData to the endpoint
             const result = await axiosClient.post("/admin/social", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
             });
 
-            // Always extract URLs from objects
-            if (Array.isArray(result.data.images)) {
-                const urls = result.data.images.map((img) => img.imageUrl);
-                setImages(urls);
-                setPreviewUrls(urls);
+            if (result.data.image) {
+                setImages((prev) => [...prev, result.data.image]);
             } else {
                 setImages([]);
-                setPreviewUrls([]);
             }
 
-            // Dispatch custom event to notify footer to refresh images
             window.dispatchEvent(new Event("socialImagesUpdated"));
         } catch (err) {
             setError(err.message || "Failed to upload image");
@@ -89,11 +71,7 @@ export default function SocialMediaPage() {
         if (!e.target.files || e.target.files.length === 0) return;
 
         const file = e.target.files[0];
-
-        // Reset file input
         if (fileInputRef.current) fileInputRef.current.value = "";
-
-        // Create a URL for the image and open crop modal immediately
         const imageUrl = URL.createObjectURL(file);
         setCurrentImage(file);
         setCurrentImageUrl(imageUrl);
@@ -104,49 +82,16 @@ export default function SocialMediaPage() {
             setIsLoading(true);
 
             if (editingIndex !== null) {
-                // If we're editing an existing image, replace it
-                setImages((prev) => {
-                    const newImages = [...prev];
-                    newImages[editingIndex] = croppedImageBlob;
-                    return newImages;
-                });
-
-                // Update preview URL
-                if (previewUrls[editingIndex]) {
-                    URL.revokeObjectURL(previewUrls[editingIndex]);
-                }
-
-                const previewUrl = URL.createObjectURL(croppedImageBlob);
-                setPreviewUrls((prev) => {
-                    const newUrls = [...prev];
-                    newUrls[editingIndex] = previewUrl;
-                    return newUrls;
-                });
-
-                // Reset editing state
                 setEditingIndex(null);
                 showNotification("Image updated successfully");
             } else {
-                // Add the cropped image to the images array
-                setImages((prev) => [...prev, croppedImageBlob]);
-
-                // Create preview URL
-                const previewUrl = URL.createObjectURL(croppedImageBlob);
-                setPreviewUrls((prev) => [...prev, previewUrl]);
-
                 showNotification("Image saved successfully");
             }
-
-            // Clear current image state
             setCurrentImage(null);
-
-            // Clean up the temporary URL
             if (currentImageUrl) {
                 URL.revokeObjectURL(currentImageUrl);
                 setCurrentImageUrl(null);
             }
-
-            // Call the post API after saving/cropping
             await handlePostImage(croppedImageBlob, socialMediaUrl);
         } catch (err) {
             setError(err.message || "Failed to save image");
@@ -155,7 +100,6 @@ export default function SocialMediaPage() {
         }
     };
 
-    // Update handleEdit to use id instead of index
     const handleEdit = (id) => {
         const index = images.findIndex((img) => img.id === id);
         setEditingIndex(index);
@@ -163,7 +107,6 @@ export default function SocialMediaPage() {
     };
 
     const handleCancelCrop = () => {
-        // Clean up the temporary URL
         if (currentImageUrl) {
             URL.revokeObjectURL(currentImageUrl);
         }
@@ -173,11 +116,9 @@ export default function SocialMediaPage() {
         setEditingIndex(null);
     };
 
-    // Remove handleRemove, and update all usages to use handleDeleteImage(img.id)
-
     const handleDeleteImage = async (id) => {
         try {
-            console.log(id)
+            console.log(id);
             setIsLoading(true);
             await axiosClient.delete(`/admin/social?id=${id}`);
             await fetchImages();
