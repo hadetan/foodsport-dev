@@ -32,7 +32,7 @@ function formatDateTime(activity) {
 	};
 }
 
-export default function ActivityItem({ activity, user, setUser }) {
+export default function ActivityItem({ activity, user, setUser, setActivities }) {
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
@@ -60,6 +60,13 @@ export default function ActivityItem({ activity, user, setUser }) {
 				activityId: activity.id,
 			});
 			setUser(res.data?.user);
+			setActivities(prevActivities =>
+				prevActivities.map(act =>
+					act.id === activity.id
+						? { ...act, participantCount: res.data?.participantCount }
+						: act
+				)
+			)
 		} catch (error) {
 			setError(error.message || 'Something went wrong');
 		} finally {
@@ -74,6 +81,13 @@ export default function ActivityItem({ activity, user, setUser }) {
 				data: { activityId: activity.id },
 			});
 			setUser(res.data?.user);
+			setActivities(prevActivities =>
+				prevActivities.map(act =>
+					act.id === activity.id
+						? { ...act, participantCount: res.data?.participantCount }
+						: act
+				)
+			)
 		} catch (error) {
 			setError(error.message || 'Something went wrong');
 		} finally {

@@ -76,7 +76,7 @@ export async function POST(request) {
 			);
 		}
 
-		await updateById('activity', body.activityId, {
+		const updatedActivity = await updateById('activity', body.activityId, {
 			currentParticipants: { increment: 1 },
 		});
 
@@ -84,7 +84,7 @@ export async function POST(request) {
 			totalActivities: { push: body.activityId },
 		});
 
-		return Response.json({ message: 'Joined activity successfully.', user: updatedUser });
+		return Response.json({ message: 'Joined activity successfully.', user: updatedUser, participantCount: updatedActivity.currentParticipants });
 	} catch (error) {
 		return Response.json(
 			{

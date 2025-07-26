@@ -64,7 +64,7 @@ export async function DELETE(request) {
       );
     }
     
-    await updateById('activity', body.activityId, {
+    const updatedActivity = await updateById('activity', body.activityId, {
       currentParticipants: { decrement: 1 },
     });
     
@@ -72,7 +72,7 @@ export async function DELETE(request) {
       totalActivities: { set: user.totalActivities.filter(id => id !== body.activityId) },
     });
 
-    return Response.json({ message: 'Left activity successfully.', user: updatedUser });
+    return Response.json({ message: 'Left activity successfully.', user: updatedUser, participantCount: updatedActivity.currentParticipants });
   } catch (error) {
     return Response.json(
       {

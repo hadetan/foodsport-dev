@@ -10,7 +10,7 @@ import Button from '../shared/components/Button';
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
-	const { activities } = useActivities();
+	const { activities, setActivities } = useActivities();
 	const { user, setUser } = useUser();
 	const router = useRouter();
 
@@ -20,7 +20,7 @@ export default function Home() {
 			<Activity />
 			<div className={styles.grid3}>
 				{activities.slice(0, 6).map((a) => (
-					<ActivityItem key={a.id} activity={a} user={user} setUser={setUser} />
+					<ActivityItem key={a.id} activity={a} setActivities={setActivities} user={user} setUser={setUser} />
 				))}
 			</div>
 			<div className={styles.exploreCont}>

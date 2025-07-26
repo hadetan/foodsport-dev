@@ -10,6 +10,7 @@ import ActivityIcon from '@/app/shared/components/ActivityIcon';
 import { FaBurn, FaCalendar, FaClock, FaTrophy } from 'react-icons/fa';
 import { HiMiniUserGroup } from 'react-icons/hi2';
 import { IoLocationSharp, IoPersonSharp } from "react-icons/io5";
+import formatDate from '@/utils/formatDate';
 
 function getActivity(activities, id) {
 	return activities.find((activity) => activity.id === id);
@@ -47,7 +48,7 @@ export default function ActivityDetailsPage() {
 	const { activities } = useActivities();
 	const { id } = useParams();
 	const activity = getActivity(activities, id);
-    console.log(activity);
+	console.log(activity);
 
 	const topRef = useRef(null);
 	useEffect(() => {
@@ -136,7 +137,7 @@ export default function ActivityDetailsPage() {
 									</div>
 								</div>
 							</div>
-                            <div className='activityDetailsDetailsItem'>
+							<div className='activityDetailsDetailsItem'>
 								<span role='img' aria-label='calories'>
 									<FaBurn className='logo' />
 								</span>
@@ -152,7 +153,7 @@ export default function ActivityDetailsPage() {
 							</div>
 							<div className='activityDetailsDetailsItem'>
 								<span role='img' aria-label='organizer'>
-                                    <IoPersonSharp className='logo' />
+									<IoPersonSharp className='logo' />
 								</span>
 								<div>
 									<div className='activityDetailsDetailsLabel'>
@@ -169,11 +170,11 @@ export default function ActivityDetailsPage() {
 				{/* Sidebar Card */}
 				<aside className='activityDetailsSidebar'>
 					<div className='activityDetailsSidebarRow'>
-						<span><FaCalendar className='logo logo-faded'/></span>
-						<span>{`${formattedStartDate} - ${formattedEndDate}`}</span>
+						<FaCalendar className='logo logo-faded'/>
+						<span>{`${formatDate(activity.startDate)} - ${formatDate(activity.endDate)}`}</span>
 					</div>
 					<div className='activityDetailsSidebarRow'>
-						<span><FaClock className='logo logo-faded'/></span>
+						<FaClock className='logo logo-faded'/>
 						<span>{`${formattedStartTime} - ${formattedEndTime}`}</span>
 					</div>
 					<div className='activityDetailsSidebarRow'>
