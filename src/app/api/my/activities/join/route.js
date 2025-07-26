@@ -1,4 +1,4 @@
-import { getById, updateById } from '@/lib/prisma/db-utils';
+import { getById, getByIdComposite, getCount, insert } from '@/lib/prisma/db-utils';
 import { requireUser } from '@/lib/prisma/require-user';
 import { supabase } from '@/lib/supabase/server';
 import { validateRequiredFields } from '@/utils/validation';
@@ -25,7 +25,6 @@ export async function POST(request) {
 		const activity = await getById('activity', body.activityId, {
 			status: true,
 			participantLimit: true,
-			currentParticipants: true,
 		});
 		if (!activity) {
 			return Response.json(
@@ -55,9 +54,10 @@ export async function POST(request) {
 			);
 		}
 
+		const participantCount = await getCount('userActivity', { activityId: body.activityId });
 		if (
 			typeof activity.participantLimit === 'number' &&
-			activity.currentParticipants >= activity.participantLimit
+			participantCount >= activity.participantLimit
 		) {
 			return Response.json(
 				{
@@ -67,7 +67,8 @@ export async function POST(request) {
 			);
 		}
 
-		if (user.totalActivities && user.totalActivities.includes(body.activityId)) {
+		const alreadyJoined = await getByIdComposite('userActivity', { userId: user.id, activityId: body.activityId });
+		if (alreadyJoined) {
 			return Response.json(
 				{
 					error: 'User has already joined this activity',
@@ -76,15 +77,14 @@ export async function POST(request) {
 			);
 		}
 
-		const updatedActivity = await updateById('activity', body.activityId, {
-			currentParticipants: { increment: 1 },
+		const userActivity = await insert('userActivity', {
+			userId: user.id,
+			activityId: body.activityId,
 		});
 
-		const updatedUser = await updateById('user', user.id, {
-			totalActivities: { push: body.activityId },
-		});
+		const updatedCount = await getCount('userActivity', { activityId: body.activityId });
 
-		return Response.json({ message: 'Joined activity successfully.', user: updatedUser, participantCount: updatedActivity.currentParticipants });
+		return Response.json({ message: 'Joined activity successfully.', userActivity, participantCount: updatedCount });
 	} catch (error) {
 		return Response.json(
 			{

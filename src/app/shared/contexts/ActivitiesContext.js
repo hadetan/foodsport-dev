@@ -9,7 +9,7 @@ export function ActivitiesProvider({ children }) {
   const [activities, setActivities] = useState([]);
 
   const fetchActivities = async () => {
-    const res = await api.get('/admin/activities');
+    const res = await api.get('/activities');
     setActivities(res.data?.activities);
   }
   useEffect(() => {

@@ -59,7 +59,13 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 			const res = await api.post('/my/activities/join', {
 				activityId: activity.id,
 			});
-			setUser(res.data?.user);
+			setUser(prevUser => ({
+				...prevUser,
+				joinedActivityIds: [
+					...(prevUser.joinedActivityIds || []),
+					res.data?.userActivity?.activityId
+				]
+			}));
 			setActivities(prevActivities =>
 				prevActivities.map(act =>
 					act.id === activity.id
@@ -80,7 +86,14 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 			const res = await api.delete('/my/activities/leave', {
 				data: { activityId: activity.id },
 			});
-			setUser(res.data?.user);
+			setUser(prevUser => {
+				const prevIds = Array.isArray(prevUser.joinedActivityIds) ? prevUser.joinedActivityIds : [];
+				const removeId = activity.id;
+				return {
+					...prevUser,
+					joinedActivityIds: prevIds.filter(id => id !== removeId)
+				};
+			});
 			setActivities(prevActivities =>
 				prevActivities.map(act =>
 					act.id === activity.id
@@ -94,6 +107,8 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 			setLoading(false);
 		}
 	}
+
+	console.log(user);
 
 	return (
 		<div className={styles.card}>
@@ -177,7 +192,7 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 					<span className={styles.actionIcon}><FaShare /></span>
 					SHARE
 				</Button>
-				{user?.totalActivities?.includes(activity.id) ? (
+				{user?.joinedActivityIds?.includes(activity.id) ? (
 					<Button
 						className={`${styles.actionBtn} ${styles.leaveBtn}`}
 						onClick={handleLeave}
