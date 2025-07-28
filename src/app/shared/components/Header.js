@@ -3,20 +3,26 @@
 import Image from 'next/image';
 import styles from '@/app/shared/css/Header.module.css';
 import Link from 'next/link';
+import { useAuth } from '@/app/shared/contexts/authContext';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function Header() {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const { logout, authToken } = useAuth();
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setLoggedIn(!!localStorage.getItem('auth_token'));
-    }
-  }, []);
+  //#region This fixed the hydration error of mismatched authToken. The authToken is populated only after the mounting, so we wait to be mounted first before using the authToken.
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+  //#endregion
 
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token');
-    window.location.reload();
+  const handleLogout = async () => {
+    setLoading(true)
+    await logout();
+    router.push('/');
+    setLoading(true);
   }
 
   return (
@@ -36,7 +42,7 @@ export default function Header() {
         </div>
         <div className={styles.rightIcons}>
           <span className={styles.icon}>&#128722;</span>
-          {!loggedIn ? (
+          {!authToken ? (
             <Link href="/auth/login" className={styles.login} style={{ textDecoration: 'none', color: 'inherit' }}>
               LOGIN / REGISTER
             </Link>
@@ -45,8 +51,9 @@ export default function Header() {
               className={styles.logoutBtn}
               style={{ background: '#FFE23B', color: '#444', fontWeight: 600, border: 'none', borderRadius: 6, padding: '8px 18px', cursor: 'pointer', fontSize: 15 }}
               onClick={handleLogout}
+              disabled={loading}
             >
-              LOGOUT
+              {loading ? 'LOGGING OUT' : 'LOGOUT'}
             </button>
           )}
           <span className={styles.langSwitch}>繁 / EN</span>
@@ -57,7 +64,7 @@ export default function Header() {
         <ul className={styles.navList}>
           <li className={styles.active}>
             <Link
-              href={loggedIn ? "/my/" : "/"}
+              href={authToken ? "/my/" : "/"}
               style={{ textDecoration: "none", color: "inherit" }}
             >
               HOME
@@ -65,7 +72,7 @@ export default function Header() {
           </li>
           <li>
             <Link
-              href={loggedIn ? "/my/activities" : "/activities"}
+              href={authToken ? "/my/activities" : "/activities"}
               style={{ textDecoration: "none", color: "inherit" }}
             >
               JOIN ACTIVITIES

@@ -1,0 +1,1 @@
+//Take reference from the /my/activities/[id] for creating this. we will not do data fetching here as well. we will use the activitiesContext to get the activity and extract the current  activity using filtering with id from the params.

@@ -11,6 +11,9 @@ import { cookies } from 'next/headers';
  */
 export async function requireUser(supabase, NextResponse) {
   const token = (await cookies()).get('auth_token');
+  if (!token) {
+    return { error: NextResponse.json({ error: 'Token was not given' }, { status: 401 }) };
+  }
   const { data: { user }, error: userError } = await supabase.auth.getUser(token.value);
 
   if (userError || !user) {

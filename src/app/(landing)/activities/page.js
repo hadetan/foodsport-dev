@@ -1,46 +1,25 @@
 'use client';
 
 import Activity from '@/app/shared/components/Activity';
-import ActivityDetails from '@/app/shared/components/ActivityDetails';
 import ActivityItem from '@/app/shared/components/ActivityItem';
 import styles from '@/app/shared/css/page.module.css';
-import api from '@/utils/axios/api';
-import { useEffect, useState } from 'react';
 
 export default function ActivitiesPage() {
-  const [activities, setActivities] = useState([]);
-	const [activity, setActivity] = useState(null);
-	const [showActivity, setShowActivity] = useState(false);
-
-	const fetchActivities = async () => {
-		const res = await api.get('/admin/activities');
-		setActivities(res.data?.activities);
-	};
-
-	useEffect(() => {
-		fetchActivities();
-		return () => setActivities([]);
-	}, []);
-
-  return (
-    <div className='main-activities'>
-			{!showActivity ? (
-				<>
-					<Activity />
-					<div className={styles.grid3}>
-						{activities.map((a) => (
-							<ActivityItem
-								key={a.id}
-								activity={a}
-								setActivityData={setActivity}
-                setShowActivity={setShowActivity}
-							/>
-						))}
-					</div>
-				</>
-			) : (
-				<ActivityDetails activity={activity} setShowActivity={setShowActivity}/>
-			)}
+	//use activitiesContext to get the activity
+	//we will not do any kind of data fetching here
+	//add skeleton for loading activities [take reference from /my/page.js]
+	//work on [id] page.js that is inside of the current folder
+	return (
+		<div className='main-activities'>
+			<Activity />
+			<div className={styles.grid3}>
+				{activities.map((a) => (
+					<ActivityItem
+						key={a.id}
+						activity={a}
+					/>
+				))}
+			</div>
 		</div>
-  );
+	);
 }

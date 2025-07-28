@@ -8,6 +8,7 @@ import { useActivities } from '@/app/shared/contexts/ActivitiesContext';
 import { useUser } from '@/app/shared/contexts/userContext';
 import Button from '../shared/components/Button';
 import { useRouter } from 'next/navigation';
+import ActivityItemSkeleton from '../shared/components/skeletons/ActivityItemSkeleton';
 
 export default function Home() {
 	const { activities, setActivities } = useActivities();
@@ -19,12 +20,25 @@ export default function Home() {
 			<Hero />
 			<Activity />
 			<div className={styles.grid3}>
-				{activities.slice(0, 6).map((a) => (
-					<ActivityItem key={a.id} activity={a} setActivities={setActivities} user={user} setUser={setUser} />
+				{activities.length === 0
+				? Array.from({ length: 3 }).map((_, i) => <ActivityItemSkeleton key={i} />)
+				: activities.slice(0, 6).map((a) => (
+					<ActivityItem
+					key={a.id}
+					activity={a}
+					setActivities={setActivities}
+					user={user}
+					setUser={setUser}
+					/>
 				))}
 			</div>
 			<div className={styles.exploreCont}>
-				<Button className={styles.explore} onClick={() => router.push('/my/activities')}>EXPLORE MORE ACTIVITIES</Button>
+				<Button
+					className={styles.explore}
+					onClick={() => router.push('/my/activities')}
+				>
+					EXPLORE MORE ACTIVITIES
+				</Button>
 			</div>
 		</>
 	);

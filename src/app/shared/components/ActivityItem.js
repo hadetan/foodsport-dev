@@ -75,6 +75,9 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 			)
 		} catch (error) {
 			setError(error.message || 'Something went wrong');
+			if (error.status === 401 && error.response.data.error.includes('Token')) {
+				router.push('/auth/login')
+			}
 		} finally {
 			setLoading(false);
 		}
@@ -103,12 +106,13 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 			)
 		} catch (error) {
 			setError(error.message || 'Something went wrong');
+			if (error.status === 401 && error.response.data.error.includes('Token')) {
+				router.push('/auth/login')
+			}
 		} finally {
 			setLoading(false);
 		}
 	}
-
-	console.log(user);
 
 	return (
 		<div className={styles.card}>

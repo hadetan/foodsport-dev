@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/prisma/require-admin';
-import { getMany, insert, updateById } from '@/lib/prisma/db-utils';
+import { getCount, getMany, insert, updateById } from '@/lib/prisma/db-utils';
 import { formatDbError } from '@/utils/formatDbError';
 import { supabase } from '@/lib/supabase/server';
 

@@ -5,6 +5,7 @@ import api from "@/utils/axios/api";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import Link from 'next/link';
+import { useAuth } from '@/app/shared/contexts/authContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,9 +13,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const { login, authToken } = useAuth();
 
   useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("auth_token")) {
+    if (typeof window !== "undefined" && authToken) {
       router.replace("/my");
     }
   }, [router]);
@@ -24,11 +26,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await api.post("/auth/login", { email, password });
-      const data = res.data;
-      if (data.session?.access_token) {
-        localStorage.setItem("auth_token", data.session.access_token);
-      }
+      await login({ email, password });
       router.replace("/my");
     } catch (err) {
       setError(`Something went wrong. Please try again. ${err.message}`);
@@ -63,7 +61,7 @@ return (
         </div>
         <button
             type="submit"
-            className="submit-button w-full text-black"
+            className="submit-button w-full"
             disabled={loading}
         >
             {loading ? "Logging in..." : "Login"}

@@ -7,11 +7,11 @@ export default async function MyLayout({ children }) {
 	return (
 		<>
 			<Header />
-				<UserProvider>
-					<ActivitiesProvider>
-						<main className='flex-grow'>{children}</main>
-					</ActivitiesProvider>
-				</UserProvider>
+			<UserProvider>
+				<ActivitiesProvider>
+					<main className='flex-grow'>{children}</main>
+				</ActivitiesProvider>
+			</UserProvider>
 			<Footer />
 		</>
 	);
