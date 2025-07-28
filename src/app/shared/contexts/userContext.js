@@ -7,17 +7,20 @@ const UserContext = createContext();
 
 export function UserProvider({ children }) {
   const [user, setUser] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const fetchActivities = async () => {
+    setLoading(true);
     const res = await api.get('/my/profile');
     setUser(res.data?.user);
+    setLoading(false);
   }
   useEffect(() => {
     fetchActivities();
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, loading }}>
       {children}
     </UserContext.Provider>
   );

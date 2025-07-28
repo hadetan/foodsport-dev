@@ -33,6 +33,11 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
+  const tokenMatch = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/);
+  const token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : null;
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
   return config;
 }, (error) => Promise.reject(error));
 
@@ -41,9 +46,7 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response && error.response.status === 401) {
       try {
-        const refreshMatch = document.cookie.match(/(^|;)\s*refresh_token=([^;]*)/);
-        const refreshToken = refreshMatch ? decodeURIComponent(refreshMatch[2]) : null;
-        const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession({ refresh_token: refreshToken});
+        const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession();
         if (refreshError || !session?.access_token) {
           showApiError(refreshError || { message: 'Failed to refresh session.' });
           document.cookie = 'auth_token=; Max-Age=0; path=/;';

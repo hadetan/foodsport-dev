@@ -1,4 +1,4 @@
-import { getById, getByIdComposite, getCount, insert } from '@/lib/prisma/db-utils';
+import { executeTransaction, getById, getByIdComposite, getCount, insert } from '@/lib/prisma/db-utils';
 import { requireUser } from '@/lib/prisma/require-user';
 import { supabase } from '@/lib/supabase/server';
 import { validateRequiredFields } from '@/utils/validation';
@@ -54,33 +54,34 @@ export async function POST(request) {
 			);
 		}
 
-		const participantCount = await getCount('userActivity', { activityId: body.activityId });
-		if (
-			typeof activity.participantLimit === 'number' &&
-			participantCount >= activity.participantLimit
-		) {
-			return Response.json(
-				{
-					error: 'Activity is full',
-				},
-				{ status: 400 }
-			);
-		}
-
-		const alreadyJoined = await getByIdComposite('userActivity', { userId: user.id, activityId: body.activityId });
-		if (alreadyJoined) {
-			return Response.json(
-				{
-					error: 'User has already joined this activity',
-				},
-				{ status: 400 }
-			);
-		}
-
-		const userActivity = await insert('userActivity', {
-			userId: user.id,
-			activityId: body.activityId,
-		});
+		const userActivity = await executeTransaction(async (tx) => {
+ 			const participantCount = await tx.userActivity.count({ where: { activityId: body.activityId } });
+ 			if (
+ 				typeof activity.participantLimit === 'number' &&
+ 				participantCount >= activity.participantLimit
+ 			) {
+ 				throw new Error('Activity is full');
+ 			}
+ 
+ 			const alreadyJoined = await tx.userActivity.findUnique({
+ 				where: {
+ 					userId_activityId: {
+ 						userId: user.id,
+ 						activityId: body.activityId,
+ 					},
+ 				},
+ 			});
+ 			if (alreadyJoined) {
+ 				throw new Error('User has already joined this activity');
+ 			}
+ 
+ 			return await tx.userActivity.create({
+ 				data: {
+ 					userId: user.id,
+ 					activityId: body.activityId,
+ 				},
+ 			});
+ 		});
 
 		const updatedCount = await getCount('userActivity', { activityId: body.activityId });
 

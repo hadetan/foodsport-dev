@@ -188,7 +188,7 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 					<ParticipantCircle
 						participantCount={activity.participantCount}
 						participantLimit={activity.participantLimit}
-						size={32}
+						size={20}
 					/>
 					STATUS
 				</Button>
@@ -198,7 +198,7 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 				</Button>
 				{user?.joinedActivityIds?.includes(activity.id) ? (
 					<Button
-						className={`${styles.actionBtn} ${styles.leaveBtn}`}
+						className={`${styles.actionBtn}`}
 						onClick={handleLeave}
 						disabled={loading}
 					>
@@ -207,7 +207,7 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 					</Button>
 				) : (
 					<Button
-						className={`${styles.actionBtn} ${styles.joinBtn}`}
+						className={`${styles.actionBtn}`}
 						onClick={handleJoin}
 						disabled={loading}
 					>

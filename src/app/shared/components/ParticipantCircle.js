@@ -3,7 +3,7 @@ import React from "react";
 export default function ParticipantCircle({ participantCount, participantLimit, size = 32 }) {
   const percent = participantLimit > 0 ? Math.min(participantCount / participantLimit, 1) : 0;
   const strokeWidth = 5;
-  const radius = (size - strokeWidth) / 3;
+  const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - percent);
 

@@ -1,24 +1,40 @@
+'use client';
+
+import { useRouter } from "next/navigation";
 import React from "react";
-const Avatar = ({ srcAvatar, firstName, lastName }) => {
-    let first = firstName.charAt(0);
-    let last = lastName.charAt(0);
-    let initial = first + last;
+
+const Avatar = ({ srcAvatar, firstName, lastName, isNav=false, pointer=false, size='8' }) => {
+    let first = firstName.charAt(0).toUpperCase();
+    let last = lastName.charAt(0).toUpperCase();
+    const router = useRouter()
+    
+    const maskClass = isNav
+    ? `mask mask-circle w-${size} h-${size} bg-accent text-accent-content select-none ${pointer && 'cursor-pointer'}`
+    : "mask mask-squircle w-12 h-12 bg-accent text-accent-content select-none";
+    const imgMaskClass = isNav
+    ? "mask mask-circle w-8 h-8"
+    : "mask mask-squircle w-12 h-12";
+    
+    const handleClick = () => {
+        router.push('/my/profile');
+    }
+
     return (
-        <>
+        <div onClick={() => isNav && handleClick()}>
             {srcAvatar === undefined ? (
                 <div className="avatar avatar-placeholder">
-                    <div className="mask mask-squircle w-12 h-12 bg-accent text-accent-content">
-                        <span className="text-xl">{initial}</span>
+                    <div className={maskClass}>
+                        <span className={isNav ? size : "text-xl"}>{`${first}${last}`}</span>
                     </div>
                 </div>
             ) : (
                 <div className="avatar">
-                    <div className="mask mask-squircle w-12 h-12">
+                    <div className={imgMaskClass}>
                         <img src={srcAvatar} />
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 };
 

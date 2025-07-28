@@ -5,9 +5,9 @@ import { UserProvider } from '@/app/shared/contexts/userContext';
 export default async function MyLayout({ children }) {
 	return (
 		<>
-			<Header />
 			<UserProvider>
-					<main className='flex-grow'>{children}</main>
+				<Header />
+				<main className='flex-grow'>{children}</main>
 			</UserProvider>
 			<Footer />
 		</>

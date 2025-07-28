@@ -63,9 +63,10 @@ export async function DELETE(request) {
         { status: 400 }
       );
     }
-    await remove('userActivity', { id: userActivity.id });
 
-    const updatedCount = await getCount('userActivity', { activityId: body.activityId });
+    const currentCount = await getCount('userActivity', { activityId: body.activityId });
+    await remove('userActivity', { id: userActivity.id });
+    const updatedCount = currentCount - 1;
 
     return Response.json({ message: 'Left activity successfully.', participantCount: updatedCount });
   } catch (error) {
