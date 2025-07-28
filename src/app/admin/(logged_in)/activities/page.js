@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
-import EditActivityPage from "@/app/admin/(logged_in)/components/EditActivityPage";
+import EditActivityPage from "@/app/admin/(logged_in)/components/EditActivity";
 
 const ActivityManagementPage = () => {
     const [showEdit, setShowEdit] = useState(false);

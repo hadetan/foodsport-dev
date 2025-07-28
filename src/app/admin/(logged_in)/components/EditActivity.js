@@ -13,7 +13,6 @@ export default function EditActivityPage({ activity }) {
     const [audit, setAudit] = useState({});
     const router = useRouter();
     const fileInputRef = useRef();
-console.log('asad',activity)
     useEffect(() => {
         setForm({
             title: activity.title,
@@ -31,8 +30,6 @@ console.log('asad',activity)
             updatedBy: activity.updatedBy,
             updatedAt: activity.updatedAt,
         });
-        // setImageFiles(activity.images || []);
-        // setImageOrder((activity.images || []).map((_, i) => i));
     }, []);
 
     if (!form) return <div className="loading loading-spinner"></div>;
@@ -112,7 +109,7 @@ console.log('asad',activity)
     };
 
     const confirmCancel = () => {
-        router.push("/admin/activities");
+        setShowEdit(false);
     };
 
     return (
