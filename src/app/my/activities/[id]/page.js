@@ -5,6 +5,9 @@ import { useEffect, useRef } from 'react';
 import { useActivities } from '@/app/shared/contexts/ActivitiesContext';
 import { useParams } from 'next/navigation';
 import ActivityDetails from '@/app/shared/components/ActivityDetails';
+import ActivityDetailsSkeleton from '@/app/shared/components/skeletons/ActivityDetailsSkeleton';
+import { HiOutlineEmojiSad } from "react-icons/hi";
+import { IoIosArrowBack } from 'react-icons/io';
 
 function getActivity(activities, id) {
 	return activities.find((activity) => activity.id === id);
@@ -34,6 +37,7 @@ export default function ActivityDetailsPage() {
 	const { activities } = useActivities();
 	const { id } = useParams();
 	const activity = getActivity(activities, id);
+	const loading = !activities || activities.length === 0;
 
 	const topRef = useRef(null);
 	useEffect(() => {
@@ -41,7 +45,18 @@ export default function ActivityDetailsPage() {
 			topRef.current.scrollIntoView({ behavior: 'smooth' });
 		}
 	}, [activity]);
-	if (!activity) return <div>No activity found.</div>;
+
+	if (loading) return <ActivityDetailsSkeleton />;
+	if (!activity) return (
+	<div className="activityDetailsEmptyState">
+		<div className="activityDetailsEmptyIcon"><HiOutlineEmojiSad /></div>
+		<div className="activityDetailsEmptyTitle">No Activity Found</div>
+		<div className="activityDetailsEmptyDesc">We couldn't find the activity you're looking for.<br/>Please check the link again.</div>
+		<button className="activityDetailsEmptyBtn" onClick={() => window.history.back()}>
+		<span className='back'><IoIosArrowBack /></span> Go Back
+		</button>
+	</div>
+	);
 
 	const {
 		formattedStartTime,

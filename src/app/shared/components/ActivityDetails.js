@@ -7,6 +7,7 @@ import { FaBurn, FaCalendar, FaClock, FaTrophy } from 'react-icons/fa';
 import { HiMiniUserGroup } from 'react-icons/hi2';
 import { IoLocationSharp, IoPersonSharp } from 'react-icons/io5';
 import formatDate from '@/utils/formatDate';
+import { IoIosArrowBack } from 'react-icons/io';
 
 const ActivityDetails = ({
 	activity,
@@ -27,7 +28,7 @@ const ActivityDetails = ({
 					className='activityDetailsBackBtn'
 					onClick={() => window.history.back()}
 				>
-					&#8592; Back
+					<span className='back'><IoIosArrowBack /></span> Back
 				</button>
 
 				{activity.imageUrl && (
