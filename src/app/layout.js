@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 import { AuthProvider } from '@/app/shared/contexts/authContext';
+import { ActivitiesProvider } from '@/app/shared/contexts/ActivitiesContext';
 import '@/app/globals.css';
 
 const geistSans = Geist({
@@ -23,7 +24,11 @@ export default async function RootLayout({ children }) {
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col`}
 			>
-				<AuthProvider>{children}</AuthProvider>
+				<AuthProvider>
+					<ActivitiesProvider>
+						{children}
+					</ActivitiesProvider>
+				</AuthProvider>
 			</body>
 		</html>
 	);

@@ -21,7 +21,7 @@ export default function Home() {
 			<Activity />
 			<div className={styles.grid3}>
 				{activities.length === 0
-				? Array.from({ length: 3 }).map((_, i) => <ActivityItemSkeleton key={i} />)
+				? Array.from({ length: 6 }).map((_, i) => <ActivityItemSkeleton key={i} />)
 				: activities.slice(0, 6).map((a) => (
 					<ActivityItem
 					key={a.id}
