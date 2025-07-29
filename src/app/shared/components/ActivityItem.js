@@ -37,6 +37,8 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 
+	const redirectUrl = user ? `/my/activities/${activity.id}` : `/activities/${activity.id}`
+ 
 	const {
 		formattedStartDate,
 		formattedEndDate,
@@ -127,7 +129,7 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 						fill
 						className={styles.cardImage}
 						onClick={() => {
-							router.push(`/my/activities/${activity.id}`);
+							router.push(redirectUrl);
 						}}
 					/>
 				)}
