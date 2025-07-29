@@ -396,14 +396,6 @@ export async function PATCH(req) {
 		);
 	}
 
-	const updatedActivity = await updateById('activity', activityId, updates);
-	if (updatedActivity && updatedActivity.error) {
-		return NextResponse.json(
-			{ error: formatDbError(updatedActivity.error) },
-			{ status: 500 }
-		);
-	}
-
 	if (newImageUrl && oldImageUrl) {
 		const urlParts = oldImageUrl.split('/');
 		const oldFileName = urlParts[urlParts.length - 1];
@@ -412,14 +404,16 @@ export async function PATCH(req) {
 			.from(bucket)
 			.remove([oldFileName]);
 		if (removeError) {
-			return NextResponse.json(
-				{
-					error: 'Failed to remove old activity image',
-					details: removeError.message,
-				},
-				{ status: 500 }
-			);
+			console.error('Failed to remove old image:', removeError.message);
 		}
+	}
+
+	const updatedActivity = await updateById('activity', activityId, updates);
+	if (updatedActivity && updatedActivity.error) {
+		return NextResponse.json(
+			{ error: formatDbError(updatedActivity.error) },
+			{ status: 500 }
+		);
 	}
 
 	return NextResponse.json(updatedActivity, { status: 200 });

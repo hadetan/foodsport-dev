@@ -62,8 +62,6 @@ export default function ActivityDetailsPage() {
 		formattedStartTime,
 		formattedEndTime,
 	} = formatDateTime(
-		activity.startDate,
-		activity.endDate,
 		activity.startTime,
 		activity.endTime
 	);

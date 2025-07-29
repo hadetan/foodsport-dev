@@ -5,9 +5,11 @@ import ActivityItem from '@/app/shared/components/ActivityItem';
 import styles from '@/app/shared/css/page.module.css';
 import { useActivities } from '@/app/shared/contexts/ActivitiesContext';
 import ActivityItemSkeleton from '@/app/shared/components/skeletons/ActivityItemSkeleton';
+import { useUser } from '@/app/shared/contexts/userContext';
 
 export default function ActivitiesPage() {
-	const { activities } = useActivities();
+	const { activities, setActivities } = useActivities();
+ 	const { user, setUser } = useUser();
 	return (
 		<div className='main-activities'>
 			<>
@@ -18,7 +20,7 @@ export default function ActivitiesPage() {
 								<ActivityItemSkeleton key={i} />
 						  ))
 						: activities.map((a) => (
-								<ActivityItem key={a.id} activity={a} />
+								<ActivityItem key={a.id} activity={a} user={user} setUser={setUser} setActivities={setActivities} />
 						  ))}
 				</div>
 			</>
