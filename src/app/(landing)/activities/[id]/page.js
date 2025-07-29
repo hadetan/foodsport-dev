@@ -43,8 +43,6 @@ export default function ActivityDetailsPage() {
     if (!activity) return <div>No activity found.</div>;
 
     const { formattedStartTime, formattedEndTime } = formatDateTime(
-        activity.startDate,
-        activity.endDate,
         activity.startTime,
         activity.endTime
     );
