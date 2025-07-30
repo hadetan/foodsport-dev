@@ -16,14 +16,8 @@ import ActivityItemSkeleton from '@/app/shared/components/skeletons/ActivityItem
 import { IoLocationSharp } from 'react-icons/io5';
 
 function formatDateTime(activity) {
-	const formattedStartTime = new Date(activity.startTime).toLocaleTimeString(
-		[],
-		{ hour: '2-digit', minute: '2-digit' }
-	);
-	const formattedEndTime = new Date(activity.endTime).toLocaleTimeString([], {
-		hour: '2-digit',
-		minute: '2-digit',
-	});
+	const formattedStartTime = new Date(activity.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+	const formattedEndTime = new Date(activity.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
 	return {
 		formattedStartTime,
@@ -47,6 +41,7 @@ export default function ActivityItem({
 	const [showShare, setShowShare] = useState(false);
 
 	const { formattedStartTime, formattedEndTime } = formatDateTime(activity);
+	const redirectUrl = user ? `/my/activities/${activity.id}` : `/activities/${activity.id}`
 
 	const choppedDesc =
 		activity.description && activity.description.length > 90
@@ -143,7 +138,7 @@ export default function ActivityItem({
 						fill
 						className={styles.cardImage}
 						onClick={() => {
-							router.push(`/my/activities/${activity.id}`);
+							router.push(redirectUrl);
 						}}
 					/>
 				)}
