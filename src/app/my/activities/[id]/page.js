@@ -3,10 +3,11 @@
 import '@/app/shared/css/ActivityDetails.css';
 import { useEffect, useRef } from 'react';
 import { useActivities } from '@/app/shared/contexts/ActivitiesContext';
+import { useUser } from '@/app/shared/contexts/userContext';
 import { useParams } from 'next/navigation';
 import ActivityDetails from '@/app/shared/components/ActivityDetails';
 import ActivityDetailsSkeleton from '@/app/shared/components/skeletons/ActivityDetailsSkeleton';
-import { HiOutlineEmojiSad } from "react-icons/hi";
+import { HiOutlineEmojiSad } from 'react-icons/hi';
 import { IoIosArrowBack } from 'react-icons/io';
 
 function getActivity(activities, id) {
@@ -34,10 +35,10 @@ function formatDateTime(startTime, endTime) {
 }
 
 export default function ActivityDetailsPage() {
-	const { activities } = useActivities();
+	const { activities, setActivities, loading: activityLoading } = useActivities();
+	const { user, setUser, loading: userLoading } = useUser();
 	const { id } = useParams();
 	const activity = getActivity(activities, id);
-	const loading = !activities || activities.length === 0;
 
 	const topRef = useRef(null);
 	useEffect(() => {
@@ -46,27 +47,48 @@ export default function ActivityDetailsPage() {
 		}
 	}, [activity]);
 
-	if (loading) return <ActivityDetailsSkeleton />;
-	if (!activity) return (
-	<div className="activityDetailsEmptyState">
-		<div className="activityDetailsEmptyIcon"><HiOutlineEmojiSad /></div>
-		<div className="activityDetailsEmptyTitle">No Activity Found</div>
-		<div className="activityDetailsEmptyDesc">We couldn't find the activity you're looking for.<br/>Please check the link again.</div>
-		<button className="activityDetailsEmptyBtn" onClick={() => window.history.back()}>
-		<span className='back'><IoIosArrowBack /></span> Go Back
-		</button>
-	</div>
-	);
+	if (userLoading || activityLoading) return <ActivityDetailsSkeleton />;
 
-	const {
-		formattedStartTime,
-		formattedEndTime,
-	} = formatDateTime(
+	if (!!activities.length && !activity) {
+		return (
+			<div className='activityDetailsEmptyState'>
+				<div className='activityDetailsEmptyIcon'>
+					<HiOutlineEmojiSad />
+				</div>
+				<div className='activityDetailsEmptyTitle'>
+					No Activity Found
+				</div>
+				<div className='activityDetailsEmptyDesc'>
+					We couldn't find the activity you're looking for.
+					<br />
+					Please check the link again.
+				</div>
+				<button
+					className='activityDetailsEmptyBtn'
+					onClick={() => window.history.back()}
+				>
+					<span className='back'>
+						<IoIosArrowBack />
+					</span>{' '}
+					Go Back
+				</button>
+			</div>
+		);
+	}
+
+	const { formattedStartTime, formattedEndTime } = formatDateTime(
 		activity.startTime,
 		activity.endTime
 	);
 
 	return (
-		<ActivityDetails activity={activity} formattedStartTime={formattedStartTime} formattedEndTime={formattedEndTime}/>
+		<ActivityDetails
+			activity={activity}
+			setActivities={setActivities}
+			user={user}
+			setUser={setUser}
+			formattedStartTime={formattedStartTime}
+			formattedEndTime={formattedEndTime}
+		/>
 	);
 }

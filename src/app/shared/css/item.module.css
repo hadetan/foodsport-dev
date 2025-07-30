@@ -15,20 +15,6 @@
 	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.16);
 }
 
-.featuredBadge {
-	position: absolute;
-	top: 16px;
-	left: 16px;
-	background: #ffe23b;
-	color: #444;
-	font-weight: bold;
-	font-size: 1rem;
-	padding: 4px 12px;
-	border-radius: 8px;
-	z-index: 2;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
 .imageWrapper {
 	position: relative;
 	width: 100%;
@@ -45,6 +31,12 @@
 	height: 100%;
 	object-fit: cover;
 	border-radius: 0;
+	cursor: pointer;
+	transition: transform 2s ease;
+}
+
+.cardImage:hover {
+	transform: scale(1.07);
 }
 .overlayText {
 	position: absolute;
@@ -85,6 +77,12 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+}
+.cardTitle h3 {
+	cursor: pointer;
+}
+.cardTitle h3:hover {
+	color: teal;
 }
 .cardSubtitle {
 	font-size: 0.95rem;

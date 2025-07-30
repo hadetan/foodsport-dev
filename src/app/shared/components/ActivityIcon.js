@@ -12,18 +12,19 @@ import { HiQuestionMarkCircle } from "react-icons/hi2";
 import React from 'react';
 
 const iconMap = {
-  kayak: <MdKayaking title="Kayak" />,
-  hiking: <FaHiking title="Hiking" />,
-  yoga: <GrYoga title="Yoga" />,
-  fitness: <IoIosFitness title="Fitness" />,
-  running: <FaRunning title="Running" />,
-  cycling: <BiCycling title="Cycling" />,
-  swimming: <FaPersonSwimming title="Swimming" />,
-  boxing: <RiBoxingFill title="Boxing" />,
-  other: <HiQuestionMarkCircle  title="Other" />,
-};
+   kayak: { Component: MdKayaking, title: "Kayak" },
+   hiking: { Component: FaHiking, title: "Hiking" },
+   yoga: { Component: GrYoga, title: "Yoga" },
+   fitness: { Component: IoIosFitness, title: "Fitness" },
+   running: { Component: FaRunning, title: "Running" },
+   cycling: { Component: BiCycling, title: "Cycling" },
+   swimming: { Component: FaPersonSwimming, title: "Swimming" },
+   boxing: { Component: RiBoxingFill, title: "Boxing" },
+   other: { Component: HiQuestionMarkCircle, title: "Other" },
+ };
 
 export default function ActivityIcon({ type, size = 24, className = '' }) {
-  const icon = iconMap[type] || iconMap.other;
-  return React.cloneElement(icon, { size, className });
+  const iconConfig = iconMap[type] || iconMap.other;
+  const { Component, title } = iconConfig;
+  return <Component size={size} className={className} title={title} />;
 }

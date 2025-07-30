@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import '@/app/shared/css/ActivityDetails.css';
 import Image from 'next/image';
 import Avatar from '@/app/shared/components/avatar';
@@ -8,21 +8,88 @@ import { HiMiniUserGroup } from 'react-icons/hi2';
 import { IoLocationSharp, IoPersonSharp } from 'react-icons/io5';
 import formatDate from '@/utils/formatDate';
 import { IoIosArrowBack } from 'react-icons/io';
+import Featured from './Featured';
+import api from '@/utils/axios/api';
+import ShareDialog from '@/app/shared/components/ShareDialog';
 
 const ActivityDetails = ({
 	activity,
+	setActivities,
+	user,
+	setUser,
 	formattedStartTime,
 	formattedEndTime,
 }) => {
 	const topRef = useRef(null);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState(null);
+	const [showShare, setShowShare] = useState(false);
+
 	useEffect(() => {
 		if (topRef.current) {
 			topRef.current.scrollIntoView({ behavior: 'smooth' });
 		}
 	});
+
+	async function handleJoin() {
+		try {
+			setLoading(true);
+			const res = await api.post('/my/activities/join', {
+				activityId: activity.id,
+			});
+			setUser(prevUser => ({
+				...prevUser,
+				joinedActivityIds: [
+					...(prevUser.joinedActivityIds || []),
+					res.data?.userActivity?.activityId
+				]
+			}));
+			setActivities(prevActivities => prevActivities.map(act =>
+				act.id === activity.id
+					? { ...act, participantCount: (act.participantCount || 0) + 1 }
+					: act
+			));
+		} catch (error) {
+			setError(error.message || 'Something went wrong');
+			if (error.status === 401 && error.response?.data?.error?.includes('Token')) {
+				window.location.href = '/auth/login';
+			}
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	async function handleLeave() {
+		try {
+			setLoading(true);
+			await api.delete('/my/activities/leave', {
+				data: { activityId: activity.id },
+			});
+			setUser(prevUser => {
+				const prevIds = Array.isArray(prevUser.joinedActivityIds) ? prevUser.joinedActivityIds : [];
+				const removeId = activity.id;
+				return {
+					...prevUser,
+					joinedActivityIds: prevIds.filter(id => id !== removeId)
+				};
+			});
+			setActivities(prevActivities => prevActivities.map(act =>
+				act.id === activity.id
+					? { ...act, participantCount: Math.max(0, (act.participantCount || 1) - 1) }
+					: act
+			));
+		} catch (error) {
+			setError(error.message || 'Something went wrong');
+			if (error.status === 401 && error.response?.data?.error?.includes('Token')) {
+				window.location.href = '/auth/login';
+			}
+		} finally {
+			setLoading(false);
+		}
+	}
+
 	return (
 		<div className='activityDetailsPage' ref={topRef}>
-			{/* Hero Image Section */}
 			<div className='activityDetailsHero'>
 				<button
 					className='activityDetailsBackBtn'
@@ -40,15 +107,11 @@ const ActivityDetails = ({
 						priority
 					/>
 				)}
-				{/* Featured Badge */}
-				{activity.featured && (
-					<span className='activityDetailsFeaturedBadge'>
-						★ FEATURED
-					</span>
+				{activity.isFeatured && (
+					<Featured position='bottom'/>
 				)}
 			</div>
 			<div className='activityDetailsContent'>
-				{/* Main Details Section */}
 				<main className='activityDetailsMain'>
 					<h1 className='activityDetailsMainTitle'>
 						{activity.title}
@@ -121,7 +184,6 @@ const ActivityDetails = ({
 						</div>
 					</div>
 				</main>
-				{/* Sidebar Card */}
 				<aside className='activityDetailsSidebar'>
 					<div className='activityDetailsSidebarRow'>
 						<FaCalendar className='logo logo-faded' />
@@ -168,12 +230,24 @@ const ActivityDetails = ({
 						)}
 					</div>
 					<div className='activityDetailsSidebarActions'>
-						<button className='activityDetailsJoinBtn'>
-							JOIN NOW
-						</button>
-						<button className='activityDetailsShareBtn'>
+						{user?.joinedActivityIds?.includes(activity.id) ? (
+							<button className='activityDetailsJoinBtn' onClick={handleLeave} disabled={loading}>
+								{loading ? 'LEAVING' : 'LEAVE'}
+							</button>
+						) : (
+							<button className='activityDetailsJoinBtn' onClick={handleJoin} disabled={loading}>
+								{loading ? 'JOINING' : 'JOIN NOW'}
+							</button>
+						)}
+						<button className='activityDetailsShareBtn' onClick={() => setShowShare(true)}>
 							SHARE
 						</button>
+						{showShare && (
+							<ShareDialog
+								url={typeof window !== 'undefined' ? window.location.origin + `/activities/${activity.id}` : `/activities/${activity.id}`}
+								onClose={() => setShowShare(false)}
+							/>
+						)}
 					</div>
 				</aside>
 			</div>

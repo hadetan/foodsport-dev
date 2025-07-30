@@ -6,7 +6,7 @@ import api from '@/utils/axios/api';
 const UserContext = createContext();
 
 export function UserProvider({ children }) {
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const fetchActivities = async () => {

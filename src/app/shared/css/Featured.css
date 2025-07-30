@@ -1,0 +1,31 @@
+.featuredBadge {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	background: #ffe23b;
+	color: #444;
+	font-weight: bold;
+	font-size: 1rem;
+	padding: 4px 12px;
+	border-radius: 8px;
+	z-index: 2;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.topLeft {
+	position: absolute;
+	top: 16px;
+	left: 16px;
+}
+
+.bottomRight {
+	position: absolute;
+	right: 24px;
+	bottom: 24px;
+    padding: 10px 16px;
+}
+
+.star {
+	font-size: 1.3rem;
+}

@@ -8,13 +8,14 @@ import { useRouter } from 'next/navigation';
 import api from '@/utils/axios/api';
 import { useState } from 'react';
 import ActivityIcon from '@/app/shared/components/ActivityIcon';
-import { FaMinusCircle, FaPlusCircle, FaShare } from 'react-icons/fa';
+import { FaCalendar, FaClock, FaMinusCircle, FaPlusCircle, FaShare } from 'react-icons/fa';
+import ShareDialog from '@/app/shared/components/ShareDialog';
+import Featured from './Featured';
+import formatDate from '@/utils/formatDate';
+import ActivityItemSkeleton from '@/app/shared/components/skeletons/ActivityItemSkeleton';
+import { IoLocationSharp } from 'react-icons/io5';
 
 function formatDateTime(activity) {
-	const formattedStartDate = new Date(
-		activity.startDate
-	).toLocaleDateString();
-	const formattedEndDate = new Date(activity.endDate).toLocaleDateString();
 	const formattedStartTime = new Date(activity.startTime).toLocaleTimeString(
 		[],
 		{ hour: '2-digit', minute: '2-digit' }
@@ -25,24 +26,27 @@ function formatDateTime(activity) {
 	});
 
 	return {
-		formattedStartDate,
-		formattedEndDate,
 		formattedStartTime,
 		formattedEndTime,
 	};
 }
 
-export default function ActivityItem({ activity, user, setUser, setActivities }) {
+export default function ActivityItem({
+	activity,
+	user,
+	setUser,
+	setActivities,
+}) {
+	if (!user) {
+		return <ActivityItemSkeleton />;
+	}
+
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
+	const [showShare, setShowShare] = useState(false);
 
-	const {
-		formattedStartDate,
-		formattedEndDate,
-		formattedStartTime,
-		formattedEndTime,
-	} = formatDateTime(activity);
+	const { formattedStartTime, formattedEndTime } = formatDateTime(activity);
 
 	const choppedDesc =
 		activity.description && activity.description.length > 90
@@ -59,24 +63,30 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 			const res = await api.post('/my/activities/join', {
 				activityId: activity.id,
 			});
-			setUser(prevUser => ({
+			setUser((prevUser) => ({
 				...prevUser,
 				joinedActivityIds: [
 					...(prevUser.joinedActivityIds || []),
-					res.data?.userActivity?.activityId
-				]
+					res.data?.userActivity?.activityId,
+				],
 			}));
-			setActivities(prevActivities =>
-				prevActivities.map(act =>
+			setActivities((prevActivities) =>
+				prevActivities.map((act) =>
 					act.id === activity.id
-						? { ...act, participantCount: res.data?.participantCount }
+						? {
+								...act,
+								participantCount: res.data?.participantCount,
+						  }
 						: act
 				)
-			)
+			);
 		} catch (error) {
 			setError(error.message || 'Something went wrong');
-			if (error.status === 401 && error.response.data.error.includes('Token')) {
-				router.push('/auth/login')
+			if (
+				error.status === 401 &&
+				error.response.data.error.includes('Token')
+			) {
+				router.push('/auth/login');
 			}
 		} finally {
 			setLoading(false);
@@ -89,25 +99,33 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 			const res = await api.delete('/my/activities/leave', {
 				data: { activityId: activity.id },
 			});
-			setUser(prevUser => {
-				const prevIds = Array.isArray(prevUser.joinedActivityIds) ? prevUser.joinedActivityIds : [];
+			setUser((prevUser) => {
+				const prevIds = Array.isArray(prevUser.joinedActivityIds)
+					? prevUser.joinedActivityIds
+					: [];
 				const removeId = activity.id;
 				return {
 					...prevUser,
-					joinedActivityIds: prevIds.filter(id => id !== removeId)
+					joinedActivityIds: prevIds.filter((id) => id !== removeId),
 				};
 			});
-			setActivities(prevActivities =>
-				prevActivities.map(act =>
+			setActivities((prevActivities) =>
+				prevActivities.map((act) =>
 					act.id === activity.id
-						? { ...act, participantCount: res.data?.participantCount }
+						? {
+								...act,
+								participantCount: res.data?.participantCount,
+						  }
 						: act
 				)
-			)
+			);
 		} catch (error) {
 			setError(error.message || 'Something went wrong');
-			if (error.status === 401 && error.response.data.error.includes('Token')) {
-				router.push('/auth/login')
+			if (
+				error.status === 401 &&
+				error.response.data.error.includes('Token')
+			) {
+				router.push('/auth/login');
 			}
 		} finally {
 			setLoading(false);
@@ -116,9 +134,7 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 
 	return (
 		<div className={styles.card}>
-			{activity.isFeatured && (
-				<div className={styles.featuredBadge}>★ Featured</div>
-			)}
+			{activity.isFeatured && <Featured position='top' />}
 			<div className={styles.imageWrapper}>
 				{activity.imageUrl && (
 					<Image
@@ -139,7 +155,15 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 				<div className={styles.row}>
 					<div>
 						<div className={styles.cardTitle}>
-							{activity.title}
+							<h3
+								onClick={() => {
+									router.push(
+										`/my/activities/${activity.id}`
+									);
+								}}
+							>
+								{activity.title}
+							</h3>
 							<div className={styles.badges}>
 								<span
 									className={statusClass}
@@ -167,24 +191,28 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 					</div>
 				</div>
 				<div className={styles.detailsRow}>
-					<span className={styles.icon}>&#128197;</span>
+					<span className={styles.icon}><FaCalendar /></span>
 					<span>
-						{formattedStartDate} - {formattedEndDate}
+						{`${formatDate(activity.startDate)} - 
+						${formatDate(activity.endDate)}`}
 					</span>
 				</div>
 				<div className={styles.detailsRow}>
-					<span className={styles.icon}>&#128337;</span>
+					<span className={styles.icon}><FaClock /></span>
 					<span>
 						{formattedStartTime} - {formattedEndTime}
 					</span>
 				</div>
 				<div className={styles.detailsRow}>
-					<span className={styles.icon}>&#128205;</span>
+					<span className={styles.icon}><IoLocationSharp /></span>
 					<span>{activity.location}</span>
 				</div>
 			</div>
 			<div className={styles.cardActions}>
-				<Button className={styles.actionBtn}>
+				<Button
+					className={styles.actionBtn}
+					title={`${activity.participantCount} Participant`}
+				>
 					<ParticipantCircle
 						participantCount={activity.participantCount}
 						participantLimit={activity.participantLimit}
@@ -192,8 +220,13 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 					/>
 					STATUS
 				</Button>
-				<Button className={styles.actionBtn}>
-					<span className={styles.actionIcon}><FaShare /></span>
+				<Button
+					className={styles.actionBtn}
+					onClick={() => setShowShare(true)}
+				>
+					<span className={styles.actionIcon}>
+						<FaShare />
+					</span>
 					SHARE
 				</Button>
 				{user?.joinedActivityIds?.includes(activity.id) ? (
@@ -202,7 +235,9 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 						onClick={handleLeave}
 						disabled={loading}
 					>
-						<span className={styles.actionIcon}><FaMinusCircle /></span>
+						<span className={styles.actionIcon}>
+							<FaMinusCircle />
+						</span>
 						{loading ? 'LEAVING' : 'LEAVE'}
 					</Button>
 				) : (
@@ -211,11 +246,24 @@ export default function ActivityItem({ activity, user, setUser, setActivities })
 						onClick={handleJoin}
 						disabled={loading}
 					>
-						<span className={styles.actionIcon}><FaPlusCircle /></span>
+						<span className={styles.actionIcon}>
+							<FaPlusCircle />
+						</span>
 						{loading ? 'JOINING' : 'JOIN NOW'}
 					</Button>
 				)}
 			</div>
+			{showShare && (
+				<ShareDialog
+					url={
+						typeof window !== 'undefined'
+							? window.location.origin +
+							  `/activities/${activity.id}`
+							: `/activities/${activity.id}`
+					}
+					onClose={() => setShowShare(false)}
+				/>
+			)}
 		</div>
 	);
 }
