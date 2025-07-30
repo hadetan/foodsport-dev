@@ -1,5 +1,6 @@
 import React from "react";
 import { Users, Pencil, Trash2, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 // Status color mapping
 const statusBadgeClass = {
@@ -12,6 +13,7 @@ const statusBadgeClass = {
 };
 
 const ActivityRow = ({ activity }) => {
+    const router = useRouter();
     return (
         <>
             <tr key={activity.id} className="text-base">
@@ -88,7 +90,10 @@ const ActivityRow = ({ activity }) => {
                         <button
                             className="btn btn-md btn-ghost"
                             onClick={() =>
-                                router.push(`/admin/activities/${activity.id}`)
+                                router.push(
+                                    "/admin/activities/editActivity?id=" +
+                                        activity.id
+                                )
                             }
                         >
                             <Pencil size={24} />
