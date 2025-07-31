@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function EditActivityPage({ activity }) {
+export default function EditActivityPage({ activity,setShowEdit }) {
     const [form, setForm] = useState(null);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -95,9 +95,9 @@ export default function EditActivityPage({ activity }) {
         setError("");
         setSuccess("");
         try {
-            // ...submit form data and images to API...
             setSuccess("Activity updated successfully!");
-            setTimeout(() => router.push("/admin/activities"), 1500);
+            setShowEdit(false);
+
         } catch (e) {
             setError("Failed to update activity.");
         }
