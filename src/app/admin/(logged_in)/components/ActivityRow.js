@@ -1,7 +1,7 @@
 import React from "react";
 import { Users, Pencil, Trash2, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-// Status color mapping
 const statusBadgeClass = {
     upcoming: "bg-yellow-400 text-black btn-md",
     active: "bg-green-500 text-white btn-md",
@@ -10,8 +10,13 @@ const statusBadgeClass = {
     cancelled: "bg-red-700 text-white btn-md",
     draft: "bg-pink-400 text-white btn-md",
 };
+const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
+    const router = useRouter();
 
-const ActivityRow = ({ activity }) => {
+    const handleEdit = () => {
+        shouldShowEdit(true);
+        setActivity(activity);
+    };
     return (
         <>
             <tr key={activity.id} className="text-base">
@@ -86,10 +91,8 @@ const ActivityRow = ({ activity }) => {
                             <Users size={24} />
                         </button>
                         <button
-                            className="btn btn-md btn-ghost"
-                            onClick={() =>
-                                router.push(`/admin/activities/${activity.id}`)
-                            }
+                            className="btn btn-sm btn-ghost"
+                            onClick={handleEdit}
                         >
                             <Pencil size={24} />
                         </button>

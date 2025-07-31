@@ -1,7 +1,14 @@
 import React from "react";
 import UserRow from "@/app/admin/(logged_in)/users/userRow";
 import ActivityRow from "./ActivityRow";
-const Table = ({ heading, tableData, tableType }) => {
+
+const Table = ({
+    heading,
+    tableData,
+    tableType,
+    shouldShowEdit,
+    setActivity,
+}) => {
     return (
         <>
             <table className="table table-zebra w-full">
@@ -17,8 +24,9 @@ const Table = ({ heading, tableData, tableType }) => {
                         ? tableData.map((user) => <UserRow user={user} />)
                         : tableData.map((activity) => (
                               <ActivityRow
-                                  key={activity.id}
                                   activity={activity}
+                                  shouldShowEdit={shouldShowEdit}
+                                  setActivity={setActivity}
                               />
                           ))}
                 </tbody>
