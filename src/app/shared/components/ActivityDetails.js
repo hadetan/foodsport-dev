@@ -29,7 +29,7 @@ const ActivityDetails = ({
 		if (topRef.current) {
 			topRef.current.scrollIntoView({ behavior: 'smooth' });
 		}
-	});
+	}, []);
 
 	async function handleJoin() {
 		try {
@@ -51,7 +51,7 @@ const ActivityDetails = ({
 			));
 		} catch (error) {
 			setError(error.message || 'Something went wrong');
-			if (error.status === 401 && error.response?.data?.error?.includes('Token')) {
+			if (error.response?.status === 401 && error.response?.data?.error?.includes('Token')) {
 				window.location.href = '/auth/login';
 			}
 		} finally {

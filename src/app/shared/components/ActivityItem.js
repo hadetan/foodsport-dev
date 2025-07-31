@@ -31,17 +31,13 @@ export default function ActivityItem({
 	setUser,
 	setActivities,
 }) {
-	if (!user) {
-		return <ActivityItemSkeleton />;
-	}
-
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [showShare, setShowShare] = useState(false);
 
 	const { formattedStartTime, formattedEndTime } = formatDateTime(activity);
-	const redirectUrl = user ? `/my/activities/${activity.id}` : `/activities/${activity.id}`
+	const redirectUrl = user ? `/my/activities/${activity.id}` : `/activities/${activity.id}`;
 
 	const choppedDesc =
 		activity.description && activity.description.length > 90
@@ -53,6 +49,7 @@ export default function ActivityItem({
 	}`;
 
 	async function handleJoin() {
+		if (!setUser || !setActivities) return;
 		try {
 			setLoading(true);
 			const res = await api.post('/my/activities/join', {
@@ -69,9 +66,9 @@ export default function ActivityItem({
 				prevActivities.map((act) =>
 					act.id === activity.id
 						? {
-								...act,
-								participantCount: res.data?.participantCount,
-						  }
+							...act,
+							participantCount: res.data?.participantCount,
+						}
 						: act
 				)
 			);
@@ -79,7 +76,7 @@ export default function ActivityItem({
 			setError(error.message || 'Something went wrong');
 			if (
 				error.status === 401 &&
-				error.response.data.error.includes('Token')
+				error.response?.data?.error?.includes('Token')
 			) {
 				router.push('/auth/login');
 			}
@@ -89,6 +86,7 @@ export default function ActivityItem({
 	}
 
 	async function handleLeave() {
+		if (!setUser || !setActivities) return;
 		try {
 			setLoading(true);
 			const res = await api.delete('/my/activities/leave', {
@@ -108,9 +106,9 @@ export default function ActivityItem({
 				prevActivities.map((act) =>
 					act.id === activity.id
 						? {
-								...act,
-								participantCount: res.data?.participantCount,
-						  }
+							...act,
+							participantCount: res.data?.participantCount,
+						}
 						: act
 				)
 			);
@@ -118,7 +116,7 @@ export default function ActivityItem({
 			setError(error.message || 'Something went wrong');
 			if (
 				error.status === 401 &&
-				error.response.data.error.includes('Token')
+				error.response?.data?.error?.includes('Token')
 			) {
 				router.push('/auth/login');
 			}
@@ -152,9 +150,7 @@ export default function ActivityItem({
 						<div className={styles.cardTitle}>
 							<h3
 								onClick={() => {
-									router.push(
-										`/my/activities/${activity.id}`
-									);
+									router.push(redirectUrl);
 								}}
 							>
 								{activity.title}
@@ -224,29 +220,32 @@ export default function ActivityItem({
 					</span>
 					SHARE
 				</Button>
-				{user?.joinedActivityIds?.includes(activity.id) ? (
-					<Button
-						className={`${styles.actionBtn}`}
-						onClick={handleLeave}
-						disabled={loading}
-					>
-						<span className={styles.actionIcon}>
-							<FaMinusCircle />
-						</span>
-						{loading ? 'LEAVING' : 'LEAVE'}
-					</Button>
-				) : (
-					<Button
-						className={`${styles.actionBtn}`}
-						onClick={handleJoin}
-						disabled={loading}
-					>
-						<span className={styles.actionIcon}>
-							<FaPlusCircle />
-						</span>
-						{loading ? 'JOINING' : 'JOIN NOW'}
-					</Button>
-				)}
+				{/* Only show join/leave if user, setUser, setActivities are present */}
+				{user && setUser && setActivities ? (
+					user?.joinedActivityIds?.includes(activity.id) ? (
+						<Button
+							className={`${styles.actionBtn}`}
+							onClick={handleLeave}
+							disabled={loading}
+						>
+							<span className={styles.actionIcon}>
+								<FaMinusCircle />
+							</span>
+							{loading ? 'LEAVING' : 'LEAVE'}
+						</Button>
+					) : (
+						<Button
+							className={`${styles.actionBtn}`}
+							onClick={handleJoin}
+							disabled={loading}
+						>
+							<span className={styles.actionIcon}>
+								<FaPlusCircle />
+							</span>
+							{loading ? 'JOINING' : 'JOIN NOW'}
+						</Button>
+					)
+				) : null}
 			</div>
 			{showShare && (
 				<ShareDialog

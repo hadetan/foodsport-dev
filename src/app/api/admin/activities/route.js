@@ -304,7 +304,7 @@ export async function PATCH(req) {
 	];
 	let updates = {};
 	for (const field of allowedFields) {
-		if (formData.get(field)) {
+		if (formData.has(field)) {
 			if (field === 'isFeatured') {
 				const val = formData.get(field);
 				updates.isFeatured = val === 'true' || val === '1';
