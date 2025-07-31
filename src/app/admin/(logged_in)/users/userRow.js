@@ -1,6 +1,6 @@
 import React from "react";
 import Status from "@/app/admin/(logged_in)/users/status";
-import Avatar from "@/app/admin/(logged_in)/users/avatar";
+import Avatar from "@/app/shared/components/avatar";
 import { Pencil, Eye } from "lucide-react";
 
 export const UserRow = ({ user }) => {

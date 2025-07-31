@@ -4,15 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import RichTextEditor from "@/app/shared/components/RichTextEditor";
+import axiosClient from "@/utils/axios/api";
+import ActivityStatus from "@/app/constants/ActivityStatus";
 
 const CreateActivityPage = () => {
     const router = useRouter();
     const [formData, setFormData] = useState({
         title: "",
-        type: "",
+        activityType: "",
         description: "",
-        date: "",
-        time: "",
+        startDateTime: "",
+        endDateTime: "",
         location: "",
         capacity: "",
         images: [],
@@ -27,6 +29,23 @@ const CreateActivityPage = () => {
             ...prev,
             [name]: value,
         }));
+    };
+
+    const handlePostActivities = async (activity) => {
+        // Only include fields allowed by the POST API
+
+        try {
+            setLoading(true);
+            const response = await axiosClient.post(
+                "/admin/activities",
+                activity
+            );
+            return response.data;
+        } catch (err) {
+            throw err;
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleImageUpload = (e) => {
@@ -44,34 +63,47 @@ const CreateActivityPage = () => {
         }));
     };
 
-    const handleSubmit = async (isDraft = false) => {
+    const handleSubmit = async () => {
         try {
             setLoading(true);
+            // Convert to ISO string if value exists
+            const startISO = new Date(formData.startDateTime).toISOString();
+            const endISO = new Date(formData.endDateTime).toISOString();
             const payload = {
-                ...formData,
-                status: isDraft ? "draft" : "active",
+                title: formData.title,
+                activityType: formData.activityType,
+                location: formData.location,
+                startDate: startISO,
+                endDate: endISO,
+                startTime: startISO,
+                endTime: endISO,
+                description: formData.description,
+                status: formData.status,
+                imageUrl: "", // handle image upload if needed
+                participantLimit: Number(formData.capacity),
             };
-            // TODO: Implement API call to create activity
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+
+            await handlePostActivities(payload);
+
             router.push("/admin/activities");
         } catch (err) {
-            setError(err.message);
+            setError(err?.response?.data?.error || err.message);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-base-200 p-6">
+        <div className="min-h-screen bg-base-200 p-6 text-base">
             <div className="max-w-screen-2xl mx-auto">
                 <div className="flex items-center mb-6 relative">
                     <button
-                        className="btn btn-outline absolute left-0"
+                        className="btn btn-outline btn-md absolute left-0 text-base"
                         onClick={() => router.push("/admin/activities")}
                     >
                         Back to Activities
                     </button>
-                    <h1 className="text-2xl font-bold mx-auto text-center w-full">
+                    <h1 className="text-4xl font-bold mx-auto text-center w-full">
                         Create Activity
                     </h1>
                 </div>
@@ -81,10 +113,10 @@ const CreateActivityPage = () => {
                 )}
 
                 <div className="card bg-base-100 shadow-xl">
-                    <div className="card-body p-6 space-y-8">
+                    <div className="card-body p-8 space-y-10 text-base">
                         {/* Title */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">
+                            <span className="w-40 text-white text-base">
                                 Activity Title
                             </span>
                             <label className="flex-1">
@@ -92,23 +124,23 @@ const CreateActivityPage = () => {
                                     type="text"
                                     name="title"
                                     placeholder="Enter activity title"
-                                    className="input input-md"
+                                    className="input input-md text-base"
                                     value={formData.title}
                                     onChange={handleFormChange}
                                 />
                             </label>
                         </div>
 
-                        {/* Type */}
+                        {/* Activity Type */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">
+                            <span className="w-40 text-white text-base">
                                 Activity Type
                             </span>
                             <label className="flex-1">
                                 <select
-                                    name="type"
-                                    className="select select-bordered"
-                                    value={formData.type}
+                                    name="activityType"
+                                    className="select select-bordered select-md text-base"
+                                    value={formData.activityType}
                                     onChange={handleFormChange}
                                 >
                                     <option value="">
@@ -124,7 +156,9 @@ const CreateActivityPage = () => {
 
                         {/* Description (Rich Text Editor) */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">Summary</span>
+                            <span className="w-40 text-white text-base">
+                                Summary
+                            </span>
                             <label className="flex-1 max-w-xl w-1/2">
                                 <RichTextEditor
                                     value={formData.description}
@@ -134,34 +168,37 @@ const CreateActivityPage = () => {
                                             description: val,
                                         }))
                                     }
-                                    className="text-black dark:text-inherit"
+                                    className="text-black dark:text-inherit text-base"
                                 />
                             </label>
                         </div>
 
-                        {/* Date */}
+                        {/* Start DateTime */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">Date</span>
+                            <span className="w-40 text-white text-base">
+                                Start Date & Time
+                            </span>
                             <label className="flex-1">
                                 <input
-                                    type="date"
-                                    name="date"
-                                    className="input input-bordered"
-                                    value={formData.date}
+                                    type="datetime-local"
+                                    name="startDateTime"
+                                    className="input input-bordered input-md text-base"
+                                    value={formData.startDateTime}
                                     onChange={handleFormChange}
                                 />
                             </label>
                         </div>
-
-                        {/* Time */}
+                        {/* End DateTime */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">Time</span>
+                            <span className="w-40 text-white text-base">
+                                End Date & Time
+                            </span>
                             <label className="flex-1">
                                 <input
-                                    type="time"
-                                    name="time"
-                                    className="input input-bordered"
-                                    value={formData.time}
+                                    type="datetime-local"
+                                    name="endDateTime"
+                                    className="input input-bordered input-md text-base"
+                                    value={formData.endDateTime}
                                     onChange={handleFormChange}
                                 />
                             </label>
@@ -169,13 +206,15 @@ const CreateActivityPage = () => {
 
                         {/* Location */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">Location</span>
+                            <span className="w-40 text-white text-base">
+                                Location
+                            </span>
                             <label className="flex-1">
                                 <input
                                     type="text"
                                     name="location"
                                     placeholder="Enter activity location"
-                                    className="input input-bordered"
+                                    className="input input-bordered input-md text-base"
                                     value={formData.location}
                                     onChange={handleFormChange}
                                 />
@@ -184,13 +223,15 @@ const CreateActivityPage = () => {
 
                         {/* Capacity */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">Capacity</span>
+                            <span className="w-40 text-white text-base">
+                                Capacity
+                            </span>
                             <label className="flex-1">
                                 <input
                                     type="number"
                                     name="capacity"
                                     placeholder="Enter participant limit"
-                                    className="input input-bordered"
+                                    className="input input-bordered input-md text-base"
                                     value={formData.capacity}
                                     onChange={handleFormChange}
                                     min="1"
@@ -200,13 +241,13 @@ const CreateActivityPage = () => {
 
                         {/* Images */}
                         <div className="form-control flex items-center gap-4">
-                            <span className="w-32 text-white">
+                            <span className="w-40 text-white text-base">
                                 Upload Images
                             </span>
                             <label className="flex-1">
                                 <input
                                     type="file"
-                                    className="file-input file-input-bordered"
+                                    className="file-input file-input-bordered file-input-md text-base"
                                     accept="image/*"
                                     multiple
                                     onChange={handleImageUpload}
@@ -221,10 +262,10 @@ const CreateActivityPage = () => {
                                         <img
                                             src={URL.createObjectURL(image)}
                                             alt={`Preview ${index + 1}`}
-                                            className="w-full h-32 object-cover rounded-lg"
+                                            className="w-full h-40 object-cover rounded-lg"
                                         />
                                         <button
-                                            className="btn btn-circle btn-sm btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="btn btn-circle btn-md btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-base"
                                             onClick={() => removeImage(index)}
                                         >
                                             ×
@@ -234,20 +275,35 @@ const CreateActivityPage = () => {
                             </div>
                         )}
 
-                        {/* Submit Buttons */}
+                        {/* Status Dropdown at the bottom */}
+                        <div className="form-control flex items-center gap-4 mt-4">
+                            <span className="w-40 text-white text-base">
+                                Status
+                            </span>
+                            <label className="flex-1">
+                                <select
+                                    name="status"
+                                    className="select select-bordered select-md text-base"
+                                    value={formData.status}
+                                    onChange={handleFormChange}
+                                >
+                                    {ActivityStatus.map((status) => (
+                                        <option key={status} value={status}>
+                                            {status.charAt(0).toUpperCase() +
+                                                status.slice(1)}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        </div>
+
+                        {/* Submit Button */}
                         <div className="flex justify-start gap-4">
                             <button
-                                className="btn btn-outline"
-                                onClick={() => handleSubmit(true)}
-                                disabled={loading}
-                            >
-                                Save as Draft
-                            </button>
-                            <button
-                                className={`btn btn-primary ${
+                                className={`btn btn-primary btn-md text-base ${
                                     loading ? "loading" : ""
                                 }`}
-                                onClick={() => handleSubmit(false)}
+                                onClick={handleSubmit}
                                 disabled={loading}
                             >
                                 SAVE

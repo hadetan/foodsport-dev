@@ -6,12 +6,41 @@ import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import EditActivityPage from "@/app/admin/(logged_in)/components/EditActivity";
 
+import ActivityStatus from "@/app/constants/ActivityStatus";
 const ActivityManagementPage = () => {
     const [showEdit, setShowEdit] = useState(false);
     const [activity, setActivity] = useState(null);
     const [activities, setActivities] = useState([]);
     const router = useRouter();
     const [tableLoading, setTableLoading] = useState(true);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [formData, setFormData] = useState({
+        title: "",
+        type: "",
+        description: "",
+        date: "",
+        time: "",
+        location: "",
+        capacity: "",
+        images: [],
+        status: "draft",
+    });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize] = useState(10);
+    const [selectedStatus, setSelectedStatus] = useState(""); // Add selected status
+
+    const filteredActivities = selectedStatus
+        ? activities.filter((a) => a.status === selectedStatus)
+        : activities;
+
+    const paginatedActivities = filteredActivities.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize
+    );
+
+    const totalPages = Math.ceil(filteredActivities.length / pageSize);
+
     const tableHeading = [
         "Activity",
         "Type",
@@ -25,7 +54,6 @@ const ActivityManagementPage = () => {
         try {
             setTableLoading(true);
             const response = await axiosClient.get("/admin/activities");
-
             let data = response.data;
             setActivities(data.activities);
         } finally {
@@ -37,7 +65,7 @@ const ActivityManagementPage = () => {
         getActivities();
     }, []);
 
-    const statusOfUser = ["Active", "Inactive"];
+    // POST handler for creating a new activity
 
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
@@ -57,7 +85,6 @@ const ActivityManagementPage = () => {
                         </button>
                         <h2 className="text-2xl font-bold">Activities</h2>
                     </div>
-
                     {/* Search and Filters */}
                     <div className="flex flex-col lg:flex-row gap-4 mb-6">
                         <Dropdown items={statusOfUser} name="Status" />

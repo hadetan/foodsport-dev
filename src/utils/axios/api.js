@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
 import { supabaseClient } from '@/lib/supabase/client';
+// import { cookies } from 'next/headers';
 
 
 /**
@@ -32,8 +33,8 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const match = document.cookie.match(/(^|;)\\s*auth_token=([^;]*)/);
-  const token = match ? decodeURIComponent(match[2]) : null;
+  const tokenMatch = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/);
+  const token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : null;
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`;
   }
@@ -48,13 +49,21 @@ api.interceptors.response.use(
         const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession();
         if (refreshError || !session?.access_token) {
           showApiError(refreshError || { message: 'Failed to refresh session.' });
+          document.cookie = 'auth_token=; Max-Age=0; path=/;';
+          localStorage.removeItem('auth_token');
+          console.error(`
+            Refresh error: ${refreshError}
+            token: ${session?.access_token}
+            `);
           return Promise.reject(error);
         }
         error.config.headers['Authorization'] = `Bearer ${session.access_token}`;
         document.cookie = `auth_token=${encodeURIComponent(session.access_token)}; path=/; max-age=${session.expires_in || 3600};`;
+        localStorage.setItem("auth_token", session.access_token);
         return api.request(error.config);
       } catch (refreshError) {
         showApiError(refreshError);
+        console.error(refreshError || 'no refresh error found, and you have been logged out for some reason')
         return Promise.reject(refreshError);
       }
     }

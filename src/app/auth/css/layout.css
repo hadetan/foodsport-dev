@@ -75,3 +75,15 @@
     border: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 }
+
+a {
+  text-decoration: none;
+}
+
+a:visited {
+  color: teal;
+}
+
+a:visited:hover {
+  color: rgb(0, 165, 165);
+}

@@ -33,7 +33,6 @@ export default function RegisterPage() {
       }
       if (data.session?.access_token) {
         localStorage.setItem("auth_token", data.session.access_token);
-        localStorage.setItem("refresh_token", data.session.refresh_token || "");
       }
       router.push("/my");
     } catch (err) {

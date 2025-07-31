@@ -1,35 +1,26 @@
-import Activity from '@/app/shared/components/Activity';
-import ActivityItem from '@/app/shared/components/ActivityItem';
-import styles from '@/app/shared/css/page.module.css';
+"use client";
 
-async function fetchActivities() {
-  // const res = await fetch("localhost:3000/api/activities", {
-  //   cache: "no-store",
-  // });
-  // return res.json();
-  return [];
-}
+import Activity from "@/app/shared/components/Activity";
+import ActivityItem from "@/app/shared/components/ActivityItem";
+import styles from "@/app/shared/css/page.module.css";
+import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
+import ActivityItemSkeleton from "@/app/shared/components/skeletons/ActivityItemSkeleton";
 
-export default async function ActivitiesPage() {
-  const activities = await fetchActivities();
-  return (
-    <>
-      <Activity />
-      <div className={styles.grid3}>
-        {activities.map((item) => (
-          <ActivityItem
-            key={item.id}
-            image={item.image}
-            overlayText={item.activity}
-            title={item.chinese_title}
-            subtitle={item.english_description}
-            date={item.dates}
-            time={item.time}
-            location={item.location}
-            href={`/activities/${item.id}`}
-          />
-        ))}
-      </div>
-    </>
-  );
+export default function ActivitiesPage() {
+    const { activities } = useActivities();
+
+    return (
+        <div className="main-activities">
+            <Activity />
+            <div className={styles.grid3}>
+                {activities.length === 0
+                    ? Array.from({ length: 6 }).map((_, i) => (
+                          <ActivityItemSkeleton key={i} />
+                      ))
+                    : activities.map((a) => (
+                          <ActivityItem key={a.id} activity={a} />
+                      ))}
+            </div>
+        </div>
+    );
 }

@@ -94,7 +94,8 @@ export async function POST(request) {
         });
     }
 
-    return NextResponse.json({ success: true, image: { id: result.id, imageUrl: result.imageUrl, socialMediaUrl: result.socialMediaUrl } });
+    const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    return NextResponse.json({ success: true, image: { id: result.id, imageUrl: baseUrl + result.imageUrl, socialMediaUrl: result.socialMediaUrl } });
 }
 
 /**
