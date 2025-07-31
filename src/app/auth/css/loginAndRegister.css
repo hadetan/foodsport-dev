@@ -29,3 +29,15 @@ input {
     cursor: pointer;
     color: white;
 }
+
+.submit-button:disabled {
+    background-color: teal;
+    padding: 10px 10px;
+    color: white;
+}
+
+.submit-button:hover:disabled {
+    background-color: rgb(0, 165, 165);
+    padding: 10px 10px;
+    color: white;
+}

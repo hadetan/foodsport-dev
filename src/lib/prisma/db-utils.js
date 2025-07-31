@@ -142,6 +142,32 @@ export async function remove(model, where) {
 }
 
 /**
+ * Get a record by composite key (e.g. for userActivity)
+ * @param {keyof typeof prisma} model
+ * @param {object} where - composite key object
+ * @param {object} [select]
+ * @returns {Promise<any>}
+ */
+export async function getByIdComposite(model, where, select) {
+  try {
+    if (model === 'userActivity' && where.userId && where.activityId) {
+      return await prisma.userActivity.findUnique({
+        where: {
+          userId_activityId: {
+            userId: where.userId,
+            activityId: where.activityId,
+          },
+        },
+        select,
+      });
+    }
+    return await prisma[model].findUnique({ where, select });
+  } catch (error) {
+    return handlePrismaError(error);
+  }
+}
+
+/**
  * Handle Prisma errors and return a consistent error object
  * @param {any} error
  * @returns {object}

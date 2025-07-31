@@ -1,109 +1,101 @@
-import { getMany } from '@/lib/prisma/db-utils';
-const { getCache, setCache } = await import('@/utils/cache');
+import { NextResponse } from 'next/server';
+import { getById, getCount, getMany } from '@/lib/prisma/db-utils';
+
+function parseQueryParams(searchParams) {
+	return {
+		status: searchParams.get('status') || '',
+		page: parseInt(searchParams.get('page') || '1', 10),
+		limit: parseInt(searchParams.get('limit') || '20', 10),
+		type: searchParams.get('type') || '',
+		organizerId: searchParams.get('organizerId') || '',
+	};
+}
 
 // GET /api/activities - Get all activities with optional filters
-export async function GET(request) {
-	try {
-		const cacheKey = 'all_activities';
-		const cached = getCache(cacheKey);
-		if (cached) {
-			return Response.json(cached);
-		}
+export async function GET(req) {
+	const url = new URL(req.url);
+	const { searchParams } = url;
+	const { status, page, limit, type, organizerId } = parseQueryParams(searchParams);
+	const skip = (page - 1) * limit;
+	const filters = {};
+	if (status) filters.status = status;
+	if (type) filters.type = type;
+	if (organizerId) filters.organizerId = organizerId;
+	const options = {
+		limit,
+		skip,
+		orderBy: { startDate: 'desc' },
+	};
 
-		const { searchParams } = new URL(request.url);
-		const status = searchParams.get('status');
-		const type = searchParams.get('type');
-		const location = searchParams.get('location');
-		const date = searchParams.get('date');
-		const limit = parseInt(searchParams.get('limit')) || 50;
-		const page = parseInt(searchParams.get('page')) || 0;
+	const activities = await getMany(
+		'activity',
+		filters,
+		{
+			id: true,
+			title: true,
+			description: true,
+			activityType: true,
+			location: true,
+			startDate: true,
+			endDate: true,
+			startTime: true,
+			endTime: true,
+			status: true,
+			participantLimit: true,
+			organizerId: true,
+			imageUrl: true,
+			pointsPerParticipant: true,
+			caloriesPerHour: true,
+			isFeatured: true,
+		},
+		options
+	);
 
-		const filters = {};
-		if (status) filters.status = status;
-		if (type) filters.type = type;
-		if (location) filters.location = location;
-		if (date) filters.date = date;
+	const activitiesList = await Promise.all(
+		(activities || []).map(async (a) => {
+			const participantCount = await getCount('userActivity', {
+				activityId: a.id,
+			});
+			let organizerName;
+			if (a.organizerId) {
+				const organizer = await getById('adminUser', a.organizerId, {
+					name: true,
+				});
+				organizerName = organizer.name;
+			}
+			return {
+				id: a.id,
+				title: a.title,
+				description: a.description,
+				activityType: a.activityType,
+				location: a.location,
+				startDate: a.startDate,
+				endDate: a.endDate,
+				startTime: a.startTime,
+				endTime: a.endTime,
+				status: a.status,
+				participantLimit: a.participantLimit,
+				participantCount,
+				organizerName,
+				imageUrl: a.imageUrl,
+				pointsPerParticipant: a.pointsPerParticipant,
+				caloriesPerHour: a.caloriesPerHour,
+				isFeatured: a.isFeatured,
+			};
+		})
+	);
 
-		const options = {
+	const responseData = {
+		activities: activitiesList,
+		pagination: {
+			page,
 			limit,
-			skip: page * limit,
-			orderBy: { createdAt: 'desc' },
-		};
+			total: activitiesList.length,
+		},
+	};
 
-		const activities = await getMany(
-			'activity',
-			filters,
-			{
-				id: true,
-				title: true,
-				description: true,
-				activityType: true,
-				location: true,
-				startDate: true,
-				endDate: true,
-				startTime: true,
-				endTime: true,
-				status: true,
-				participantLimit: true,
-				currentParticipants: true,
-				organizerName: true,
-				organizerId: true,
-				imageUrl: true,
-				pointsPerParticipant: true,
-				caloriesPerHour: true,
-				isFeatured: true,
-				createdAt: true,
-				updatedAt: true,
-			},
-			options
-		);
-
-		const activitiesWithOrganizers = await Promise.all(
-			activities.map(async (activity) => {
-				return {
-					id: activity.id,
-					title: activity.title,
-					description: activity.description,
-					activityType: activity.activityType,
-					location: activity.location,
-					startDate: activity.startDate,
-					endDate: activity.endDate,
-					startTime: activity.startTime,
-					endTime: activity.endTime,
-					status: activity.status,
-					participantLimit: activity.participantLimit,
-					currentParticipants: activity.currentParticipants,
-					organizerId: activity.organizerId,
-					imageUrl: activity.imageUrl,
-					pointsPerParticipant: activity.pointsPerParticipant,
-					caloriesPerHour: activity.caloriesPerHour,
-					isFeatured: activity.isFeatured,
-					createdAt: activity.createdAt,
-					updatedAt: activity.updatedAt,
-				};
-			})
-		);
-
-		const response = {
-			activities: activitiesWithOrganizers,
-			pagination: {
-				page,
-				limit,
-				total: activitiesWithOrganizers.length,
-			},
-		};
-		setCache(cacheKey, response, 60);
-		return Response.json(response);
-	} catch (error) {
-		return Response.json(
-			{
-				error: {
-					code: 'INTERNAL_ERROR',
-					message: 'Internal server error',
-					details: error.message,
-				},
-			},
-			{ status: 500 }
-		);
-	}
+	return new NextResponse(JSON.stringify(responseData), {
+		status: 200,
+		headers: { 'Content-Type': 'application/json' },
+	});
 }

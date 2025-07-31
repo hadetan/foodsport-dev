@@ -1,19 +1,94 @@
-import activities from '@/data/activities';
-import Image from 'next/image';
+'use client';
 
-export default async function ActivityDetailPage({ params }) {
-  const param = await params;
-  const activity = activities.find((a) => a.id === param.id);
-  if (!activity) return <div>Activity not found.</div>;
-  return (
-    <div style={{ maxWidth: 700, margin: '40px auto', padding: 24, background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px #0001' }}>
-      <Image src={activity.image} alt={activity.activity} width={700} height={300} style={{ objectFit: 'cover', borderRadius: 8 }} />
-      <h1 style={{ margin: '24px 0 8px', fontSize: '2.5rem' }}>{activity.activity}</h1>
-      <h2 style={{ margin: '0 0 16px', color: '#888' }}>{activity.chinese_title}</h2>
-      <p style={{ marginBottom: 16 }}>{activity.english_description}</p>
-      <div><b>Date:</b> {activity.dates}</div>
-      <div><b>Time:</b> {activity.time}</div>
-      <div><b>Location:</b> {activity.location}</div>
-    </div>
-  );
+import '@/app/shared/css/ActivityDetails.css';
+import { useEffect, useRef } from 'react';
+import { useActivities } from '@/app/shared/contexts/ActivitiesContext';
+import { useUser } from '@/app/shared/contexts/userContext';
+import { useParams } from 'next/navigation';
+import ActivityDetails from '@/app/shared/components/ActivityDetails';
+import ActivityDetailsSkeleton from '@/app/shared/components/skeletons/ActivityDetailsSkeleton';
+import { HiOutlineEmojiSad } from 'react-icons/hi';
+import { IoIosArrowBack } from 'react-icons/io';
+
+function getActivity(activities, id) {
+	return activities.find((activity) => activity.id === id);
+}
+
+function formatDateTime(startTime, endTime) {
+	const formattedStartTime = startTime
+		? new Date(startTime).toLocaleTimeString([], {
+				hour: '2-digit',
+				minute: '2-digit',
+		  })
+		: '';
+	const formattedEndTime = endTime
+		? new Date(endTime).toLocaleTimeString([], {
+				hour: '2-digit',
+				minute: '2-digit',
+		  })
+		: '';
+
+	return {
+		formattedStartTime,
+		formattedEndTime,
+	};
+}
+
+export default function ActivityDetailsPage() {
+	const { activities, setActivities, loading: activityLoading } = useActivities();
+	const { user, setUser, loading: userLoading } = useUser();
+	const { id } = useParams();
+	const activity = getActivity(activities, id);
+
+	const topRef = useRef(null);
+	useEffect(() => {
+		if (topRef.current) {
+			topRef.current.scrollIntoView({ behavior: 'smooth' });
+		}
+	}, [activity]);
+
+	if (userLoading || activityLoading) return <ActivityDetailsSkeleton />;
+
+	if (!!activities.length && !activity) {
+		return (
+			<div className='activityDetailsEmptyState'>
+				<div className='activityDetailsEmptyIcon'>
+					<HiOutlineEmojiSad />
+				</div>
+				<div className='activityDetailsEmptyTitle'>
+					No Activity Found
+				</div>
+				<div className='activityDetailsEmptyDesc'>
+					We couldn't find the activity you're looking for.
+					<br />
+					Please check the link again.
+				</div>
+				<button
+					className='activityDetailsEmptyBtn'
+					onClick={() => window.history.back()}
+				>
+					<span className='back'>
+						<IoIosArrowBack />
+					</span>{' '}
+					Go Back
+				</button>
+			</div>
+		);
+	}
+
+	const { formattedStartTime, formattedEndTime } = formatDateTime(
+		activity.startTime,
+		activity.endTime
+	);
+
+	return (
+		<ActivityDetails
+			activity={activity}
+			setActivities={setActivities}
+			user={user}
+			setUser={setUser}
+			formattedStartTime={formattedStartTime}
+			formattedEndTime={formattedEndTime}
+		/>
+	);
 }
