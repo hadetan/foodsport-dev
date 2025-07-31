@@ -156,8 +156,7 @@ export default function Footer() {
                         <div className={styles.contactItem}>
                             <MapPin size={16} />
                             <span>
-                                Rm U, 8/F., Phase 1, Kwun Tong Ind. Ctr, 472-484
-                                Kwun Tong Rd, Kwun Tong, Kln, H.K
+                            Room A, 20/F, Infotech Centre, 21 Hung To Road, Kwun Tong, Kowloon, Hong Kong
                             </span>
                         </div>
                     </div>

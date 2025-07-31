@@ -21,9 +21,15 @@ const Table = ({
                 </thead>
                 <tbody>
                     {tableType == "userPage"
-                        ? tableData.map((user) => <UserRow user={user} />)
+                        ? tableData.map((user) => (
+                              <UserRow
+                                  key={user.id || user._id || user.email}
+                                  user={user}
+                              />
+                          ))
                         : tableData.map((activity) => (
                               <ActivityRow
+                                  key={activity.id}
                                   activity={activity}
                                   shouldShowEdit={shouldShowEdit}
                                   setActivity={setActivity}
