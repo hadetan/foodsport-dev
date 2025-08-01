@@ -1,0 +1,13 @@
+/* Add background image with 1920x720 ratio */
+.coming-soon-bg {
+    background-image: url("/coming.png");
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    max-width: 1920px;
+    height:70vh;
+    min-height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
