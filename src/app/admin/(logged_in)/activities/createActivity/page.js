@@ -32,7 +32,6 @@ const CreateActivityPage = () => {
     };
 
     const handlePostActivities = async (activity) => {
-        // Only include fields allowed by the POST API
         try {
             setLoading(true);
             const formData = new FormData();
@@ -42,13 +41,18 @@ const CreateActivityPage = () => {
                     Array.isArray(value) &&
                     value.length > 0
                 ) {
-                    // Only append images if present
                     value.forEach((img) => {
                         formData.append("image", img);
                     });
-                } else if (value !== undefined && value !== null) {
+                } else if (
+                    value !== undefined &&
+                    value !== null &&
+                    typeof value !== "object"
+                ) {
+                    // Only append primitive values (string, number, boolean)
                     formData.append(key, value);
                 }
+                // Skip non-image objects/arrays (except images)
             });
             const response = await axiosClient.post(
                 "/admin/activities",

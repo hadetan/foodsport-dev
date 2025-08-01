@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function EditActivityPage({ activity,setShowEdit }) {
+export default function EditActivityPage({ activity, setShowEdit }) {
     const [form, setForm] = useState(null);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -97,9 +97,17 @@ export default function EditActivityPage({ activity,setShowEdit }) {
         try {
             setSuccess("Activity updated successfully!");
             setShowEdit(false);
-
         } catch (e) {
-            setError("Failed to update activity.");
+            // Ensure error is always a string
+            let msg = "Failed to update activity.";
+            if (typeof e === "string") {
+                msg = e;
+            } else if (e && typeof e.message === "string") {
+                msg = e.message;
+            } else if (e && typeof e === "object") {
+                msg = JSON.stringify(e);
+            }
+            setError(msg);
         }
         setLoading(false);
     };
@@ -113,16 +121,34 @@ export default function EditActivityPage({ activity,setShowEdit }) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-transparent">
-            <div className="container mx-auto p-4 max-w-2xl">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-transparent">
+            {/* Back Button */}
+            <div className="w-full flex justify-start mb-4">
+                <button
+                    className="btn btn-primary"
+                    onClick={() => router.push("/admin/activities")}
+                    type="button"
+                >
+                    &larr; Back
+                </button>
+            </div>
+            <div className="w-full max-w-3xl">
                 <h1 className="text-3xl font-bold mb-8 text-base-content">
                     Edit Activity
                 </h1>
                 {success && (
-                    <div className="alert alert-success text-lg">{success}</div>
+                    <div className="alert alert-success text-lg">
+                        {typeof success === "string"
+                            ? success
+                            : JSON.stringify(success)}
+                    </div>
                 )}
                 {error && (
-                    <div className="alert alert-error text-lg">{error}</div>
+                    <div className="alert alert-error text-lg">
+                        {typeof error === "string"
+                            ? error
+                            : JSON.stringify(error)}
+                    </div>
                 )}
                 <form
                     className="space-y-6"

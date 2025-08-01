@@ -25,7 +25,12 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                         <div className="avatar">
                             <div className="mask mask-squircle w-16 h-16">
                                 <img
-                                    src={activity.image}
+                                    src={
+                                        activity.imageUrl &&
+                                        activity.imageUrl !== ""
+                                            ? activity.imageUrl
+                                            : "/fallback-image.png"
+                                    }
                                     alt={activity.title}
                                     className="cursor-pointer hover:opacity-75"
                                     onClick={() => {
@@ -33,6 +38,10 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                                             setSelectedImage(activity.image);
                                             setIsImageModalOpen(true);
                                         }
+                                    }}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "/fallback-image.png";
                                     }}
                                 />
                             </div>
