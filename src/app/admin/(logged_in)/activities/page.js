@@ -68,9 +68,13 @@ const ActivityManagementPage = () => {
 
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
+          
             {/* Create Activity Button */}
             {showEdit ? (
-                <EditActivityPage activity={activity} />
+                <EditActivityPage
+                    activity={activity}
+                    setShowEdit={setShowEdit}
+                />
             ) : (
                 <>
                     <div className="flex justify-between mb-6">

@@ -32,13 +32,34 @@ const CreateActivityPage = () => {
     };
 
     const handlePostActivities = async (activity) => {
-        // Only include fields allowed by the POST API
-
         try {
             setLoading(true);
+            const formData = new FormData();
+            Object.entries(activity).forEach(([key, value]) => {
+                if (
+                    key === "images" &&
+                    Array.isArray(value) &&
+                    value.length > 0
+                ) {
+                    value.forEach((img) => {
+                        formData.append("image", img);
+                    });
+                } else if (
+                    value !== undefined &&
+                    value !== null &&
+                    typeof value !== "object"
+                ) {
+                    // Only append primitive values (string, number, boolean)
+                    formData.append(key, value);
+                }
+                // Skip non-image objects/arrays (except images)
+            });
             const response = await axiosClient.post(
                 "/admin/activities",
-                activity
+                formData,
+                {
+                    headers: { "Content-Type": "multipart/form-data" },
+                }
             );
             return response.data;
         } catch (err) {
@@ -79,8 +100,9 @@ const CreateActivityPage = () => {
                 endTime: endISO,
                 description: formData.description,
                 status: formData.status,
-                imageUrl: "", // handle image upload if needed
                 participantLimit: Number(formData.capacity),
+                images: formData.images, // Pass images array for FormData
+                // Remove imageUrl, backend will set it after upload
             };
 
             await handlePostActivities(payload);
