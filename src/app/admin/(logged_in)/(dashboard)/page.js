@@ -1,13 +1,24 @@
 "use client";
 
-import api from "@/utils/axios/api";
 import React, { useState, useEffect } from "react";
+// import api from "@/utils/axios/api"; // Uncomment and use for real API calls
 
 const DashboardPage = () => {
     const [dateRange, setDateRange] = useState("7d");
     const [loading, setLoading] = useState(false);
-    const [data, setData] = useState(null);
     const [theme, setTheme] = useState("light");
+    // Placeholder for fetched dashboard data
+    const [dashboard, setDashboard] = useState({
+        participants: "150,000+",
+        donations: "HK$2.1M",
+        volunteers: "4,200",
+        events: "120",
+        recentSignups: [
+            { name: "John Doe", date: "2025-07-01", status: "Active" },
+            { name: "Jane Smith", date: "2025-07-01", status: "Pending" },
+            { name: "Mike Johnson", date: "2025-06-30", status: "Active" },
+        ],
+    });
 
     useEffect(() => {
         const isDark =
@@ -29,14 +40,17 @@ const DashboardPage = () => {
             attributeFilter: ["data-theme"],
         });
 
+        // Fetch dashboard data here (replace with real API)
+        // api.get('/admin/dashboard?range=' + dateRange).then(res => setDashboard(res.data));
+
         return () => observer.disconnect();
-    }, []);
+    }, [dateRange]);
 
     const chartTextColor = theme === "dark" ? "#e2e8f0" : "#1e293b";
 
     const handleRefresh = async () => {
         setLoading(true);
-        // TODO: Implement API call
+        // Fetch dashboard data here (replace with real API)
         await new Promise((resolve) => setTimeout(resolve, 1000));
         setLoading(false);
     };
@@ -70,98 +84,110 @@ const DashboardPage = () => {
                 </div>
             </div>
 
-            {/* Stats Grid */}
+            {/* KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 w-full">
-                <div className="stats shadow">
-                    <div className="stat bg-gradient-to-r from-primary to-primary-focus text-primary-content">
-                        <div className="stat-title opacity-80">Total Users</div>
-                        <div className="stat-value">1,234</div>
-                        <div className="stat-desc opacity-80">
-                            ↑ 12% from last period
-                        </div>
-                    </div>
-                </div>
-
                 <div className="stats shadow">
                     <div className="stat bg-gradient-to-r from-secondary to-secondary-focus text-secondary-content">
                         <div className="stat-title opacity-80">
-                            Active Activities
+                            <span className="font-bold">
+                                Active Participants
+                            </span>
                         </div>
-                        <div className="stat-value">56</div>
-                        <div className="stat-desc opacity-80">
-                            ↑ 8% from last period
+                        <div className="stat-value">
+                            {dashboard.participants}
                         </div>
+                        <div className="stat-desc opacity-80">All time</div>
                     </div>
                 </div>
-
                 <div className="stats shadow">
                     <div className="stat bg-gradient-to-r from-success to-success/80 text-success-content">
                         <div className="stat-title opacity-80">
-                            Total Rewards
+                            <span className="font-bold">Donations</span>
                         </div>
-                        <div className="stat-value">789</div>
-                        <div className="stat-desc opacity-80">
-                            ↓ 3% from last period
-                        </div>
+                        <div className="stat-value">{dashboard.donations}</div>
+                        <div className="stat-desc opacity-80">Total funds</div>
                     </div>
                 </div>
-
                 <div className="stats shadow">
                     <div className="stat bg-gradient-to-r from-accent to-accent-focus text-accent-content">
                         <div className="stat-title opacity-80">
-                            Total Donations
+                            <span className="font-bold">Volunteers</span>
                         </div>
-                        <div className="stat-value">45.2k</div>
-                        <div className="stat-desc opacity-80">
-                            ↑ 15% from last period
+                        <div className="stat-value">{dashboard.volunteers}</div>
+                        <div className="stat-desc opacity-80">Registered</div>
+                    </div>
+                </div>
+                <div className="stats shadow">
+                    <div className="stat bg-gradient-to-r from-info to-info/80 text-info-content">
+                        <div className="stat-title opacity-80">
+                            <span className="font-bold">Events</span>
+                        </div>
+                        <div className="stat-value">{dashboard.events}</div>
+                        <div className="stat-desc opacity-80">All time</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Placeholder for analytics charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 mb-8">
+                {/* Only Event Calendar remains */}
+                <div className="card bg-base-100 shadow-lg">
+                    <div className="card-body">
+                        <h2 className="card-title text-base-content">
+                            <span className="font-bold">Event Calendar</span>
+                        </h2>
+                        {/* TODO: Insert event calendar component */}
+                        <div className="text-base-content/60 text-sm">
+                            [Event calendar visualization here]
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Recent Signups Table */}
-            <div className="card bg-base-100 shadow-lg w-full">
+            <div className="card bg-base-100 shadow-lg w-full mb-8">
                 <div className="card-body">
                     <h2 className="card-title text-base-content">
-                        Recent Signups
+                        <span className="font-bold">Recent Signups</span>
                     </h2>
                     <div className="overflow-x-auto">
                         <table className="table table-zebra w-full">
                             <thead>
                                 <tr>
-                                    <th>User</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
+                                    <th>
+                                        <span className="font-bold">User</span>
+                                    </th>
+                                    <th>
+                                        <span className="font-bold">Date</span>
+                                    </th>
+                                    <th>
+                                        <span className="font-bold">
+                                            Status
+                                        </span>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>John Doe</td>
-                                    <td>2025-07-01</td>
-                                    <td>
-                                        <div className="badge badge-success gap-2">
-                                            Active
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Jane Smith</td>
-                                    <td>2025-07-01</td>
-                                    <td>
-                                        <div className="badge badge-warning gap-2">
-                                            Pending
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Mike Johnson</td>
-                                    <td>2025-06-30</td>
-                                    <td>
-                                        <div className="badge badge-success gap-2">
-                                            Active
-                                        </div>
-                                    </td>
-                                </tr>
+                                {dashboard.recentSignups.map((signup, idx) => (
+                                    <tr key={idx}>
+                                        <td>{signup.name}</td>
+                                        <td>{signup.date}</td>
+                                        <td>
+                                            <div
+                                                className={`badge gap-2 ${
+                                                    signup.status === "Active"
+                                                        ? "badge-success"
+                                                        : signup.status ===
+                                                          "Pending"
+                                                        ? "badge-warning"
+                                                        : "badge-ghost"
+                                                }`}
+                                            >
+                                                {signup.status}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>

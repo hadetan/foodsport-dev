@@ -73,68 +73,76 @@
 
 ## Dashboard & Analytics
 
-### Story #A1: Admin Dashboard Interface
+### Story #A1: Admin Dashboard Overview
 
-**Title**: Create admin dashboard UI with statistics cards  
-**Description**: Build main dashboard interface showing platform metrics and activity  
-**Scope**:
+**Title**: Design a comprehensive admin dashboard with actionable insights  
+**Description**:  
+After reviewing all admin pages, the dashboard should serve as the central hub for platform health, user engagement, and operational alerts. It must provide a high-level summary and quick access to key actions, with drill-downs into detailed analytics. The dashboard should empower admins to monitor trends, identify issues, and act quickly.
 
--   Statistics cards layout
--   Recent signups table
--   Activity logs display
--   Date range filtering
--   Data visualization
+**What the Dashboard Should Show**:
+
+-   **Platform Health Overview**:
+    -   Total users, active users today, new signups (today, this week)
+    -   Total activities, upcoming activities, activities created this week
+    -   Total donations (amount & count), recent donations
+    -   System status (API/server health, error logs summary)
+-   **User Engagement**:
+    -   Recent user signups (table with name, email, joined date, status)
+    -   Top active users (by activities, donations)
+    -   User status breakdown (active, blocked, pending)
+-   **Activity Insights**:
+    -   Upcoming activities (list with title, date, status, capacity)
+    -   Recent activity submissions/edits
+    -   Activities by category (chart)
+    -   Participation trends (chart: users per activity over time)
+-   **Donation Analytics**:
+    -   Donations over time (chart)
+    -   Top donors
+    -   Recent donation activity
+-   **Operational Alerts & Actions**:
+    -   Pending approvals (activities, users, donations)
+    -   System alerts (errors, warnings)
+    -   Quick links to review flagged content or moderate users
+-   **Data Visualization**:
+    -   Key metrics as animated statistic cards
+    -   Interactive charts (line, bar, pie) for trends
+    -   Tables for recent/significant records
+-   **Shortcuts & Quick Actions**:
+    -   "Create Activity" button
+    -   "Add User" button
+    -   "Export Data" dropdown
+    -   Manual refresh
 
 **DaisyUI Components**:
 
--   Stats Section:
-
-    -   `stats` container with `stat` items
-    -   `stat-title`, `stat-value`, `stat-desc`
-    -   `indicator` for trend indicators
-    -   `badge` for status indicators
-
--   Data Tables:
-
-    -   `table table-zebra` for structured data
-    -   `table-pin-rows` for header pinning
-    -   `table-xs/sm/md` for responsive sizes
-    -   `pagination` for table navigation
-
--   Charts Area:
-
-    -   `card` containers for charts
-    -   `tabs tabs-lifted` for chart types
-    -   `skeleton` for loading states
-
--   Filters:
-
-    -   `join` for button groups
-    -   `select select-bordered` for filters
-    -   `input input-bordered` for search
-    -   `datepicker` (custom with `dropdown`)
-
--   Actions:
-    -   `btn-group` for action buttons
-    -   `dropdown` for export options
-    -   `tooltip` for button hints
-    -   `loading` for loading states
+-   `stats` for key metrics
+-   `table table-zebra` for recent signups, activities, donations
+-   `card` for charts and alerts
+-   `tabs tabs-lifted` for switching between analytics views
+-   `badge` for status indicators
+-   `pagination` for tables
+-   `dropdown` for export/quick actions
+-   `alert` for system warnings
+-   `loading`, `skeleton` for loading states
 
 **Acceptance Criteria**:
 
--   [x] Four main statistics cards with animations
--   [x] Responsive data tables with sorting
--   [x] Interactive chart displays
--   [x] Date range selector
--   [x] Export functionality
--   [x] Loading states
--   [x] Error handling
--   [x] Mobile optimization
--   [x] Dark/light mode
--   [x] Manual refresh
+-   [ ] Dashboard displays total users, active users, new signups, total activities, upcoming activities, and total donations as statistic cards
+-   [ ] Recent user signups table with sortable columns (name, email, joined date, status)
+-   [ ] Upcoming activities list with quick view and status badges
+-   [ ] Charts for user growth, activity participation, and donation trends
+-   [ ] Top active users and top donors sections
+-   [ ] System status and operational alerts visible at a glance
+-   [ ] Pending approvals and flagged content highlighted with quick links
+-   [ ] All tables and charts are responsive and support dark/light mode
+-   [ ] Manual refresh and export options available
+-   [ ] Loading and error states handled gracefully
+-   [ ] Dashboard is mobile-optimized and accessible
+-   [ ] Quick action buttons for creating activities, adding users, and exporting data
+-   [ ] All data is up-to-date and reflects real-time changes where possible
 
-**Current Status**: Done  
-**Notes**: All acceptance criteria met. Dashboard includes interactive charts, dark mode support, and is fully responsive.
+**Current Status**: Not Started  
+**Notes**: Dashboard requirements refined after reviewing all admin pages. Focus is on actionable insights, operational awareness, and quick access to key admin functions.
 
 ---
 
