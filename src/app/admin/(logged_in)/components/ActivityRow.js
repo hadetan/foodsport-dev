@@ -16,6 +16,8 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
     const handleEdit = () => {
         shouldShowEdit(true);
         setActivity(activity);
+        // Navigate to the edit page
+        router.push("/admin/activities?view=edit");
     };
     return (
         <>

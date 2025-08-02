@@ -126,7 +126,7 @@ export default function EditActivityPage({ activity, setShowEdit }) {
             <div className="w-full flex justify-start mb-4">
                 <button
                     className="btn btn-primary"
-                    onClick={() => router.push("/admin/activities")}
+                    onClick={() => router.push("/admin/activities?view=list")}
                     type="button"
                 >
                     &larr; Back
