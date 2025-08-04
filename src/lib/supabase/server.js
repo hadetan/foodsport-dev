@@ -21,6 +21,7 @@ export async function createClient() {
                         console.error(
                             `Error from the server supabase.
                             The error is ${e}`);
+                        throw e;
 					}
 				},
 			},
