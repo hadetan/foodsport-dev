@@ -7,7 +7,7 @@ export const MAX_SOCIAL_MEDIA_IMAGES = 5;
 
 // GET /api/admin/social/image
 export async function GET() {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { error } = await requireAdmin(supabase, NextResponse);
     if (error) return error;
 
@@ -35,7 +35,7 @@ export async function GET() {
 
 // POST /api/admin/social/image
 export async function POST(request) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { error } = await requireAdmin(supabase, NextResponse);
     if (error) return error;
 
@@ -95,7 +95,7 @@ export async function POST(request) {
 
 // DELETE /api/admin/social/image?id={id}
 export async function DELETE(request) {
-    const supabase = createServerClient();
+    const supabase = await createServerClient();
     const { error } = await requireAdmin(supabase, NextResponse);
     if (error) return error;
 

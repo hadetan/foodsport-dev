@@ -22,7 +22,7 @@ function parseQueryParams(searchParams) {
 
 // GET /api/admin/activities
 export async function GET(req) {
-	const supabase = createServerClient();
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 
@@ -121,7 +121,7 @@ export async function GET(req) {
 
 // POST /api/admin/activities
 export async function POST(req) {
-	const supabase = createServerClient();
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 
@@ -273,7 +273,7 @@ export async function POST(req) {
 
 // PATCH /api/admin/activities
 export async function PATCH(req) {
-	const supabase = createServerClient();
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 
@@ -336,11 +336,12 @@ export async function PATCH(req) {
 
 	if (updates.pointsPerParticipant) {
 		updates.pointsPerParticipant = Number(updates.pointsPerParticipant);
-		if (isNaN(updates.pointsPerParticipant))
+		if (isNaN(updates.pointsPerParticipant)) {
 			return NextResponse.json(
 				{ error: 'pointsPerParticipant must be a number' },
 				{ status: 400 }
 			);
+		}
 	}
 
 	if (updates.caloriesPerHour) {

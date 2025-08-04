@@ -1,8 +1,6 @@
 import axios from 'axios';
 import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
-import { getSupabaseClient } from '../../lib/supabase/index'
-
-const supabaseClient = getSupabaseClient();
+import { getSupabaseClient } from '@/lib/supabase/index'
 
 const api = axios.create({
   baseURL: BASE_URLS.url,
@@ -26,10 +24,10 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response && error.response.status === 401) {
       try {
-        const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession();
+        const { data: { session }, error: refreshError } = await getSupabaseClient().auth.refreshSession();
         if (refreshError || !session?.access_token) {
           showApiError(refreshError || { message: 'Failed to refresh session.' });
-          document.cookie = 'auth_token=; Max-Age=0; path=/;';
+          await api.delete('/auth/logout');
           localStorage.removeItem('auth_token');
           return Promise.reject(error);
         }

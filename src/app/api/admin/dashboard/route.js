@@ -27,7 +27,7 @@ export async function GET(req) {
 	const dateRange = searchParams.get('dateRange') || '7d';
 	const fromDate = getDateRange(dateRange);
 
-	const supabase = createServerClient();
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 
@@ -95,6 +95,8 @@ export async function GET(req) {
 				status: u.isActive ? 'active' : 'inactive',
 				profilePictureUrl: u.profilePictureUrl,
 				totalActivities,
+				totalPoints:  u.totalPoints,
+				badgeCount: await getCount('userBadge', { userId: u.id }),
 			};
 		})
 	);

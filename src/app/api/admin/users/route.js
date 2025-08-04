@@ -17,7 +17,7 @@ function parseQueryParams(searchParams) {
 }
 
 export async function GET(req) {
-	const supabase = createServerClient();
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 	const url = new URL(req.url);
@@ -93,7 +93,7 @@ export async function GET(req) {
 }
 
 export async function PATCH(req) {
-	const supabase = createServerClient();
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 	let body;

@@ -39,9 +39,9 @@ export async function POST(req) {
 				email: adminUser.email,
 			},
 		});
-	} catch (err) {
+	} catch {
 		return NextResponse.json(
-			{ error: 'Internal server error.', err },
+			{ error: 'Internal server error.' },
 			{ status: 500 }
 		);
 	}

@@ -227,7 +227,7 @@ export default function ActivityItem({
 				) : (
 					<Button
 						className={`${styles.actionBtn}`}
-						onClick={handleJoin}
+						onClick={() => router.push('/auth/login')}
 					>
 						<span className={styles.actionIcon}>
 							<FaPlusCircle />

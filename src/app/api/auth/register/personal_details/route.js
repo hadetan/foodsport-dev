@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma/db';
 import { createServerClient } from '@/lib/supabase/server-only';
+import { requireUser } from '@/lib/auth/require-user';
 
 export async function POST(req) {
 	try {

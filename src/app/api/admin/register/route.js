@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase/server-only';
 
 // POST /api/admin/register
 export async function POST(req) {
-	const supabase = createServerClient();
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 
