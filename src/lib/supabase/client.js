@@ -1,16 +1,20 @@
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
-// Create Supabase client for client-side operations (components)
-export const createSupabaseClient = () => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+export function createClient() {
+	const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+	const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+	if (!url || !key) {
+		throw new Error('Missing Supabase configuration for client');
+	}
+	return createBrowserClient(url, key);
+}
 
-    if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Missing Supabase configuration for client');
-    }
+// Singleton instance for client-side
+let supabaseClient = null;
 
-    return createClient(supabaseUrl, supabaseAnonKey);
-};
-
-// Client for browser usage
-export const supabaseClient = createSupabaseClient(); 
+export function getSupabaseClient() {
+	if (!supabaseClient) {
+		supabaseClient = createClient();
+	}
+	return supabaseClient;
+}

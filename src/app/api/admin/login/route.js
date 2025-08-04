@@ -1,5 +1,5 @@
-import { supabase } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma/client';
+import { createServerClient } from '@/lib/supabase/server-only';
+import { prisma } from '@/lib/prisma/db';
 import { NextResponse } from 'next/server';
 
 // POST /api/admin/login
@@ -13,15 +13,14 @@ export async function POST(req) {
 			);
 		}
 
-		const { data: session, error: authError } =
-			await supabase.auth.signInWithPassword({ email, password });
+		const supabase = await createServerClient();
+		const { data: session, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 		if (authError || !session || !session.user) {
 			return NextResponse.json(
 				{ error: 'Invalid credentials.' },
 				{ status: 401 }
 			);
 		}
-		// Prisma: check admin status
 		const adminUser = await prisma.adminUser.findUnique({
 			where: { email: session.user.email },
 			select: { id: true, name: true, email: true, status: true },
@@ -42,7 +41,7 @@ export async function POST(req) {
 		});
 	} catch (err) {
 		return NextResponse.json(
-			{ error: 'Internal server error.' },
+			{ error: 'Internal server error.', err },
 			{ status: 500 }
 		);
 	}

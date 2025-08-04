@@ -1,15 +1,13 @@
-import { prisma } from '@/lib/prisma/client.js';
+import { prisma } from '@/lib/prisma/db.js';
 import { requireAdmin } from '@/lib/prisma/require-admin.js';
-import { supabase } from '@/lib/supabase/server';
+import { createServerClient } from '@/lib/supabase/server-only';
 import { NextResponse } from 'next/server';
 
 export const MAX_SOCIAL_MEDIA_IMAGES = 5;
 
-/**pos
- * GET /api/admin/social/image
- * Returns up to MAX_SOCIAL_MEDIA_IMAGES images for the admin social media section.
- */
+// GET /api/admin/social/image
 export async function GET() {
+    const supabase = createServerClient();
     const { error } = await requireAdmin(supabase, NextResponse);
     if (error) return error;
 
@@ -35,12 +33,9 @@ export async function GET() {
     }
 }
 
-/**
- * POST /api/admin/social/image
- * Uploads a new image or updates an existing one for the admin social media section.
- * Handles file upload to Supabase storage and database record creation/update.
- */
+// POST /api/admin/social/image
 export async function POST(request) {
+    const supabase = createServerClient();
     const { error } = await requireAdmin(supabase, NextResponse);
     if (error) return error;
 
@@ -98,11 +93,9 @@ export async function POST(request) {
     return NextResponse.json({ success: true, image: { id: result.id, imageUrl: baseUrl + result.imageUrl, socialMediaUrl: result.socialMediaUrl } });
 }
 
-/**
- * DELETE /api/admin/social/image?id={id}
- * Removes image by id and deletes the file from Supabase Storage.
- */
+// DELETE /api/admin/social/image?id={id}
 export async function DELETE(request) {
+    const supabase = createServerClient();
     const { error } = await requireAdmin(supabase, NextResponse);
     if (error) return error;
 

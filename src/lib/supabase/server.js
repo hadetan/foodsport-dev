@@ -1,22 +1,61 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
-// Create Supabase client for server-side operations (API routes)
-export const createSupabaseServer = () => {
-    if (typeof window !== 'undefined') {
-        throw new Error('supabase (service key) should only be used in API/server code, not in client/browser code');
-    }
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !supabaseServiceKey) {
-        throw new Error('Missing Supabase configuration for server client');
-    }
-    return createClient(supabaseUrl, supabaseServiceKey, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    });
+export async function createClient() {
+	const cookieStore = await cookies();
+
+	return createServerClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL,
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+		{
+			cookies: {
+				getAll() {
+					return cookieStore.getAll();
+				},
+				setAll(cookiesToSet) {
+					try {
+						cookiesToSet.forEach(({ name, value, options }) =>
+							cookieStore.set(name, value, options)
+						);
+					} catch(e) {
+                        console.error(
+                            `Error from the server supabase.
+                            The error is ${e}`);
+					}
+				},
+			},
+		}
+	);
 }
 
-// Default client for API routes (server-side)
-export const supabase = createSupabaseServer();
+// Helper function to get authenticated user on server side
+export async function getAuthenticatedUser() {
+	const supabase = await createClient();
+	const {
+		data: { user },
+		error,
+	} = await supabase.auth.getUser();
+
+	if (error) {
+		console.error('Error getting authenticated user:', error);
+		return null;
+	}
+
+	return user;
+}
+
+// Helper function to get session on server side
+export async function getSession() {
+	const supabase = await createClient();
+	const {
+		data: { session },
+		error,
+	} = await supabase.auth.getSession();
+
+	if (error) {
+		console.error('Error getting session:', error);
+		return null;
+	}
+
+	return session;
+}
