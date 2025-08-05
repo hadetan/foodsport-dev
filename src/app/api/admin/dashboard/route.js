@@ -81,6 +81,7 @@ export async function GET(req) {
 			createdAt: true,
 			isActive: true,
 			profilePictureUrl: true,
+			totalPoints: true,
 		},
 	});
 	const recentSignups = await Promise.all(
