@@ -14,8 +14,6 @@ import { useUser } from '@/app/shared/contexts/userContext';
 
 export default function Header() {
 	const { authToken } = useAuth();
-	const { user, loading } = useUser();
-	console.log(user);
 	const router = useRouter();
 	const [mounted, setMounted] = useState(false);
 
