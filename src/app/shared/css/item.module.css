@@ -84,11 +84,32 @@
 .cardTitle h3:hover {
 	color: teal;
 }
+.cardTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #dadada;
+}
+.cardTitleText {
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+.cardTitleText:hover {
+  color: teal;
+}
 .cardSubtitle {
 	font-size: 0.95rem;
 	color: #888;
 	margin-bottom: 6px;
 	line-height: 1.3;
+	word-break: break-word;
 }
 .filterBtn {
 	background: none;
