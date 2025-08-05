@@ -44,18 +44,41 @@ const UserManagementPage = () => {
         "Yuen Long",
     ];
 
-    // Simulate initial data loading
-    const fetchUser = async () => {
-        const data = await api.request({ method: "GET", url: "/admin/users" });
-        console.log("asad", data.data);
-        setUsers(data.data.users);
-        setTableLoading(false);
+    const handleGetUsers = async () => {
+        setTableLoading(true);
+        try {
+            // Build query params similar to route.js
+            const params = {
+                search: searchQuery,
+                status:
+                    statusFilter === "all" ? "" : statusFilter.toLowerCase(),
+                page: 1,
+                limit: 20,
+                sortBy: "created_at",
+                sortOrder: "desc",
+            };
+            const queryString = new URLSearchParams(params).toString();
+            const { data } = await api.get(`/admin/users?${queryString}`);
+            setUsers(data.users);
+        } catch (err) {
+            setNotification({
+                show: true,
+                message: "Failed to fetch users.",
+                type: "error",
+            });
+        } finally {
+            setTableLoading(false);
+        }
     };
 
     useEffect(() => {
-        setTableLoading(true);
-        fetchUser();
+        handleGetUsers();
     }, []);
+
+    // Add handler for row click
+    const handleRowClick = (userId) => {
+        router.push(`/admin/users/${userId}`);
+    };
 
     const statusOfUser = ["Active", "Inactive"];
     const tableHeading = [
@@ -100,6 +123,7 @@ const UserManagementPage = () => {
                             heading={tableHeading}
                             tableData={users}
                             tableType={"userPage"}
+                            onRowClick={handleRowClick} // Pass click handler to Table
                         />
                     </div>
                 )}

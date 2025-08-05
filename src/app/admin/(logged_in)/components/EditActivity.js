@@ -489,8 +489,11 @@ export default function EditActivityPage({
                             value={form.status}
                             onChange={handleInput}
                         >
+                            <option value="upcoming">Upcoming</option>
                             <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
+                            <option value="closed">Closed</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
                             <option value="draft">Draft</option>
                         </select>
                     </div>

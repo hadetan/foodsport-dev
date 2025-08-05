@@ -8,6 +8,7 @@ const Table = ({
     tableType,
     shouldShowEdit,
     setActivity,
+    onRowClick,
 }) => {
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -36,6 +37,7 @@ const Table = ({
                               <UserRow
                                   key={user.id || user._id || user.email}
                                   user={user}
+                                  onRowClick={onRowClick}
                               />
                           ))
                         : paginatedData.map((activity, idx) => (
