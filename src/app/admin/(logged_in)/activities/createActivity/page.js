@@ -17,6 +17,8 @@ const CreateActivityPage = () => {
         endDateTime: "",
         location: "",
         capacity: "",
+        pointsPerParticipant: "",
+        caloriesPerHour: "",
         images: [],
         status: "draft",
     });
@@ -101,6 +103,8 @@ const CreateActivityPage = () => {
                 description: formData.description,
                 status: formData.status,
                 participantLimit: Number(formData.capacity),
+                pointsPerParticipant: Number(formData.pointsPerParticipant),
+                caloriesPerHour: Number(formData.caloriesPerHour),
                 images: formData.images, // Pass images array for FormData
                 // Remove imageUrl, backend will set it after upload
             };
@@ -113,6 +117,7 @@ const CreateActivityPage = () => {
         } finally {
             setLoading(false);
         }
+        console.log(); // <-- Add this line
     };
 
     return (
@@ -168,10 +173,16 @@ const CreateActivityPage = () => {
                                     <option value="">
                                         Select activity type
                                     </option>
+                                    <option value="kayak">Kayak</option>
+                                    <option value="hiking">Hiking</option>
                                     <option value="yoga">Yoga</option>
+                                    <option value="fitness">Fitness</option>
                                     <option value="running">Running</option>
                                     <option value="cycling">Cycling</option>
                                     <option value="swimming">Swimming</option>
+                                    <option value="dancing">Dancing</option>
+                                    <option value="boxing">Boxing</option>
+                                    <option value="other">Other</option>
                                 </select>
                             </label>
                         </div>
@@ -257,6 +268,42 @@ const CreateActivityPage = () => {
                                     value={formData.capacity}
                                     onChange={handleFormChange}
                                     min="1"
+                                />
+                            </label>
+                        </div>
+
+                        {/* Points Per Participant */}
+                        <div className="form-control flex items-center gap-4">
+                            <span className="w-40 text-white text-base">
+                                Points Per Participant
+                            </span>
+                            <label className="flex-1">
+                                <input
+                                    type="number"
+                                    name="pointsPerParticipant"
+                                    placeholder="Enter points per participant"
+                                    className="input input-bordered input-md text-base"
+                                    value={formData.pointsPerParticipant}
+                                    onChange={handleFormChange}
+                                    min="0"
+                                />
+                            </label>
+                        </div>
+
+                        {/* Calories Per Hour */}
+                        <div className="form-control flex items-center gap-4">
+                            <span className="w-40 text-white text-base">
+                                Calories Per Hour
+                            </span>
+                            <label className="flex-1">
+                                <input
+                                    type="number"
+                                    name="caloriesPerHour"
+                                    placeholder="Enter calories per hour"
+                                    className="input input-bordered input-md text-base"
+                                    value={formData.caloriesPerHour}
+                                    onChange={handleFormChange}
+                                    min="0"
                                 />
                             </label>
                         </div>

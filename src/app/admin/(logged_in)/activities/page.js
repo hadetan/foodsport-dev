@@ -76,6 +76,8 @@ const ActivityManagementPage = () => {
                     setShowEdit={(val) => {
                         if (!val) router.push("/admin/activities?view=list");
                     }}
+                    setActivities={setActivities} //send setActivities
+                    refreshActivities={getActivities} // <-- pass refresh function
                 />
             ) : (
                 <>
