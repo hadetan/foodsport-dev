@@ -30,7 +30,7 @@ const Avatar = ({ srcAvatar, firstName, lastName, isNav=false, pointer=false, si
             ) : (
                 <div className="avatar">
                     <div className={imgMaskClass}>
-                        <img src={srcAvatar} />
+                        <img src={srcAvatar} alt={`${firstName} ${lastName} avatar`} />
                     </div>
                 </div>
             )}

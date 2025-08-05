@@ -45,7 +45,7 @@ export default function ShareDialog({ url, onClose }) {
           <div className={styles.fakeInput} title={url}>
             {url}
             <button
-              className={styles.copyBtn + (copied ? ' ' + styles.copiedBtn : '')}
+              className={styles.copyBtn}
               onClick={handleCopy}
               tabIndex={0}
               aria-label="Copy link"

@@ -35,14 +35,6 @@
 	border-bottom: 1px solid #e0e0e0;
 	min-height: 100px;
 }
-/* Slightly reduce logo size for new layout */
-.logoContainer {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	width: 100%;
-	padding: 18px 0 10px 0;
-}
 
 .headerWrapper {
 	width: 100%;
@@ -85,6 +77,8 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	width: 100%;
+	padding: 18px 0 10px 0;
 }
 
 .rightIcons {

@@ -15,6 +15,7 @@ import { useUser } from '@/app/shared/contexts/userContext';
 export default function Header() {
 	const { authToken } = useAuth();
 	const router = useRouter();
+	const { user, loading } = useUser();
 	const [mounted, setMounted] = useState(false);
 
 	//#region This fixed the hydration error of mismatched authToken. The authToken is populated only after the mounting, so we wait to be mounted first before using the authToken.
@@ -44,7 +45,7 @@ export default function Header() {
 								firstName={user.firstname}
 								lastName={user.lastname}
 								isNav={true}
-                pointer={true}
+                				pointer={true}
 							/>
 						)
 					) : (

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import { getCount } from '@/lib/prisma/db-utils';
 import { getCache, setCache, CACHE_TTL } from '@/utils/cache';
+import { createServerClient } from '@/lib/supabase/server-only';
 
 function getDateRange(dateRange) {
 	const now = new Date();
@@ -27,6 +27,7 @@ export async function GET(req) {
 	const dateRange = searchParams.get('dateRange') || '7d';
 	const fromDate = getDateRange(dateRange);
 
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 
@@ -46,7 +47,7 @@ export async function GET(req) {
 	const activeActivities = await getCount('activity', { status: 'active' });
 	const totalRewards = await getCount('userBadge');
 
-	const { prisma } = await import('@/lib/prisma/client');
+	const { prisma } = await import('@/lib/prisma/db');
 	const donations = await prisma.calorieDonation.findMany({
 		select: { caloriesDonated: true },
 	});
@@ -80,23 +81,26 @@ export async function GET(req) {
 			createdAt: true,
 			isActive: true,
 			profilePictureUrl: true,
-			totalActivities: true,
 			totalPoints: true,
-			badgeCount: true,
 		},
 	});
-	const recentSignups = (recentSignupsData || []).map((u) => ({
-		id: u.id,
-		firstname: u.firstname,
-		lastname: u.lastname,
-		email: u.email,
-		signupDate: u.createdAt,
-		status: u.isActive ? 'active' : 'inactive',
-		profilePictureUrl: u.profilePictureUrl,
-		totalActivities: u.totalActivities,
-		totalPoints: u.totalPoints,
-		badgeCount: u.badgeCount,
-	}));
+	const recentSignups = await Promise.all(
+		recentSignupsData.map(async (u) => {
+			const totalActivities = await getCount('userActivity', { userId: u.id });
+			return {
+				id: u.id,
+				firstname: u.firstname,
+				lastname: u.lastname,
+				email: u.email,
+				signupDate: u.createdAt,
+				status: u.isActive ? 'active' : 'inactive',
+				profilePictureUrl: u.profilePictureUrl,
+				totalActivities,
+				totalPoints:  u.totalPoints,
+				badgeCount: await getCount('userBadge', { userId: u.id }),
+			};
+		})
+	);
 
 	const responseData = {
 		stats: {

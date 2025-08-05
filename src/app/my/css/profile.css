@@ -135,8 +135,7 @@
 
 .ribbon {
     position: absolute;
-    transform: translate(-50%, -50%);
-    rotate: -40deg;
+    transform: translate(-50%, -50%) rotate(-40deg);
 	top: 20px;
     left: 0;
     width: 200px;

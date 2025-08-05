@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/prisma/require-admin';
-import { getById, getCount, getMany, insert, updateById } from '@/lib/prisma/db-utils';
+import {
+	getById,
+	getCount,
+	getMany,
+	insert,
+	updateById,
+} from '@/lib/prisma/db-utils';
 import { formatDbError } from '@/utils/formatDbError';
-import { supabase } from '@/lib/supabase/server';
+import { createServerClient } from '@/lib/supabase/server-only';
 
 function parseQueryParams(searchParams) {
 	return {
@@ -16,12 +22,14 @@ function parseQueryParams(searchParams) {
 
 // GET /api/admin/activities
 export async function GET(req) {
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 
 	const url = new URL(req.url);
 	const { searchParams } = url;
-	const { status, page, limit, type, organizerId } = parseQueryParams(searchParams);
+	const { status, page, limit, type, organizerId } =
+		parseQueryParams(searchParams);
 	const skip = (page - 1) * limit;
 	const filters = {};
 	if (status) filters.status = status;
@@ -113,6 +121,7 @@ export async function GET(req) {
 
 // POST /api/admin/activities
 export async function POST(req) {
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 
@@ -264,6 +273,7 @@ export async function POST(req) {
 
 // PATCH /api/admin/activities
 export async function PATCH(req) {
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 
@@ -304,7 +314,7 @@ export async function PATCH(req) {
 	];
 	let updates = {};
 	for (const field of allowedFields) {
-		if (formData.get(field)) {
+		if (formData.has(field)) {
 			if (field === 'isFeatured') {
 				const val = formData.get(field);
 				updates.isFeatured = val === 'true' || val === '1';
@@ -336,12 +346,11 @@ export async function PATCH(req) {
 
 	if (updates.caloriesPerHour) {
 		updates.caloriesPerHour = Number(updates.caloriesPerHour);
-		if (isNaN(updates.caloriesPerHour)) {
+		if (isNaN(updates.caloriesPerHour))
 			return NextResponse.json(
 				{ error: 'caloriesPerHour must be a number' },
 				{ status: 400 }
 			);
-		}
 	}
 
 	let newImageUrl = null;
@@ -367,7 +376,7 @@ export async function PATCH(req) {
 				upsert: false,
 				contentType: file.type,
 			});
-		if (uploadError) {
+		if (uploadError)
 			return NextResponse.json(
 				{
 					error: 'Failed to upload image',
@@ -375,26 +384,23 @@ export async function PATCH(req) {
 				},
 				{ status: 500 }
 			);
-		}
 		const { data: publicUrlData } = supabase.storage
 			.from(bucket)
 			.getPublicUrl(fileName);
 		newImageUrl = publicUrlData?.publicUrl;
-		if (!newImageUrl) {
+		if (!newImageUrl)
 			return NextResponse.json(
 				{ error: 'Failed to get image URL' },
 				{ status: 500 }
 			);
-		}
 		updates.imageUrl = newImageUrl;
 	}
 
-	if (Object.keys(updates).length === 0) {
+	if (Object.keys(updates).length === 0)
 		return NextResponse.json(
 			{ error: 'No valid fields to update' },
 			{ status: 400 }
 		);
-	}
 
 	if (newImageUrl && oldImageUrl) {
 		const urlParts = oldImageUrl.split('/');
@@ -403,18 +409,16 @@ export async function PATCH(req) {
 		const { error: removeError } = await supabase.storage
 			.from(bucket)
 			.remove([oldFileName]);
-		if (removeError) {
+		if (removeError)
 			console.error('Failed to remove old image:', removeError.message);
-		}
 	}
 
 	const updatedActivity = await updateById('activity', activityId, updates);
-	if (updatedActivity && updatedActivity.error) {
+	if (updatedActivity && updatedActivity.error)
 		return NextResponse.json(
 			{ error: formatDbError(updatedActivity.error) },
 			{ status: 500 }
 		);
-	}
 
 	return NextResponse.json(updatedActivity, { status: 200 });
 }
