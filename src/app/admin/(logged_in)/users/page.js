@@ -83,8 +83,8 @@ const UserManagementPage = () => {
     const statusOfUser = ["Active", "Inactive"];
     const tableHeading = [
         "User Info",
+        "Joined At",
         "Status",
-        "Location",
         "Statistics",
         "Actions",
     ];

@@ -204,7 +204,7 @@ const UserDetailPage = () => {
                             Created At
                         </span>
                         <span className="text-gray-100 flex-1">
-                            {user.createdAt}
+                            {user.createdAt ? user.createdAt.split("T")[0] : ""}
                         </span>
                     </div>
                 </div>
