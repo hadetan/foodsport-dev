@@ -39,10 +39,14 @@ export async function POST(req) {
 				email: adminUser.email,
 			},
 		});
-	} catch {
-		return NextResponse.json(
-			{ error: 'Internal server error.' },
-			{ status: 500 }
+	} catch (error) {
+		console.error('Error in POST /api/admin/login:', error);
+		return new NextResponse(
+			JSON.stringify({ error: 'Failed to login. Please try again later.', message: error.message }),
+			{
+				status: 500,
+				headers: { 'Content-Type': 'application/json' },
+			}
 		);
 	}
 }

@@ -17,6 +17,14 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response && error.response.status === 401) {
       try {
+        // Avoid retry loop if the failing call is already the refresh endpoint
+        if (error.config?.url?.includes('/auth/refresh')) {
+          await api.delete('/auth/logout');
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+          return Promise.reject(error);
+        }
+
         // Attempt to refresh session using Supabase client
         const { data: { session }, error: refreshError } = await getSupabaseClient().auth.refreshSession();
         if (refreshError || !session) {

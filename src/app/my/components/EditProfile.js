@@ -23,11 +23,18 @@ export default function EditProfile() {
 	const [initialValues, setInitialValues] = useState(form);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState('');
-	const [crop, setCrop] = useState({ unit: '%', aspect: 1, width: 80, x: 10, y: 10, });
+	const [crop, setCrop] = useState({
+		unit: '%',
+		aspect: 1,
+		width: 80,
+		x: 10,
+		y: 10,
+	});
 	const [srcImg, setSrcImg] = useState(null);
 	const [croppedImg, setCroppedImg] = useState(null);
 	const [croppedImgUrl, setCroppedImgUrl] = useState(null);
 	const [showCropModal, setShowCropModal] = useState(false);
+	const [fileType, setFileType] = useState('');
 	const imgRef = useRef(null);
 	const fileRef = useRef(null);
 
@@ -40,16 +47,24 @@ export default function EditProfile() {
 
 	const handleImgSelect = (e) => {
 		if (e.target.files && e.target.files[0]) {
-			setSrcImg(URL.createObjectURL(e.target.files[0]));
+			const file = e.target.files[0];
+			setSrcImg(URL.createObjectURL(file));
 			setShowCropModal(true);
+			setFileType(file.type);
 		}
 	};
 
 	const handleCropConfirm = async () => {
 		if (!imgRef.current || !crop.width || !crop.height) return;
+
 		const image = imgRef.current;
 		const scaleX = image.naturalWidth / image.width;
 		const scaleY = image.naturalHeight / image.height;
+
+		if (crop.width <= 0 || crop.height <= 0) {
+			setError('Invalid crop dimensions');
+			return;
+		}
 
 		const getCropValue = (val, scale, natural) =>
 			crop.unit === '%' ? (val * natural) / 100 : val * scale;
@@ -57,22 +72,47 @@ export default function EditProfile() {
 		const cropX = getCropValue(crop.x, scaleX, image.naturalWidth);
 		const cropY = getCropValue(crop.y, scaleY, image.naturalHeight);
 		const cropWidth = getCropValue(crop.width, scaleX, image.naturalWidth);
-		const cropHeight = getCropValue(crop.height, scaleY, image.naturalHeight);
+		const cropHeight = getCropValue(
+			crop.height,
+			scaleY,
+			image.naturalHeight
+		);
+
+		const cropSize = Math.min(cropWidth, cropHeight);
 
 		const canvas = document.createElement('canvas');
-		canvas.width = Math.round(cropWidth);
-		canvas.height = Math.round(cropHeight);
+		canvas.width = cropSize;
+		canvas.height = cropSize;
 		const ctx = canvas.getContext('2d');
-		ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
-		canvas.toBlob((blob) => {
-				setCroppedImg(blob);
-				const previewUrl = URL.createObjectURL(blob);
-				setCroppedImgUrl(previewUrl);
-				setShowCropModal(false);
-				setSrcImg(null);
-			},
-			'image/jpeg'
+
+		// Draw square crop
+		ctx.drawImage(
+			image,
+			cropX,
+			cropY,
+			cropSize,
+			cropSize,
+			0,
+			0,
+			cropSize,
+			cropSize
 		);
+
+		canvas.toBlob((blob) => {
+			if (!blob) {
+				setError('Failed to process image');
+				return;
+			}
+
+			setCroppedImg(blob);
+			const previewUrl = URL.createObjectURL(blob);
+			setCroppedImgUrl(previewUrl);
+			setShowCropModal(false);
+			setSrcImg(null);
+
+			// Cleanup previous URLs
+			return () => URL.revokeObjectURL(previewUrl);
+		}, fileType);
 	};
 
 	const handleSave = async (e) => {
@@ -83,11 +123,12 @@ export default function EditProfile() {
 			const changedFields = {};
 			let res = { ...user };
 			Object.keys(form).forEach((key) => {
-				if (form[key] !== initialValues[key]) changedFields[key] = form[key];
+				if (form[key] !== initialValues[key])
+					changedFields[key] = form[key];
 			});
 			if (Object.keys(changedFields).length > 0) {
 				const data = await api.patch('/my/profile/edit', changedFields);
-				res = {...user, ...data.data.user};
+				res = { ...user, ...data.data.user };
 			}
 			if (croppedImg) {
 				const formData = new FormData();
@@ -97,10 +138,14 @@ export default function EditProfile() {
 				});
 				res = { ...res, ...data.data.user };
 			}
-			setUser({ ...user, ...form, profilePictureUrl: res.profilePictureUrl });
+			setUser({
+				...user,
+				...form,
+				profilePictureUrl: res.profilePictureUrl,
+			});
 			setInitialValues(form);
 		} catch (err) {
-			setError('Failed to save profile.');
+			setError(err.response?.data?.message || 'Failed to save profile.');
 		}
 		setSaving(false);
 	};
@@ -118,13 +163,24 @@ export default function EditProfile() {
 							/>
 						) : user.profilePictureUrl ? (
 							<img
-								src={process.env.NEXT_PUBLIC_SUPABASE_URL + user.profilePictureUrl}
+								src={
+									process.env.NEXT_PUBLIC_SUPABASE_URL +
+									user.profilePictureUrl
+								}
 								alt='Profile'
 								className='edit-profile-avatar'
 							/>
 						) : (
-							<div style={{ width: '100%', height: '100%', display: 'flex' }}>
-								<FaMountainSun style={{ width: '100%', height: '100%' }} />
+							<div
+								style={{
+									width: '100%',
+									height: '100%',
+									display: 'flex',
+								}}
+							>
+								<FaMountainSun
+									style={{ width: '100%', height: '100%' }}
+								/>
 							</div>
 						)}
 					</div>
@@ -152,9 +208,7 @@ export default function EditProfile() {
 							crop={crop}
 							onChange={(_, percentCrop) => setCrop(percentCrop)}
 							aspect={1}
-							locked={true}
-							minWidth={80}
-							minHeight={80}
+							minCropSize={{ width: 80, height: 80 }}
 							keepSelection={true}
 							ruleOfThirds={true}
 						>
@@ -167,15 +221,29 @@ export default function EditProfile() {
 									maxHeight: 320,
 									display: 'block',
 								}}
-								onLoad={() => {
-									const cropSizePercent = 80;
-									const xPercent = (100 - cropSizePercent) / 2;
-									const yPercent = (100 - cropSizePercent) / 2;
+								onLoad={(e) => {
+									const image = e.target;
+									const minDim = Math.min(
+										image.naturalWidth,
+										image.naturalHeight
+									);
+
+									const cropSizePixels = minDim;
+									const widthPercent =
+										(cropSizePixels / image.naturalWidth) *
+										100;
+									const heightPercent =
+										(cropSizePixels / image.naturalHeight) *
+										100;
+
+									const xPercent = (100 - widthPercent) / 2;
+									const yPercent = (100 - heightPercent) / 2;
+
 									setCrop({
 										unit: '%',
 										aspect: 1,
-										width: cropSizePercent,
-										height: cropSizePercent,
+										width: widthPercent,
+										height: heightPercent,
 										x: xPercent,
 										y: yPercent,
 									});
@@ -218,26 +286,26 @@ export default function EditProfile() {
 					onChange={handleChange}
 					placeholder='Last Name'
 				/>
-			   <div className="edit-profile-input-suffix-wrapper">
-				   <input
-					   name='weight'
-					   value={form.weight}
-					   onChange={handleChange}
-					   placeholder='Weight'
-					   className='edit-profile-input'
-				   />
-				   <span className="edit-profile-input-suffix">kg</span>
-			   </div>
-			   <div className="edit-profile-input-suffix-wrapper">
-				   <input
-					   name='height'
-					   value={form.height}
-					   onChange={handleChange}
-					   placeholder='Height'
-					   className='edit-profile-input'
-				   />
-				   <span className="edit-profile-input-suffix">cm</span>
-			   </div>
+				<div className='edit-profile-input-suffix-wrapper'>
+					<input
+						name='weight'
+						value={form.weight}
+						onChange={handleChange}
+						placeholder='Weight'
+						className='edit-profile-input'
+					/>
+					<span className='edit-profile-input-suffix'>kg</span>
+				</div>
+				<div className='edit-profile-input-suffix-wrapper'>
+					<input
+						name='height'
+						value={form.height}
+						onChange={handleChange}
+						placeholder='Height'
+						className='edit-profile-input'
+					/>
+					<span className='edit-profile-input-suffix'>cm</span>
+				</div>
 				<div className='edit-profile-gender'>
 					<span className='edit-profile-gender-label'>Gender:</span>
 					<div className='edit-profile-gender-options'>

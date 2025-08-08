@@ -33,8 +33,9 @@ export function AuthProvider({ children }) {
 			const { data } = await api.post('/auth/login', { email, password });
 			setToken(data.session?.access_token);
 			setAuthToken(data.session?.access_token);
+			return true;
 		} catch (err) {
-			return err;
+			throw new Error(`Login failed: ${err?.message || 'Unknown error'}`);
 		}
 	};
 
@@ -46,6 +47,7 @@ export function AuthProvider({ children }) {
 			}
 			setToken(data.session.access_token);
 			setAuthToken(data.session.access_token);
+			return true;
 		} catch (err) {
 			return `Something went wrong. Please try again. ${err.message}`;
 		}
