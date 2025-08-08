@@ -12,6 +12,7 @@ import api from "@/utils/axios/api";
 const UserManagementPage = () => {
     const router = useRouter();
     const [users, setUsers] = useState(null);
+    const [filteredUsers, setFilteredUsers] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [loading, setLoading] = useState(false);
@@ -60,6 +61,7 @@ const UserManagementPage = () => {
             const queryString = new URLSearchParams(params).toString();
             const { data } = await api.get(`/admin/users?${queryString}`);
             setUsers(data.users);
+            setFilteredUsers(data.users);
         } catch (err) {
             setNotification({
                 show: true,
@@ -75,12 +77,38 @@ const UserManagementPage = () => {
         handleGetUsers();
     }, []);
 
+    useEffect(() => {
+        handleGetUsers();
+    }, [statusFilter]);
+
+    useEffect(() => {
+        if (!users) return;
+
+        const filtered = users.filter((user) => {
+            const fullName = `${user.firstname} ${
+                user.lastname || ""
+            }`.toLowerCase();
+            const matchesSearch =
+                fullName.includes(searchQuery.toLowerCase()) ||
+                user.email.toLowerCase().includes(searchQuery.toLowerCase());
+            
+            const matchesStatus = 
+                statusFilter === "all" || 
+                (statusFilter === "active" && user.isActive) ||
+                (statusFilter === "inactive" && !user.isActive);
+            
+            return matchesSearch && matchesStatus;
+        });
+
+        setFilteredUsers(filtered);
+    }, [searchQuery, users, statusFilter]);
+
     // Add handler for row click
     const handleRowClick = (userId) => {
         router.push(`/admin/users/${userId}`);
     };
 
-    const statusOfUser = ["Active", "Inactive"];
+    const statusOfUser = ["All", "Active", "Inactive"];
     const tableHeading = [
         "User Info",
         "Joined At",
@@ -88,16 +116,30 @@ const UserManagementPage = () => {
         "Statistics",
         "Actions",
     ];
+
+    const handleStatusChange = (status) => {
+        setStatusFilter(status.toLowerCase());
+    };
+
     return (
         <>
             <div className="text-2xl mb-5 text-base-content">Manage Users</div>
             {/* Search and Filters */}
             <div className="flex gap-4">
-                <SearchBar placeholderName="Search Users" />
+                <SearchBar
+                    placeholderName="Search Users"
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                />
 
                 {/* Enhanced Filters */}
                 <div className="flex flex-wrap gap-2">
-                    <Dropdown items={statusOfUser} name="Status" />
+                    <Dropdown 
+                        items={statusOfUser} 
+                        name="Status" 
+                        selectedValue={statusFilter === "all" ? "All" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+                        onSelect={handleStatusChange}
+                    />
 
                     <select
                         className="select select-bordered w-full lg:w-48"
@@ -121,7 +163,7 @@ const UserManagementPage = () => {
                     <div className="overflow-x-auto rounded-box border border-primary/60">
                         <Table
                             heading={tableHeading}
-                            tableData={users}
+                            tableData={filteredUsers}
                             tableType={"userPage"}
                             onRowClick={handleRowClick} // Pass click handler to Table
                         />

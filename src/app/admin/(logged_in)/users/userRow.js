@@ -29,18 +29,15 @@ export const UserRow = ({ user, onRowClick }) => {
                                     : "")}
                         </div>
                         <div className="text-sm opacity-50">{user.email}</div>
-                        <div className="text-xs opacity-50">
-                            Joined: {user.joinedAt}
-                        </div>
+                       
                     </div>
                 </div>
             </td>
             <td>
                 <div className="text-sm">
-                    <div>{user.location?.state}</div>
-                    <div className="text-xs opacity-50">
-                        {user.location?.city}, {user.location?.postal}
-                    </div>
+                <div className="text-l opacity-100">
+                         {new Date(user.joinDate).toLocaleDateString()}
+                        </div>
                 </div>
             </td>
             <td>
