@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, Pencil, Trash2, Search } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const statusBadgeClass = {
@@ -91,24 +91,12 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                 </td>
                 <td>
                     <div className="btn-group">
-                        <button
-                            className="btn btn-md btn-ghost"
-                            onClick={() =>
-                                document
-                                    .getElementById("view_participants_modal")
-                                    .showModal()
-                            }
-                        >
-                            <Users size={24} />
-                        </button>
+                        {/* Only show the pencil (edit) icon */}
                         <button
                             className="btn btn-sm btn-ghost"
                             onClick={handleEdit}
                         >
                             <Pencil size={24} />
-                        </button>
-                        <button className="btn btn-md btn-ghost text-error">
-                            <Trash2 size={24} />
                         </button>
                     </div>
                 </td>
