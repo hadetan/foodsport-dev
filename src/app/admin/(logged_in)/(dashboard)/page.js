@@ -9,15 +9,13 @@ const DashboardPage = () => {
     const [theme, setTheme] = useState("light");
     // Placeholder for fetched dashboard data
     const [dashboard, setDashboard] = useState({
-        participants: "150,000+",
-        donations: "HK$2.1M",
-        volunteers: "4,200",
-        events: "120",
-        recentSignups: [
-            { name: "John Doe", date: "2025-07-01", status: "Active" },
-            { name: "Jane Smith", date: "2025-07-01", status: "Pending" },
-            { name: "Mike Johnson", date: "2025-06-30", status: "Active" },
-        ],
+        participants: "0",
+           donations: "HK$0",
+           volunteers: "0",
+           events: "0",
+           recentSignups: [],
+           loading: true,
+           error: null
     });
 
     useEffect(() => {
@@ -168,8 +166,9 @@ const DashboardPage = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {dashboard.recentSignups.map((signup, idx) => (
-                                    <tr key={idx}>
+                                {dashboard.recentSignups.map((signup) => (
+                                    <tr key={`${signup.name}-${signup.date}`}>
+                                        {" "}
                                         <td>{signup.name}</td>
                                         <td>{signup.date}</td>
                                         <td>
