@@ -7,6 +7,8 @@ import RichTextEditor from "@/app/shared/components/RichTextEditor";
 import axiosClient from "@/utils/axios/api";
 import ActivityStatus from "@/app/constants/ActivityStatus";
 
+const MAX_IMAGE_SIZE_MB = 10;
+
 const CreateActivityPage = () => {
     const router = useRouter();
     const [formData, setFormData] = useState({
@@ -73,9 +75,17 @@ const CreateActivityPage = () => {
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
+        const totalSize = files.reduce((acc, file) => acc + file.size, 0);
+
+        if (totalSize > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+            setError("Selected images cannot exceed 10 MB.");
+            return;
+        }
+
+        setError(""); // Clear error if upload is valid
         setFormData((prev) => ({
             ...prev,
-            images: [...prev.images, ...files],
+            images: files,
         }));
     };
 
@@ -117,7 +127,6 @@ const CreateActivityPage = () => {
         } finally {
             setLoading(false);
         }
-        console.log(); // <-- Add this line
     };
 
     return (
@@ -323,6 +332,14 @@ const CreateActivityPage = () => {
                                 />
                             </label>
                         </div>
+                        {error && (
+                            <div className="mb-4">
+                                <ErrorAlert
+                                    message={error}
+                                    onClose={() => setError("")}
+                                />
+                            </div>
+                        )}
 
                         {formData.images.length > 0 && (
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">

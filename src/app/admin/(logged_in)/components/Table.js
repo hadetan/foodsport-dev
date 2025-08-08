@@ -25,22 +25,40 @@ const Table = ({
             <table className="table table-zebra w-full">
                 <thead className="sticky top-0 bg-primary text-primary-content  ">
                     <tr>
-                        {heading.map((columnName) => (
-                            <th key={columnName}>{columnName}</th>
+                        {heading.map((columnName, idx) => (
+                            <th
+                                key={
+                                    columnName
+                                        ? `${columnName}-${idx}`
+                                        : `heading-${idx}`
+                                }
+                            >
+                                {columnName}
+                            </th>
                         ))}
                     </tr>
                 </thead>
                 <tbody>
                     {tableType == "userPage"
-                        ? paginatedData.map((user) => (
+                        ? paginatedData.map((user, idx) => (
                               <UserRow
-                                  key={user.id || user._id || user.email}
+                                  key={
+                                      user.id ||
+                                      user._id ||
+                                      user.email ||
+                                      `user-${idx}`
+                                  }
                                   user={user}
                               />
                           ))
                         : paginatedData.map((activity, idx) => (
                               <ActivityRow
-                                  key={activity.id || activity._id || idx}
+                                  key={
+                                      activity.id ||
+                                      activity._id ||
+                                      activity.name ||
+                                      `activity-${idx}`
+                                  }
                                   activity={activity}
                                   shouldShowEdit={shouldShowEdit}
                                   setActivity={setActivity}
