@@ -117,30 +117,29 @@ export default function Footer() {
                         >
                             <Globe size={20} />
                         </a>
+                        <div className={styles.navLinks}>
+                            <Link
+                                href="https://www.foodsport.com.hk/aboutus "
+                                target="_blank"
+                            >
+                                ABOUT FOODSPORT
+                            </Link>
+                            <span className={styles.separator}>|</span>
+                            <Link
+                                href="https://www.foodsport.com.hk/supportus"
+                                target="_blank"
+                            >
+                                SUPPORT US
+                            </Link>
+                            <span className={styles.separator}>|</span>
+                            <Link
+                                href="https://www.foodsport.com.hk/privacy-policy"
+                                target="_blank"
+                            >
+                                PRIVACY POLICY
+                            </Link>
+                        </div>
                     </div>
-                </div>
-
-                <div className={styles.navLinks}>
-                    <Link
-                        href="https://www.foodsport.com.hk/aboutus "
-                        target="_blank"
-                    >
-                        ABOUT FOODSPORT
-                    </Link>
-                    <span className={styles.separator}>|</span>
-                    <Link
-                        href="https://www.foodsport.com.hk/supportus"
-                        target="_blank"
-                    >
-                        SUPPORT US
-                    </Link>
-                    <span className={styles.separator}>|</span>
-                    <Link
-                        href="https://www.foodsport.com.hk/privacy-policy"
-                        target="_blank"
-                    >
-                        PRIVACY POLICY
-                    </Link>
                 </div>
 
                 <div className={styles.bottomSection}>
@@ -162,9 +161,11 @@ export default function Footer() {
                         </div>
                     </div>
                     <div className={styles.copyright}>
-                        ©COPYRIGHT {new Date().getFullYear()} BY SYMBOL OF
-                        ALLIANCE LIMITED & FOODSPORT FOUNDATION LIMITED, ALL
-                        RIGHTS RESERVED.
+                        <p>
+                            ©COPYRIGHT {new Date().getFullYear()} BY SYMBOL OF
+                            ALLIANCE LIMITED & FOODSPORT FOUNDATION LIMITED, ALL
+                            RIGHTS RESERVED.
+                        </p>
                     </div>
                 </div>
             </div>
