@@ -1,29 +1,36 @@
-import { prisma } from '@/lib/prisma/client';
-import { supabase } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma/db';
+import { createServerClient } from '@/lib/supabase/server-only';
+import { requireUser } from '@/lib/prisma/require-user';
 
 export async function POST(req) {
 	try {
+		const supabase = await createServerClient();
+		const { error, user } = await requireUser(supabase, Response, req);
+		if (error) return error;
+
 		const formData = await req.formData();
 		const userId = formData.get('userId');
 		const file = formData.get('profilePicture');
 		const title = formData.get('title');
 		const bio = formData.get('bio');
-		const dailyGoal = formData.get('dailyGoal')
-			? Number(formData.get('dailyGoal'))
-			: undefined;
-		const calorieGoal = formData.get('calorieGoal')
-			? Number(formData.get('calorieGoal'))
-			: undefined;
 
 		if (!userId) {
 			return Response.json({ error: 'Missing userId.' }, { status: 400 });
 		}
-		const user = await prisma.user.findUnique({ where: { id: userId } });
-		if (!user) {
+
+		if (user.id !== userId) {
+			return Response.json(
+				{ error: 'Forbidden: You can only update your own details.' },
+				{ status: 403 }
+			);
+		}
+
+		const dbUser = await prisma.user.findUnique({ where: { id: userId } });
+		if (!dbUser) {
 			return Response.json({ error: 'Invalid userId.' }, { status: 404 });
 		}
 
-		let profilePictureUrl = user.profilePictureUrl;
+		let profilePictureUrl = dbUser.profilePictureUrl;
 		if (file && file.name) {
 			const arrayBuffer = await file.arrayBuffer();
 			const buffer = Buffer.from(arrayBuffer);
@@ -48,21 +55,12 @@ export async function POST(req) {
 			profilePictureUrl = `/storage/v1/object/public/${bucket}/${fileName}`;
 		}
 
-		const data = {
-			profilePictureUrl,
-			title,
-			bio,
-			dailyGoal,
-			calorieGoal,
-		};
 		await prisma.user.update({
 			where: { id: userId },
 			data: {
 				profilePictureUrl,
 				title,
 				bio,
-				dailyGoal,
-				calorieGoal,
 			},
 		});
 		return Response.json({

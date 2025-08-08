@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/prisma/require-admin';
-import { getMany, updateById } from '@/lib/prisma/db-utils';
+import { getMany, updateById, getUserJoinedActivitiesWithDetails } from '@/lib/prisma/db-utils';
 import { sanitizeData } from '@/utils/sanitize';
 import { formatDbError } from '@/utils/formatDbError';
-import { supabase } from '@/lib/supabase/server';
+import { createServerClient } from '@/lib/supabase/server-only';
 
 function parseQueryParams(searchParams) {
 	return {
@@ -17,6 +17,7 @@ function parseQueryParams(searchParams) {
 }
 
 export async function GET(req) {
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 	const url = new URL(req.url);
@@ -56,8 +57,6 @@ export async function GET(req) {
 			gender: true,
 			phoneNumber: true,
 			profilePictureUrl: true,
-			totalActivities: true,
-			totalDonations: true,
 			totalCaloriesDonated: true,
 			isActive: true,
 			createdAt: true,
@@ -65,17 +64,26 @@ export async function GET(req) {
 		},
 		options
 	);
-	const usersWithAllFields = (users || []).map((u) => ({
-		...u,
-		joinDate: u.createdAt,
-		lastActive: u.updatedAt,
-	}));
+
+	const usersWithActivities = await Promise.all(
+		(users || []).map(async (u) => {
+			const joinedActivities = await getUserJoinedActivitiesWithDetails(u.id);
+			return {
+				...u,
+				joinDate: u.createdAt,
+				lastActive: u.updatedAt,
+				totalActivities: joinedActivities.length,
+				joinedActivities,
+			};
+		})
+	);
+
 	const responseData = {
-		users: usersWithAllFields,
+		users: usersWithActivities,
 		pagination: {
 			page,
 			limit,
-			total: usersWithAllFields.length,
+			total: usersWithActivities.length,
 		},
 	};
 	return new NextResponse(JSON.stringify(responseData), {
@@ -85,6 +93,7 @@ export async function GET(req) {
 }
 
 export async function PATCH(req) {
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 	let body;

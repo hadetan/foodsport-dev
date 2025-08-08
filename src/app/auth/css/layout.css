@@ -76,14 +76,14 @@
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 }
 
-.authLayout a:not(.link) {
+.link {
   text-decoration: none;
 }
 
-a:visited {
+.link:visited {
   color: teal;
 }
 
-a:visited:hover {
+.link:visited:hover {
   color: rgb(0, 165, 165);
 }

@@ -1,29 +1,7 @@
 import axios from 'axios';
 import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
-import { supabaseClient } from '@/lib/supabase/client';
-// import { cookies } from 'next/headers';
+import { getSupabaseClient } from '@/lib/supabase/index'
 
-
-/**
- * Axios API Utility
- *
- * Usage Example:
- * import api from '@/utils/axios/api';
- *
- * // GET request
- * api.get('/api/admin/dashboard').then(res => {
- *   console.log(res.data);
- * });
- *
- * // Extending interceptors
- * api.interceptors.response.use(
- *   response => response,
- *   error => {
- *     // Custom error handling
- *     return Promise.reject(error);
- *   }
- * );
- */
 const api = axios.create({
   baseURL: BASE_URLS.url,
   timeout: DEFAULT_TIMEOUT,
@@ -46,15 +24,11 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response && error.response.status === 401) {
       try {
-        const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession();
+        const { data: { session }, error: refreshError } = await getSupabaseClient().auth.refreshSession();
         if (refreshError || !session?.access_token) {
           showApiError(refreshError || { message: 'Failed to refresh session.' });
-          document.cookie = 'auth_token=; Max-Age=0; path=/;';
+          await api.delete('/auth/logout');
           localStorage.removeItem('auth_token');
-          console.error(`
-            Refresh error: ${refreshError}
-            token: ${session?.access_token}
-            `);
           return Promise.reject(error);
         }
         error.config.headers['Authorization'] = `Bearer ${session.access_token}`;
@@ -72,10 +46,6 @@ api.interceptors.response.use(
   }
 );
 
-/**
- * Displays a user-friendly error message for API failures.
- * You can replace this with a toast, modal, or any UI feedback system.
- */
 function showApiError(error) {
   let message = 'An unexpected error occurred.';
   if (error.response && error.response.data && error.response.data.error) {
