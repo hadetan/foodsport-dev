@@ -292,6 +292,27 @@ const DashboardPage = () => {
                                         </tr>
                                     )
                                 )}
+                                {dashboard.recentSignups.map((signup) => (
+                                    <tr key={`${signup.name}-${signup.date}`}>
+                                        {" "}
+                                        <td>{signup.name}</td>
+                                        <td>{signup.date}</td>
+                                        <td>
+                                            <div
+                                                className={`badge gap-2 ${
+                                                    signup.status === "Active"
+                                                        ? "badge-success"
+                                                        : signup.status ===
+                                                          "Pending"
+                                                        ? "badge-warning"
+                                                        : "badge-ghost"
+                                                }`}
+                                            >
+                                                {signup.status}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
