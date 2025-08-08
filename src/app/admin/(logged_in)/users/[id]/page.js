@@ -141,7 +141,13 @@ const UserDetailPage = () => {
                             Gender
                         </span>
                         <span className="text-gray-100 flex-1">
-                            {user.gender}
+                            {user.gender ? (
+                                user.gender
+                            ) : (
+                                <span className="italic text-gray-400">
+                                    Empty
+                                </span>
+                            )}
                         </span>
                     </div>
                     <div className="flex p-4">
@@ -149,7 +155,13 @@ const UserDetailPage = () => {
                             Phone Number
                         </span>
                         <span className="text-gray-100 flex-1">
-                            {user.phoneNumber}
+                            {user.phoneNumber ? (
+                                user.phoneNumber
+                            ) : (
+                                <span className="italic text-gray-400">
+                                    Empty
+                                </span>
+                            )}
                         </span>
                     </div>
                     <div className="flex p-4">
@@ -157,7 +169,13 @@ const UserDetailPage = () => {
                             Total Calories Donated
                         </span>
                         <span className="text-gray-100 flex-1">
-                            {user.totalCaloriesDonated}
+                            {user.totalCaloriesDonated === 0 ? (
+                                <span className="italic text-gray-400">
+                                    No donations made
+                                </span>
+                            ) : (
+                                user.totalCaloriesDonated
+                            )}
                         </span>
                     </div>
                     <div className="flex p-4">
@@ -201,7 +219,7 @@ const UserDetailPage = () => {
                     </div>
                     <div className="flex p-4">
                         <span className="font-bold text-gray-200 w-48">
-                            Created At
+                            Joined At
                         </span>
                         <span className="text-gray-100 flex-1">
                             {user.createdAt ? user.createdAt.split("T")[0] : ""}
