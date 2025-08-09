@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import '@/app/shared/css/ActivityDetails.css';
-import css from '@/app/shared/css/page.module.css'
 import Image from 'next/image';
 import Avatar from '@/app/shared/components/avatar';
 import ActivityIcon from '@/app/shared/components/ActivityIcon';
