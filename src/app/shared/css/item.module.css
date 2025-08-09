@@ -32,11 +32,12 @@
 	object-fit: cover;
 	border-radius: 0;
 	cursor: pointer;
-	transition: transform 2s ease;
+	transition: transform 2s ease, filter 1s ease; /* Added filter transition */
 }
 
 .cardImage:hover {
 	transform: scale(1.07);
+	filter: blur(2px) brightness(0.9);
 }
 .overlayText {
 	position: absolute;

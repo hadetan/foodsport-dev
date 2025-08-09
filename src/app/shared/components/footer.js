@@ -63,13 +63,23 @@ export default function Footer() {
                             }}
                         >
                             {galleryImages.map((src, index) => (
-                                <div key={index} className="galleryItem">
+                                <div
+                                    key={index}
+                                    className="galleryItem"
+                                    style={{
+                                        width: "200px",
+                                        height: "200px",
+                                        overflow: "hidden",
+                                    }}
+                                >
                                     <img
                                         src={src}
                                         alt={`Activity ${index + 1}`}
-                                        width={200}
-                                        height={200}
-                                        style={{ objectFit: "cover" }}
+                                        style={{
+                                            width: "100%",
+                                            height: "100%",
+                                            objectFit: "cover",
+                                        }}
                                     />
                                 </div>
                             ))}

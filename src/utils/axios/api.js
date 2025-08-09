@@ -10,34 +10,54 @@ const api = axios.create({
   },
 });
 
-api.interceptors.request.use(async (config) => {
-  const tokenMatch = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/);
-  const token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : null;
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
+// Request interceptor is not needed in our app
 
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response && error.response.status === 401) {
       try {
+        // Avoid retry loop if the failing call is already the refresh endpoint
+        if (error.config?.url?.includes('/auth/refresh')) {
+          await api.delete('/auth/logout');
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+          return Promise.reject(error);
+        }
+
+        // Attempt to refresh session using Supabase client
         const { data: { session }, error: refreshError } = await getSupabaseClient().auth.refreshSession();
-        if (refreshError || !session?.access_token) {
+        if (refreshError || !session) {
+          console.warn('Session refresh failed:', refreshError);
           showApiError(refreshError || { message: 'Failed to refresh session.' });
           await api.delete('/auth/logout');
           localStorage.removeItem('auth_token');
+          window.location.href = '/login';
           return Promise.reject(error);
         }
-        error.config.headers['Authorization'] = `Bearer ${session.access_token}`;
-        document.cookie = `auth_token=${encodeURIComponent(session.access_token)}; path=/; max-age=${session.expires_in || 3600};`;
-        localStorage.setItem("auth_token", session.access_token);
+
+        // Send session to refresh API to update cookies
+        const refreshRes = await api.post('/auth/refresh', { session });
+        const { access_token } = refreshRes.data;
+        if (!access_token) {
+          console.warn('Refresh API did not return a new access token.');
+          showApiError({ message: 'Failed to refresh session.' });
+          await api.delete('/auth/logout');
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+          return Promise.reject(error);
+        }
+
+        // Update Authorization header and localStorage
+        error.config.headers['Authorization'] = `Bearer ${access_token}`;
+        localStorage.setItem('auth_token', access_token);
         return api.request(error.config);
       } catch (refreshError) {
+        console.error('Unexpected error during session refresh:', refreshError);
         showApiError(refreshError);
-        console.error(refreshError || 'no refresh error found, and you have been logged out for some reason')
+        await api.delete('/auth/logout');
+        localStorage.removeItem('auth_token');
+        window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }

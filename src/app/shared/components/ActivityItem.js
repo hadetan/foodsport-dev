@@ -72,7 +72,10 @@ export default function ActivityItem({
 			);
 		} catch (error) {
 			setError(error.message || 'Something went wrong');
-			if (error.status === 401 && error.response?.data?.error?.includes('Token')) router.push('/auth/login');
+			const status = error?.response?.status;
+			if (status === 401 && error.response?.data?.error?.includes('Token')) {
+				router.push('/auth/login');
+			}
 		} finally {
 			setLoading(false);
 		}
@@ -104,7 +107,10 @@ export default function ActivityItem({
 			);
 		} catch (error) {
 			setError(error.message || 'Something went wrong');
-			if (error.status === 401 && error.response?.data?.error?.includes('Token')) router.push('/auth/login');
+			const status = error?.response?.status;
+			if (status === 401 && error.response?.data?.error?.includes('Token')) {
+				router.push('/auth/login');
+			}
 		} finally {
 			setLoading(false);
 		}
@@ -241,7 +247,7 @@ export default function ActivityItem({
 					url={
 						typeof window !== 'undefined'
 							? window.location.origin +
-							  `/activities/${activity.id}`
+							  `/my/activities/${activity.id}`
 							: `/activities/${activity.id}`
 					}
 					onClose={() => setShowShare(false)}
