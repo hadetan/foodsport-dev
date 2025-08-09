@@ -251,7 +251,7 @@
 .activityDetailsShareBtn:hover {
   background: #0099c4;
 }
-.activityDetailsJoinBtn {
+.activityDetailsBtn {
   width: 100%;
   background: #ffe600;
   color: #222;
@@ -264,8 +264,16 @@
   letter-spacing: 0.5px;
   transition: background 0.2s;
 }
-.activityDetailsJoinBtn:hover {
+.activityDetailsBtn:hover {
   background: #ffd600;
+}
+
+.activityDetailsBtn:disabled {
+	color: #747474;
+}
+
+.activityDetailsBtn:hover:disabled {
+	background-color: grey;
 }
 
 /* Details section */

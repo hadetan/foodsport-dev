@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import '@/app/shared/css/ActivityDetails.css';
+import css from '@/app/shared/css/page.module.css'
 import Image from 'next/image';
 import Avatar from '@/app/shared/components/avatar';
 import ActivityIcon from '@/app/shared/components/ActivityIcon';
@@ -231,11 +232,11 @@ const ActivityDetails = ({
 					</div>
 					<div className='activityDetailsSidebarActions'>
 						{user?.joinedActivityIds?.includes(activity.id) ? (
-							<button className='activityDetailsJoinBtn' onClick={handleLeave} disabled={loading}>
+							<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading}>
 								{loading ? 'LEAVING' : 'LEAVE'}
 							</button>
 						) : (
-							<button className='activityDetailsJoinBtn' onClick={handleJoin} disabled={loading}>
+							<button className='activityDetailsBtn' onClick={handleJoin} disabled={loading}>
 								{loading ? 'JOINING' : 'JOIN NOW'}
 							</button>
 						)}

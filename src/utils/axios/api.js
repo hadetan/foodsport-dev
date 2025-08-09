@@ -21,7 +21,7 @@ api.interceptors.response.use(
         if (error.config?.url?.includes('/auth/refresh')) {
           await api.delete('/auth/logout');
           localStorage.removeItem('auth_token');
-          window.location.href = '/login';
+          window.location.href = '/auth/login';
           return Promise.reject(error);
         }
 
@@ -32,7 +32,7 @@ api.interceptors.response.use(
           showApiError(refreshError || { message: 'Failed to refresh session.' });
           await api.delete('/auth/logout');
           localStorage.removeItem('auth_token');
-          window.location.href = '/login';
+          window.location.href = '/auth/login';
           return Promise.reject(error);
         }
 
@@ -44,7 +44,7 @@ api.interceptors.response.use(
           showApiError({ message: 'Failed to refresh session.' });
           await api.delete('/auth/logout');
           localStorage.removeItem('auth_token');
-          window.location.href = '/login';
+          window.location.href = '/auth/login';
           return Promise.reject(error);
         }
 
@@ -57,7 +57,7 @@ api.interceptors.response.use(
         showApiError(refreshError);
         await api.delete('/auth/logout');
         localStorage.removeItem('auth_token');
-        window.location.href = '/login';
+        window.location.href = '/auth/login';
         return Promise.reject(refreshError);
       }
     }
