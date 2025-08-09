@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npm run db:generate && npm run db:migrate && npm run next-build",
+    "next-build": "next build",
     "start": "next start",
     "lint": "next lint",
     "db:push": "prisma db push",
