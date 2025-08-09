@@ -118,16 +118,24 @@ export async function PATCH(req) {
 		const supabase = await createServerClient();
 		const { error } = await requireAdmin(supabase, NextResponse);
 		if (error) return error;
+
 		let body;
 		try {
 			body = await req.json();
 		} catch {
 			return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
 		}
+
 		const userId = body.userId;
 		if (!userId) {
 			return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
 		}
+
+		const existingUser = await getMany('user', { id: userId }, { id: true });
+		if (!existingUser || existingUser.length === 0) {
+			return NextResponse.json({ error: 'User not found' }, { status: 404 });
+		}
+
 		const allowedFields = ['isActive'];
 		const updates = sanitizeData(body, allowedFields);
 		if (Object.keys(updates).length === 0) {
@@ -136,13 +144,15 @@ export async function PATCH(req) {
 				{ status: 400 }
 			);
 		}
+
 		const updatedUser = await updateById('user', userId, updates);
 		if (updatedUser && updatedUser.error) {
 			return NextResponse.json(
-				{ error: formatDbError(updatedUser.error) },
+				{ error: updatedUser.error },
 				{ status: 500 }
 			);
 		}
+
 		return NextResponse.json(updatedUser, { status: 200 });
 	} catch (error) {
 		console.error('Error in PATCH /api/admin/users:', error);
