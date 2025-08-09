@@ -247,7 +247,7 @@ export default function ActivityItem({
 					url={
 						typeof window !== 'undefined'
 							? window.location.origin +
-							  `/activities/${activity.id}`
+							  `/my/activities/${activity.id}`
 							: `/activities/${activity.id}`
 					}
 					onClose={() => setShowShare(false)}
