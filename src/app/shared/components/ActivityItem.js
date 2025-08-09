@@ -1,95 +1,258 @@
-import styles from "@/app/shared/css/item.module.css";
-import Image from "next/image";
-import Link from "next/link";
+'use client';
+
+import styles from '@/app/shared/css/item.module.css';
+import ParticipantCircle from './ParticipantCircle';
+import Image from 'next/image';
+import Button from '@/app/shared/components/Button';
+import { useRouter } from 'next/navigation';
+import api from '@/utils/axios/api';
+import { useState } from 'react';
+import ActivityIcon from '@/app/shared/components/ActivityIcon';
+import { FaCalendar, FaClock, FaMinusCircle, FaPlusCircle, FaShare } from 'react-icons/fa';
+import ShareDialog from '@/app/shared/components/ShareDialog';
+import Featured from './Featured';
+import formatDate from '@/utils/formatDate';
+import { IoLocationSharp } from 'react-icons/io5';
+
+function formatDateTime(activity) {
+	const formattedStartTime = new Date(activity.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+	const formattedEndTime = new Date(activity.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+	return {
+		formattedStartTime,
+		formattedEndTime,
+	};
+}
 
 export default function ActivityItem({
-    image,
-    overlayText,
-    title,
-    subtitle,
-    date,
-    time,
-    location,
-    onStatus,
-    onShare,
-    onJoin,
-    href,
+	activity,
+	user,
+	setUser,
+	setActivities,
 }) {
-    const Wrapper = href ? Link : "div";
-    const wrapperProps = href
-        ? { href, style: { textDecoration: "none", color: "inherit" } }
-        : {};
-    return (
-        <Wrapper {...wrapperProps}>
-            <div className={styles.card}>
-                <div className={styles.imageWrapper}>
-                    <Image
-                        src={image}
-                        alt={overlayText}
-                        fill
-                        className="image-full"
-                    />
-                    <div className={styles.overlayText}>{overlayText}</div>
-                </div>
-                <div className={styles.content}>
-                    <div className={styles.row}>
-                        <div>
-                            <div className="card-title">{title}</div>
-                            <div className={styles.subtitle}>{subtitle}</div>
-                        </div>
-                        <button className={styles.filterBtn} title="Filter">
-                            <svg
-                                width="28"
-                                height="28"
-                                viewBox="0 0 28 28"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <rect
-                                    width="28"
-                                    height="28"
-                                    rx="8"
-                                    fill="#FFE23B"
-                                />
-                                <path
-                                    d="M8 11H20M10 15H18"
-                                    stroke="#444"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-                    <div className={styles.infoRow}>
-                        <span className={styles.icon}>&#128197;</span>
-                        <span>{date}</span>
-                    </div>
-                    <div className={styles.infoRow}>
-                        <span className={styles.icon}>&#128337;</span>
-                        <span>{time}</span>
-                    </div>
-                    <div className={styles.infoRow}>
-                        <span className={styles.icon}>&#128205;</span>
-                        <span>{location}</span>
-                    </div>
-                </div>
-                <div className={styles["card-actions"]}>
-                    <button className={styles.actionBtn} onClick={onStatus}>
-                        <span className={styles.actionIcon}>⭘</span>
-                        STATUS
-                    </button>
-                    <button className={styles.actionBtn} onClick={onShare}>
-                        <span className={styles.actionIcon}>↗</span>
-                        SHARE
-                    </button>
-                    <button
-                        className={`${styles.actionBtn} ${styles.joinBtn}`}
-                        onClick={onJoin}
-                    >
-                        + JOIN NOW
-                    </button>
-                </div>
-            </div>
-        </Wrapper>
-    );
+	const router = useRouter();
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState(null);
+	const [showShare, setShowShare] = useState(false);
+
+	const { formattedStartTime, formattedEndTime } = formatDateTime(activity);
+	const redirectUrl = user
+		? `/my/activities/${activity.id}`
+		: `/activities/${activity.id}`;
+
+	const choppedDesc =
+		activity.description && activity.description.length > 90
+			? activity.description.slice(0, 90) + '...'
+			: activity.description;
+
+	const statusClass = `${styles.statusBadge} ${
+		styles[`status-${activity.status}`]
+	}`;
+
+	async function handleJoin() {
+		if (!setUser || !setActivities) return router.push('/auth/login');
+		try {
+			setLoading(true);
+			const res = await api.post('/my/activities/join', {
+				activityId: activity.id,
+			});
+			setUser((prevUser) => ({
+				...prevUser,
+				joinedActivityIds: [
+					...(prevUser.joinedActivityIds || []),
+					res.data?.userActivity?.activityId,
+				],
+			}));
+			setActivities((prevActivities) =>
+				prevActivities.map((act) =>
+					act.id === activity.id
+						? { ...act, participantCount: res.data?.participantCount }
+						: act
+				)
+			);
+		} catch (error) {
+			setError(error.message || 'Something went wrong');
+			const status = error?.response?.status;
+			if (status === 401 && error.response?.data?.error?.includes('Token')) {
+				router.push('/auth/login');
+			}
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	async function handleLeave() {
+		if (!setUser || !setActivities) return;
+		try {
+			setLoading(true);
+			const res = await api.delete('/my/activities/leave', {
+				data: { activityId: activity.id },
+			});
+			setUser((prevUser) => {
+				const prevIds = Array.isArray(prevUser.joinedActivityIds)
+					? prevUser.joinedActivityIds
+					: [];
+				const removeId = activity.id;
+				return {
+					...prevUser,
+					joinedActivityIds: prevIds.filter((id) => id !== removeId),
+				};
+			});
+			setActivities((prevActivities) =>
+				prevActivities.map((act) =>
+					act.id === activity.id
+						? { ...act, participantCount: res.data?.participantCount }
+						: act
+				)
+			);
+		} catch (error) {
+			setError(error.message || 'Something went wrong');
+			const status = error?.response?.status;
+			if (status === 401 && error.response?.data?.error?.includes('Token')) {
+				router.push('/auth/login');
+			}
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	return (
+		<div className={styles.card}>
+			{activity.isFeatured && <Featured position='top' />}
+			<div className={styles.imageWrapper}>
+				{activity.imageUrl && (
+					<Image
+						src={activity.imageUrl}
+						alt={activity.activityType}
+						fill
+						className={styles.cardImage}
+						onClick={() => {
+							router.push(redirectUrl);
+						}}
+					/>
+				)}
+				<div className={styles.overlayText}>
+					<em>{activity.activityType}</em>
+				</div>
+			</div>
+			<div className={styles.content}>
+				<div className={styles.cardTitleRow}>
+					<h3
+						className={styles.cardTitleText}
+						onClick={() => {
+							router.push(redirectUrl);
+						}}
+					>
+						{activity.title}
+					</h3>
+					<div className={styles.badges}>
+						<span className={statusClass} title={activity.status}>
+							{activity.status.charAt(0).toUpperCase() +
+								activity.status.slice(1)}
+						</span>
+						<Button className={styles.filterBtn} title='Filter'>
+							<ActivityIcon type={activity.activityType} />
+						</Button>
+					</div>
+				</div>
+				<div
+					className={styles.cardSubtitle}
+					title={activity.description}
+				>
+					{choppedDesc}
+				</div>
+				<div className={styles.detailsRow}>
+					<span className={styles.icon}>
+						<FaCalendar />
+					</span>
+					<span>
+						{`${formatDate(activity.startDate)} - 
+						${formatDate(activity.endDate)}`}
+					</span>
+				</div>
+				<div className={styles.detailsRow}>
+					<span className={styles.icon}>
+						<FaClock />
+					</span>
+					<span>
+						{formattedStartTime} - {formattedEndTime}
+					</span>
+				</div>
+				<div className={styles.detailsRow}>
+					<span className={styles.icon}>
+						<IoLocationSharp />
+					</span>
+					<span>{activity.location}</span>
+				</div>
+			</div>
+			<div className={styles.cardActions}>
+				<Button
+					className={styles.actionBtn}
+					title={`${activity.participantCount} Participant`}
+				>
+					<ParticipantCircle
+						participantCount={activity.participantCount}
+						participantLimit={activity.participantLimit}
+						size={20}
+					/>
+					STATUS
+				</Button>
+				<Button
+					className={styles.actionBtn}
+					onClick={() => setShowShare(true)}
+				>
+					<span className={styles.actionIcon}>
+						<FaShare />
+					</span>
+					SHARE
+				</Button>
+				{user && setUser && setActivities ? (
+					user?.joinedActivityIds?.includes(activity.id) ? (
+						<Button
+							className={`${styles.actionBtn}`}
+							onClick={handleLeave}
+							disabled={loading}
+						>
+							<span className={styles.actionIcon}>
+								<FaMinusCircle />
+							</span>
+							{loading ? 'LEAVING' : 'LEAVE'}
+						</Button>
+					) : (
+						<Button
+							className={`${styles.actionBtn}`}
+							onClick={handleJoin}
+							disabled={loading}
+						>
+							<span className={styles.actionIcon}>
+								<FaPlusCircle />
+							</span>
+							{loading ? 'JOINING' : 'JOIN NOW'}
+						</Button>
+					)
+				) : (
+					<Button
+						className={`${styles.actionBtn}`}
+						onClick={() => router.push('/auth/login')}
+					>
+						<span className={styles.actionIcon}>
+							<FaPlusCircle />
+						</span>
+						{'JOIN NOW'}
+					</Button>
+				)}
+			</div>
+			{showShare && (
+				<ShareDialog
+					url={
+						typeof window !== 'undefined'
+							? window.location.origin +
+							  `/my/activities/${activity.id}`
+							: `/activities/${activity.id}`
+					}
+					onClose={() => setShowShare(false)}
+				/>
+			)}
+		</div>
+	);
 }

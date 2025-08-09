@@ -1,10 +1,11 @@
 
-import { prisma } from '@/lib/prisma/client';
-import { supabase } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma/db';
+import { createServerClient } from '@/lib/supabase/server-only';
 import { requireUser } from '@/lib/prisma/require-user';
 
 // GET /api/my/profile - Returns all user data for the authenticated user
 export async function GET() {
+  const supabase = await createServerClient();
   const { error, user } = await requireUser(supabase, Response);
   if (error) return error;
 
@@ -12,7 +13,7 @@ export async function GET() {
     const User = await prisma.user.findUnique({
       where: { id: user.id },
       include: {
-        userActivities: true,
+        userActivities: { select: { activityId: true } },
         calorieSubmissions: true,
         calorieDonations: true,
         userBadges: true,
@@ -22,7 +23,8 @@ export async function GET() {
     if (!User) {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
-    return Response.json({ user: User });
+    const joinedActivityIds = User.userActivities.map(ua => ua.activityId);
+    return Response.json({ user: {...User, joinedActivityIds} });
   } catch (err) {
     return Response.json({ error: 'Failed to fetch user profile', details: err.message }, { status: 500 });
   }

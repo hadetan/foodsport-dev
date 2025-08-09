@@ -1,4 +1,4 @@
-import { prisma } from './client.js';
+import { prisma } from './db.js';
 
 /**
  * Type-safe CRUD utilities for Prisma models
@@ -14,11 +14,11 @@ import { prisma } from './client.js';
  * @returns {Promise<any>}
  */
 export async function getById(model, id, select) {
-  try {
-    return await prisma[model].findUnique({ where: { id }, select });
-  } catch (error) {
-    return handlePrismaError(error);
-  }
+	try {
+		return await prisma[model].findUnique({ where: { id }, select });
+	} catch (error) {
+		return handlePrismaError(error);
+	}
 }
 
 /**
@@ -30,17 +30,17 @@ export async function getById(model, id, select) {
  * @returns {Promise<any[]>}
  */
 export async function getMany(model, where = {}, select, options = {}) {
-  try {
-    return await prisma[model].findMany({
-      where,
-      select,
-      take: options.limit,
-      skip: options.skip,
-      orderBy: options.orderBy,
-    });
-  } catch (error) {
-    return handlePrismaError(error);
-  }
+	try {
+		return await prisma[model].findMany({
+			where,
+			select,
+			take: options.limit,
+			skip: options.skip,
+			orderBy: options.orderBy,
+		});
+	} catch (error) {
+		return handlePrismaError(error);
+	}
 }
 
 /**
@@ -50,11 +50,11 @@ export async function getMany(model, where = {}, select, options = {}) {
  * @returns {Promise<any>}
  */
 export async function insert(model, data) {
-  try {
-    return await prisma[model].create({ data });
-  } catch (error) {
-    return handlePrismaError(error);
-  }
+	try {
+		return await prisma[model].create({ data });
+	} catch (error) {
+		return handlePrismaError(error);
+	}
 }
 
 /**
@@ -65,11 +65,11 @@ export async function insert(model, data) {
  * @returns {Promise<any>}
  */
 export async function updateById(model, id, data) {
-  try {
-    return await prisma[model].update({ where: { id }, data });
-  } catch (error) {
-    return handlePrismaError(error);
-  }
+	try {
+		return await prisma[model].update({ where: { id }, data });
+	} catch (error) {
+		return handlePrismaError(error);
+	}
 }
 
 /**
@@ -79,11 +79,11 @@ export async function updateById(model, id, data) {
  * @returns {Promise<any>}
  */
 export async function deleteById(model, id) {
-  try {
-    return await prisma[model].delete({ where: { id } });
-  } catch (error) {
-    return handlePrismaError(error);
-  }
+	try {
+		return await prisma[model].delete({ where: { id } });
+	} catch (error) {
+		return handlePrismaError(error);
+	}
 }
 
 /**
@@ -93,11 +93,11 @@ export async function deleteById(model, id) {
  * @returns {Promise<boolean>}
  */
 export async function exists(model, where) {
-  try {
-    return (await prisma[model].findFirst({ where })) !== null;
-  } catch (error) {
-    return handlePrismaError(error);
-  }
+	try {
+		return (await prisma[model].findFirst({ where })) !== null;
+	} catch (error) {
+		return handlePrismaError(error);
+	}
 }
 
 /**
@@ -107,11 +107,11 @@ export async function exists(model, where) {
  * @returns {Promise<number>}
  */
 export async function getCount(model, where) {
-  try {
-    return await prisma[model].count({ where });
-  } catch (error) {
-    return handlePrismaError(error);
-  }
+	try {
+		return await prisma[model].count({ where });
+	} catch (error) {
+		return handlePrismaError(error);
+	}
 }
 
 /**
@@ -120,11 +120,11 @@ export async function getCount(model, where) {
  * @returns {Promise<any[]>}
  */
 export async function executeTransaction(actions) {
-  try {
-    return await prisma.$transaction(actions);
-  } catch (error) {
-    return handlePrismaError(error);
-  }
+	try {
+		return await prisma.$transaction(actions);
+	} catch (error) {
+		return handlePrismaError(error);
+	}
 }
 
 /**
@@ -134,11 +134,77 @@ export async function executeTransaction(actions) {
  * @returns {Promise<any>}
  */
 export async function remove(model, where) {
-  try {
-    return await prisma[model].delete({ where });
-  } catch (error) {
-    return handlePrismaError(error);
-  }
+	try {
+		return await prisma[model].delete({ where });
+	} catch (error) {
+		return handlePrismaError(error);
+	}
+}
+
+/**
+ * Get a record by composite key (e.g. for userActivity)
+ * @param {keyof typeof prisma} model
+ * @param {object} where - composite key object
+ * @param {object} [select]
+ * @returns {Promise<any>}
+ */
+export async function getByIdComposite(model, where, select) {
+	try {
+		if (model === 'userActivity' && where.userId && where.activityId) {
+			return await prisma.userActivity.findUnique({
+				where: {
+					userId_activityId: {
+						userId: where.userId,
+						activityId: where.activityId,
+					},
+				},
+				select,
+			});
+		}
+		return await prisma[model].findUnique({ where, select });
+	} catch (error) {
+		return handlePrismaError(error);
+	}
+}
+
+/**
+ * Get all activities a user has joined, with full activity details
+ * @param {string} userId
+ * @returns {Promise<Array<object>>}
+ */
+export async function getUserJoinedActivitiesWithDetails(userId) {
+	try {
+		const userActivities = await prisma.userActivity.findMany({
+			where: { userId },
+			include: {
+				activity: {
+					select: {
+						id: true,
+						title: true,
+						description: true,
+						activityType: true,
+						location: true,
+						startDate: true,
+						endDate: true,
+						startTime: true,
+						endTime: true,
+						status: true,
+						participantLimit: true,
+						organizerId: true,
+						imageUrl: true,
+						pointsPerParticipant: true,
+						caloriesPerHour: true,
+						isFeatured: true,
+						createdAt: true,
+						updatedAt: true,
+					},
+				},
+			},
+		});
+		return userActivities.map((ua) => ua.activity).filter(Boolean);
+	} catch (error) {
+		return handlePrismaError(error);
+	}
 }
 
 /**
@@ -147,14 +213,14 @@ export async function remove(model, where) {
  * @returns {object}
  */
 function handlePrismaError(error) {
-  if (error.code === 'P2002') {
-    return { error: 'Unique constraint failed', details: error.meta };
-  }
-  if (error.code === 'P2003') {
-    return { error: 'Foreign key constraint failed', details: error.meta };
-  }
-  if (error.code === 'P2004') {
-    return { error: 'Not null constraint failed', details: error.meta };
-  }
-  return { error: error.message, details: error };
+	if (error.code === 'P2002') {
+		return { error: 'Unique constraint failed', details: error.meta };
+	}
+	if (error.code === 'P2003') {
+		return { error: 'Foreign key constraint failed', details: error.meta };
+	}
+	if (error.code === 'P2004') {
+		return { error: 'Not null constraint failed', details: error.meta };
+	}
+	return { error: error.message, details: error };
 }

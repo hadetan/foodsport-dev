@@ -1,16 +1,18 @@
-import { insert, getById, updateById } from '@/lib/prisma/db-utils';
+import { executeTransaction, getById, getByIdComposite, getCount, insert } from '@/lib/prisma/db-utils';
 import { requireUser } from '@/lib/prisma/require-user';
+import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
+import { NextResponse } from 'next/server';
 
 // POST /api/my/activities/join
 export async function POST(request) {
-	const { error } = await requireUser(supabase, NextResponse);
+	const supabase = await createServerClient();
+	const { error, user: User } = await requireUser(supabase, NextResponse, request);
 	if (error) return error;
 
 	try {
 		const body = await request.json();
-		const requiredFields = ['activityId', 'userId'];
-		const validation = validateRequiredFields(body, requiredFields);
+		const validation = validateRequiredFields(body, ['activityId']);
 		if (!validation.isValid) {
 			return Response.json(
 				{
@@ -24,13 +26,21 @@ export async function POST(request) {
 		const activity = await getById('activity', body.activityId, {
 			status: true,
 			participantLimit: true,
-			currentParticipants: true,
 		});
-
 		if (!activity) {
 			return Response.json(
 				{
 					error: 'Activity not found',
+				},
+				{ status: 404 }
+			);
+		}
+
+		const user = await getById('user', User.id, { id: true });
+		if (!user) {
+			return Response.json(
+				{
+					error: 'User not found',
 				},
 				{ status: 404 }
 			);
@@ -45,46 +55,38 @@ export async function POST(request) {
 			);
 		}
 
-		if (
-			typeof activity.participantLimit === 'number' &&
-			activity.currentParticipants >= activity.participantLimit
-		) {
-			return Response.json(
-				{
-					error: 'Activity is full',
-				},
-				{ status: 400 }
-			);
-		}
+		const userActivity = await executeTransaction(async (tx) => {
+ 			const participantCount = await tx.userActivity.count({ where: { activityId: body.activityId } });
+ 			if (
+ 				typeof activity.participantLimit === 'number' &&
+ 				participantCount >= activity.participantLimit
+ 			) {
+ 				throw new Error('Activity is full');
+ 			}
+ 
+ 			const alreadyJoined = await tx.userActivity.findUnique({
+ 				where: {
+ 					userId_activityId: {
+ 						userId: user.id,
+ 						activityId: body.activityId,
+ 					},
+ 				},
+ 			});
+ 			if (alreadyJoined) {
+ 				throw new Error('User has already joined this activity');
+ 			}
+ 
+ 			return await tx.userActivity.create({
+ 				data: {
+ 					userId: user.id,
+ 					activityId: body.activityId,
+ 				},
+ 			});
+ 		});
 
-		const alreadyJoined = await getById('userActivity', {
-			userId: body.userId,
-			activityId: body.activityId,
-		});
-		if (alreadyJoined) {
-			return Response.json(
-				{
-					error: 'User has already joined this activity',
-				},
-				{ status: 400 }
-			);
-		}
+		const updatedCount = await getCount('userActivity', { activityId: body.activityId });
 
-		await insert('userActivity', {
-			userId: body.userId,
-			activityId: body.activityId,
-			joinedAt: new Date().toISOString(),
-		});
-
-		await updateById('activity', body.activityId, {
-			currentParticipants: { increment: 1 },
-		});
-
-		await updateById('user', body.userId, {
-			totalActivities: { increment: 1 },
-		});
-
-		return Response.json({ message: 'Joined activity successfully.' });
+		return Response.json({ message: 'Joined activity successfully.', userActivity, participantCount: updatedCount });
 	} catch (error) {
 		return Response.json(
 			{

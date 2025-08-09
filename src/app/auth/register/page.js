@@ -1,9 +1,10 @@
 "use client";
 import '@/app/auth/css/loginAndRegister.css'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import Link from 'next/link';
+import { useAuth } from '@/app/shared/contexts/authContext';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -14,30 +15,23 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const { signup, authToken } = useAuth();
+
+  useEffect(() => {
+      if (typeof window !== "undefined" && authToken) {
+        router.replace("/my");
+      }
+    }, [router]);
 
   async function handleRegister(e) {
     e.preventDefault();
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, firstname, lastname, dateOfBirth }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Registration failed");
-        setLoading(false);
-        return;
-      }
-      if (data.session?.access_token) {
-        localStorage.setItem("auth_token", data.session.access_token);
-        localStorage.setItem("refresh_token", data.session.refresh_token || "");
-      }
+      await signup({ email, password, firstname, lastname, dateOfBirth })
       router.push("/my");
     } catch (err) {
-      setError(`Something went wrong. Please try again. ${err.message}`);
+      setError(err.message);
     } finally {
       setLoading(false);
     }

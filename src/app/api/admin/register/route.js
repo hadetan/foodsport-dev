@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma/client';
+import { prisma } from '@/lib/prisma/db';
 import { requireAdmin } from '@/lib/prisma/require-admin';
+import { createServerClient } from '@/lib/supabase/server-only';
 
 // POST /api/admin/register
 export async function POST(req) {
+	const supabase = await createServerClient();
 	const { error } = await requireAdmin(supabase, NextResponse);
 	if (error) return error;
 
@@ -45,6 +46,7 @@ export async function POST(req) {
 				id: signUpData.user.id,
 				name,
 				email,
+				status: 'active',
 			},
 		});
 	} catch (prismaError) {

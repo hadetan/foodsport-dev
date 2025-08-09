@@ -1,38 +1,51 @@
+import { NextResponse } from 'next/server';
 import { getMany } from '@/lib/prisma/db-utils';
-const { getCache, setCache } = await import('@/utils/cache');
+import { validateRequiredFields } from '@/utils/validation';
+import { sanitizeData } from '@/utils/sanitize';
+
+function parseQueryParams(searchParams) {
+	return {
+		status: searchParams.get('status') || '',
+		page: parseInt(searchParams.get('page') || '1', 10),
+		limit: parseInt(searchParams.get('limit') || '20', 10),
+		type: searchParams.get('type') || '',
+		organizerId: searchParams.get('organizerId') || '',
+	};
+}
 
 // GET /api/activities - Get all activities with optional filters
-export async function GET(request) {
+export async function GET(req) {
 	try {
-		const cacheKey = 'all_activities';
-		const cached = getCache(cacheKey);
-		if (cached) {
-			return Response.json(cached);
-		}
-
-		const { searchParams } = new URL(request.url);
-		const status = searchParams.get('status');
-		const type = searchParams.get('type');
-		const location = searchParams.get('location');
-		const date = searchParams.get('date');
-		const limit = parseInt(searchParams.get('limit')) || 50;
-		const page = parseInt(searchParams.get('page')) || 0;
-
+		const url = new URL(req.url);
+		const { searchParams } = url;
+		const { status, page, limit, type, organizerId } = parseQueryParams(searchParams);
+		const skip = (page - 1) * limit;
 		const filters = {};
 		if (status) filters.status = status;
 		if (type) filters.type = type;
-		if (location) filters.location = location;
-		if (date) filters.date = date;
-
+		if (organizerId) filters.organizerId = organizerId;
 		const options = {
 			limit,
-			skip: page * limit,
-			orderBy: { createdAt: 'desc' },
+			skip,
+			orderBy: { startDate: 'desc' },
 		};
+
+		// Validate query parameters
+		const validation = validateRequiredFields({ status, page, limit, type, organizerId }, ['page', 'limit']);
+		if (!validation.isValid) {
+			return new NextResponse(
+				JSON.stringify({ error: validation.error }),
+				{ status: 400, headers: { 'Content-Type': 'application/json' } }
+			);
+		}
+
+		// Sanitize filters before querying the database
+		const allowedFilters = ['status', 'type', 'organizerId'];
+		const sanitizedFilters = sanitizeData(filters, allowedFilters);
 
 		const activities = await getMany(
 			'activity',
-			filters,
+			sanitizedFilters,
 			{
 				id: true,
 				title: true,
@@ -45,65 +58,77 @@ export async function GET(request) {
 				endTime: true,
 				status: true,
 				participantLimit: true,
-				currentParticipants: true,
-				organizerName: true,
 				organizerId: true,
 				imageUrl: true,
 				pointsPerParticipant: true,
 				caloriesPerHour: true,
 				isFeatured: true,
-				createdAt: true,
-				updatedAt: true,
 			},
 			options
 		);
 
-		const activitiesWithOrganizers = await Promise.all(
-			activities.map(async (activity) => {
-				return {
-					id: activity.id,
-					title: activity.title,
-					description: activity.description,
-					activityType: activity.activityType,
-					location: activity.location,
-					startDate: activity.startDate,
-					endDate: activity.endDate,
-					startTime: activity.startTime,
-					endTime: activity.endTime,
-					status: activity.status,
-					participantLimit: activity.participantLimit,
-					currentParticipants: activity.currentParticipants,
-					organizerId: activity.organizerId,
-					imageUrl: activity.imageUrl,
-					pointsPerParticipant: activity.pointsPerParticipant,
-					caloriesPerHour: activity.caloriesPerHour,
-					isFeatured: activity.isFeatured,
-					createdAt: activity.createdAt,
-					updatedAt: activity.updatedAt,
-				};
-			})
-		);
+		// Optimize: fetch participant counts and organizer names in bulk
+		const activityIds = (activities || []).map(a => a.id);
+		const organizerIds = Array.from(new Set((activities || []).map(a => a.organizerId).filter(Boolean)));
 
-		const response = {
-			activities: activitiesWithOrganizers,
+		// Bulk fetch participant counts
+		const participantCountsRaw = await getMany('userActivity', { activityId: { in: activityIds } }, { activityId: true });
+		const participantCountMap = {};
+		for (const { activityId } of participantCountsRaw) {
+			participantCountMap[activityId] = (participantCountMap[activityId] || 0) + 1;
+		}
+
+		// Bulk fetch organizer names
+		let organizerNameMap = {};
+		if (organizerIds.length > 0) {
+			const organizers = await getMany('adminUser', { id: { in: organizerIds } }, { id: true, name: true });
+			organizerNameMap = organizers.reduce((acc, org) => {
+				acc[org.id] = org.name;
+				return acc;
+			}, {});
+		}
+
+		const activitiesList = (activities || []).map((a) => ({
+			id: a.id,
+			title: a.title,
+			description: a.description,
+			activityType: a.activityType,
+			location: a.location,
+			startDate: a.startDate,
+			endDate: a.endDate,
+			startTime: a.startTime,
+			endTime: a.endTime,
+			status: a.status,
+			participantLimit: a.participantLimit,
+			participantCount: participantCountMap[a.id] || 0,
+			organizerName: a.organizerId ? organizerNameMap[a.organizerId] : undefined,
+			imageUrl: a.imageUrl,
+			pointsPerParticipant: a.pointsPerParticipant,
+			caloriesPerHour: a.caloriesPerHour,
+			isFeatured: a.isFeatured,
+		}));
+
+		const responseData = {
+			activities: activitiesList,
 			pagination: {
 				page,
 				limit,
-				total: activitiesWithOrganizers.length,
+				total: activitiesList.length,
 			},
 		};
-		setCache(cacheKey, response, 60);
-		return Response.json(response);
+
+		return new NextResponse(JSON.stringify(responseData), {
+			status: 200,
+			headers: { 'Content-Type': 'application/json' },
+		});
 	} catch (error) {
-		return Response.json(
+		console.error('Error in GET /api/activities:', error);
+		return new NextResponse(
+			JSON.stringify({ error: 'Failed to fetch activities. Please try again later.', message: error.message }),
 			{
-				error: {
-					code: 'INTERNAL_ERROR',
-					message: 'Internal server error',
-					details: error.message,
-				},
-			},
-			{ status: 500 }
+				status: 500,
+				headers: { 'Content-Type': 'application/json' },
+			}
 		);
 	}
 }

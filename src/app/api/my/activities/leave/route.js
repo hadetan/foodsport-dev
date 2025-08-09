@@ -1,17 +1,18 @@
-import { getById, updateById, remove } from '@/lib/prisma/db-utils';
+import { getById, getByIdComposite, getCount, remove } from '@/lib/prisma/db-utils';
+import { requireUser } from '@/lib/prisma/require-user';
+import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
+import { NextResponse } from 'next/server';
 
 // POST /api/my/activities/leave
 export async function DELETE(request) {
-	const { error } = await requireUser(supabase, NextResponse);
+	const supabase = await createServerClient();
+	const { error, user: User } = await requireUser(supabase, NextResponse);
 	if (error) return error;
 
 	try {
 		const body = await request.json();
-		const validation = validateRequiredFields(body, [
-			'activityId',
-			'userId',
-		]);
+		const validation = validateRequiredFields(body, ['activityId']);
 		if (!validation.isValid) {
 			return Response.json(
 				{
@@ -24,9 +25,8 @@ export async function DELETE(request) {
 
 		const activity = await getById('activity', body.activityId, {
 			status: true,
-			currentParticipants: true,
+			participantLimit: true,
 		});
-
 		if (!activity) {
 			return Response.json(
 				{
@@ -36,8 +36,27 @@ export async function DELETE(request) {
 			);
 		}
 
-		const userActivity = await getById('userActivity', {
-			userId: body.userId,
+		if (activity.status !== 'active') {
+			return Response.json(
+				{
+					error: 'Activity is not active',
+				},
+				{ status: 400 }
+			);
+		}
+
+		const user = await getById('user', User.id, { id: true });
+		if (!user) {
+			return Response.json(
+				{
+					error: 'User not found',
+				},
+				{ status: 404 }
+			);
+		}
+
+		const userActivity = await getByIdComposite('userActivity', {
+			userId: user.id,
 			activityId: body.activityId,
 		});
 		if (!userActivity) {
@@ -49,20 +68,16 @@ export async function DELETE(request) {
 			);
 		}
 
-		await remove('userActivity', {
-			userId: body.userId,
+		const currentCount = await getCount('userActivity', {
 			activityId: body.activityId,
 		});
+		await remove('userActivity', { id: userActivity.id });
+		const updatedCount = currentCount - 1;
 
-		await updateById('activity', body.activityId, {
-			currentParticipants: { decrement: 1 },
+		return Response.json({
+			message: 'Left activity successfully.',
+			participantCount: updatedCount,
 		});
-
-		await updateById('user', body.userId, {
-			totalActivities: { decrement: 1 },
-		});
-
-		return Response.json({ message: 'Left activity successfully.' });
 	} catch (error) {
 		return Response.json(
 			{

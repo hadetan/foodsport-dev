@@ -1,0 +1,70 @@
+'use client';
+
+import api from '@/utils/axios/api';
+import { createContext, useContext, useEffect, useState } from 'react';
+
+function getToken() {
+	if (typeof window === 'undefined') return null;
+	return !!localStorage.getItem('auth_token');
+}
+
+function setToken(token) {
+	if (typeof window === 'undefined') return;
+	localStorage.setItem('auth_token', token);
+}
+
+async function removeToken() {
+	if (typeof window === 'undefined') return;
+	await api.delete('/auth/logout');
+	localStorage.removeItem('auth_token');
+}
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+	const [authToken, setAuthToken] = useState(getToken());
+
+	useEffect(() => {
+		setAuthToken(getToken());
+	}, []);
+
+	const login = async ({ email, password }) => {
+		try {
+			const { data } = await api.post('/auth/login', { email, password });
+			setToken(data.session?.access_token);
+			setAuthToken(data.session?.access_token);
+			return true;
+		} catch (err) {
+			throw new Error(`Login failed: ${err?.message || 'Unknown error'}`);
+		}
+	};
+
+	const signup = async ({ email, password, firstname, lastname, dateOfBirth, }) => {
+		try {
+			const { data } = await api.post('/auth/register', { email, password, firstname, lastname, dateOfBirth, });
+			if (!data.session?.access_token) {
+				return data.error || 'Registration failed';
+			}
+			setToken(data.session.access_token);
+			setAuthToken(data.session.access_token);
+			return true;
+		} catch (err) {
+			return `Something went wrong. Please try again. ${err.message}`;
+		}
+	};
+
+	const logout = async () => {
+		await removeToken();
+		setAuthToken(null);
+	};
+
+	return (
+		<AuthContext.Provider value={{ authToken, login, logout, signup }}>
+			{children}
+		</AuthContext.Provider>
+	);
+}
+
+export function useAuth() {
+	return useContext(AuthContext);
+}

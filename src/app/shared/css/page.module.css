@@ -82,6 +82,38 @@
   font-weight: 500;
 }
 
+button:disabled {
+	color: #747474;
+}
+
+button:hover:disabled {
+  background-color: grey;
+}
+
+.exploreCont {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.explore {
+  background-color: #e0e0e0;
+  color: #747474;
+  font-size: xx-large;
+  font-style: italic;
+  font-weight: bolder;
+  margin-bottom: 40px;
+  padding: 16px 16px;
+  border-radius: 16px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.explore:hover {
+  border: 1px solid #afafaf;
+  background-color: #e0e0e0cb;
+}
+
 a.primary {
   background: var(--foreground);
   color: var(--background);
@@ -187,10 +219,8 @@ a.secondary {
 .grid3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
-  max-width: 1200px;
-  margin: 40px auto 0 auto;
-  padding: 0 16px 40px 16px;
+  margin: 40px 0;
+  padding: 0 16px 0 16px; 
 }
 
 @media (max-width: 1200px) {
