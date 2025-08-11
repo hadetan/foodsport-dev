@@ -26,7 +26,7 @@ export default function HowPage() {
                     <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-800 tracking-tight leading-none relative inline-block">
                         <span className="relative z-10">HOW DOES IT WORK</span>
                         {/* Decorative underline/shadow effect */}
-                        <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-4/5 h-2 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-full opacity-75 z-0"></span>
+                        <span className="block mx-auto mt-2 h-2 w-2/3 sm:w-4/5 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-full opacity-75"></span>
                     </h1>
                 </div>
 
