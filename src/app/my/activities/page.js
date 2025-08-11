@@ -12,7 +12,7 @@ export default function ActivitiesPage() {
 	const { activities, setActivities } = useActivities();
  	const { user, setUser } = useUser();
 
-	const sortedActivities = sortActivities(activities, true);
+	const sortedActivities = sortActivities(activities || [], true);
 	return (
 		<div className='main-activities'>
 			<>

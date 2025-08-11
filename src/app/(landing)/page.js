@@ -10,7 +10,7 @@ import ActivityItemSkeleton from "../shared/components/skeletons/ActivityItemSke
 import sortActivities from "@/utils/sortActivities";
 export default function Home() {
     const { activities } = useActivities();
-    const sortedActivities = sortActivities(activities);
+    const sortedActivities = sortActivities(activities || []);
     return (
         <>
             <Hero />

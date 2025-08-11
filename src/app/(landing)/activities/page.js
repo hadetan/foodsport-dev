@@ -9,7 +9,7 @@ import sortActivities from "@/utils/sortActivities";
 
 export default function ActivitiesPage() {
     const { activities } = useActivities();
-    const sortedActivities = sortActivities(activities, true);
+    const sortedActivities = sortActivities(activities || [], true);
     return (
         <div className="main-activities">
             <Activity />

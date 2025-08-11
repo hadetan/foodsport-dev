@@ -16,7 +16,7 @@ export default function Home() {
 	const { user, setUser } = useUser();
 	const router = useRouter();
 
-	const sortedActivities = sortActivities(activities);
+	const sortedActivities = sortActivities(activities || []);
 
 	return (
 		<>

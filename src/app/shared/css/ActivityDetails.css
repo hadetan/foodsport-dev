@@ -270,10 +270,14 @@
 
 .activityDetailsBtn:disabled {
 	color: #747474;
+  cursor: not-allowed;
+  background: #ffe600;
+  box-shadow: none;
+  opacity: 0.8;
 }
 
 .activityDetailsBtn:hover:disabled {
-	background-color: grey;
+	background: #ffe600;
 }
 
 /* Details section */

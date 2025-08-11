@@ -10,7 +10,7 @@ export default function sortActivities(activities, sortAll = false) {
         ? ["active", "upcoming", "completed", "cancelled", "closed"] 
         : ["active", "upcoming", "completed"];
 
-    return Object.values(activities)
+    return (activities)
         .filter(activity => sortAll || statusOrder.includes(activity.status))
         .sort((a, b) => {
             if (a.isFeatured && b.isFeatured) {
@@ -22,9 +22,11 @@ export default function sortActivities(activities, sortAll = false) {
                 return 1;
             }
 
-            const statusComparison = statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
+            const statusComparison = (statusOrder.includes(a.status) ? statusOrder.indexOf(a.status) : statusOrder.length) - (statusOrder.includes(b.status) ? statusOrder.indexOf(b.status) : statusOrder.length);
             if (statusComparison !== 0) return statusComparison;
 
-            return new Date(a.startDate) - new Date(b.startDate);
+            const dateA = new Date(a.startDate).getTime() || Infinity;
+            const dateB = new Date(b.startDate).getTime() || Infinity;
+            return dateA - dateB;
         });
 }
