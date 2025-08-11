@@ -44,7 +44,10 @@ const ActivityManagementPage = () => {
     const tableHeading = [
         "Activity",
         "Type",
-        "Date & Time",
+        "Start Date",
+        "End Date",
+        "Start Time",
+        "End Time",
         "Location",
         "Capacity",
         "Status",

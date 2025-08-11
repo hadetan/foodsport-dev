@@ -55,10 +55,37 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                         </div>
                     </div>
                 </td>
-                <td className="text-base">{activity.type}</td>
+                {/* Show activity type */}
+                <td className="text-base">{activity.activityType}</td>
+                {/* Show start date */}
                 <td className="text-base">
-                    <div>{activity.date}</div>
-                    <div className="text-sm opacity-50">{activity.time}</div>
+                    {activity.startDate
+                        ? new Date(activity.startDate).toLocaleDateString()
+                        : ""}
+                </td>
+                {/* Show end date */}
+                <td className="text-base">
+                    {activity.endDate
+                        ? new Date(activity.endDate).toLocaleDateString()
+                        : ""}
+                </td>
+                {/* Show start time */}
+                <td className="text-base">
+                    {activity.startTime
+                        ? new Date(activity.startTime).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                          })
+                        : ""}
+                </td>
+                {/* Show end time */}
+                <td className="text-base">
+                    {activity.endTime
+                        ? new Date(activity.endTime).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                          })
+                        : ""}
                 </td>
                 <td className="text-base">{activity.location}</td>
                 <td>
