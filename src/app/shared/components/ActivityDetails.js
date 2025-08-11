@@ -231,11 +231,11 @@ const ActivityDetails = ({
 					</div>
 					<div className='activityDetailsSidebarActions'>
 						{user?.joinedActivityIds?.includes(activity.id) ? (
-							<button className='activityDetailsJoinBtn' onClick={handleLeave} disabled={loading}>
+							<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading}>
 								{loading ? 'LEAVING' : 'LEAVE'}
 							</button>
 						) : (
-							<button className='activityDetailsJoinBtn' onClick={handleJoin} disabled={loading}>
+							<button className='activityDetailsBtn' onClick={handleJoin} disabled={loading}>
 								{loading ? 'JOINING' : 'JOIN NOW'}
 							</button>
 						)}

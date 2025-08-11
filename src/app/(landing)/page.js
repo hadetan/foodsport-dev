@@ -7,19 +7,20 @@ import Hero from "@/app/shared/components/Hero";
 import ComingSoon from "@/app/(landing)/Components/ComingSoon";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import ActivityItemSkeleton from "../shared/components/skeletons/ActivityItemSkeleton";
+import sortActivities from "@/utils/sortActivities";
 export default function Home() {
     const { activities } = useActivities();
-
+    const sortedActivities = sortActivities(activities || []);
     return (
         <>
             <Hero />
             <Activity />
             <div className={styles.grid3}>
-                {activities.length === 0
+                {sortedActivities.length === 0
                     ? Array.from({ length: 6 }).map((_, i) => (
                           <ActivityItemSkeleton key={i} />
                       ))
-                    : activities
+                    : sortedActivities
                           .slice(0, 6)
                           .map((a) => (
                               <ActivityItem
@@ -28,7 +29,7 @@ export default function Home() {
                               />
                           ))}
             </div>
-            {/* <ComingSoon /> */}
+            <ComingSoon />
         </>
     );
 }

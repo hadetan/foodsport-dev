@@ -82,15 +82,6 @@
   font-weight: 500;
 }
 
-/* FIX THIS SOON */
-/* .activityDetailsJoinBtn:disabled {
-	color: #747474;
-}
-
-.activityDetailsJoinBtn:hover:disabled {
-  background-color: grey;
-} */
-
 .exploreCont {
   display: flex;
   align-items: center;
