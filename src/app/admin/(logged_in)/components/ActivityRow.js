@@ -1,6 +1,7 @@
 import React from "react";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
+import formatDate from "@/utils/formatDate";
 
 const statusBadgeClass = {
     upcoming: "bg-yellow-400 text-black btn-md",
@@ -59,15 +60,11 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                 <td className="text-base">{activity.activityType}</td>
                 {/* Show start date */}
                 <td className="text-base">
-                    {activity.startDate
-                        ? new Date(activity.startDate).toLocaleDateString()
-                        : ""}
+                    {activity.startDate ? formatDate(activity.startDate) : ""}
                 </td>
                 {/* Show end date */}
                 <td className="text-base">
-                    {activity.endDate
-                        ? new Date(activity.endDate).toLocaleDateString()
-                        : ""}
+                    {activity.endDate ? formatDate(activity.endDate) : ""}
                 </td>
                 {/* Show start time */}
                 <td className="text-base">
