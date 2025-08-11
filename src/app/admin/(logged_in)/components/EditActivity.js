@@ -7,7 +7,6 @@ export default function EditActivityPage({
     activity: initialActivity,
     setShowEdit,
     setActivities,
-    refreshActivities, // <-- accept prop
 }) {
     const [form, setForm] = useState(null);
     const [errors, setErrors] = useState({});
