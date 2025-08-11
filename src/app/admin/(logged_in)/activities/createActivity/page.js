@@ -7,7 +7,8 @@ import RichTextEditor from "@/app/shared/components/RichTextEditor";
 import axiosClient from "@/utils/axios/api";
 import ActivityStatus from "@/app/constants/ActivityStatus";
 
-const MAX_IMAGE_SIZE_MB = 10;
+import MAX_IMAGE_SIZE_MB  from '@/app/constants/ActivityStatus';
+
 
 const CreateActivityPage = () => {
     const router = useRouter();
