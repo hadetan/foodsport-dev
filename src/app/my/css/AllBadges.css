@@ -1,0 +1,41 @@
+.all-badges-coming-soon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 350px;
+  background: linear-gradient(135deg, #fffbe6 0%, #ffe7ba 100%);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(255, 215, 0, 0.08);
+}
+.coming-soon-content {
+  text-align: center;
+  padding: 32px 24px;
+}
+.coming-soon-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #FFD700;
+  margin-bottom: 0.5rem;
+}
+.coming-soon-subtitle {
+  font-size: 1.3rem;
+  color: #bfa700;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+.coming-soon-illustration {
+  margin: 0 auto 1.5rem auto;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.coming-soon-description {
+  font-size: 1.1rem;
+  color: #7c6f00;
+  margin-top: 1rem;
+  max-width: 350px;
+  margin-left: auto;
+  margin-right: auto;
+}

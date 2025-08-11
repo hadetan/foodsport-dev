@@ -1,32 +1,28 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
 
 export default function EditActivityPage({
     activity: initialActivity,
     setShowEdit,
     setActivities,
-    refreshActivities, // <-- accept prop
 }) {
     const [form, setForm] = useState(null);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
-    const [imageFile, setImageFile] = useState([]);
+    const [imageFile, setImageFile] = useState(null);
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [success, setSuccess] = useState("");
     const [error, setError] = useState("");
     const [audit, setAudit] = useState({});
-    const [activity, setActivity] = useState(initialActivity || null);
+    const [activity, setActivity] = useState(initialActivity);
     const router = useRouter();
     const fileInputRef = useRef();
     const searchParams = useSearchParams();
 
-    // Fetch activity data if not provided
-
-    // Populate form when activity is loaded
     useEffect(() => {
         if (!activity) return;
-        console.log(activity);
         setForm({
             title: activity.title || "",
             description: activity.description || "",
@@ -39,11 +35,13 @@ export default function EditActivityPage({
             caloriesPerHour: activity.caloriesPerHour || "",
         });
         setAudit({
-            createdBy: activity.organizerName || activity.createdBy || "",
+            createdBy: activity.organizerName || "Unknown",
         });
         // Set imageFile from imageUrl if present
         if (activity.imageUrl) {
-            setImageFile([{ url: activity.imageUrl }]);
+            setImageFile({ url: activity.imageUrl });
+        } else {
+            setImageFile(null);
         }
     }, [activity]);
 
@@ -90,16 +88,15 @@ export default function EditActivityPage({
         if (isNaN(calories) || calories <= 0)
             errs.caloriesPerHour =
                 "Calories per hour must be a positive number.";
-        if (imageFile.length === 0)
-            errs.images = "At least one image is required.";
-        if (imageFile.length > 5) errs.images = "Maximum 5 images allowed.";
-        imageFile.forEach((img, idx) => {
-            if (img.type && !["image/jpeg", "image/png"].includes(img.type))
-                errs[`image_${idx}`] = "Only JPG/PNG allowed.";
-            if (img.size && img.size > 5 * 1024 * 1024)
-                errs[`image_${idx}`] = "Max size 5MB.";
-            // ...resolution check can be added here...
-        });
+        if (imageFile === null) errs.images = "An image is required.";
+        if (
+            imageFile &&
+            imageFile.type &&
+            !["image/jpeg", "image/png"].includes(imageFile.type)
+        )
+            errs.image = "Only JPG/PNG allowed.";
+        if (imageFile && imageFile.size && imageFile.size > 5 * 1024 * 1024)
+            errs.image = "Max size 5MB.";
         setErrors(errs);
         return Object.keys(errs).length === 0;
     };
@@ -111,16 +108,13 @@ export default function EditActivityPage({
     };
 
     const handleImageChange = (e) => {
-        const files = Array.from(e.target.files);
-        if (imageFile.length + files.length > 5) {
-            setError("Maximum 5 images allowed.");
-            return;
-        }
-        setImageFile((imgs) => [...imgs, ...files]);
+        const file = e.target.files[0];
+        if (!file) return;
+        setImageFile(file);
     };
 
-    const handleImageRemove = (idx) => {
-        setImageFile((imgs) => imgs.filter((_, i) => i !== idx));
+    const handleImageRemove = () => {
+        setImageFile(null);
     };
 
     // PATCH API call
@@ -142,24 +136,24 @@ export default function EditActivityPage({
             });
 
             // Only send image if changed
-            if (imageFile.length > 0 && imageFile[0].url === undefined) {
-                formData.append("image", imageFile[0]);
+            if (imageFile && imageFile.url === undefined) {
+                formData.append("image", imageFile);
             }
             if (activity.organizerId) {
                 formData.append("organizerId", activity.organizerId);
             }
 
             //use axios.
-            const res = await fetch(
+            const res = await axios.patch(
                 `/api/admin/activities?activityId=${activityId}`,
+                formData,
                 {
-                    method: "PATCH",
-                    body: formData,
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
                 }
             );
-            const result = await res.json();
-            if (!res.ok)
-                throw new Error(result.error || "Failed to update activity");
+            const result = res.data;
             //call setActivities and save prev value first then save new value using result.data.activity
             if (setActivities && result.data && result.data.activity) {
                 setActivities((prev) =>
@@ -170,9 +164,7 @@ export default function EditActivityPage({
                     )
                 );
             }
-            if (refreshActivities) {
-                refreshActivities(); // <-- reload activities after save
-            }
+           
             setSuccess("Activity updated successfully!");
             router.push("/admin/activities"); // <-- redirect after save
         } catch (e) {
@@ -195,16 +187,6 @@ export default function EditActivityPage({
 
     const confirmCancel = () => {
         setShowEdit(false);
-    };
-
-    // Drag and drop reorder handler (optional, for completeness)
-    const handleImageReorder = (fromIdx, toIdx) => {
-        setImageFile((imgs) => {
-            const arr = [...imgs];
-            const [moved] = arr.splice(fromIdx, 1);
-            arr.splice(toIdx, 0, moved);
-            return arr;
-        });
     };
 
     return (
@@ -422,60 +404,42 @@ export default function EditActivityPage({
                             type="file"
                             className="file-input file-input-bordered file-input-lg w-full"
                             accept="image/jpeg,image/png"
-                            multiple
+                            multiple={false}
                             ref={fileInputRef}
                             onChange={handleImageChange}
-                            disabled={imageFile.length >= 5}
+                            disabled={!!imageFile}
                         />
                         {errors.images && (
                             <span className="text-error text-base">
                                 {errors.images}
                             </span>
                         )}
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-2">
-                            {imageFile.map((img, idx) => (
-                                <div key={idx} className="card relative">
+                        {errors.image && (
+                            <span className="text-error text-base">
+                                {errors.image}
+                            </span>
+                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-2 mt-2">
+                            {imageFile && (
+                                <div className="card relative">
                                     <img
                                         src={
-                                            img.url
-                                                ? img.url
-                                                : URL.createObjectURL(img)
+                                            imageFile.url
+                                                ? imageFile.url
+                                                : URL.createObjectURL(imageFile)
                                         }
-                                        alt={`img-${idx}`}
+                                        alt={`img-0`}
                                         className="w-full h-24 object-cover rounded-lg"
                                     />
                                     <button
                                         type="button"
                                         className="btn btn-xs btn-error absolute top-1 right-1"
-                                        onClick={() => handleImageRemove(idx)}
+                                        onClick={handleImageRemove}
                                     >
                                         ✕
                                     </button>
-                                    {/* Drag handle for reordering */}
-                                    <span
-                                        className="btn btn-xs btn-ghost absolute bottom-1 right-1 cursor-move"
-                                        draggable
-                                        onDragStart={(e) =>
-                                            e.dataTransfer.setData("idx", idx)
-                                        }
-                                        onDrop={(e) => {
-                                            const from = parseInt(
-                                                e.dataTransfer.getData("idx"),
-                                                10
-                                            );
-                                            handleImageReorder(from, idx);
-                                        }}
-                                        onDragOver={(e) => e.preventDefault()}
-                                    >
-                                        ⇅
-                                    </span>
-                                    {errors[`image_${idx}`] && (
-                                        <span className="text-error text-base">
-                                            {errors[`image_${idx}`]}
-                                        </span>
-                                    )}
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                     {/* Status */}

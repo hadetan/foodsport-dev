@@ -44,7 +44,10 @@ const ActivityManagementPage = () => {
     const tableHeading = [
         "Activity",
         "Type",
-        "Date & Time",
+        "Start Date",
+        "End Date",
+        "Start Time",
+        "End Time",
         "Location",
         "Capacity",
         "Status",
@@ -77,7 +80,6 @@ const ActivityManagementPage = () => {
                         if (!val) router.push("/admin/activities?view=list");
                     }}
                     setActivities={setActivities} //send setActivities
-                    refreshActivities={getActivities} // <-- pass refresh function
                 />
             ) : (
                 <>

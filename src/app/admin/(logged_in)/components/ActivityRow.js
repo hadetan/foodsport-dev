@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
+import formatDate from "@/utils/formatDate";
 
 const statusBadgeClass = {
     upcoming: "bg-yellow-400 text-black btn-md",
@@ -46,10 +47,7 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                             <div className="mask mask-squircle w-16 h-16">
                                 <img
                                     src={
-                                        activity.imageUrl &&
-                                        activity.imageUrl !== ""
-                                            ? activity.imageUrl
-                                            : "/fallback-image.png"
+                                        activity.imageUrl 
                                     }
                                     alt={activity.title}
                                     className="cursor-pointer hover:opacity-75"
@@ -61,8 +59,7 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                                     }}
                                     onError={(e) => {
                                         e.target.onerror = null;
-                                        e.target.src = "/fallback-image.png";
-                                    }}
+                                        e.target.src = null;                                    }}
                                 />
                             </div>
                         </div>
@@ -73,10 +70,33 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                         </div>
                     </div>
                 </td>
-                <td className="text-base">{activity.type}</td>
+                {/* Show activity type */}
+                <td className="text-base">{activity.activityType}</td>
+                {/* Show start date */}
                 <td className="text-base">
-                    <div>{activity.date}</div>
-                    <div className="text-sm opacity-50">{activity.time}</div>
+                    {activity.startDate ? formatDate(activity.startDate) : ""}
+                </td>
+                {/* Show end date */}
+                <td className="text-base">
+                    {activity.endDate ? formatDate(activity.endDate) : ""}
+                </td>
+                {/* Show start time */}
+                <td className="text-base">
+                    {activity.startTime
+                        ? new Date(activity.startTime).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                          })
+                        : ""}
+                </td>
+                {/* Show end time */}
+                <td className="text-base">
+                    {activity.endTime
+                        ? new Date(activity.endTime).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                          })
+                        : ""}
                 </td>
                 <td className="text-base">{activity.location}</td>
                 <td>

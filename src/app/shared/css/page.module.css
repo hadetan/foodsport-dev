@@ -82,13 +82,14 @@
   font-weight: 500;
 }
 
-button:disabled {
+/* FIX THIS SOON */
+/* .activityDetailsJoinBtn:disabled {
 	color: #747474;
 }
 
-button:hover:disabled {
+.activityDetailsJoinBtn:hover:disabled {
   background-color: grey;
-}
+} */
 
 .exploreCont {
   display: flex;

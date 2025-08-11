@@ -76,7 +76,7 @@ export async function PATCH(req) {
 
   try {
     const updatedUser = await prisma.user.update({
-      where: { id: '7bd71551-c8b7-4a10-8dd4-3fefaa6c48d3' },
+      where: { id: user.id },
       data: updateData,
     });
     return Response.json({ user: updatedUser });
