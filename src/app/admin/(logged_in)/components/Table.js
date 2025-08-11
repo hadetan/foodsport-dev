@@ -43,10 +43,8 @@ const Table = ({
                         ? paginatedData.map((user, idx) => (
                               <UserRow
                                   key={
-                                      user.id ||
-                                      user._id ||
-                                      user.email ||
-                                      `user-${idx}`
+                                      user.id 
+                                
                                   }
                                   user={user}
                               />
@@ -54,10 +52,7 @@ const Table = ({
                         : paginatedData.map((activity, idx) => (
                               <ActivityRow
                                   key={
-                                      activity.id ||
-                                      activity._id ||
-                                      activity.name ||
-                                      `activity-${idx}`
+                                      activity.id 
                                   }
                                   activity={activity}
                                   shouldShowEdit={shouldShowEdit}

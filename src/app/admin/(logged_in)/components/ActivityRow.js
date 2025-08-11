@@ -29,10 +29,7 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                             <div className="mask mask-squircle w-16 h-16">
                                 <img
                                     src={
-                                        activity.imageUrl &&
-                                        activity.imageUrl !== ""
-                                            ? activity.imageUrl
-                                            : "/fallback-image.png"
+                                        activity.imageUrl 
                                     }
                                     alt={activity.title}
                                     className="cursor-pointer hover:opacity-75"
@@ -44,8 +41,7 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                                     }}
                                     onError={(e) => {
                                         e.target.onerror = null;
-                                        e.target.src = "/fallback-image.png";
-                                    }}
+                                        e.target.src = null;                                    }}
                                 />
                             </div>
                         </div>

@@ -6,7 +6,6 @@ import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import RichTextEditor from "@/app/shared/components/RichTextEditor";
 import axiosClient from "@/utils/axios/api";
 import ActivityStatus from "@/app/constants/ActivityStatus";
-
 import MAX_IMAGE_SIZE_MB  from '@/app/constants/ActivityStatus';
 
 
