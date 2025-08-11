@@ -38,9 +38,14 @@ export default function ActivityDetailsPage() {
 	const { activities, setActivities, loading: activityLoading } = useActivities();
 	const { user, setUser, loading: userLoading } = useUser();
 	const { id } = useParams();
+	const topRef = useRef(null);
+
+	 if (activityLoading || !activities || !activities.length) {
+        return <ActivityDetailsSkeleton />;
+    }
+
 	const activity = getActivity(activities, id);
 
-	const topRef = useRef(null);
 	useEffect(() => {
 		if (topRef.current) {
 			topRef.current.scrollIntoView({ behavior: 'smooth' });
