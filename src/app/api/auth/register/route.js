@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/prisma/client';
-import { supabaseClient } from '@/lib/supabase/client';
+import { prisma } from '@/lib/prisma/db';
+import { createServerClient } from '@/lib/supabase/server-only';
 import { cookies } from 'next/headers';
 
 export async function POST(req) {
@@ -21,7 +21,8 @@ export async function POST(req) {
 			);
 		}
 
-		const { data, error } = await supabaseClient.auth.signUp({
+		const supabase = await createServerClient();
+		const { data, error } = await supabase.auth.signUp({
 			email,
 			password,
 			options: {

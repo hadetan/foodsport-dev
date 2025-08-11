@@ -1,9 +1,10 @@
-import { prisma } from '@/lib/prisma/client';
-import { supabase } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma/db';
+import { createServerClient } from '@/lib/supabase/server-only';
 import { requireUser } from '@/lib/prisma/require-user';
 
 // PATCH /api/my/profile/edit - Update user profile fields
 export async function PATCH(req) {
+  const supabase = await createServerClient();
   const { error, user } = await requireUser(supabase, Response);
   if (error) return error;
 
@@ -75,7 +76,7 @@ export async function PATCH(req) {
 
   try {
     const updatedUser = await prisma.user.update({
-      where: { id: '7bd71551-c8b7-4a10-8dd4-3fefaa6c48d3' },
+      where: { id: user.id },
       data: updateData,
     });
     return Response.json({ user: updatedUser });

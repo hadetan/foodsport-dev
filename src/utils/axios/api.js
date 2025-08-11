@@ -1,29 +1,7 @@
 import axios from 'axios';
 import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
-import { supabaseClient } from '@/lib/supabase/client';
-// import { cookies } from 'next/headers';
+import { getSupabaseClient } from '@/lib/supabase/index'
 
-
-/**
- * Axios API Utility
- *
- * Usage Example:
- * import api from '@/utils/axios/api';
- *
- * // GET request
- * api.get('/api/admin/dashboard').then(res => {
- *   console.log(res.data);
- * });
- *
- * // Extending interceptors
- * api.interceptors.response.use(
- *   response => response,
- *   error => {
- *     // Custom error handling
- *     return Promise.reject(error);
- *   }
- * );
- */
 const api = axios.create({
   baseURL: BASE_URLS.url,
   timeout: DEFAULT_TIMEOUT,
@@ -32,38 +10,54 @@ const api = axios.create({
   },
 });
 
-api.interceptors.request.use(async (config) => {
-  const tokenMatch = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/);
-  const token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : null;
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
+// Request interceptor is not needed in our app
 
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response && error.response.status === 401) {
       try {
-        const { data: { session }, error: refreshError } = await supabaseClient.auth.refreshSession();
-        if (refreshError || !session?.access_token) {
-          showApiError(refreshError || { message: 'Failed to refresh session.' });
-          document.cookie = 'auth_token=; Max-Age=0; path=/;';
+        // Avoid retry loop if the failing call is already the refresh endpoint
+        if (error.config?.url?.includes('/auth/refresh')) {
+          await api.delete('/auth/logout');
           localStorage.removeItem('auth_token');
-          console.error(`
-            Refresh error: ${refreshError}
-            token: ${session?.access_token}
-            `);
+          window.location.href = '/login';
           return Promise.reject(error);
         }
-        error.config.headers['Authorization'] = `Bearer ${session.access_token}`;
-        document.cookie = `auth_token=${encodeURIComponent(session.access_token)}; path=/; max-age=${session.expires_in || 3600};`;
-        localStorage.setItem("auth_token", session.access_token);
+
+        // Attempt to refresh session using Supabase client
+        const { data: { session }, error: refreshError } = await getSupabaseClient().auth.refreshSession();
+        if (refreshError || !session) {
+          console.warn('Session refresh failed:', refreshError);
+          showApiError(refreshError || { message: 'Failed to refresh session.' });
+          await api.delete('/auth/logout');
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+          return Promise.reject(error);
+        }
+
+        // Send session to refresh API to update cookies
+        const refreshRes = await api.post('/auth/refresh', { session });
+        const { access_token } = refreshRes.data;
+        if (!access_token) {
+          console.warn('Refresh API did not return a new access token.');
+          showApiError({ message: 'Failed to refresh session.' });
+          await api.delete('/auth/logout');
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+          return Promise.reject(error);
+        }
+
+        // Update Authorization header and localStorage
+        error.config.headers['Authorization'] = `Bearer ${access_token}`;
+        localStorage.setItem('auth_token', access_token);
         return api.request(error.config);
       } catch (refreshError) {
+        console.error('Unexpected error during session refresh:', refreshError);
         showApiError(refreshError);
-        console.error(refreshError || 'no refresh error found, and you have been logged out for some reason')
+        await api.delete('/auth/logout');
+        localStorage.removeItem('auth_token');
+        window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
@@ -72,10 +66,6 @@ api.interceptors.response.use(
   }
 );
 
-/**
- * Displays a user-friendly error message for API failures.
- * You can replace this with a toast, modal, or any UI feedback system.
- */
 function showApiError(error) {
   let message = 'An unexpected error occurred.';
   if (error.response && error.response.data && error.response.data.error) {

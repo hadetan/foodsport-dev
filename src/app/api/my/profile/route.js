@@ -1,10 +1,11 @@
 
-import { prisma } from '@/lib/prisma/client';
-import { supabase } from '@/lib/supabase/server';
+import { prisma } from '@/lib/prisma/db';
+import { createServerClient } from '@/lib/supabase/server-only';
 import { requireUser } from '@/lib/prisma/require-user';
 
 // GET /api/my/profile - Returns all user data for the authenticated user
 export async function GET() {
+  const supabase = await createServerClient();
   const { error, user } = await requireUser(supabase, Response);
   if (error) return error;
 

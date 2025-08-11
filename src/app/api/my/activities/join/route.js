@@ -1,11 +1,12 @@
 import { executeTransaction, getById, getByIdComposite, getCount, insert } from '@/lib/prisma/db-utils';
 import { requireUser } from '@/lib/prisma/require-user';
-import { supabase } from '@/lib/supabase/server';
+import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
 import { NextResponse } from 'next/server';
 
 // POST /api/my/activities/join
 export async function POST(request) {
+	const supabase = await createServerClient();
 	const { error, user: User } = await requireUser(supabase, NextResponse, request);
 	if (error) return error;
 

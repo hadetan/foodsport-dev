@@ -63,13 +63,23 @@ export default function Footer() {
                             }}
                         >
                             {galleryImages.map((src, index) => (
-                                <div key={index} className="galleryItem">
+                                <div
+                                    key={index}
+                                    className="galleryItem"
+                                    style={{
+                                        width: "200px",
+                                        height: "200px",
+                                        overflow: "hidden",
+                                    }}
+                                >
                                     <img
                                         src={src}
                                         alt={`Activity ${index + 1}`}
-                                        width={200}
-                                        height={200}
-                                        style={{ objectFit: "cover" }}
+                                        style={{
+                                            width: "100%",
+                                            height: "100%",
+                                            objectFit: "cover",
+                                        }}
                                     />
                                 </div>
                             ))}
@@ -117,30 +127,29 @@ export default function Footer() {
                         >
                             <Globe size={20} />
                         </a>
+                        <div className={styles.navLinks}>
+                            <Link
+                                href="https://www.foodsport.com.hk/aboutus "
+                                target="_blank"
+                            >
+                                ABOUT FOODSPORT
+                            </Link>
+                            <span className={styles.separator}>|</span>
+                            <Link
+                                href="https://www.foodsport.com.hk/supportus"
+                                target="_blank"
+                            >
+                                SUPPORT US
+                            </Link>
+                            <span className={styles.separator}>|</span>
+                            <Link
+                                href="https://www.foodsport.com.hk/privacy-policy"
+                                target="_blank"
+                            >
+                                PRIVACY POLICY
+                            </Link>
+                        </div>
                     </div>
-                </div>
-
-                <div className={styles.navLinks}>
-                    <Link
-                        href="https://www.foodsport.com.hk/aboutus "
-                        target="_blank"
-                    >
-                        ABOUT FOODSPORT
-                    </Link>
-                    <span className={styles.separator}>|</span>
-                    <Link
-                        href="https://www.foodsport.com.hk/supportus"
-                        target="_blank"
-                    >
-                        SUPPORT US
-                    </Link>
-                    <span className={styles.separator}>|</span>
-                    <Link
-                        href="https://www.foodsport.com.hk/privacy-policy"
-                        target="_blank"
-                    >
-                        PRIVACY POLICY
-                    </Link>
                 </div>
 
                 <div className={styles.bottomSection}>
@@ -161,9 +170,11 @@ export default function Footer() {
                         </div>
                     </div>
                     <div className={styles.copyright}>
-                        ©COPYRIGHT {new Date().getFullYear()} BY SYMBOL OF
-                        ALLIANCE LIMITED & FOODSPORT FOUNDATION LIMITED, ALL
-                        RIGHTS RESERVED.
+                        <p>
+                            ©COPYRIGHT {new Date().getFullYear()} BY SYMBOL OF
+                            ALLIANCE LIMITED & FOODSPORT FOUNDATION LIMITED, ALL
+                            RIGHTS RESERVED.
+                        </p>
                     </div>
                 </div>
             </div>

@@ -12,15 +12,15 @@ const Avatar = ({ srcAvatar, firstName, lastName, isNav=false, pointer=false, si
     ? `mask mask-circle w-${size} h-${size} bg-accent text-accent-content select-none ${pointer && 'cursor-pointer'}`
     : "mask mask-squircle w-12 h-12 bg-accent text-accent-content select-none";
     const imgMaskClass = isNav
-    ? "mask mask-circle w-8 h-8"
-    : "mask mask-squircle w-12 h-12";
+    ? `mask mask-circle w-${size} h-${size} bg-accent text-accent-content select-none ${pointer && 'cursor-pointer'}`
+    : "mask mask-squircle w-12 h-12 bg-accent text-accent-content select-none";
     
     const handleClick = () => {
         router.push('/my/profile');
     }
 
     return (
-        <div onClick={() => isNav && handleClick()}>
+        <div onClick={() => pointer && handleClick()}>
             {srcAvatar === undefined ? (
                 <div className="avatar avatar-placeholder">
                     <div className={maskClass}>
@@ -30,7 +30,7 @@ const Avatar = ({ srcAvatar, firstName, lastName, isNav=false, pointer=false, si
             ) : (
                 <div className="avatar">
                     <div className={imgMaskClass}>
-                        <img src={srcAvatar} alt={`${firstName} ${lastName} avatar`} />
+                        <img src={process.env.NEXT_PUBLIC_SUPABASE_URL+ srcAvatar} alt={`${firstName} ${lastName} avatar`} />
                     </div>
                 </div>
             )}
