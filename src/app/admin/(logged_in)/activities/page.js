@@ -1,17 +1,18 @@
 "use client";
 import axiosClient from "@/utils/axios/api";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import EditActivityPage from "@/app/admin/(logged_in)/components/EditActivity";
 
 import ActivityStatus from "@/app/constants/ActivityStatus";
 const ActivityManagementPage = () => {
-    const [showEdit, setShowEdit] = useState(false);
     const [activity, setActivity] = useState(null);
     const [activities, setActivities] = useState([]);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const view = searchParams.get("view") || "list";
     const [tableLoading, setTableLoading] = useState(true);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -43,7 +44,10 @@ const ActivityManagementPage = () => {
     const tableHeading = [
         "Activity",
         "Type",
-        "Date & Time",
+        "Start Date",
+        "End Date",
+        "Start Time",
+        "End Time",
         "Location",
         "Capacity",
         "Status",
@@ -68,12 +72,14 @@ const ActivityManagementPage = () => {
 
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
-          
             {/* Create Activity Button */}
-            {showEdit ? (
+            {view === "edit" ? (
                 <EditActivityPage
                     activity={activity}
-                    setShowEdit={setShowEdit}
+                    setShowEdit={(val) => {
+                        if (!val) router.push("/admin/activities?view=list");
+                    }}
+                    setActivities={setActivities} //send setActivities
                 />
             ) : (
                 <>
@@ -105,7 +111,11 @@ const ActivityManagementPage = () => {
                                     heading={tableHeading}
                                     tableData={activities}
                                     tableType={"acitivityPage"}
-                                    shouldShowEdit={setShowEdit}
+                                    shouldShowEdit={() =>
+                                        router.push(
+                                            "/admin/activities?view=edit"
+                                        )
+                                    }
                                     setActivity={setActivity}
                                 />
                             </div>

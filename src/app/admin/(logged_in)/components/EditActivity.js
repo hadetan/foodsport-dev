@@ -1,36 +1,59 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
 
-export default function EditActivityPage({ activity, setShowEdit }) {
+export default function EditActivityPage({
+    activity: initialActivity,
+    setShowEdit,
+    setActivities,
+}) {
     const [form, setForm] = useState(null);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
-    const [imageFile, setImageFile] = useState([]);
+    const [imageFile, setImageFile] = useState(null);
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [success, setSuccess] = useState("");
     const [error, setError] = useState("");
     const [audit, setAudit] = useState({});
+    const [activity, setActivity] = useState(initialActivity);
     const router = useRouter();
     const fileInputRef = useRef();
+    const searchParams = useSearchParams();
+
     useEffect(() => {
+        if (!activity) return;
         setForm({
-            title: activity.title,
-            description: activity.description,
-            category: activity.category,
-            date: activity.date,
-            time: activity.time,
-            location: activity.location,
-            capacity: activity.capacity,
-            status: activity.status,
+            title: activity.title || "",
+            description: activity.description || "",
+            activityType: activity.activityType || "",
+            date: activity.startDate ? activity.startDate.slice(0, 10) : "",
+            location: activity.location || "",
+            capacity: activity.participantLimit || "",
+            status: activity.status || "active",
+            pointsPerParticipant: activity.pointsPerParticipant || "",
+            caloriesPerHour: activity.caloriesPerHour || "",
         });
         setAudit({
-            createdBy: activity.createdBy,
-            createdAt: activity.createdAt,
-            updatedBy: activity.updatedBy,
-            updatedAt: activity.updatedAt,
+            createdBy: activity.organizerName || "Unknown",
         });
-    }, []);
+        // Set imageFile from imageUrl if present
+        if (activity.imageUrl) {
+            setImageFile({ url: activity.imageUrl });
+        } else {
+            setImageFile(null);
+        }
+    }, [activity]);
+
+    if (!activity) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="alert alert-error text-lg">
+                    Activity data not found.
+                </div>
+            </div>
+        );
+    }
 
     if (!form) return <div className="loading loading-spinner"></div>;
 
@@ -44,28 +67,36 @@ export default function EditActivityPage({ activity, setShowEdit }) {
             form.description.replace(/<[^>]+>/g, "").length < 50
         )
             errs.description = "Description must be at least 50 characters.";
-        if (!form.category) errs.category = "Category is required.";
-        if (!form.date || !form.time)
-            errs.datetime = "Date and time are required.";
+        if (!form.activityType)
+            errs.activityType = "Activity type is required.";
+        if (!form.date /*|| !form.time*/) errs.datetime = "Date is required.";
         else {
-            const dt = new Date(`${form.date}T${form.time}`);
-            if (dt < new Date())
-                errs.datetime = "Date/time must be in the future.";
+            const dt = new Date(form.date /*+ "T" + form.time*/); // REMOVE time
+            if (dt < new Date()) errs.datetime = "Date must be in the future.";
         }
         if (!form.location) errs.location = "Location is required.";
         const cap = parseInt(form.capacity, 10);
         if (!cap || cap < 1 || cap > 1000)
             errs.capacity = "Capacity must be 1-1000.";
-        if (imageFile.length === 0)
-            errs.images = "At least one image is required.";
-        if (imageFile.length > 5) errs.images = "Maximum 5 images allowed.";
-        imageFile.forEach((img, idx) => {
-            if (img.type && !["image/jpeg", "image/png"].includes(img.type))
-                errs[`image_${idx}`] = "Only JPG/PNG allowed.";
-            if (img.size && img.size > 5 * 1024 * 1024)
-                errs[`image_${idx}`] = "Max size 5MB.";
-            // ...resolution check can be added here...
-        });
+        // Points per participant validation
+        const points = parseFloat(form.pointsPerParticipant);
+        if (isNaN(points) || points <= 0)
+            errs.pointsPerParticipant =
+                "Points per participant must be a positive number.";
+        // Calories per hour validation
+        const calories = parseFloat(form.caloriesPerHour);
+        if (isNaN(calories) || calories <= 0)
+            errs.caloriesPerHour =
+                "Calories per hour must be a positive number.";
+        if (imageFile === null) errs.images = "An image is required.";
+        if (
+            imageFile &&
+            imageFile.type &&
+            !["image/jpeg", "image/png"].includes(imageFile.type)
+        )
+            errs.image = "Only JPG/PNG allowed.";
+        if (imageFile && imageFile.size && imageFile.size > 5 * 1024 * 1024)
+            errs.image = "Max size 5MB.";
         setErrors(errs);
         return Object.keys(errs).length === 0;
     };
@@ -77,28 +108,66 @@ export default function EditActivityPage({ activity, setShowEdit }) {
     };
 
     const handleImageChange = (e) => {
-        const files = Array.from(e.target.files);
-        if (imageFile.length + files.length > 5) {
-            setError("Maximum 5 images allowed.");
-            return;
-        }
-        setImageFile((imgs) => [...imgs, ...files]);
+        const file = e.target.files[0];
+        if (!file) return;
+        setImageFile(file);
     };
 
-    const handleImageRemove = (idx) => {
-        setImageFile((imgs) => imgs.filter((_, i) => i !== idx));
+    const handleImageRemove = () => {
+        setImageFile(null);
     };
 
+    // PATCH API call
     const handleSave = async (status = "active") => {
         if (!validate()) return;
         setLoading(true);
         setError("");
         setSuccess("");
         try {
+            const activityId = activity.id;
+            const formData = new FormData();
+
+            // Only append fields that are non-empty (like Postman)
+            Object.entries(form).forEach(([key, value]) => {
+                if (key === "time") return; // REMOVE time from FormData
+                if (value !== "" && value !== null && value !== undefined) {
+                    formData.append(key, value);
+                }
+            });
+
+            // Only send image if changed
+            if (imageFile && imageFile.url === undefined) {
+                formData.append("image", imageFile);
+            }
+            if (activity.organizerId) {
+                formData.append("organizerId", activity.organizerId);
+            }
+
+            //use axios.
+            const res = await axios.patch(
+                `/api/admin/activities?activityId=${activityId}`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            const result = res.data;
+            //call setActivities and save prev value first then save new value using result.data.activity
+            if (setActivities && result.data && result.data.activity) {
+                setActivities((prev) =>
+                    prev.map((act) =>
+                        act.id === result.data.activity.id
+                            ? result.data.activity
+                            : act
+                    )
+                );
+            }
+           
             setSuccess("Activity updated successfully!");
-            setShowEdit(false);
+            router.push("/admin/activities"); // <-- redirect after save
         } catch (e) {
-            // Ensure error is always a string
             let msg = "Failed to update activity.";
             if (typeof e === "string") {
                 msg = e;
@@ -126,7 +195,7 @@ export default function EditActivityPage({ activity, setShowEdit }) {
             <div className="w-full flex justify-start mb-4">
                 <button
                     className="btn btn-primary"
-                    onClick={() => router.push("/admin/activities")}
+                    onClick={() => router.push("/admin/activities?view=list")}
                     type="button"
                 >
                     &larr; Back
@@ -196,57 +265,49 @@ export default function EditActivityPage({ activity, setShowEdit }) {
                             </span>
                         )}
                     </div>
-                    {/* Category */}
+                    {/* Activity Type */}
                     <div className="form-control w-full">
                         <label className="label text-lg font-semibold mb-2">
-                            Category
+                            Activity Type
                         </label>
                         <select
                             className="select select-bordered select-lg w-full"
-                            name="category"
-                            value={form.category}
+                            name="activityType"
+                            value={form.activityType}
                             onChange={handleInput}
                             required
                         >
-                            <option value="">Select category</option>
-                            <option value="sports">Sports</option>
-                            <option value="charity">Charity</option>
-                            {/* ... */}
+                            <option value="">Select activity type</option>
+                            <option value="kayak">Kayak</option>
+                            <option value="hiking">Hiking</option>
+                            <option value="yoga">Yoga</option>
+                            <option value="fitness">Fitness</option>
+                            <option value="running">Running</option>
+                            <option value="cycling">Cycling</option>
+                            <option value="swimming">Swimming</option>
+                            <option value="dancing">Dancing</option>
+                            <option value="boxing">Boxing</option>
+                            <option value="other">Other</option>
                         </select>
-                        {errors.category && (
+                        {errors.activityType && (
                             <span className="text-error text-base">
-                                {errors.category}
+                                {errors.activityType}
                             </span>
                         )}
                     </div>
-                    {/* Date & Time */}
-                    <div className="flex flex-col md:flex-row gap-4 w-full">
-                        <div className="form-control flex-1">
-                            <label className="label text-lg font-semibold mb-2">
-                                Date
-                            </label>
-                            <input
-                                type="date"
-                                className="input input-bordered input-lg w-full"
-                                name="date"
-                                value={form.date}
-                                onChange={handleInput}
-                                required
-                            />
-                        </div>
-                        <div className="form-control flex-1">
-                            <label className="label text-lg font-semibold mb-2">
-                                Time
-                            </label>
-                            <input
-                                type="time"
-                                className="input input-bordered input-lg w-full"
-                                name="time"
-                                value={form.time}
-                                onChange={handleInput}
-                                required
-                            />
-                        </div>
+                    {/* Date */}
+                    <div className="form-control w-full">
+                        <label className="label text-lg font-semibold mb-2">
+                            Date
+                        </label>
+                        <input
+                            type="date"
+                            className="input input-bordered input-lg w-full"
+                            name="date"
+                            value={form.date}
+                            onChange={handleInput}
+                            required
+                        />
                     </div>
                     {errors.datetime && (
                         <span className="text-error text-base">
@@ -292,6 +353,48 @@ export default function EditActivityPage({ activity, setShowEdit }) {
                             </span>
                         )}
                     </div>
+                    {/* Points Per Participant */}
+                    <div className="form-control w-full">
+                        <label className="label text-lg font-semibold mb-2">
+                            Points Per Participant
+                        </label>
+                        <input
+                            type="number"
+                            className="input input-bordered input-lg w-full"
+                            name="pointsPerParticipant"
+                            value={form.pointsPerParticipant}
+                            onChange={handleInput}
+                            min={0.01}
+                            step="any"
+                            required
+                        />
+                        {errors.pointsPerParticipant && (
+                            <span className="text-error text-base">
+                                {errors.pointsPerParticipant}
+                            </span>
+                        )}
+                    </div>
+                    {/* Calories Per Hour */}
+                    <div className="form-control w-full">
+                        <label className="label text-lg font-semibold mb-2">
+                            Calories Per Hour
+                        </label>
+                        <input
+                            type="number"
+                            className="input input-bordered input-lg w-full"
+                            name="caloriesPerHour"
+                            value={form.caloriesPerHour}
+                            onChange={handleInput}
+                            min={0.01}
+                            step="any"
+                            required
+                        />
+                        {errors.caloriesPerHour && (
+                            <span className="text-error text-base">
+                                {errors.caloriesPerHour}
+                            </span>
+                        )}
+                    </div>
                     {/* Images */}
                     <div className="form-control w-full">
                         <label className="label text-lg font-semibold mb-2">
@@ -301,60 +404,42 @@ export default function EditActivityPage({ activity, setShowEdit }) {
                             type="file"
                             className="file-input file-input-bordered file-input-lg w-full"
                             accept="image/jpeg,image/png"
-                            multiple
+                            multiple={false}
                             ref={fileInputRef}
                             onChange={handleImageChange}
-                            disabled={imageFile.length >= 5}
+                            disabled={!!imageFile}
                         />
                         {errors.images && (
                             <span className="text-error text-base">
                                 {errors.images}
                             </span>
                         )}
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-2">
-                            {imageFile.map((img, idx) => (
-                                <div key={idx} className="card relative">
+                        {errors.image && (
+                            <span className="text-error text-base">
+                                {errors.image}
+                            </span>
+                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-2 mt-2">
+                            {imageFile && (
+                                <div className="card relative">
                                     <img
                                         src={
-                                            img.url
-                                                ? img.url
-                                                : URL.createObjectURL(img)
+                                            imageFile.url
+                                                ? imageFile.url
+                                                : URL.createObjectURL(imageFile)
                                         }
-                                        alt={`img-${idx}`}
+                                        alt={`img-0`}
                                         className="w-full h-24 object-cover rounded-lg"
                                     />
                                     <button
                                         type="button"
                                         className="btn btn-xs btn-error absolute top-1 right-1"
-                                        onClick={() => handleImageRemove(idx)}
+                                        onClick={handleImageRemove}
                                     >
                                         ✕
                                     </button>
-                                    {/* Drag handle for reordering */}
-                                    <span
-                                        className="btn btn-xs btn-ghost absolute bottom-1 right-1 cursor-move"
-                                        draggable
-                                        onDragStart={(e) =>
-                                            e.dataTransfer.setData("idx", idx)
-                                        }
-                                        onDrop={(e) => {
-                                            const from = parseInt(
-                                                e.dataTransfer.getData("idx"),
-                                                10
-                                            );
-                                            handleImageReorder(from, idx);
-                                        }}
-                                        onDragOver={(e) => e.preventDefault()}
-                                    >
-                                        ⇅
-                                    </span>
-                                    {errors[`image_${idx}`] && (
-                                        <span className="text-error text-base">
-                                            {errors[`image_${idx}`]}
-                                        </span>
-                                    )}
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                     {/* Status */}
@@ -376,7 +461,7 @@ export default function EditActivityPage({ activity, setShowEdit }) {
                     {/* Audit Fields */}
                     <div className="form-control w-full">
                         <label className="label text-lg font-semibold mb-2">
-                            Created By
+                            Organized By
                         </label>
                         <input
                             className="input input-bordered input-lg w-full"
@@ -389,57 +474,7 @@ export default function EditActivityPage({ activity, setShowEdit }) {
                                 }))
                             }
                             placeholder="Created by"
-                        />
-                    </div>
-                    <div className="form-control w-full">
-                        <label className="label text-lg font-semibold mb-2">
-                            Created At
-                        </label>
-                        <input
-                            className="input input-bordered input-lg w-full"
-                            name="createdAt"
-                            value={audit.createdAt || ""}
-                            onChange={(e) =>
-                                setAudit((a) => ({
-                                    ...a,
-                                    createdAt: e.target.value,
-                                }))
-                            }
-                            placeholder="Created at"
-                        />
-                    </div>
-                    <div className="form-control w-full">
-                        <label className="label text-lg font-semibold mb-2">
-                            Updated By
-                        </label>
-                        <input
-                            className="input input-bordered input-lg w-full"
-                            name="updatedBy"
-                            value={audit.updatedBy || ""}
-                            onChange={(e) =>
-                                setAudit((a) => ({
-                                    ...a,
-                                    updatedBy: e.target.value,
-                                }))
-                            }
-                            placeholder="Updated by"
-                        />
-                    </div>
-                    <div className="form-control w-full">
-                        <label className="label text-lg font-semibold mb-2">
-                            Updated At
-                        </label>
-                        <input
-                            className="input input-bordered input-lg w-full"
-                            name="updatedAt"
-                            value={audit.updatedAt || ""}
-                            onChange={(e) =>
-                                setAudit((a) => ({
-                                    ...a,
-                                    updatedAt: e.target.value,
-                                }))
-                            }
-                            placeholder="Updated at"
+                            disabled
                         />
                     </div>
                     {/* Actions */}

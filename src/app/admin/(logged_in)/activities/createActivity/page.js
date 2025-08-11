@@ -6,6 +6,8 @@ import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import RichTextEditor from "@/app/shared/components/RichTextEditor";
 import axiosClient from "@/utils/axios/api";
 import ActivityStatus from "@/app/constants/ActivityStatus";
+import MAX_IMAGE_SIZE_MB  from '@/app/constants/ActivityStatus';
+
 
 const CreateActivityPage = () => {
     const router = useRouter();
@@ -17,7 +19,9 @@ const CreateActivityPage = () => {
         endDateTime: "",
         location: "",
         capacity: "",
-        images: [],
+        pointsPerParticipant: "",
+        caloriesPerHour: "",
+        image: null,
         status: "draft",
     });
     const [error, setError] = useState("");
@@ -31,63 +35,30 @@ const CreateActivityPage = () => {
         }));
     };
 
-    const handlePostActivities = async (activity) => {
-        try {
-            setLoading(true);
-            const formData = new FormData();
-            Object.entries(activity).forEach(([key, value]) => {
-                if (
-                    key === "images" &&
-                    Array.isArray(value) &&
-                    value.length > 0
-                ) {
-                    value.forEach((img) => {
-                        formData.append("image", img);
-                    });
-                } else if (
-                    value !== undefined &&
-                    value !== null &&
-                    typeof value !== "object"
-                ) {
-                    // Only append primitive values (string, number, boolean)
-                    formData.append(key, value);
-                }
-                // Skip non-image objects/arrays (except images)
-            });
-            const response = await axiosClient.post(
-                "/admin/activities",
-                formData,
-                {
-                    headers: { "Content-Type": "multipart/form-data" },
-                }
-            );
-            return response.data;
-        } catch (err) {
-            throw err;
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleImageUpload = (e) => {
-        const files = Array.from(e.target.files);
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+            setError("Selected image cannot exceed 10 MB.");
+            return;
+        }
+        setError("");
         setFormData((prev) => ({
             ...prev,
-            images: [...prev.images, ...files],
+            image: file,
         }));
     };
 
-    const removeImage = (index) => {
+    const removeImage = () => {
         setFormData((prev) => ({
             ...prev,
-            images: prev.images.filter((_, i) => i !== index),
+            image: null,
         }));
     };
 
     const handleSubmit = async () => {
         try {
             setLoading(true);
-            // Convert to ISO string if value exists
             const startISO = new Date(formData.startDateTime).toISOString();
             const endISO = new Date(formData.endDateTime).toISOString();
             const payload = {
@@ -101,12 +72,27 @@ const CreateActivityPage = () => {
                 description: formData.description,
                 status: formData.status,
                 participantLimit: Number(formData.capacity),
-                images: formData.images, // Pass images array for FormData
-                // Remove imageUrl, backend will set it after upload
+                pointsPerParticipant: Number(formData.pointsPerParticipant),
+                caloriesPerHour: Number(formData.caloriesPerHour),
+                image: formData.image,
             };
 
-            await handlePostActivities(payload);
+            const formDataToSend = new FormData();
+            Object.entries(payload).forEach(([key, value]) => {
+                if (key === "image" && value) {
+                    formDataToSend.set("image", value);
+                } else if (
+                    value !== undefined &&
+                    value !== null &&
+                    typeof value !== "object"
+                ) {
+                    formDataToSend.set(key, value);
+                }
+            });
 
+            await axiosClient.post("/admin/activities", formDataToSend, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
             router.push("/admin/activities");
         } catch (err) {
             setError(err?.response?.data?.error || err.message);
@@ -168,10 +154,16 @@ const CreateActivityPage = () => {
                                     <option value="">
                                         Select activity type
                                     </option>
+                                    <option value="kayak">Kayak</option>
+                                    <option value="hiking">Hiking</option>
                                     <option value="yoga">Yoga</option>
+                                    <option value="fitness">Fitness</option>
                                     <option value="running">Running</option>
                                     <option value="cycling">Cycling</option>
                                     <option value="swimming">Swimming</option>
+                                    <option value="dancing">Dancing</option>
+                                    <option value="boxing">Boxing</option>
+                                    <option value="other">Other</option>
                                 </select>
                             </label>
                         </div>
@@ -261,39 +253,78 @@ const CreateActivityPage = () => {
                             </label>
                         </div>
 
+                        {/* Points Per Participant */}
+                        <div className="form-control flex items-center gap-4">
+                            <span className="w-40 text-white text-base">
+                                Points Per Participant
+                            </span>
+                            <label className="flex-1">
+                                <input
+                                    type="number"
+                                    name="pointsPerParticipant"
+                                    placeholder="Enter points per participant"
+                                    className="input input-bordered input-md text-base"
+                                    value={formData.pointsPerParticipant}
+                                    onChange={handleFormChange}
+                                    min="0"
+                                />
+                            </label>
+                        </div>
+
+                        {/* Calories Per Hour */}
+                        <div className="form-control flex items-center gap-4">
+                            <span className="w-40 text-white text-base">
+                                Calories Per Hour
+                            </span>
+                            <label className="flex-1">
+                                <input
+                                    type="number"
+                                    name="caloriesPerHour"
+                                    placeholder="Enter calories per hour"
+                                    className="input input-bordered input-md text-base"
+                                    value={formData.caloriesPerHour}
+                                    onChange={handleFormChange}
+                                    min="0"
+                                />
+                            </label>
+                        </div>
+
                         {/* Images */}
                         <div className="form-control flex items-center gap-4">
                             <span className="w-40 text-white text-base">
-                                Upload Images
+                                Upload Image
                             </span>
                             <label className="flex-1">
                                 <input
                                     type="file"
                                     className="file-input file-input-bordered file-input-md text-base"
                                     accept="image/*"
-                                    multiple
                                     onChange={handleImageUpload}
                                 />
                             </label>
                         </div>
+                        {error && (
+                            <div className="mb-4">
+                                <ErrorAlert
+                                    message={error}
+                                    onClose={() => setError("")}
+                                />
+                            </div>
+                        )}
 
-                        {formData.images.length > 0 && (
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                                {formData.images.map((image, index) => (
-                                    <div key={index} className="relative group">
-                                        <img
-                                            src={URL.createObjectURL(image)}
-                                            alt={`Preview ${index + 1}`}
-                                            className="w-full h-40 object-cover rounded-lg"
-                                        />
-                                        <button
-                                            className="btn btn-circle btn-md btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-base"
-                                            onClick={() => removeImage(index)}
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                ))}
+                        {formData.image && (
+                            <div className="relative group mt-4">
+                                <img
+                                    src={URL.createObjectURL(formData.image)}
+                                    alt="Preview"
+                                    className="w-full h-40 object-cover rounded-lg"
+                                />
+                                <button
+                                    className="btn btn-circle btn-md btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-base"
+                                    onClick={removeImage}
+                                >
+                                    ×
+                                </button>
                             </div>
                         )}
 
