@@ -6,3 +6,4 @@ export default [
     "cancelled",
     "draft",
 ];
+export const MAX_IMAGE_SIZE_MB = 10;
