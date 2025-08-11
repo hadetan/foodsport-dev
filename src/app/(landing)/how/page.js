@@ -8,7 +8,7 @@ export default function HowPage() {
             <div className={styles.heroWrapper}>
                 <Image
                     src="/how.png"
-                    alt="How"
+                    alt="How Does It Work"
                     width={1784}
                     height={400}
                     className={styles.backgroundImage}

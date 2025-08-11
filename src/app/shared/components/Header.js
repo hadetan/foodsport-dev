@@ -4,7 +4,7 @@ import Image from "next/image";
 import styles from "@/app/shared/css/Header.module.css";
 import Link from "next/link";
 import { useAuth } from "@/app/shared/contexts/authContext";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BsCart2 } from "react-icons/bs";
 import { FaSearch } from "react-icons/fa";
@@ -16,6 +16,8 @@ export default function Header() {
     const { authToken } = useAuth();
     const { user, loading } = useUser();
     const [mounted, setMounted] = useState(false);
+    const pathname = usePathname();
+    const [hoveredIdx, setHoveredIdx] = useState(null);
 
     //#region This fixed the hydration error of mismatched authToken. The authToken is populated only after the mounting, so we wait to be mounted first before using the authToken.
     useEffect(() => {
@@ -23,6 +25,30 @@ export default function Header() {
     }, []);
     if (!mounted) return null;
     //#endregion
+
+    const navLinks = [
+        {
+            label: "HOME",
+            href: authToken ? "/my/" : "/",
+        },
+        {
+            label: "JOIN ACTIVITIES",
+            href: authToken ? "/my/activities" : "/activities",
+        },
+        {
+            label: "REDEEM REWARDS",
+            href: null,
+        },
+        {
+            label: "HOW DOES IT WORK",
+            href: "/how",
+        },
+    ];
+
+    // Find the active index based on current pathname
+    const activeIdx = navLinks.findIndex(
+        (link) => link.href && pathname === link.href
+    );
 
     return (
         <header className={styles.headerWrapper}>
@@ -78,26 +104,32 @@ export default function Header() {
             </div>
             <nav className={styles.navBar}>
                 <ul className={styles.navList}>
-                    <li className={styles.active}>
-                        <Link
-                            href={authToken ? "/my/" : "/"}
-                            style={{ textDecoration: "none", color: "inherit" }}
+                    {navLinks.map((link, idx) => (
+                        <li
+                            key={link.label}
+                            className={[
+                                idx === activeIdx ? styles.active : "",
+                                idx === hoveredIdx ? styles.navHover : "",
+                            ].join(" ")}
+                            onMouseEnter={() => setHoveredIdx(idx)}
+                            onMouseLeave={() => setHoveredIdx(null)}
+                            style={{ cursor: "pointer" }}
                         >
-                            HOME
-                        </Link>
-                    </li>
-                    <li>
-                        <Link
-                            href={authToken ? "/my/activities" : "/activities"}
-                            style={{ textDecoration: "none", color: "inherit" }}
-                        >
-                            JOIN ACTIVITIES
-                        </Link>
-                    </li>
-                    <li>REDEEM REWARDS</li>
-                    <li>
-                        <Link href="/how">HOW DOES IT WORK</Link>
-                    </li>
+                            {link.href ? (
+                                <Link
+                                    href={link.href}
+                                    style={{
+                                        textDecoration: "none",
+                                        color: "inherit",
+                                    }}
+                                >
+                                    {link.label}
+                                </Link>
+                            ) : (
+                                link.label
+                            )}
+                        </li>
+                    ))}
                 </ul>
             </nav>
         </header>
