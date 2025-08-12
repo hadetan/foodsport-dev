@@ -3,26 +3,21 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/utils/axios/api";
+import { useUsers } from "@/app/shared/contexts/usersContenxt";
 
 const UserDetailPage = () => {
     const { id } = useParams();
     const router = useRouter();
+    const { users, loading: usersLoading, setUsers } = useUsers();
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [statusLoading, setStatusLoading] = useState(false);
 
     useEffect(() => {
-        const fetchUser = async () => {
-            setLoading(true);
-            try {
-                const { data } = await api.get(`/admin/users?id=${id}`);
-                setUser(data.users?.[0] || null);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchUser();
-    }, [id]);
+        if (users && users.length > 0) {
+            const filtered = users.filter((u) => String(u.id) === String(id));
+            setUser(filtered.length > 0 ? filtered[0] : null);
+        }
+    }, [users, id]);
 
     // Updated function to match the route.js PATCH API requirements
     const handleUserStatus = async () => {
@@ -40,6 +35,11 @@ const UserDetailPage = () => {
 
             if (data) {
                 setUser({ ...user, isActive: newStatus });
+                setUsers(
+                    users.map((u) =>
+                        u.id === user.id ? { ...u, isActive: newStatus } : u
+                    )
+                );
             }
         } catch (err) {
             console.error("Status update error:", err);
@@ -49,8 +49,20 @@ const UserDetailPage = () => {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (!user) return <div>User not found.</div>;
+    if (usersLoading) return <div>Loading...</div>;
+    if (!user)
+        return (
+            <div className="flex items-center justify-center h-[60vh]">
+                <div className="text-center">
+                    <div className="text-5xl font-extrabold text-purple-500 mb-4">
+                        User Not Found
+                    </div>
+                    <div className="text-lg text-gray-300">
+                        Sorry, we couldn't find a user with this ID.
+                    </div>
+                </div>
+            </div>
+        );
 
     return (
         <div className="p-6">
@@ -131,9 +143,7 @@ const UserDetailPage = () => {
                             Date of Birth
                         </span>
                         <span className="text-gray-100 flex-1">
-                            {user.dateOfBirth
-                                ? user.dateOfBirth.split("T")[0]
-                                : ""}
+                            {user.dateOfBirth.split("T")[0]}
                         </span>
                     </div>
                     <div className="flex p-4">

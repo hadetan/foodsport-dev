@@ -457,7 +457,6 @@ export default function EditActivityPage({
                             <option value="active">Active</option>
                             <option value="closed">Closed</option>
                             <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
                             <option value="draft">Draft</option>
                         </select>
                     </div>

@@ -8,13 +8,10 @@ const statusBadgeClass = {
     active: "bg-green-500 text-white btn-md",
     closed: "bg-gray-500 text-white btn-md",
     completed: "bg-blue-500 text-white btn-md",
-    cancelled: "bg-red-700 text-white btn-md",
     draft: "bg-pink-400 text-white btn-md",
 };
 const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
     const router = useRouter();
-    const [showConfirm, setShowConfirm] = useState(false);
-    const [isDeleted, setIsDeleted] = useState(false);
 
     const handleEdit = () => {
         shouldShowEdit(true);
@@ -23,20 +20,7 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
         router.push("/admin/activities?view=edit");
     };
 
-    const handlePowerClick = () => {
-        setShowConfirm(true);
-    };
-
-    const handleConfirmYes = () => {
-        setIsDeleted(true);
-        setShowConfirm(false);
-    };
-
-    const handleConfirmNo = () => {
-        setShowConfirm(false);
-    };
-
-    if (isDeleted) return null;
+   
 
     return (
         <>
@@ -137,54 +121,7 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                         </button>
                     </div>
                     {/* Confirmation Popup */}
-                    {showConfirm && (
-                        <div
-                            className="absolute left-1/2 transform -translate-x-1/2 mt-4 z-50"
-                            style={{ position: "absolute" }}
-                        >
-                            <div
-                                className="bg-[#6C63FF] rounded-xl shadow-xl p-8 min-w-[340px] flex flex-col items-center animate-zoom-in"
-                                style={{
-                                    animation:
-                                        "zoomIn 0.2s cubic-bezier(0.4,0,0.2,1)",
-                                }}
-                            >
-                                <div className="mb-6 text-lg font-semibold text-white text-center">
-                                    Are you sure want to close the activity?
-                                </div>
-                                <div className="flex gap-4 justify-center">
-                                    <button
-                                        className="px-6 py-2 rounded-lg font-bold shadow transition bg-white text-[#6C63FF] hover:bg-purple-100 focus:bg-purple-200"
-                                        onClick={handleConfirmYes}
-                                    >
-                                        Yes
-                                    </button>
-                                    <button
-                                        className="px-6 py-2 rounded-lg font-bold shadow transition bg-transparent text-white border border-white hover:bg-white hover:text-[#6C63FF]"
-                                        onClick={handleConfirmNo}
-                                    >
-                                        No
-                                    </button>
-                                </div>
-                            </div>
-                            <style jsx>{`
-                                @keyframes zoomIn {
-                                    0% {
-                                        opacity: 0;
-                                        transform: scale(0.7);
-                                    }
-                                    100% {
-                                        opacity: 1;
-                                        transform: scale(1);
-                                    }
-                                }
-                                .animate-zoom-in {
-                                    animation: zoomIn 0.2s
-                                        cubic-bezier(0.4, 0, 0.2, 1);
-                                }
-                            `}</style>
-                        </div>
-                    )}
+                    
                 </td>
             </tr>
         </>

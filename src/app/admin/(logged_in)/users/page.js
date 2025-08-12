@@ -2,26 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import ErrorAlert from "@/app/shared/components/ErrorAlert";
-import UserRow from "@/app/admin/(logged_in)/users/userRow";
-import { Search, CheckCircle2, Menu } from "lucide-react";
 import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import api from "@/utils/axios/api";
+import { useUsers } from "@/app/shared/contexts/usersContenxt";
+
 const UserManagementPage = () => {
     const router = useRouter();
-    const [users, setUsers] = useState(null);
-    const [filteredUsers, setFilteredUsers] = useState(null);
+    const { users, loading } = useUsers();
+    const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
-    const [loading, setLoading] = useState(false);
-    const [tableLoading, setTableLoading] = useState(true);
-    const [notification, setNotification] = useState({
-        show: false,
-        message: "",
-        type: "",
-    });
 
     // Hong Kong regions
     const hongKongRegions = [
@@ -45,63 +37,26 @@ const UserManagementPage = () => {
         "Yuen Long",
     ];
 
-    const handleGetUsers = async () => {
-        setTableLoading(true);
-        try {
-            // Build query params similar to route.js
-            const params = {
-                search: searchQuery,
-                status:
-                    statusFilter === "all" ? "" : statusFilter.toLowerCase(),
-                page: 1,
-                limit: 20,
-                sortBy: "created_at",
-                sortOrder: "desc",
-            };
-            const queryString = new URLSearchParams(params).toString();
-            const { data } = await api.get(`/admin/users?${queryString}`);
-            setUsers(data.users);
-            setFilteredUsers(data.users);
-        } catch (err) {
-            setNotification({
-                show: true,
-                message: "Failed to fetch users.",
-                type: "error",
-            });
-        } finally {
-            setTableLoading(false);
+    useEffect(() => {
+        if (!Array.isArray(users) || loading) {
+            setFilteredUsers([]);
+            return;
         }
-    };
-
-    useEffect(() => {
-        handleGetUsers();
-    }, []);
-
-    useEffect(() => {
-        handleGetUsers();
-    }, [statusFilter]);
-
-    useEffect(() => {
-        if (!users) return;
 
         const filtered = users.filter((user) => {
-            const fullName = `${user.firstname} ${
-                user.lastname || ""
-            }`.toLowerCase();
-            const matchesSearch =
-                fullName.includes(searchQuery.toLowerCase()) ||
-                user.email.toLowerCase().includes(searchQuery.toLowerCase());
-            
-            const matchesStatus = 
-                statusFilter === "all" || 
+            const fullName = `${user.firstname} ${user.lastname}`.toLowerCase();
+            const matchesSearch = fullName.includes(searchQuery.toLowerCase());
+
+            const matchesStatus =
+                statusFilter === "all" ||
                 (statusFilter === "active" && user.isActive) ||
                 (statusFilter === "inactive" && !user.isActive);
-            
+
             return matchesSearch && matchesStatus;
         });
 
         setFilteredUsers(filtered);
-    }, [searchQuery, users, statusFilter]);
+    }, [searchQuery, users, statusFilter, loading]);
 
     // Add handler for row click
     const handleRowClick = (userId) => {
@@ -134,10 +89,15 @@ const UserManagementPage = () => {
 
                 {/* Enhanced Filters */}
                 <div className="flex flex-wrap gap-2">
-                    <Dropdown 
-                        items={statusOfUser} 
-                        name="Status" 
-                        selectedValue={statusFilter === "all" ? "All" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+                    <Dropdown
+                        items={statusOfUser}
+                        name="Status"
+                        selectedValue={
+                            statusFilter === "all"
+                                ? "All"
+                                : statusFilter.charAt(0).toUpperCase() +
+                                  statusFilter.slice(1)
+                        }
                         onSelect={handleStatusChange}
                     />
 
@@ -155,7 +115,7 @@ const UserManagementPage = () => {
 
             {/* User Table */}
             <div className="overflow-x-auto rounded-lg shadow relative">
-                {tableLoading ? (
+                {loading ? (
                     <div className="min-h-[300px] flex items-center justify-center">
                         <span className="loading loading-spinner loading-lg"></span>
                     </div>
@@ -165,7 +125,7 @@ const UserManagementPage = () => {
                             heading={tableHeading}
                             tableData={filteredUsers}
                             tableType={"userPage"}
-                            onRowClick={handleRowClick} // Pass click handler to Table
+                            onRowClick={handleRowClick}
                         />
                     </div>
                 )}
