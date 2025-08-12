@@ -51,8 +51,7 @@ const ActivityManagementPage = () => {
         "Location",
         "Capacity",
         "Status",
-        "Actions",
-    ];
+        "Actions",    ];
     const getActivities = async () => {
         try {
             setTableLoading(true);
