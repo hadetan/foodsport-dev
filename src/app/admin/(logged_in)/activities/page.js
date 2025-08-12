@@ -1,13 +1,14 @@
 "use client";
 import axiosClient from "@/utils/axios/api";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import EditActivityPage from "@/app/admin/(logged_in)/components/EditActivity";
 
 import ActivityStatus from "@/app/constants/ActivityStatus";
-const ActivityManagementPage = () => {
+
+function ActivityManagementPageContent() {
     const [activity, setActivity] = useState(null);
     const [activities, setActivities] = useState([]);
     const router = useRouter();
@@ -125,6 +126,12 @@ const ActivityManagementPage = () => {
             )}
         </div>
     );
-};
+}
 
-export default ActivityManagementPage;
+export default function ActivityManagementPage() {
+    return (
+        <Suspense>
+            <ActivityManagementPageContent />
+        </Suspense>
+    );
+}
