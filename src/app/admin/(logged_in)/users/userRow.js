@@ -13,11 +13,22 @@ export const UserRow = ({ user, onRowClick }) => {
                 <div className="flex items-center space-x-3">
                     <div className="avatar">
                         <div className="mask mask-squircle w-12 h-12">
-                            <Avatar
-                                srcAvatar={user.avatar}
-                                firstName={user.firstname}
-                                lastName={user.lastname}
-                            />
+                            {user.profilePictureUrl ? (
+                                <img
+                                    src={
+                                        process.env.NEXT_PUBLIC_SUPABASE_URL +
+                                        user.profilePictureUrl
+                                    }
+                                    alt="Profile"
+                                    className="w-12 h-12 rounded-full object-cover border border-gray-400"
+                                />
+                            ) : (
+                                <Avatar
+                                    srcAvatar={user.avatar}
+                                    firstName={user.firstname}
+                                    lastName={user.lastname}
+                                />
+                            )}
                         </div>
                     </div>
                     <div>
@@ -29,15 +40,14 @@ export const UserRow = ({ user, onRowClick }) => {
                                     : "")}
                         </div>
                         <div className="text-sm opacity-50">{user.email}</div>
-                       
                     </div>
                 </div>
             </td>
             <td>
                 <div className="text-sm">
-                <div className="text-l opacity-100">
-                         {new Date(user.joinDate).toLocaleDateString()}
-                        </div>
+                    <div className="text-l opacity-100">
+                        {new Date(user.joinDate).toLocaleDateString()}
+                    </div>
                 </div>
             </td>
             <td>
