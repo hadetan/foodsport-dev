@@ -1,21 +1,38 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-// import api from "@/utils/axios/api"; // Uncomment and use for real API calls
+import axios from "axios";
+
+// Fetch dashboard data using axios
+const getDashboardData = async (dateRange) => {
+    try {
+        const res = await axios.get(
+            `/api/admin/dashboard?dateRange=${dateRange}`
+        );
+        return res.data;
+    } catch (err) {
+        return { error: err.message };
+    }
+};
 
 const DashboardPage = () => {
     const [dateRange, setDateRange] = useState("7d");
     const [loading, setLoading] = useState(false);
     const [theme, setTheme] = useState("light");
-    // Placeholder for fetched dashboard data
     const [dashboard, setDashboard] = useState({
-        participants: "0",
-           donations: "HK$0",
-           volunteers: "0",
-           events: "0",
-           recentSignups: [],
-           loading: true,
-           error: null
+        stats: {
+            totalUsers: 0,
+            activeActivities: 0,
+            totalRewards: 0,
+            totalDonations: 0,
+            dailyStats: {
+                newUsers: 0,
+                completedActivities: 0,
+                caloriesDonated: 0,
+            },
+        },
+        recentSignups: [],
+        error: null,
     });
 
     useEffect(() => {
@@ -38,8 +55,28 @@ const DashboardPage = () => {
             attributeFilter: ["data-theme"],
         });
 
-        // Fetch dashboard data here (replace with real API)
-        // api.get('/admin/dashboard?range=' + dateRange).then(res => setDashboard(res.data));
+        // Fetch dashboard data from API
+        setLoading(true);
+        getDashboardData(dateRange).then((data) => {
+            setDashboard(
+                data || {
+                    stats: {
+                        totalUsers: 0,
+                        activeActivities: 0,
+                        totalRewards: 0,
+                        totalDonations: 0,
+                        dailyStats: {
+                            newUsers: 0,
+                            completedActivities: 0,
+                            caloriesDonated: 0,
+                        },
+                    },
+                    recentSignups: [],
+                    error: "No data",
+                }
+            );
+            setLoading(false);
+        });
 
         return () => observer.disconnect();
     }, [dateRange]);
@@ -48,8 +85,8 @@ const DashboardPage = () => {
 
     const handleRefresh = async () => {
         setLoading(true);
-        // Fetch dashboard data here (replace with real API)
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const data = await getDashboardData(dateRange);
+        setDashboard(data);
         setLoading(false);
     };
 
@@ -92,7 +129,7 @@ const DashboardPage = () => {
                             </span>
                         </div>
                         <div className="stat-value">
-                            {dashboard.participants}
+                            {dashboard?.stats?.totalUsers ?? 0}
                         </div>
                         <div className="stat-desc opacity-80">All time</div>
                     </div>
@@ -102,7 +139,9 @@ const DashboardPage = () => {
                         <div className="stat-title opacity-80">
                             <span className="font-bold">Donations</span>
                         </div>
-                        <div className="stat-value">{dashboard.donations}</div>
+                        <div className="stat-value">
+                            {dashboard?.stats?.totalDonations ?? 0}
+                        </div>
                         <div className="stat-desc opacity-80">Total funds</div>
                     </div>
                 </div>
@@ -111,7 +150,9 @@ const DashboardPage = () => {
                         <div className="stat-title opacity-80">
                             <span className="font-bold">Volunteers</span>
                         </div>
-                        <div className="stat-value">{dashboard.volunteers}</div>
+                        <div className="stat-value">
+                            {dashboard?.stats?.totalRewards ?? 0}
+                        </div>
                         <div className="stat-desc opacity-80">Registered</div>
                     </div>
                 </div>
@@ -120,7 +161,9 @@ const DashboardPage = () => {
                         <div className="stat-title opacity-80">
                             <span className="font-bold">Events</span>
                         </div>
-                        <div className="stat-value">{dashboard.events}</div>
+                        <div className="stat-value">
+                            {dashboard?.stats?.activeActivities ?? 0}
+                        </div>
                         <div className="stat-desc opacity-80">All time</div>
                     </div>
                 </div>
@@ -156,6 +199,9 @@ const DashboardPage = () => {
                                         <span className="font-bold">User</span>
                                     </th>
                                     <th>
+                                        <span className="font-bold">Email</span>
+                                    </th>
+                                    <th>
                                         <span className="font-bold">Date</span>
                                     </th>
                                     <th>
@@ -163,30 +209,79 @@ const DashboardPage = () => {
                                             Status
                                         </span>
                                     </th>
+                                    <th>
+                                        <span className="font-bold">
+                                            Activities
+                                        </span>
+                                    </th>
+                                    <th>
+                                        <span className="font-bold">
+                                            Points
+                                        </span>
+                                    </th>
+                                    <th>
+                                        <span className="font-bold">
+                                            Badges
+                                        </span>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {dashboard.recentSignups.map((signup) => (
-                                    <tr key={`${signup.name}-${signup.date}`}>
-                                        {" "}
-                                        <td>{signup.name}</td>
-                                        <td>{signup.date}</td>
-                                        <td>
-                                            <div
-                                                className={`badge gap-2 ${
-                                                    signup.status === "Active"
-                                                        ? "badge-success"
-                                                        : signup.status ===
-                                                          "Pending"
-                                                        ? "badge-warning"
-                                                        : "badge-ghost"
-                                                }`}
-                                            >
-                                                {signup.status}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {(dashboard?.recentSignups ?? []).map(
+                                    (signup) => (
+                                        <tr key={signup.id}>
+                                            <td className="flex items-center gap-2">
+                                                {signup.profilePictureUrl ? (
+                                                    <img
+                                                        src={
+                                                            signup.profilePictureUrl
+                                                        }
+                                                        alt="Profile"
+                                                        className="w-8 h-8 rounded-full"
+                                                    />
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center text-xs">
+                                                        {signup
+                                                            .firstname?.[0] ??
+                                                            ""}
+                                                    </div>
+                                                )}
+                                                <span>
+                                                    {signup.firstname ?? ""}{" "}
+                                                    {signup.lastname ?? ""}
+                                                </span>
+                                            </td>
+                                            <td>{signup.email ?? ""}</td>
+                                            <td>
+                                                {signup.signupDate
+                                                    ? new Date(
+                                                          signup.signupDate
+                                                      ).toLocaleDateString()
+                                                    : ""}
+                                            </td>
+                                            <td>
+                                                <div
+                                                    className={`badge gap-2 ${
+                                                        signup.status ===
+                                                        "active"
+                                                            ? "badge-success"
+                                                            : signup.status ===
+                                                              "pending"
+                                                            ? "badge-warning"
+                                                            : "badge-ghost"
+                                                    }`}
+                                                >
+                                                    {signup.status ?? ""}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {signup.totalActivities ?? 0}
+                                            </td>
+                                            <td>{signup.totalPoints ?? 0}</td>
+                                            <td>{signup.badgeCount ?? 0}</td>
+                                        </tr>
+                                    )
+                                )}
                             </tbody>
                         </table>
                     </div>
