@@ -2,25 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import ErrorAlert from "@/app/shared/components/ErrorAlert";
-import UserRow from "@/app/admin/(logged_in)/users/userRow";
-import { Search, CheckCircle2, Menu } from "lucide-react";
 import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import api from "@/utils/axios/api";
+import { useUsers } from "@/app/shared/contexts/usersContenxt";
+
 const UserManagementPage = () => {
     const router = useRouter();
-    const [users, setUsers] = useState(null);
+    const { users, loading } = useUsers();
+    const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
-    const [loading, setLoading] = useState(false);
-    const [tableLoading, setTableLoading] = useState(true);
-    const [notification, setNotification] = useState({
-        show: false,
-        message: "",
-        type: "",
-    });
 
     // Hong Kong regions
     const hongKongRegions = [
@@ -44,37 +37,69 @@ const UserManagementPage = () => {
         "Yuen Long",
     ];
 
-    // Simulate initial data loading
-    const fetchUser = async () => {
-        const data = await api.request({ method: "GET", url: "/admin/users" });
-        console.log("asad", data.data);
-        setUsers(data.data.users);
-        setTableLoading(false);
+    useEffect(() => {
+        if (!Array.isArray(users) || loading) {
+            setFilteredUsers([]);
+            return;
+        }
+
+        const filtered = users.filter((user) => {
+            const fullName = `${user.firstname} ${user.lastname}`.toLowerCase();
+            const matchesSearch = fullName.includes(searchQuery.toLowerCase());
+
+            const matchesStatus =
+                statusFilter === "all" ||
+                (statusFilter === "active" && user.isActive) ||
+                (statusFilter === "inactive" && !user.isActive);
+
+            return matchesSearch && matchesStatus;
+        });
+
+        setFilteredUsers(filtered);
+    }, [searchQuery, users, statusFilter, loading]);
+
+    // Add handler for row click
+    const handleRowClick = (userId) => {
+        router.push(`/admin/users/${userId}`);
     };
 
-    useEffect(() => {
-        setTableLoading(true);
-        fetchUser();
-    }, []);
-
-    const statusOfUser = ["Active", "Inactive"];
+    const statusOfUser = ["All", "Active", "Inactive"];
     const tableHeading = [
         "User Info",
+        "Joined At",
         "Status",
-        "Location",
         "Statistics",
         "Actions",
     ];
+
+    const handleStatusChange = (status) => {
+        setStatusFilter(status.toLowerCase());
+    };
+
     return (
         <>
             <div className="text-2xl mb-5 text-base-content">Manage Users</div>
             {/* Search and Filters */}
             <div className="flex gap-4">
-                <SearchBar placeholderName="Search Users" />
+                <SearchBar
+                    placeholderName="Search Users"
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                />
 
                 {/* Enhanced Filters */}
                 <div className="flex flex-wrap gap-2">
-                    <Dropdown items={statusOfUser} name="Status" />
+                    <Dropdown
+                        items={statusOfUser}
+                        name="Status"
+                        selectedValue={
+                            statusFilter === "all"
+                                ? "All"
+                                : statusFilter.charAt(0).toUpperCase() +
+                                  statusFilter.slice(1)
+                        }
+                        onSelect={handleStatusChange}
+                    />
 
                     <select
                         className="select select-bordered w-full lg:w-48"
@@ -90,7 +115,7 @@ const UserManagementPage = () => {
 
             {/* User Table */}
             <div className="overflow-x-auto rounded-lg shadow relative">
-                {tableLoading ? (
+                {loading ? (
                     <div className="min-h-[300px] flex items-center justify-center">
                         <span className="loading loading-spinner loading-lg"></span>
                     </div>
@@ -98,8 +123,9 @@ const UserManagementPage = () => {
                     <div className="overflow-x-auto rounded-box border border-primary/60">
                         <Table
                             heading={tableHeading}
-                            tableData={users}
+                            tableData={filteredUsers}
                             tableType={"userPage"}
+                            onRowClick={handleRowClick}
                         />
                     </div>
                 )}
