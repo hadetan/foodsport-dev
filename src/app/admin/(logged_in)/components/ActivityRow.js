@@ -10,14 +10,11 @@ const statusBadgeClass = {
     completed: "bg-blue-500 text-white btn-md",
     draft: "bg-pink-400 text-white btn-md",
 };
-const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
+const ActivityRow = ({ activity }) => {
     const router = useRouter();
 
     const handleEdit = () => {
-        shouldShowEdit(true);
-        setActivity(activity);
-        // Navigate to the edit page
-        router.push("/admin/activities?view=edit");
+        router.push(`/admin/activities/${activity.id}`)
     };
 
    

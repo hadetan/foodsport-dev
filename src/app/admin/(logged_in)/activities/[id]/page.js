@@ -1,13 +1,10 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
+import { useAdminActivities } from "@/app/shared/contexts/adminActivityContext";
 
-export default function EditActivityPage({
-    activity: initialActivity,
-    setShowEdit,
-    setActivities,
-}) {
+export default function EditActivityPage() {
     const [form, setForm] = useState(null);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -16,10 +13,23 @@ export default function EditActivityPage({
     const [success, setSuccess] = useState("");
     const [error, setError] = useState("");
     const [audit, setAudit] = useState({});
-    const [activity, setActivity] = useState(initialActivity);
     const router = useRouter();
     const fileInputRef = useRef();
-    const searchParams = useSearchParams();
+    const params = useParams();
+    const activityId = params?.id;
+    const {
+        adminActivities,
+        loading: actLoading,
+        setAdminActivities,
+    } = useAdminActivities();
+    const [activity, setActivity] = useState(undefined);
+    useEffect(() => {
+        if (!adminActivities || !activityId) return;
+        const found =
+            adminActivities.find((a) => String(a.id) === String(activityId)) ||
+            null;
+        setActivity(found);
+    }, [adminActivities, activityId]);
 
     useEffect(() => {
         if (!activity) return;
@@ -37,7 +47,6 @@ export default function EditActivityPage({
         setAudit({
             createdBy: activity.organizerName || "Unknown",
         });
-        // Set imageFile from imageUrl if present
         if (activity.imageUrl) {
             setImageFile({ url: activity.imageUrl });
         } else {
@@ -45,7 +54,14 @@ export default function EditActivityPage({
         }
     }, [activity]);
 
-    if (!activity) {
+    if (activity === undefined || actLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <span className="loading loading-spinner loading-lg"></span>
+            </div>
+        );
+    }
+    if (activity === null) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="alert alert-error text-lg">
@@ -57,7 +73,6 @@ export default function EditActivityPage({
 
     if (!form) return <div className="loading loading-spinner"></div>;
 
-    // --- Validation helpers ---
     const validate = () => {
         const errs = {};
         if (!form.title || form.title.length < 5 || form.title.length > 100)
@@ -69,21 +84,19 @@ export default function EditActivityPage({
             errs.description = "Description must be at least 50 characters.";
         if (!form.activityType)
             errs.activityType = "Activity type is required.";
-        if (!form.date /*|| !form.time*/) errs.datetime = "Date is required.";
+        if (!form.date) errs.datetime = "Date is required.";
         else {
-            const dt = new Date(form.date /*+ "T" + form.time*/); // REMOVE time
+            const dt = new Date(form.date);
             if (dt < new Date()) errs.datetime = "Date must be in the future.";
         }
         if (!form.location) errs.location = "Location is required.";
         const cap = parseInt(form.capacity, 10);
         if (!cap || cap < 1 || cap > 1000)
             errs.capacity = "Capacity must be 1-1000.";
-        // Points per participant validation
         const points = parseFloat(form.pointsPerParticipant);
         if (isNaN(points) || points <= 0)
             errs.pointsPerParticipant =
                 "Points per participant must be a positive number.";
-        // Calories per hour validation
         const calories = parseFloat(form.caloriesPerHour);
         if (isNaN(calories) || calories <= 0)
             errs.caloriesPerHour =
@@ -101,7 +114,6 @@ export default function EditActivityPage({
         return Object.keys(errs).length === 0;
     };
 
-    // --- Handlers ---
     const handleInput = (e) => {
         const { name, value } = e.target;
         setForm((f) => ({ ...f, [name]: value }));
@@ -117,7 +129,6 @@ export default function EditActivityPage({
         setImageFile(null);
     };
 
-    // PATCH API call
     const handleSave = async (status = "active") => {
         if (!validate()) return;
         setLoading(true);
@@ -127,15 +138,13 @@ export default function EditActivityPage({
             const activityId = activity.id;
             const formData = new FormData();
 
-            // Only append fields that are non-empty (like Postman)
             Object.entries(form).forEach(([key, value]) => {
-                if (key === "time") return; // REMOVE time from FormData
+                if (key === "time") return;
                 if (value !== "" && value !== null && value !== undefined) {
                     formData.append(key, value);
                 }
             });
 
-            // Only send image if changed
             if (imageFile && imageFile.url === undefined) {
                 formData.append("image", imageFile);
             }
@@ -143,8 +152,7 @@ export default function EditActivityPage({
                 formData.append("organizerId", activity.organizerId);
             }
 
-            //use axios.
-            const res = await axios.patch(
+            const { data } = await axios.patch(
                 `/api/admin/activities?activityId=${activityId}`,
                 formData,
                 {
@@ -153,20 +161,16 @@ export default function EditActivityPage({
                     },
                 }
             );
-            const result = res.data;
-            //call setActivities and save prev value first then save new value using result.data.activity
-            if (setActivities && result.data && result.data.activity) {
-                setActivities((prev) =>
+            if (setAdminActivities && data && data.activity) {
+                setAdminActivities((prev) =>
                     prev.map((act) =>
-                        act.id === result.data.activity.id
-                            ? result.data.activity
-                            : act
+                        act.id === data.activity.id ? data.activity : act
                     )
                 );
             }
-           
+
             setSuccess("Activity updated successfully!");
-            router.push("/admin/activities"); // <-- redirect after save
+            router.push("/admin/activities");
         } catch (e) {
             let msg = "Failed to update activity.";
             if (typeof e === "string") {
@@ -186,7 +190,7 @@ export default function EditActivityPage({
     };
 
     const confirmCancel = () => {
-        setShowEdit(false);
+        router.push("/admin/activities");
     };
 
     return (
@@ -195,7 +199,7 @@ export default function EditActivityPage({
             <div className="w-full flex justify-start mb-4">
                 <button
                     className="btn btn-primary"
-                    onClick={() => router.push("/admin/activities?view=list")}
+                    onClick={() => router.push("/admin/activities")}
                     type="button"
                 >
                     &larr; Back
