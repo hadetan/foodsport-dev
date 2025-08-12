@@ -234,7 +234,7 @@ const DashboardPage = () => {
                                                 {signup.profilePictureUrl ? (
                                                     <img
                                                         src={
-                                                            signup.profilePictureUrl
+                                                            process.env.NEXT_PUBLIC_SUPABASE_URL+signup.profilePictureUrl
                                                         }
                                                         alt="Profile"
                                                         className="w-8 h-8 rounded-full"
