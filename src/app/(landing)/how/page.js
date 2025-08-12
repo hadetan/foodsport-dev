@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import styles from "./HowPage.module.css";
+import styles from "../css/HowPage.module.css";
 
 export default function HowPage() {
     return (
