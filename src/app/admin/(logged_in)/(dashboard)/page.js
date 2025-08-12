@@ -54,7 +54,6 @@ const DashboardPage = () => {
             attributes: true,
             attributeFilter: ["data-theme"],
         });
-
         // Fetch dashboard data from API
         setLoading(true);
         getDashboardData(dateRange).then((data) => {
