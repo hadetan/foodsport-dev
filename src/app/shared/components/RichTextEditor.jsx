@@ -10,6 +10,30 @@ const BLOCK_TYPES = [
     { label: "Heading 3", command: "formatBlock", value: "H3" },
 ];
 
+// Helper to select current word if no selection
+function selectCurrentWord() {
+    const selection = window.getSelection();
+    if (!selection || !selection.focusNode) return;
+    if (!selection.isCollapsed) return; // already selected
+
+    const node = selection.focusNode;
+    if (node.nodeType !== Node.TEXT_NODE) return;
+
+    const text = node.textContent;
+    let offset = selection.focusOffset;
+    let start = offset,
+        end = offset;
+
+    while (start > 0 && /\S/.test(text[start - 1])) start--;
+    while (end < text.length && /\S/.test(text[end])) end++;
+
+    const range = document.createRange();
+    range.setStart(node, start);
+    range.setEnd(node, end);
+    selection.removeAllRanges();
+    selection.addRange(range);
+}
+
 export default function RichTextEditor({ value, onChange }) {
     const editorRef = useRef(null);
     const [blockType, setBlockType] = useState("Paragraph");
@@ -28,8 +52,11 @@ export default function RichTextEditor({ value, onChange }) {
 
     // Handle toolbar actions
     const handleCommand = (command, value = null) => {
-        // Focus before command to ensure selection is active
         editorRef.current.focus();
+        const selection = window.getSelection();
+        if (selection && selection.isCollapsed && selection.focusNode) {
+            selectCurrentWord();
+        }
         document.execCommand(command, false, value);
         if (onChange) onChange(editorRef.current.innerHTML);
     };
