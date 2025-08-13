@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import RichTextEditor from "@/app/shared/components/RichTextEditor";
 import axiosClient from "@/utils/axios/api";
-import ActivityStatus from "@/app/constants/ActivityStatus";
-import MAX_IMAGE_SIZE_MB  from '@/app/constants/ActivityStatus';
-
+import ActivityStatus, {
+    MAX_IMAGE_SIZE_MB,
+} from "@/app/constants/ActivityStatus";
 
 const CreateActivityPage = () => {
     const router = useRouter();
@@ -25,10 +25,88 @@ const CreateActivityPage = () => {
         status: "draft",
     });
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
     const [loading, setLoading] = useState(false);
+
+    const isValidYear = (dateStr) => {
+        if (!dateStr) return true;
+        const year = dateStr.split("-")[0];
+        return /^\d{1,4}$/.test(year);
+    };
+
+    // Helper to check required fields and set field errors
+    const validateFields = () => {
+        const requiredFields = [
+            "title",
+            "activityType",
+            "description",
+            "startDateTime",
+            "endDateTime",
+            "location",
+            "capacity",
+            "pointsPerParticipant",
+            "caloriesPerHour",
+            "image",
+            "status",
+        ];
+        const errors = {};
+        requiredFields.forEach((field) => {
+            if (
+                formData[field] === "" ||
+                formData[field] === null ||
+                typeof formData[field] === "undefined"
+            ) {
+                errors[field] = " This field is required.";
+            }
+        });
+        // Description minimum word limit
+        if (
+            formData.description &&
+            formData.description
+                .replace(/<[^>]+>/g, " ") // Remove HTML tags if any
+                .split(/\s+/)
+                .filter((w) => w.length > 0).length < 5
+        ) {
+            errors.description = "Description must be at least 5 words.";
+        }
+        // Year validation
+        if (formData.startDateTime && !isValidYear(formData.startDateTime)) {
+            errors.startDateTime = "Year must be at most 4 digits.";
+        }
+        if (formData.endDateTime && !isValidYear(formData.endDateTime)) {
+            errors.endDateTime = "Year must be at most 4 digits.";
+        }
+        // Start date must not be after end date
+        if (
+            formData.startDateTime &&
+            formData.endDateTime &&
+            new Date(formData.startDateTime) > new Date(formData.endDateTime)
+        ) {
+            errors.startDateTime = "Start date cannot be after end date.";
+            errors.endDateTime = "End date cannot be before start date.";
+        }
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
+        // Restrict year for datetime-local fields
+        if (
+            (name === "startDateTime" || name === "endDateTime") &&
+            !isValidYear(value)
+        ) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                [name]: "Year must be at most 4 digits.",
+            }));
+            return;
+        }
+        setFieldErrors((prev) => ({
+            ...prev,
+            [name]: undefined,
+        }));
+        setError("");
         setFormData((prev) => ({
             ...prev,
             [name]: value,
@@ -39,9 +117,16 @@ const CreateActivityPage = () => {
         const file = e.target.files[0];
         if (!file) return;
         if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-            setError("Selected image cannot exceed 10 MB.");
+            setFieldErrors((prev) => ({
+                ...prev,
+                image: `Selected image cannot exceed ${MAX_IMAGE_SIZE_MB} MB.`,
+            }));
             return;
         }
+        setFieldErrors((prev) => ({
+            ...prev,
+            image: undefined,
+        }));
         setError("");
         setFormData((prev) => ({
             ...prev,
@@ -54,9 +139,18 @@ const CreateActivityPage = () => {
             ...prev,
             image: null,
         }));
+        setFieldErrors((prev) => ({
+            ...prev,
+            image: "This field is required.",
+        }));
     };
 
     const handleSubmit = async () => {
+        if (!validateFields()) {
+            setError("Please fix the errors in the form.");
+            return;
+        }
+
         try {
             setLoading(true);
             const startISO = new Date(formData.startDateTime).toISOString();
@@ -136,6 +230,11 @@ const CreateActivityPage = () => {
                                     value={formData.title}
                                     onChange={handleFormChange}
                                 />
+                                {fieldErrors.title && (
+                                    <span className="text-error text-sm mt-2 block">
+                                        {fieldErrors.title}
+                                    </span>
+                                )}
                             </label>
                         </div>
 
@@ -165,6 +264,11 @@ const CreateActivityPage = () => {
                                     <option value="boxing">Boxing</option>
                                     <option value="other">Other</option>
                                 </select>
+                                {fieldErrors.activityType && (
+                                    <span className="text-error text-sm mt-2 block">
+                                        {fieldErrors.activityType}
+                                    </span>
+                                )}
                             </label>
                         </div>
 
@@ -184,6 +288,11 @@ const CreateActivityPage = () => {
                                     }
                                     className="text-black dark:text-inherit text-base"
                                 />
+                                {fieldErrors.description && (
+                                    <span className="text-error text-sm mt-2 block">
+                                        {fieldErrors.description}
+                                    </span>
+                                )}
                             </label>
                         </div>
 
@@ -199,7 +308,13 @@ const CreateActivityPage = () => {
                                     className="input input-bordered input-md text-base"
                                     value={formData.startDateTime}
                                     onChange={handleFormChange}
+                                    max="9999-12-31T23:59"
                                 />
+                                {fieldErrors.startDateTime && (
+                                    <span className="text-error text-sm mt-2 block">
+                                        {fieldErrors.startDateTime}
+                                    </span>
+                                )}
                             </label>
                         </div>
                         {/* End DateTime */}
@@ -214,7 +329,13 @@ const CreateActivityPage = () => {
                                     className="input input-bordered input-md text-base"
                                     value={formData.endDateTime}
                                     onChange={handleFormChange}
+                                    max="9999-12-31T23:59"
                                 />
+                                {fieldErrors.endDateTime && (
+                                    <span className="text-error text-sm mt-2 block">
+                                        {fieldErrors.endDateTime}
+                                    </span>
+                                )}
                             </label>
                         </div>
 
@@ -232,6 +353,11 @@ const CreateActivityPage = () => {
                                     value={formData.location}
                                     onChange={handleFormChange}
                                 />
+                                {fieldErrors.location && (
+                                    <span className="text-error text-sm mt-2 block">
+                                        {fieldErrors.location}
+                                    </span>
+                                )}
                             </label>
                         </div>
 
@@ -250,6 +376,11 @@ const CreateActivityPage = () => {
                                     onChange={handleFormChange}
                                     min="1"
                                 />
+                                {fieldErrors.capacity && (
+                                    <span className="text-error text-sm mt-2 block">
+                                        {fieldErrors.capacity}
+                                    </span>
+                                )}
                             </label>
                         </div>
 
@@ -268,6 +399,11 @@ const CreateActivityPage = () => {
                                     onChange={handleFormChange}
                                     min="0"
                                 />
+                                {fieldErrors.pointsPerParticipant && (
+                                    <span className="text-error text-sm mt-2 block">
+                                        {fieldErrors.pointsPerParticipant}
+                                    </span>
+                                )}
                             </label>
                         </div>
 
@@ -286,6 +422,11 @@ const CreateActivityPage = () => {
                                     onChange={handleFormChange}
                                     min="0"
                                 />
+                                {fieldErrors.caloriesPerHour && (
+                                    <span className="text-error text-sm mt-2 block">
+                                        {fieldErrors.caloriesPerHour}
+                                    </span>
+                                )}
                             </label>
                         </div>
 
@@ -301,6 +442,11 @@ const CreateActivityPage = () => {
                                     accept="image/*"
                                     onChange={handleImageUpload}
                                 />
+                                {fieldErrors.image && (
+                                    <span className="text-error text-sm mt-2 block">
+                                        {fieldErrors.image}
+                                    </span>
+                                )}
                             </label>
                         </div>
                         {error && (
@@ -347,6 +493,11 @@ const CreateActivityPage = () => {
                                         </option>
                                     ))}
                                 </select>
+                                {fieldErrors.status && (
+                                    <span className="text-error text-sm mt-2 block">
+                                        {fieldErrors.status}
+                                    </span>
+                                )}
                             </label>
                         </div>
 

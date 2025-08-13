@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import EditActivityPage from "@/app/admin/(logged_in)/components/EditActivity";
-
 import ActivityStatus from "@/app/constants/ActivityStatus";
 
 function ActivityManagementPageContent() {
@@ -15,8 +14,6 @@ function ActivityManagementPageContent() {
     const searchParams = useSearchParams();
     const view = searchParams.get("view") || "list";
     const [tableLoading, setTableLoading] = useState(true);
-    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
     const [formData, setFormData] = useState({
         title: "",
         type: "",
