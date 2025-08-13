@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import formatDate from "@/utils/formatDate";
@@ -8,7 +8,6 @@ const statusBadgeClass = {
     active: "bg-green-500 text-white btn-md",
     closed: "bg-gray-500 text-white btn-md",
     completed: "bg-blue-500 text-white btn-md",
-    cancelled: "bg-red-700 text-white btn-md",
     draft: "bg-pink-400 text-white btn-md",
 };
 const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
@@ -20,6 +19,9 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
         // Navigate to the edit page
         router.push("/admin/activities?view=edit");
     };
+
+   
+
     return (
         <>
             <tr key={activity.id} className="text-base">
@@ -111,7 +113,6 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                 </td>
                 <td>
                     <div className="btn-group">
-                        {/* Only show the pencil (edit) icon */}
                         <button
                             className="btn btn-sm btn-ghost"
                             onClick={handleEdit}
@@ -119,6 +120,8 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                             <Pencil size={24} />
                         </button>
                     </div>
+                    {/* Confirmation Popup */}
+                    
                 </td>
             </tr>
         </>

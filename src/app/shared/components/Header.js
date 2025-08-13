@@ -39,16 +39,20 @@ export default function Header() {
             label: "REDEEM REWARDS",
             href: null,
         },
-        {
+        !authToken && {
             label: "HOW DOES IT WORK",
             href: "/how",
         },
     ];
 
-    // Find the active index based on current pathname
-    const activeIdx = navLinks.findIndex(
-        (link) => link.href && pathname === link.href
-    );
+    const filteredNavLinks = navLinks.filter(Boolean);
+    const activeIdx = filteredNavLinks.findIndex((link) => {
+        if (!link.href) return false;
+        if (authToken && link.label === "HOME" && (pathname === "/my" || pathname === "/my/")) {
+            return true;
+        }
+        return pathname === link.href;
+    });
 
     return (
         <header className={styles.headerWrapper}>
@@ -104,7 +108,7 @@ export default function Header() {
             </div>
             <nav className={styles.navBar}>
                 <ul className={styles.navList}>
-                    {navLinks.map((link, idx) => (
+                    {filteredNavLinks.map((link, idx) => (
                         <li
                             key={link.label}
                             className={[

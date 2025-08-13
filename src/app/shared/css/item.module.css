@@ -208,9 +208,7 @@
 .status-completed {
   background: #9b59b6;
 }
-.status-cancelled {
-  background: #e74c3c;
-}
+
 .status-draft {
   background: #f1c40f;
   color: #222;

@@ -3,13 +3,15 @@ import { usePathname } from "next/navigation";
 import SidebarItem from "@/app/admin/(logged_in)//components/SidebarItem";
 import { Users, Calendar1, CircleGauge, Share2 } from "lucide-react";
 import ThemeController from "@/app/admin/(logged_in)//components/ThemeController";
+import { UsersProvider } from "@/app/shared/contexts/usersContenxt";
 
 export default function AdminLoggedInLayout({ children }) {
     //add a check that only if the user is logged in as admin, they will be able to access it.
     const pathname = usePathname();
 
     return (
-        <div className="drawer lg:drawer-open">
+        <UsersProvider>
+            <div className="drawer lg:drawer-open">
             <input
                 id="admin-drawer"
                 type="checkbox"
@@ -111,5 +113,6 @@ export default function AdminLoggedInLayout({ children }) {
                 </div> */}
             </div>
         </div>
+        </UsersProvider>
     );
 }
