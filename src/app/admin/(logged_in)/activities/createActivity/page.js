@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import RichTextEditor from "@/app/shared/components/RichTextEditor";
 import axiosClient from "@/utils/axios/api";
-import ActivityStatus from "@/app/constants/ActivityStatus";
-import MAX_IMAGE_SIZE_MB from "@/app/constants/ActivityStatus";
+import ActivityStatus, {
+    MAX_IMAGE_SIZE_MB,
+} from "@/app/constants/ActivityStatus";
 
 const CreateActivityPage = () => {
     const router = useRouter();
@@ -118,7 +119,7 @@ const CreateActivityPage = () => {
         if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
             setFieldErrors((prev) => ({
                 ...prev,
-                image: "Selected image cannot exceed 10 MB.",
+                image: `Selected image cannot exceed ${MAX_IMAGE_SIZE_MB} MB.`,
             }));
             return;
         }
