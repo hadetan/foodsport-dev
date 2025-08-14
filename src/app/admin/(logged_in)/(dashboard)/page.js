@@ -78,6 +78,29 @@ const DashboardPage = () => {
             setLoading(false);
         });
 
+        // Fetch dashboard data from API
+        setLoading(true);
+        getDashboardData(dateRange).then((data) => {
+            setDashboard(
+                data || {
+                    stats: {
+                        totalUsers: 0,
+                        activeActivities: 0,
+                        totalRewards: 0,
+                        totalDonations: 0,
+                        dailyStats: {
+                            newUsers: 0,
+                            completedActivities: 0,
+                            caloriesDonated: 0,
+                        },
+                    },
+                    recentSignups: [],
+                    error: "No data",
+                }
+            );
+            setLoading(false);
+        });
+
         return () => observer.disconnect();
     }, [dateRange]);
 
@@ -292,6 +315,27 @@ const DashboardPage = () => {
                                         </tr>
                                     )
                                 )}
+                                {dashboard.recentSignups.map((signup) => (
+                                    <tr key={`${signup.name}-${signup.date}`}>
+                                        {" "}
+                                        <td>{signup.name}</td>
+                                        <td>{signup.date}</td>
+                                        <td>
+                                            <div
+                                                className={`badge gap-2 ${
+                                                    signup.status === "Active"
+                                                        ? "badge-success"
+                                                        : signup.status ===
+                                                          "Pending"
+                                                        ? "badge-warning"
+                                                        : "badge-ghost"
+                                                }`}
+                                            >
+                                                {signup.status}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>

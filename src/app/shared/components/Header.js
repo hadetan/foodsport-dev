@@ -4,13 +4,15 @@ import Image from "next/image";
 import styles from "@/app/shared/css/Header.module.css";
 import Link from "next/link";
 import { useAuth } from "@/app/shared/contexts/authContext";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { BsCart2 } from "react-icons/bs";
-import { FaSearch } from "react-icons/fa";
+import Search from "./Search";
 import Avatar from "./avatar";
 import AvatarSkeleton from "./skeletons/AvatarSkeleton";
 import { useUser } from "@/app/shared/contexts/userContext";
+import { useActivities } from "../contexts/ActivitiesContext";
+import sortActivities from "@/utils/sortActivities";
 
 export default function Header() {
     const { authToken } = useAuth();
@@ -18,6 +20,8 @@ export default function Header() {
     const [mounted, setMounted] = useState(false);
     const pathname = usePathname();
     const [hoveredIdx, setHoveredIdx] = useState(null);
+    const { activities } = useActivities();
+    const sortedActivities = useMemo(() => sortActivities(activities || [], true), [activities]);
 
     //#region This fixed the hydration error of mismatched authToken. The authToken is populated only after the mounting, so we wait to be mounted first before using the authToken.
     useEffect(() => {
@@ -59,9 +63,7 @@ export default function Header() {
             {/* Grey Top Bar */}
             <div className={styles.greyTopBar}>
                 <div className={styles.topBarRight}>
-                    <span className={`${styles.icon} ${styles.borderLeft}`}>
-                        <FaSearch />
-                    </span>
+                    <Search sortedActivities={sortedActivities} />
                     <span className={`${styles.icon} ${styles.borderLeft}`}>
                         <BsCart2 />
                     </span>
