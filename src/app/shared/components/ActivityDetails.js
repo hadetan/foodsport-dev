@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+// import { useLoadingBar } from '@/app/shared/contexts/LoadingBarContext';
 import '@/app/shared/css/ActivityDetails.css';
 import Image from 'next/image';
 import Avatar from '@/app/shared/components/avatar';
@@ -30,9 +31,11 @@ const ActivityDetails = ({
 			topRef.current.scrollIntoView({ behavior: 'smooth' });
 		}
 	}, []);
+	// const loadingBar = useLoadingBar();
 
 	async function handleJoin() {
 		try {
+			// if (loadingBar && loadingBar.start) loadingBar.start();
 			setLoading(true);
 			const res = await api.post('/my/activities/join', {
 				activityId: activity.id,

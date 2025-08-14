@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
-import { getSupabaseClient } from '@/lib/supabase/index'
+import { getSupabaseClient } from '@/lib/supabase/index';
+import { setupGlobalLoadingBarForAxios } from '@/app/shared/utils/loadingBarEvents';
 
 const api = axios.create({
   baseURL: BASE_URLS.url,
@@ -9,6 +10,11 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Setup global loading bar for axios
+if (typeof window !== 'undefined') {
+  setupGlobalLoadingBarForAxios(api);
+}
 
 // Request interceptor is not needed in our app
 

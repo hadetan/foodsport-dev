@@ -42,12 +42,6 @@ export default function ActivityDetailsPage() {
 
     const activity = getActivity(activities, id);
 
-    const topRef = useRef(null);
-    useEffect(() => {
-        if (topRef.current) {
-            topRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-    }, [activity]);
     if (!!activities.length && !activity) {
             return (
                 <div className='activityDetailsEmptyState'>
