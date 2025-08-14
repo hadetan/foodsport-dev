@@ -3,10 +3,12 @@ import { FaSearch } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import styles from "@/app/shared/css/Header.module.css";
 
+
 export default function Search({ sortedActivities }) {
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchValue, setSearchValue] = useState("");
     const [showDropdown, setShowDropdown] = useState(false);
+    const [focusedIndex, setFocusedIndex] = useState(-1);
     const searchInputRef = useRef(null);
     const dropdownRef = useRef(null);
     const router = useRouter();
@@ -29,6 +31,7 @@ export default function Search({ sortedActivities }) {
         setSearchOpen(false);
         setShowDropdown(false);
         setSearchValue("");
+        setFocusedIndex(-1);
     };
 
     useEffect(() => {
@@ -43,14 +46,9 @@ export default function Search({ sortedActivities }) {
                 handleCloseSearch();
             }
         }
-        function handleEsc(e) {
-            if (e.key === "Escape") handleCloseSearch();
-        }
         document.addEventListener("mousedown", handleClick);
-        document.addEventListener("keydown", handleEsc);
         return () => {
             document.removeEventListener("mousedown", handleClick);
-            document.removeEventListener("keydown", handleEsc);
         };
     }, [searchOpen]);
 
@@ -60,7 +58,33 @@ export default function Search({ sortedActivities }) {
         } else {
             setShowDropdown(false);
         }
+        setFocusedIndex(-1);
     }, [searchOpen, searchValue]);
+
+    // Keyboard navigation for dropdown
+    useEffect(() => {
+        if (!showDropdown) return;
+        function handleKeyDown(e) {
+            if (!showDropdown || filteredSearchResults.length === 0) return;
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setFocusedIndex(prev => (prev + 1) % filteredSearchResults.length);
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setFocusedIndex(prev => (prev - 1 + filteredSearchResults.length) % filteredSearchResults.length);
+            } else if (e.key === "Enter") {
+                if (focusedIndex >= 0 && focusedIndex < filteredSearchResults.length) {
+                    handleResultClick(filteredSearchResults[focusedIndex].id);
+                }
+            } else if (e.key === "Escape") {
+                handleCloseSearch();
+            }
+        }
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [showDropdown, filteredSearchResults, focusedIndex]);
 
     const handleInputChange = (e) => {
         setSearchValue(e.target.value);
@@ -97,6 +121,16 @@ export default function Search({ sortedActivities }) {
                         placeholder="Search activities..."
                         onFocus={() => searchValue && setShowDropdown(true)}
                         onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-expanded={showDropdown}
+                        aria-controls="search-dropdown-listbox"
+                        aria-activedescendant={
+                            focusedIndex >= 0 && showDropdown && filteredSearchResults[focusedIndex]
+                                ? `search-option-${filteredSearchResults[focusedIndex].id}`
+                                : undefined
+                        }
+                        tabIndex={0}
                     />
                     <button
                         type="submit"
@@ -113,6 +147,8 @@ export default function Search({ sortedActivities }) {
                             styles.searchDropdown,
                             showDropdown ? styles.dropdownOpen : ""
                         ].join(" ")}
+                        id="search-dropdown-listbox"
+                        role="listbox"
                         style={{
                             pointerEvents: showDropdown ? "auto" : "none",
                             maxHeight: showDropdown ? 320 : 0,
@@ -131,12 +167,23 @@ export default function Search({ sortedActivities }) {
                         {searchValue && filteredSearchResults.length === 0 && (
                             <div className={styles.noResults}>No results found</div>
                         )}
-                        {filteredSearchResults.map((a) => (
+                        {filteredSearchResults.map((a, idx) => (
                             <div
                                 key={a.id}
+                                id={`search-option-${a.id}`}
                                 className={styles.dropdownItem}
+                                role="option"
+                                aria-selected={focusedIndex === idx}
+                                tabIndex={-1}
                                 onMouseDown={() => handleResultClick(a.id)}
-                                style={{ cursor: "pointer", padding: "0.75rem 1rem", display: "flex", flexDirection: "column", borderBottom: "1px solid #f0f0f0" }}
+                                style={{
+                                    cursor: "pointer",
+                                    padding: "0.75rem 1rem",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    borderBottom: "1px solid #ced3a2ff",
+                                    background: focusedIndex === idx ? "#c0f8ecff" : undefined
+                                }}
                             >
                                 <span style={{ fontWeight: 600 }}>{a.title}</span>
                                 <span style={{ fontSize: "0.95em", color: "#888" }}>{a.activityType} &middot; {a.startDate ? new Date(a.startDate).toLocaleDateString() : ""}</span>
