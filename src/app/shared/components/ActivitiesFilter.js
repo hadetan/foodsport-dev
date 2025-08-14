@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
 import "../css/ActivitiesFIlter.css";
+import { useSearchParams, usePathname } from "next/navigation";
 
-export default function ActivitiesFilter({ activities, setFilteredActivities, loading }) {
+
+export default function ActivitiesFilter({ activities, setFilteredActivities }) {
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+
     const [filters, setFilters] = useState({
-        name: "",
-        status: "",
-        date: "",
-        type: "",
+        name: searchParams.get("activity") || "",
+        status: searchParams.get("status") || "",
+        date: searchParams.get("date") || "",
+        type: searchParams.get("type") || "",
     });
 
     const statusOptions = Array.from(new Set(activities.map(a => a.status))).filter(Boolean);
@@ -23,6 +28,29 @@ export default function ActivitiesFilter({ activities, setFilteredActivities, lo
         "other"
     ];
     const typeOptions = allActivityTypes;
+
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (filters.name) params.set("activity", filters.name);
+        if (filters.status) params.set("status", filters.status);
+        if (filters.type) params.set("type", filters.type);
+        if (filters.date) params.set("date", filters.date);
+        const paramString = params.toString();
+        const newUrl = paramString ? `${pathname}?${paramString}` : pathname;
+        if (typeof window !== 'undefined') {
+            window.history.replaceState(null, '', newUrl);
+        }
+    }, [filters, pathname]);
+
+    useEffect(() => {
+        setFilters({
+            name: searchParams.get("activity") || "",
+            status: searchParams.get("status") || "",
+            date: searchParams.get("date") || "",
+            type: searchParams.get("type") || "",
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams.toString()]);
 
     function handleChange(e) {
         const { name, value } = e.target;
@@ -41,14 +69,19 @@ export default function ActivitiesFilter({ activities, setFilteredActivities, lo
             filtered = filtered.filter(a => a.activityType === filters.type);
         }
         if (filters.date) {
-            filtered = filtered.filter(a => a.date === filters.date);
+            filtered = filtered.filter(a => {
+                return (a.date && a.date === filters.date) || (a.startDate && a.startDate === filters.date);
+            });
         }
+        // !filtered.length ? setFilteredActivities([null]) : setFilteredActivities(filtered);
         setFilteredActivities(filtered);
+        console.log(filtered);
     }
 
-        useEffect(() => {
-            handleFilter();
-        }, [filters, activities]);
+    useEffect(() => {
+        handleFilter();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filters, activities]);
 
     return (
         <div className="filter-container">
@@ -58,13 +91,13 @@ export default function ActivitiesFilter({ activities, setFilteredActivities, lo
                 value={filters.name}
                 onChange={handleChange}
                 placeholder="Search by activity name"
-                className="filter-input"
+                className="filter-input enhanced-input"
             />
             <select
                 name="status"
                 value={filters.status}
                 onChange={handleChange}
-                className="filter-select"
+                className="filter-select enhanced-select"
             >
                 <option value="">All Status</option>
                 {statusOptions.map(status => (
@@ -75,7 +108,7 @@ export default function ActivitiesFilter({ activities, setFilteredActivities, lo
                 name="type"
                 value={filters.type}
                 onChange={handleChange}
-                className="filter-select"
+                className="filter-select enhanced-select"
             >
                 <option value="">All Types</option>
                 {typeOptions.map(type => (

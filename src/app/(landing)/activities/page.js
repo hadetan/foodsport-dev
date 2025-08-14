@@ -1,13 +1,14 @@
 "use client";
 
-import Activity from "@/app/shared/components/Activity";
+import ActivityImg from "@/app/shared/components/Activity";
 import ActivityItem from "@/app/shared/components/ActivityItem";
 import styles from "@/app/shared/css/page.module.css";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import ActivityItemSkeleton from "@/app/shared/components/skeletons/ActivityItemSkeleton";
 import sortActivities from "@/utils/sortActivities";
-import ActivitiesFilter from "../Components/ActivitiesFilter";
+import ActivitiesFilter from "../../shared/components/ActivitiesFilter";
 import { useEffect, useMemo, useState } from "react";
+import ActivityNotFound from "@/app/shared/components/ActivityNotFound";
 
 export default function ActivitiesPage() {
     const { activities, loading } = useActivities();
@@ -16,17 +17,20 @@ export default function ActivitiesPage() {
 
     return (
         <div className="main-activities">
-            <Activity />
-            <ActivitiesFilter activities={sortedActivities} setFilteredActivities={setFilteredActivities} loading={loading} />
-            <div className={styles.grid3}>
-                {filteredActivities.length === 0
-                    ? Array.from({ length: 6 }).map((_, i) => (
-                          <ActivityItemSkeleton key={i} />
-                      ))
-                    : filteredActivities.map((a) => (
-                          <ActivityItem key={a.id} activity={a} />
-                      ))}
-            </div>
+            <ActivityImg />
+            <ActivitiesFilter activities={sortedActivities} setFilteredActivities={setFilteredActivities} />
+            {!filteredActivities.length && !loading ? <ActivityNotFound /> : (
+                <div className={styles.grid3}>
+                    {!sortedActivities.length && loading ? (
+                        Array.from({ length: 6 }).map((_, i) => (
+                            <ActivityItemSkeleton key={i} />
+                        ))
+                    ) : (
+                        filteredActivities.map((a) => (
+                            <ActivityItem key={a.id} activity={a} />
+                        ))
+                    )}
+                </div>)}
         </div>
     );
 }
