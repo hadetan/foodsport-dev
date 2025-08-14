@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../css/ActivitiesFIlter.css";
+import "../css/ActivitiesFilter.css";
 import { useSearchParams, usePathname } from "next/navigation";
 
 
