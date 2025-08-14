@@ -9,9 +9,13 @@ import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import ActivityItemSkeleton from "../shared/components/skeletons/ActivityItemSkeleton";
 import sortActivities from "@/utils/sortActivities";
 import Button from "../shared/components/Button";
+import { useRouter } from "next/navigation";
+
 export default function Home() {
     const { activities } = useActivities();
+    const router = useRouter();
     const sortedActivities = sortActivities(activities || []);
+
     return (
         <>
             <Hero />
@@ -33,7 +37,7 @@ export default function Home() {
             <div className={styles.exploreCont}>
 				<Button
 					className={styles.explore}
-					onClick={() => router.push('/my/activities')}
+					onClick={() => router.push('/activities')}
 				>
 					EXPLORE MORE ACTIVITIES
 				</Button>

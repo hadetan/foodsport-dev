@@ -15,11 +15,15 @@ export default function ActivitiesPage() {
     const sortedActivities = useMemo(() => sortActivities(activities || [], true), [activities]);
     const [filteredActivities, setFilteredActivities] = useState(sortedActivities);
 
+    useEffect(() => {
+        setFilteredActivities(sortedActivities);
+    }, [sortedActivities]);
+
     return (
         <div className="main-activities">
             <ActivityImg />
             <ActivitiesFilter activities={sortedActivities} setFilteredActivities={setFilteredActivities} />
-            {!filteredActivities.length && !loading ? <ActivityNotFound /> : (
+            {!activities.length && !loading ? <ActivityNotFound /> : (
                 <div className={styles.grid3}>
                     {!sortedActivities.length && loading ? (
                         Array.from({ length: 6 }).map((_, i) => (

@@ -8,7 +8,7 @@ import ActivityItemSkeleton from '@/app/shared/components/skeletons/ActivityItem
 import { useUser } from '@/app/shared/contexts/userContext';
 import sortActivities from '@/utils/sortActivities';
 import ActivitiesFilter from '@/app/shared/components/ActivitiesFilter';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ActivityNotFound from '@/app/shared/components/ActivityNotFound';
 
 export default function ActivitiesPage() {
@@ -16,6 +16,10 @@ export default function ActivitiesPage() {
 	const sortedActivities = useMemo(() => sortActivities(activities || [], true), [activities]);
 	const [filteredActivities, setFilteredActivities] = useState(sortedActivities);
 	const { user, setUser } = useUser();
+
+	useEffect(() => {
+		setFilteredActivities(sortedActivities);
+	}, [sortedActivities]);
 
 	return (
 		<div className='main-activities'>
