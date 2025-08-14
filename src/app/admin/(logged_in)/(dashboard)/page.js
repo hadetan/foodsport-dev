@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Link from "next/link";
 
 // Fetch dashboard data using axios
 const getDashboardData = async (dateRange) => {
@@ -228,27 +229,37 @@ const DashboardPage = () => {
                             <tbody>
                                 {(dashboard?.recentSignups ?? []).map(
                                     (signup) => (
-                                        <tr key={signup.id}>
+                                        <tr
+                                            key={signup.id}
+                                            className="cursor-pointer hover:bg-base-200"
+                                        >
                                             <td className="flex items-center gap-2">
-                                                {signup.profilePictureUrl ? (
-                                                    <img
-                                                        src={
-                                                            process.env.NEXT_PUBLIC_SUPABASE_URL+signup.profilePictureUrl
-                                                        }
-                                                        alt="Profile"
-                                                        className="w-8 h-8 rounded-full"
-                                                    />
-                                                ) : (
-                                                    <div className="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center text-xs">
-                                                        {signup
-                                                            .firstname?.[0] ??
-                                                            ""}
-                                                    </div>
-                                                )}
-                                                <span>
-                                                    {signup.firstname ?? ""}{" "}
-                                                    {signup.lastname ?? ""}
-                                                </span>
+                                                <Link
+                                                    href={`/admin/users/${signup.id}`}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    {signup.profilePictureUrl ? (
+                                                        <img
+                                                            src={
+                                                                process.env
+                                                                    .NEXT_PUBLIC_SUPABASE_URL +
+                                                                signup.profilePictureUrl
+                                                            }
+                                                            alt="Profile"
+                                                            className="w-8 h-8 rounded-full"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center text-xs">
+                                                            {signup
+                                                                .firstname?.[0] ??
+                                                                ""}
+                                                        </div>
+                                                    )}
+                                                    <span>
+                                                        {signup.firstname ?? ""}{" "}
+                                                        {signup.lastname ?? ""}
+                                                    </span>
+                                                </Link>
                                             </td>
                                             <td>{signup.email ?? ""}</td>
                                             <td>

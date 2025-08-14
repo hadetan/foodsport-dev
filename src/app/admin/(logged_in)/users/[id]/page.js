@@ -69,7 +69,7 @@ const UserDetailPage = () => {
             <div className="flex items-center mb-6">
                 <button
                     onClick={() => router.back()}
-                    className="flex items-center text-gray-300 hover:text-white transition-colors duration-200 mr-4"
+                    className="flex items-center text-gray-500 hover:text-indigo-600 transition-colors duration-200 mr-4"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -87,26 +87,42 @@ const UserDetailPage = () => {
                     </svg>
                     Back
                 </button>
-                <h2 className="text-2xl font-bold text-gray-100">
+                <h2 className="text-2xl font-bold text-gray-900">
                     User Details
                 </h2>
             </div>
-            <div className="bg-gray-800 border border-gray-600 rounded-lg overflow-hidden">
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow">
                 {/* Profile Picture Row */}
-                <div className="flex items-center p-4 border-b border-gray-600">
-                    <span className="font-bold text-gray-200 w-48">
+                <div className="flex items-center p-4 border-b border-gray-200">
+                    <span className="font-bold text-gray-700 w-48">
                         Profile Picture
                     </span>
                     <div className="flex-1">
-                        {user.profilePictureUrl ? (
+                        {user.profilePictureUrl &&
+                        user.profilePictureUrl !== "" ? (
                             <img
-                                src={user.profilePictureUrl}
+                                src={
+                                    process.env.NEXT_PUBLIC_SUPABASE_URL
+                                        ? process.env.NEXT_PUBLIC_SUPABASE_URL +
+                                          user.profilePictureUrl
+                                        : user.profilePictureUrl
+                                }
                                 alt="Profile"
-                                className="w-20 h-20 rounded-full object-cover border border-gray-400"
+                                className="w-20 h-20 rounded-full object-cover border border-gray-300"
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src =
+                                        "https://ui-avatars.com/api/?background=E0E7FF&color=3730A3&name=" +
+                                        encodeURIComponent(
+                                            (user.firstname || "") +
+                                                " " +
+                                                (user.lastname || "")
+                                        );
+                                }}
                             />
                         ) : (
-                            <div className="w-20 h-20 rounded-full bg-indigo-600 flex items-center justify-center border border-gray-400">
-                                <span className="text-white text-2xl font-bold">
+                            <div className="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center border border-gray-300">
+                                <span className="text-indigo-700 text-2xl font-bold">
                                     {user.firstname
                                         ? user.firstname.charAt(0).toUpperCase()
                                         : "?"}
@@ -117,40 +133,40 @@ const UserDetailPage = () => {
                 </div>
 
                 {/* Detail Rows */}
-                <div className="divide-y divide-gray-600">
+                <div className="divide-y divide-gray-200">
                     <div className="flex p-4">
-                        <span className="font-bold text-gray-200 w-48">ID</span>
-                        <span className="text-gray-100 flex-1">{user.id}</span>
+                        <span className="font-bold text-gray-700 w-48">ID</span>
+                        <span className="text-gray-900 flex-1">{user.id}</span>
                     </div>
                     <div className="flex p-4">
-                        <span className="font-bold text-gray-200 w-48">
+                        <span className="font-bold text-gray-700 w-48">
                             Name
                         </span>
-                        <span className="text-gray-100 flex-1">
+                        <span className="text-gray-900 flex-1">
                             {user.firstname} {user.lastname}
                         </span>
                     </div>
                     <div className="flex p-4">
-                        <span className="font-bold text-gray-200 w-48">
+                        <span className="font-bold text-gray-700 w-48">
                             Email
                         </span>
-                        <span className="text-gray-100 flex-1">
+                        <span className="text-gray-900 flex-1">
                             {user.email}
                         </span>
                     </div>
                     <div className="flex p-4">
-                        <span className="font-bold text-gray-200 w-48">
+                        <span className="font-bold text-gray-700 w-48">
                             Date of Birth
                         </span>
-                        <span className="text-gray-100 flex-1">
+                        <span className="text-gray-900 flex-1">
                             {user.dateOfBirth.split("T")[0]}
                         </span>
                     </div>
                     <div className="flex p-4">
-                        <span className="font-bold text-gray-200 w-48">
+                        <span className="font-bold text-gray-700 w-48">
                             Gender
                         </span>
-                        <span className="text-gray-100 flex-1">
+                        <span className="text-gray-900 flex-1">
                             {user.gender ? (
                                 user.gender
                             ) : (
@@ -161,10 +177,10 @@ const UserDetailPage = () => {
                         </span>
                     </div>
                     <div className="flex p-4">
-                        <span className="font-bold text-gray-200 w-48">
+                        <span className="font-bold text-gray-700 w-48">
                             Phone Number
                         </span>
-                        <span className="text-gray-100 flex-1">
+                        <span className="text-gray-900 flex-1">
                             {user.phoneNumber ? (
                                 user.phoneNumber
                             ) : (
@@ -175,10 +191,10 @@ const UserDetailPage = () => {
                         </span>
                     </div>
                     <div className="flex p-4">
-                        <span className="font-bold text-gray-200 w-48">
+                        <span className="font-bold text-gray-700 w-48">
                             Total Calories Donated
                         </span>
-                        <span className="text-gray-100 flex-1">
+                        <span className="text-gray-900 flex-1">
                             {user.totalCaloriesDonated === 0 ? (
                                 <span className="italic text-gray-400">
                                     No donations made
@@ -189,7 +205,7 @@ const UserDetailPage = () => {
                         </span>
                     </div>
                     <div className="flex p-4">
-                        <span className="font-bold text-gray-200 w-48">
+                        <span className="font-bold text-gray-700 w-48">
                             Status
                         </span>
                         <span className="flex-1 flex items-center gap-3">
@@ -222,16 +238,16 @@ const UserDetailPage = () => {
                                         : "Activate User"}
                                 </span>
                             </button>
-                            <span className="text-sm font-medium text-gray-200">
+                            <span className="text-sm font-medium text-gray-700">
                                 {user.isActive ? "Active" : "Blocked"}
                             </span>
                         </span>
                     </div>
                     <div className="flex p-4">
-                        <span className="font-bold text-gray-200 w-48">
+                        <span className="font-bold text-gray-700 w-48">
                             Joined At
                         </span>
-                        <span className="text-gray-100 flex-1">
+                        <span className="text-gray-900 flex-1">
                             {user.createdAt ? user.createdAt.split("T")[0] : ""}
                         </span>
                     </div>
