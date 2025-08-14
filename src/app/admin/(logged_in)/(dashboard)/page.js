@@ -78,6 +78,29 @@ const DashboardPage = () => {
             setLoading(false);
         });
 
+        // Fetch dashboard data from API
+        setLoading(true);
+        getDashboardData(dateRange).then((data) => {
+            setDashboard(
+                data || {
+                    stats: {
+                        totalUsers: 0,
+                        activeActivities: 0,
+                        totalRewards: 0,
+                        totalDonations: 0,
+                        dailyStats: {
+                            newUsers: 0,
+                            completedActivities: 0,
+                            caloriesDonated: 0,
+                        },
+                    },
+                    recentSignups: [],
+                    error: "No data",
+                }
+            );
+            setLoading(false);
+        });
+
         return () => observer.disconnect();
     }, [dateRange]);
 
