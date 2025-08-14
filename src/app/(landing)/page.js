@@ -8,6 +8,7 @@ import ComingSoon from "@/app/(landing)/Components/ComingSoon";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import ActivityItemSkeleton from "../shared/components/skeletons/ActivityItemSkeleton";
 import sortActivities from "@/utils/sortActivities";
+import Button from "../shared/components/Button";
 export default function Home() {
     const { activities } = useActivities();
     const sortedActivities = sortActivities(activities || []);
@@ -29,6 +30,14 @@ export default function Home() {
                               />
                           ))}
             </div>
+            <div className={styles.exploreCont}>
+				<Button
+					className={styles.explore}
+					onClick={() => router.push('/my/activities')}
+				>
+					EXPLORE MORE ACTIVITIES
+				</Button>
+			</div>
             <ComingSoon />
         </>
     );
