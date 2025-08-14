@@ -11,6 +11,7 @@ export default function Search({ sortedActivities }) {
     const [focusedIndex, setFocusedIndex] = useState(-1);
     const searchInputRef = useRef(null);
     const dropdownRef = useRef(null);
+    const mouseDownOnOption = useRef(false);
     const router = useRouter();
 
     const filteredSearchResults = useMemo(() => {
@@ -61,33 +62,27 @@ export default function Search({ sortedActivities }) {
         setFocusedIndex(-1);
     }, [searchOpen, searchValue]);
 
-    // Keyboard navigation for dropdown
-    useEffect(() => {
-        if (!showDropdown) return;
-        function handleKeyDown(e) {
-            if (!showDropdown || filteredSearchResults.length === 0) return;
-            if (e.key === "ArrowDown") {
-                e.preventDefault();
-                setFocusedIndex(prev => (prev + 1) % filteredSearchResults.length);
-            } else if (e.key === "ArrowUp") {
-                e.preventDefault();
-                setFocusedIndex(prev => (prev - 1 + filteredSearchResults.length) % filteredSearchResults.length);
-            } else if (e.key === "Enter") {
-                if (focusedIndex >= 0 && focusedIndex < filteredSearchResults.length) {
-                    handleResultClick(filteredSearchResults[focusedIndex].id);
-                }
-            } else if (e.key === "Escape") {
-                handleCloseSearch();
-            }
-        }
-        document.addEventListener("keydown", handleKeyDown);
-        return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [showDropdown, filteredSearchResults, focusedIndex]);
+    // Remove document-level keydown, move to input
 
     const handleInputChange = (e) => {
         setSearchValue(e.target.value);
+    };
+
+    const handleInputKeyDown = (e) => {
+        if (!showDropdown || filteredSearchResults.length === 0) return;
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setFocusedIndex(prev => (prev + 1) % filteredSearchResults.length);
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setFocusedIndex(prev => (prev - 1 + filteredSearchResults.length) % filteredSearchResults.length);
+        } else if (e.key === "Enter") {
+            if (focusedIndex >= 0 && focusedIndex < filteredSearchResults.length) {
+                handleResultClick(filteredSearchResults[focusedIndex].id);
+            }
+        } else if (e.key === "Escape") {
+            handleCloseSearch();
+        }
     };
 
     const handleSearchSubmit = (e) => {
@@ -118,9 +113,15 @@ export default function Search({ sortedActivities }) {
                         type="text"
                         value={searchValue}
                         onChange={handleInputChange}
+                        onKeyDown={handleInputKeyDown}
                         placeholder="Search activities..."
                         onFocus={() => searchValue && setShowDropdown(true)}
-                        onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+                        onBlur={e => {
+                            // If a dropdown option is being clicked, don't close
+                            setTimeout(() => {
+                                if (!mouseDownOnOption.current) setShowDropdown(false);
+                            }, 0);
+                        }}
                         role="combobox"
                         aria-autocomplete="list"
                         aria-expanded={showDropdown}
@@ -175,7 +176,16 @@ export default function Search({ sortedActivities }) {
                                 role="option"
                                 aria-selected={focusedIndex === idx}
                                 tabIndex={-1}
-                                onMouseDown={() => handleResultClick(a.id)}
+                                onMouseDown={() => {
+                                    mouseDownOnOption.current = true;
+                                    handleResultClick(a.id);
+                                }}
+                                onMouseUp={() => {
+                                    mouseDownOnOption.current = false;
+                                }}
+                                onMouseLeave={() => {
+                                    mouseDownOnOption.current = false;
+                                }}
                                 style={{
                                     cursor: "pointer",
                                     padding: "0.75rem 1rem",
