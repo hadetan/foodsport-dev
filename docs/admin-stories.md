@@ -484,14 +484,61 @@ After reviewing all admin pages, the dashboard should serve as the central hub f
 **Current Status**: Done  
 **Notes**: "Edit Activity" page fully implemented, including all validations, image management, permissions, accessibility, and editable audit fields.
 
+---
+
+### Story #A5: Admin Send Email to Users
+
+**Title**: Create a page where admins can send emails to users with proper email formats  
+**Description**: Build an admin-only interface for composing and sending emails to users. The page should support rich formatting, recipient selection, and preview, and ensure all emails use a consistent, branded template.  
+**Scope**:
+
+-   Admin-only page for sending emails
+-   Recipient selection (by email, user, or group)
+-   Subject and rich text body (with formatting)
+-   Email preview before sending
+-   API integration for sending emails
+-   Validation for all fields
+-   Loading and feedback states
+-   Responsive and accessible design
+
+**DaisyUI Components**:
+
+-   `form-control` for all inputs
+-   `input input-bordered` for subject and recipient fields
+-   `textarea` or rich text editor for email body
+-   `btn btn-primary` for send action
+-   `btn btn-outline` for preview
+-   `alert` or `toast` for feedback
+-   `loading` for submission state
+-   `card` for email preview
+
+**Acceptance Criteria**:
+
+-   [x] Only admins can access the page
+-   [x] Recipient selection supports single/multiple users (by email or user picker)
+-   [x] Subject and body fields are required (subject max 150 chars, body min 10 chars)
+-   [x] Rich text editor for email body (supports bold, italic, lists, links)
+-   [x] Preview option shows formatted email as it will appear to users
+-   [x] API integration for sending emails, with consistent JSON response structure
+-   [x] Success and error feedback shown to admin
+-   [x] Loading state during send
+-   [x] Form validation for all fields
+-   [x] Responsive and accessible UI
+-   [x] Emails use a consistent, branded HTML template
+
+**Current Status**: Done  
+**Notes**: Admin email interface fully implemented with user picker, rich text editor, preview functionality, validation, and responsive UI. API integration is ready for connecting to the email service of choice (e.g., SendGrid, Resend).
+
+---
+
 ## Summary
 
-**Total Stories**: 4  
+**Total Stories**: 5  
 **Current Status Breakdown**:
 
 -   Not Started: 1
 -   In Progress: 1
--   Done: 2
+-   Done: 3
 
 **Priority Order**:
 
@@ -499,6 +546,7 @@ After reviewing all admin pages, the dashboard should serve as the central hub f
 2.  Story #A1 (Dashboard Interface) - Core Features - Done
 3.  Story #A2 (User Management UI) - User Administration - Done
 4.  Story #A3 (Activity Management UI) - Content Management - Not Started
+5.  Story #A5 (Admin Send Email to Users) - Communication - Done
 
 **DaisyUI Component Categories**:
 
