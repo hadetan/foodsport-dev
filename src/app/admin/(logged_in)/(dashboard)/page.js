@@ -147,7 +147,7 @@ const DashboardPage = () => {
                 <div className="stats shadow">
                     <div className="stat bg-gradient-to-r from-accent to-accent-focus text-accent-content">
                         <div className="stat-title opacity-80">
-                            <span className="font-bold">Volunteers</span>
+                            <span className="font-bold">Total Users</span>
                         </div>
                         <div className="stat-value">
                             {dashboard?.stats?.totalRewards ?? 0}
