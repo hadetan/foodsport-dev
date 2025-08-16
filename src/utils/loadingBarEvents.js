@@ -1,8 +1,18 @@
+
 let activeRequests = 0;
 let loadingBar = null;
+let pendingStarts = 0;
+
 
 export function setLoadingBarInstance(instance) {
   loadingBar = instance;
+  if (loadingBar && pendingStarts > 0) {
+    for (let i = 0; i < pendingStarts; i++) {
+      if (activeRequests === 0) loadingBar.continuousStart();
+      activeRequests++;
+    }
+    pendingStarts = 0;
+  }
 }
 
 export function setupGlobalLoadingBarForAxios(axiosInstance) {
@@ -11,6 +21,8 @@ export function setupGlobalLoadingBarForAxios(axiosInstance) {
       if (loadingBar) {
         if (activeRequests === 0) loadingBar.continuousStart();
         activeRequests++;
+      } else {
+        pendingStarts++;
       }
       return config;
     },

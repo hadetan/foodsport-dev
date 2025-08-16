@@ -74,9 +74,10 @@ export default function ActivityItem({
 		} catch (error) {
 			const status = error?.response?.status;
 			if (status === 401 && error.response?.data?.error?.includes('Token')) {
+				await api.delete('/auth/logout');
 				router.push('/auth/login');
 			} else if (status === 400) {
-				   toast.warning('Cannot join activity that is not active.');
+				toast.warning('Cannot join activity that is not active.');
 			}
 		} finally {
 			setLoading(false);
@@ -113,9 +114,9 @@ export default function ActivityItem({
 				if (status === 401 && error.response?.data?.error?.includes('Token')) {
 				await api.delete('/auth/logout');
 				router.push('/auth/login');
-			} else {
-				   toast.error('Something went wrong while attempting to leave the activity.');
-			}
+				} else {
+				   	toast.error('Something went wrong while attempting to leave the activity.');
+				}
 		} finally {
 			setLoading(false);
 		}
