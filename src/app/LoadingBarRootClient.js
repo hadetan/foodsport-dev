@@ -6,6 +6,7 @@ import ClientLoadingBarEvents from "./client-loading-bar";
 import { setLoadingBarInstance } from "../utils/loadingBarEvents";
 import { AuthProvider } from '@/app/shared/contexts/authContext';
 import { ActivitiesProvider } from '@/app/shared/contexts/ActivitiesContext';
+import { Toaster } from "sonner";
 
 function LoadingBarConsumerWrapper({ children }) {
   const { loadingBarRef } = useLoadingBar() || {};
@@ -32,6 +33,7 @@ export default function LoadingBarRootClient({ children }) {
         <AuthProvider>
           <ActivitiesProvider>
             {children}
+            <Toaster richColors position="bottom-right" />
           </ActivitiesProvider>
         </AuthProvider>
       </LoadingBarConsumerWrapper>
