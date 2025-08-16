@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import { useAdminActivities } from "@/app/shared/contexts/adminActivityContext";
 
-const ActivityManagementPage = () => {
+const ActivityManagementPageContent = () => {
     const router = useRouter();
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(10);
