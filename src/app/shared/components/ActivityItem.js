@@ -70,13 +70,13 @@ export default function ActivityItem({
 						: act
 				)
 			);
-			   toast.success('Successfully joined the activity!');
+			   toast.success('Successfully joined the activity.');
 		} catch (error) {
 			const status = error?.response?.status;
 			if (status === 401 && error.response?.data?.error?.includes('Token')) {
 				router.push('/auth/login');
 			} else if (status === 400) {
-				   toast.error('Cannot join activity that is not active');
+				   toast.error('Cannot join activity that is not active.');
 			}
 		} finally {
 			setLoading(false);
@@ -107,14 +107,14 @@ export default function ActivityItem({
 						: act
 				)
 			);
-			   toast.success('You have left the activity.');
+			   toast.info('You have left the activity.');
 			} catch (error) {
 				const status = error?.response?.status;
 				if (status === 401 && error.response?.data?.error?.includes('Token')) {
 				await api.delete('/auth/logout');
 				router.push('/auth/login');
 			} else {
-				   toast.error('Failed to leave activity');
+				   toast.error('Something went wrong while attempting to leave the activity.');
 			}
 		} finally {
 			setLoading(false);

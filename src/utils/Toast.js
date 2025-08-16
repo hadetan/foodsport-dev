@@ -1,4 +1,3 @@
-// src/shared/components/Toast.js
 "use client";
 import { toast as sonnerToast } from "sonner";
 import { FaCheckCircle, FaTimesCircle, FaInfoCircle, FaExclamationTriangle } from "react-icons/fa";
@@ -11,12 +10,24 @@ import { FaCheckCircle, FaTimesCircle, FaInfoCircle, FaExclamationTriangle } fro
  * toast("Default message");
  */
 
+const baseClass = [
+  '!w-auto',
+  '!rounded-lg',
+  '!shadow-lg',
+  '!px-6',
+  '!py-4',
+  '!text-base',
+  '!font-medium',
+  '!border',
+  '!border-[#2BBFB0]',
+  '!bg-[#D6F6F3]',
+  'flex',
+  'items-center',
+  'gap-3',
+].join(' ');
 
-const accentBg = '!bg-[#A6E7E1]';
-const accentBorder = '!border-[#2BBFB0]';
-const accentText = '!text-[#1B6E68]';
-const baseClass =
-  `!min-w-[340px] !max-w-[420px] !rounded-lg !shadow-lg !px-6 !py-4 !text-base !font-medium !border ${accentBorder} ${accentBg} ${accentText} flex items-center justify-center gap-3`;
+const iconClass = 'min-w-[32px] flex justify-center items-center';
+const textClass = 'text-center break-words';
 
 const toast = Object.assign(
   (message, options = {}) =>
@@ -26,29 +37,53 @@ const toast = Object.assign(
     }),
   {
     success: (message, options = {}) =>
-      sonnerToast.success(message, {
-        ...options,
-        className: baseClass,
-        icon: <FaCheckCircle className="text-green-600 text-xl" />,
-      }),
+      sonnerToast.success(
+        <>
+          <span className={iconClass}><FaCheckCircle className="text-green-600 text-xl" /></span>
+          <span className={textClass}>{message}</span>
+        </>,
+        {
+          ...options,
+          className: `${baseClass} !text-[#1B6E68]`,
+          icon: null,
+        }
+      ),
     error: (message, options = {}) =>
-      sonnerToast.error(message, {
-        ...options,
-        className: baseClass,
-        icon: <FaTimesCircle className="text-red-600 text-xl" />,
-      }),
+      sonnerToast.error(
+        <div className="flex">
+          <span className={iconClass}><FaTimesCircle className="text-red-600 text-xl" /></span>
+          <span className={textClass}>{message}</span>
+        </div >,
+        {
+          ...options,
+          className: `${baseClass} !text-[#E57373]`,
+          icon: null,
+        }
+      ),
     info: (message, options = {}) =>
-      sonnerToast.info(message, {
-        ...options,
-        className: baseClass,
-        icon: <FaInfoCircle className="text-blue-600 text-xl" />,
-      }),
+      sonnerToast.info(
+        <>
+          <span className={iconClass}><FaInfoCircle className="text-blue-600 text-xl" /></span>
+          <span className={textClass}>{message}</span>
+        </>,
+        {
+          ...options,
+          className: `${baseClass} !text-[#1B6E68]`,
+          icon: null,
+        }
+      ),
     warning: (message, options = {}) =>
-      sonnerToast.warning(message, {
-        ...options,
-        className: baseClass,
-        icon: <FaExclamationTriangle className="text-yellow-500 text-xl" />,
-      }),
+      sonnerToast.warning(
+        <>
+          <span className={iconClass}><FaExclamationTriangle className="text-yellow-500 text-xl" /></span>
+          <span className={textClass}>{message}</span>
+        </>,
+        {
+          ...options,
+          className: `${baseClass} !text-yellow-700`,
+          icon: null,
+        }
+      ),
   }
 );
 

@@ -16,7 +16,7 @@ export default function ClientLoadingBarEvents() {
       const id = setTimeout(() => loadingBar.complete(), 0);
       return () => clearTimeout(id);
     }
-  }, [pathname, loadingBar, pathname]);
+  }, [pathname, loadingBar]);
 
   return null;
 }

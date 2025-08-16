@@ -58,6 +58,8 @@
   background: linear-gradient(135deg, #eaf3ff 0%, #f9fbff 100%);
   display: block;
 }
+
+
 /* Pencil icon overlay */
 .edit-profile-avatar-pencil {
   position: absolute;

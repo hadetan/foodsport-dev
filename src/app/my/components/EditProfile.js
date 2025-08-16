@@ -145,7 +145,7 @@ export default function EditProfile() {
 				profilePictureUrl: res.profilePictureUrl,
 			});
 			setInitialValues(form);
-			toast.success('Profile has been updated successfully');
+			toast.info('Profile has been updated successfully.');
 		} catch (err) {
 			setError('Something went wrong, please try again.');
 			toast.error('Something went wrong, please try again');
