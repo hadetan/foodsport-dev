@@ -81,6 +81,11 @@ export default function ActivityItem({
 		}
 	}
 
+	function handleActTypeSearch(actType) {
+		router.push(`/activities?type=${encodeURIComponent(actType)}`);
+	}
+
+
 	async function handleLeave() {
 		if (!setUser || !setActivities) return;
 		try {
@@ -150,7 +155,7 @@ export default function ActivityItem({
 							{activity.status.charAt(0).toUpperCase() +
 								activity.status.slice(1)}
 						</span>
-						<Button className={styles.filterBtn} title='Filter'>
+						<Button className={styles.filterBtn} title='Filter' onClick={() => handleActTypeSearch(activity.activityType)}>
 							<ActivityIcon type={activity.activityType} />
 						</Button>
 					</div>
