@@ -1,50 +1,39 @@
 "use client";
 
 import { useState, useRef } from "react";
+import TiptapEditor from "@/app/shared/components/TiptapEditor";
+import { useUsers } from "@/app/shared/contexts/usersContenxt";
 
 // User picker component
 const UserPicker = ({ selectedUsers, setSelectedUsers }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [searchResults, setSearchResults] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const { users, loading } = useUsers();
 
     // Helper to validate email format
     const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    const handleSearch = async (e) => {
+    const handleSearch = (e) => {
         const term = e.target.value;
         setSearchTerm(term);
 
-        if (term.length < 2) {
+        if (term.length < 1) {
             setSearchResults([]);
             return;
         }
 
-        setIsLoading(true);
-        // In a real implementation, this would be an API call
-        // Mocking for demonstration
-        setTimeout(() => {
-            setSearchResults(
-                [
-                    {
-                        id: 1,
-                        name: "Jane Smith",
-                        email: "jane.smith@example.com",
-                    },
-                    { id: 2, name: "John Doe", email: "john.doe@example.com" },
-                    {
-                        id: 3,
-                        name: "Alice Johnson",
-                        email: "alice@example.com",
-                    },
-                ].filter(
-                    (user) =>
-                        user.name.toLowerCase().includes(term.toLowerCase()) ||
-                        user.email.toLowerCase().includes(term.toLowerCase())
-                )
-            );
-            setIsLoading(false);
-        }, 500);
+        // Filter users from the context based on the search term
+        // Show results as soon as user starts typing (length >= 1)
+        const filteredUsers = users.filter(
+            (user) =>
+                (user.name?.toLowerCase().includes(term.toLowerCase()) ||
+                    user.email?.toLowerCase().includes(term.toLowerCase())) &&
+                // Don't show already selected users
+                !selectedUsers.some((selected) => selected.email === user.email)
+        );
+
+        // Limit results to a reasonable number for better UX
+        setSearchResults(filteredUsers.slice(0, 10));
     };
 
     const selectUser = (user) => {
@@ -76,13 +65,18 @@ const UserPicker = ({ selectedUsers, setSelectedUsers }) => {
 
     return (
         <div className="form-control w-full">
-            <label className="label">
-                <span className="label-text">Recipients</span>
-            </label>
             <div className="flex flex-wrap gap-2 mb-2">
                 {selectedUsers.map((user) => (
-                    <div key={user.id} className="badge badge-primary gap-2">
-                        {user.name}
+                    <div
+                        key={user.id}
+                        className="badge badge-primary gap-2 flex items-center"
+                    >
+                        <div className="flex flex-col items-start">
+                            <span>{user.name}</span>
+                            <span className="text-xs opacity-70">
+                                {user.email}
+                            </span>
+                        </div>
                         <button
                             onClick={() => removeUser(user.id)}
                             className="btn btn-xs btn-circle"
@@ -104,11 +98,11 @@ const UserPicker = ({ selectedUsers, setSelectedUsers }) => {
                     </div>
                 ))}
             </div>
-            <div className="relative flex items-center gap-2">
+            <div className="relative flex items-center gap-2 ">
                 <input
                     type="text"
                     placeholder="Add email or search..."
-                    className="input input-bordered input-sm w-48"
+                    className="input input-bordered input-l w-48"
                     value={searchTerm}
                     onChange={handleSearch}
                     onKeyDown={(e) => {
@@ -121,47 +115,33 @@ const UserPicker = ({ selectedUsers, setSelectedUsers }) => {
                         }
                     }}
                 />
-                <button
-                    type="button"
-                    className="btn btn-sm btn-circle btn-outline"
-                    onClick={addEmail}
-                    disabled={!isValidEmail(searchTerm.trim())}
-                    title="Add email"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 4v16m8-8H4"
-                        />
-                    </svg>
-                </button>
-                {isLoading && (
+                {loading && (
                     <div className="absolute right-3 top-2">
                         <span className="loading loading-spinner loading-sm"></span>
                     </div>
                 )}
             </div>
             {searchResults.length > 0 && (
-                <ul className="menu bg-base-100 shadow-lg rounded-box w-full absolute z-10 mt-1">
-                    {searchResults.map((user) => (
-                        <li key={user.id}>
-                            <a onClick={() => selectUser(user)}>
-                                <div>
-                                    <div className="font-semibold">
-                                        {user.name}
-                                    </div>
-                                    <div className="text-sm opacity-70">
-                                        {user.email}
-                                    </div>
-                                </div>
+                <ul className="menu bg-base-100 shadow-lg rounded-box w-64 max-h-64 overflow-y-auto absolute z-10 mt-1 border border-base-800">
+                    {searchResults.map((user, idx) => (
+                        <li
+                            key={user.id}
+                            className={
+                                idx !== searchResults.length - 1
+                                    ? "border-b border-base-800"
+                                    : ""
+                            }
+                        >
+                            <a
+                                onClick={() => selectUser(user)}
+                                className="hover:bg-base-200 focus:bg-base-200 px-4 py-2 cursor-pointer flex flex-col"
+                            >
+                                <span className="font-semibold">
+                                    {user.name}
+                                </span>
+                                <span className="text-sm opacity-70">
+                                    {user.email}
+                                </span>
                             </a>
                         </li>
                     ))}
@@ -351,21 +331,32 @@ export default function AdminEmailPage() {
                     <form
                         ref={formRef}
                         onSubmit={handleSubmit}
-                        className="flex flex-col gap-6"
+                        className="grid grid-cols-1 md:grid-cols-12 gap-y-6 gap-x-0"
                     >
-                        <UserPicker
-                            selectedUsers={selectedUsers}
-                            setSelectedUsers={setSelectedUsers}
-                        />
+                        {/* Recipients */}
+                        <div className="md:col-span-2 flex items-center justify-end pr-4">
+                            <span className="label-text font-medium">
+                                Recipients
+                            </span>
+                        </div>
+                        <div className="md:col-span-10">
+                            <UserPicker
+                                selectedUsers={selectedUsers}
+                                setSelectedUsers={setSelectedUsers}
+                            />
+                        </div>
 
-                        <div className="form-control w-full">
-                            <label className="label mb-0">
-                                <span className="label-text">Subject</span>
-                            </label>
+                        {/* Subject */}
+                        <div className="md:col-span-2 flex items-center justify-end pr-4">
+                            <span className="label-text font-medium">
+                                Subject
+                            </span>
+                        </div>
+                        <div className="md:col-span-10">
                             <input
                                 type="text"
                                 placeholder="Email subject"
-                                className="input input-bordered input-md w-full"
+                                className="input input-bordered input-lg w-xl"
                                 value={subject}
                                 onChange={(e) => setSubject(e.target.value)}
                                 maxLength="150"
@@ -378,43 +369,48 @@ export default function AdminEmailPage() {
                             </label>
                         </div>
 
-                        <div className="form-control w-full">
-                            <label className="label mb-0">
-                                <span className="label-text">Email Body</span>
-                            </label>
-                            <textarea
-                                className="textarea textarea-bordered w-full h-64"
-                                placeholder="Compose your email here..."
-                                value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                minLength={10}
-                                required
-                            />
+                        {/* Email Body */}
+                        <div className="md:col-span-2 flex items-center justify-end pr-4">
+                            <span className="label-text font-medium">
+                                Email Body
+                            </span>
+                        </div>
+                        <div className="md:col-span-10">
+                            <div className="border border-base-300 rounded-lg bg-base-200 p-2">
+                                <TiptapEditor
+                                    value={content}
+                                    onChange={setContent}
+                                />
+                            </div>
                         </div>
 
-                        <div className="card-actions justify-end mt-6">
-                            <button
-                                type="button"
-                                className="btn btn-outline"
-                                onClick={handlePreview}
-                                disabled={isLoading}
-                            >
-                                Preview Email
-                            </button>
-                            <button
-                                type="submit"
-                                className="btn btn-primary"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <span className="loading loading-spinner loading-sm"></span>
-                                        Sending...
-                                    </>
-                                ) : (
-                                    "Send Email"
-                                )}
-                            </button>
+                        {/* Actions */}
+                        <div className="md:col-span-2"></div>
+                        <div className="md:col-span-10">
+                            <div className="card-actions justify-end mt-6">
+                                <button
+                                    type="button"
+                                    className="btn btn-outline"
+                                    onClick={handlePreview}
+                                    disabled={isLoading}
+                                >
+                                    Preview Email
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <span className="loading loading-spinner loading-sm"></span>
+                                            Sending...
+                                        </>
+                                    ) : (
+                                        "Send Email"
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
