@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
-export const Dropdown = ({ items, name, selectedValue, onSelect }) => {
+const Dropdown = ({ items, name, selectedValue, onSelect }) => {
     const popoverId = `popover-${name.replace(/\s+/g, '-').toLowerCase()}`;
     
     const handleItemClick = (item) => {

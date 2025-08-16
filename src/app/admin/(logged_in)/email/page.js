@@ -106,11 +106,11 @@ export default function AdminEmailPage() {
     };
 
     return (
-        <div className="h-screen flex flex-col items-stretch justify-start bg-gray-50 py-0">
-            <div className="w-full h-full bg-white rounded-2xl shadow-lg border border-gray-200 px-0 flex flex-col flex-grow">
+        <div className="h-screen flex flex-col items-stretch justify-start bg-base-100 py-0">
+            <div className="w-full h-full bg-base-200 rounded-2xl shadow-lg border border-base-300 px-0 flex flex-col flex-grow">
                 <div className="flex items-center gap-2 px-16 pt-10 pb-2">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-8 h-8 text-red-500"><path fill="currentColor" d="M44 8v32H4V8l20 16Zm-2.5 0H6.5L24 21.95Z"/></svg>
-                    <h1 className="text-2xl font-semibold tracking-tight text-gray-800">Send New Email</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight text-base-content">Send New Email</h1>
                 </div>
                 <div className="divider my-0"></div>
                 <div className="px-16 pb-12 pt-2 flex-grow flex flex-col">
@@ -156,7 +156,7 @@ export default function AdminEmailPage() {
 
                         {/* Recipients + Actions Row */}
                         <div>
-                            <label className="block text-xl font-medium text-gray-700 mb-1 pl-2">To:</label>
+                            <label className="block text-xl font-medium text-base-content mb-1 pl-2">To:</label>
                             <div className="flex flex-row items-end gap-2 w-full">
                                 <div className="flex-1 min-w-0">
                                     <UserPicker
@@ -174,6 +174,7 @@ export default function AdminEmailPage() {
                                     >
                                         Preview Email
                                     </button>
+
                                     <button
                                         type="submit"
                                         className="btn btn-primary"
@@ -194,18 +195,18 @@ export default function AdminEmailPage() {
 
                         {/* Subject */}
                         <div>
-                            <label className="block text-xl font-medium text-gray-700 mb-1 pl-2">Subject:</label>
+                            <label className="block text-xl font-medium text-base-content mb-1 pl-2">Subject:</label>
                             <input
                                 type="text"
                                 placeholder="Email subject"
-                                className="input input-bordered input-lg w-full rounded-[8px]"
+                                className="input input-bordered input-lg w-full rounded-[2px] bg-base-100 text-base-content"
                                 value={subject}
                                 onChange={(e) => setSubject(e.target.value)}
                                 maxLength="150"
                                 required
                             />
                             <label className="label">
-                                <span className="label-text-alt text-sm">
+                                <span className="label-text-alt text-sm text-base-content">
                                     {subject.length}/150 characters
                                 </span>
                             </label>
@@ -213,8 +214,8 @@ export default function AdminEmailPage() {
 
                         {/* Email Body */}
                         <div>
-                            <label className="block text-xl font-medium text-gray-700 mb-1 pl-2">Email Body:</label>
-                            <div className="rounded-lg border border-gray-200 bg-gray-50">
+                            <label className="block text-xl font-medium text-base-content mb-1 pl-2">Email Body:</label>
+                            <div className="rounded-lg border border-base-300 bg-base-100">
                                 <TiptapEditor
                                     value={content}
                                     onChange={setContent}

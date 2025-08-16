@@ -6,7 +6,6 @@ import ThemeController from "@/app/admin/(logged_in)//components/ThemeController
 import { UsersProvider } from "@/app/shared/contexts/usersContext";
 
 export default function AdminLoggedInLayout({ children }) {
-    //add a check that only if the user is logged in as admin, they will be able to access it.
     const pathname = usePathname();
 
     return (
@@ -19,7 +18,6 @@ export default function AdminLoggedInLayout({ children }) {
                 />
 
                 <div className="drawer-content flex flex-col">
-                    {/* Navbar */}
                     <div className="navbar bg-base-100 lg:hidden shadow-sm px-4">
                         <div className="flex-none lg:hidden">
                             <label
@@ -43,7 +41,6 @@ export default function AdminLoggedInLayout({ children }) {
                         </div>
                     </div>
 
-                    {/* Main Content */}
                     <main
                         className={`flex-1 mt-4 pr-4 overflow-y-auto`}
                     >
@@ -51,11 +48,9 @@ export default function AdminLoggedInLayout({ children }) {
                     </main>
                 </div>
 
-                {/* Sidebar */}
-                <div className="drawer-side bg-secondary rounded-2xl m-3">
+                <div className="drawer-side bg-base-200 rounded-2xl m-3">
                     <aside className="w-full sm:w-64 relative">
-                        {/* Close button for mobile, sticky at top */}
-                        <div className="sm:hidden sticky top-0 z-10 flex justify-end bg-secondary p-2">
+                        <div className="sm:hidden sticky top-0 z-10 flex justify-end bg-base-200 p-2">
                             <label
                                 htmlFor="admin-drawer"
                                 className="btn btn-square btn-ghost"
