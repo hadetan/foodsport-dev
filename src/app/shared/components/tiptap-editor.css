@@ -1,0 +1,54 @@
+/* Tiptap Editor Content Styles */
+.tiptap-editor {
+  background: #18181b;
+  color: #fff;
+  min-height: 500px;
+  max-height: 500px;
+  padding: 1.25rem 10rem;
+  border-radius: 0 0 0.75rem 0.75rem;
+  outline: none;
+  font-size: 1rem;
+  overflow-y: auto;
+}
+
+.tiptap-editor h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 2rem 0 1rem 0;
+}
+.tiptap-editor h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 1.5rem 0 1rem 0;
+}
+.tiptap-editor h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 1.2rem 0 0.8rem 0;
+}
+.tiptap-editor p {
+  margin: 0.5rem 0;
+}
+.tiptap-editor ul,
+.tiptap-editor ol {
+  padding-left: 2rem;
+  margin: 1rem 0;
+}
+.tiptap-editor hr {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 2rem 0;
+}
+.tiptap-editor img {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+.tiptap-editor a {
+  color: #7dd3fc;
+  text-decoration: underline;
+}
+.tiptap-editor .is-active {
+  background: #a21caf;
+  color: #fff;
+}

@@ -6,7 +6,7 @@ import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import api from "@/utils/axios/api";
-import { useUsers } from "@/app/shared/contexts/usersContenxt";
+import { useUsers } from "@/app/shared/contexts/usersContext";
 
 const UserManagementPage = () => {
     const router = useRouter();

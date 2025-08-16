@@ -3,7 +3,7 @@ import { usePathname } from "next/navigation";
 import SidebarItem from "@/app/admin/(logged_in)//components/SidebarItem";
 import { Users, Calendar1, CircleGauge, Share2, Mail } from "lucide-react";
 import ThemeController from "@/app/admin/(logged_in)//components/ThemeController";
-import { UsersProvider } from "@/app/shared/contexts/usersContenxt";
+import { UsersProvider } from "@/app/shared/contexts/usersContext";
 
 export default function AdminLoggedInLayout({ children }) {
     //add a check that only if the user is logged in as admin, they will be able to access it.
@@ -45,7 +45,7 @@ export default function AdminLoggedInLayout({ children }) {
 
                     {/* Main Content */}
                     <main
-                        className={`flex-1 px-4 lg:px-6 mt-9 overflow-y-auto`}
+                        className={`flex-1 mt-4 pr-4 overflow-y-auto`}
                     >
                         {children}
                     </main>

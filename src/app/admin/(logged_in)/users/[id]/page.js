@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/utils/axios/api";
-import { useUsers } from "@/app/shared/contexts/usersContenxt";
+import { useUsers } from "@/app/shared/contexts/usersContext";
 
 const UserDetailPage = () => {
     const { id } = useParams();
