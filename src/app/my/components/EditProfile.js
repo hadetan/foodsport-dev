@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { toast } from '@/utils/Toast';
 import { useUser } from '@/app/shared/contexts/userContext';
 import api from '@/utils/axios/api';
 import ReactCrop from 'react-image-crop';
@@ -144,8 +145,10 @@ export default function EditProfile() {
 				profilePictureUrl: res.profilePictureUrl,
 			});
 			setInitialValues(form);
+			toast.info('Profile has been updated successfully.');
 		} catch (err) {
-			setError(err.response?.data?.message || 'Failed to save profile.');
+			setError('Something went wrong, please try again.');
+			toast.error('Something went wrong, please try again');
 		}
 		setSaving(false);
 	};
@@ -373,7 +376,7 @@ export default function EditProfile() {
 				<button
 					type='submit'
 					className='edit-profile-save-btn'
-					disabled={saving}
+					disabled={saving || initialValues === form}
 				>
 					{saving ? 'Saving...' : 'Save Profile'}
 				</button>
