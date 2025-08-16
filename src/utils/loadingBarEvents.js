@@ -15,21 +15,24 @@ export function setupGlobalLoadingBarForAxios(axiosInstance) {
           setTimeout(() => { waited += 20; wait(resolve); }, 20);
         };
         return new Promise((resolve) => wait(() => {
-          if (loadingBar) {
-            if (activeRequests === 0) loadingBar.start();
-            activeRequests++;
-          }
+            if (loadingBar) {
+              if (activeRequests === 0) loadingBar.continuousStart();
+              activeRequests++;
+            }
           resolve(config);
         }));
       }
       if (loadingBar) {
-        if (activeRequests === 0) loadingBar.start();
+        if (activeRequests === 0) loadingBar.continuousStart();
         activeRequests++;
       }
       return config;
     },
     (error) => {
-      if (loadingBar) loadingBar.complete();
+      if (loadingBar) {
+        activeRequests = Math.max(activeRequests - 1, 0);
+        if (activeRequests === 0) loadingBar.complete();
+      }
       return Promise.reject(error);
     }
   );

@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { LoadingBarProvider, useLoadingBar } from "@/app/shared/contexts/LoadingBarContext";
 import LoadingBar from "react-top-loading-bar";
 import ClientLoadingBarEvents from "./client-loading-bar";
@@ -8,14 +9,12 @@ import { ActivitiesProvider } from '@/app/shared/contexts/ActivitiesContext';
 
 function LoadingBarConsumerWrapper({ children }) {
   const { loadingBarRef } = useLoadingBar() || {};
-  // Set the loading bar instance for global axios usage
-  if (loadingBarRef && loadingBarRef.current) {
-    setLoadingBarInstance(loadingBarRef.current);
-  }
 
-  // Temporary test button for manual loading bar trigger
-  const handleStart = () => loadingBarRef?.current?.continuousStart();
-  const handleComplete = () => loadingBarRef?.current?.complete();
+  useEffect(() => {
+    if (loadingBarRef?.current) {
+      setLoadingBarInstance(loadingBarRef.current);
+    }
+  }, [loadingBarRef]);
 
   return (
     <>

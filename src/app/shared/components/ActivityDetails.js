@@ -31,11 +31,9 @@ const ActivityDetails = ({
 			topRef.current.scrollIntoView({ behavior: 'smooth' });
 		}
 	}, []);
-	// const loadingBar = useLoadingBar();
 
 	async function handleJoin() {
 		try {
-			// if (loadingBar && loadingBar.start) loadingBar.start();
 			setLoading(true);
 			const res = await api.post('/my/activities/join', {
 				activityId: activity.id,

@@ -12,11 +12,11 @@ export default function ClientLoadingBarEvents() {
     if (!loadingBar) return;
     if (prevPath.current !== pathname) {
       loadingBar.start();
-      // Simulate route load complete after a short delay
-      setTimeout(() => loadingBar.complete(), 500);
       prevPath.current = pathname;
+      const id = setTimeout(() => loadingBar.complete(), 0);
+      return () => clearTimeout(id);
     }
-  }, [pathname, loadingBar]);
+  }, [pathname, loadingBar, pathname]);
 
   return null;
 }
