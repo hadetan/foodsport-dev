@@ -76,7 +76,7 @@ export default function ActivityItem({
 			if (status === 401 && error.response?.data?.error?.includes('Token')) {
 				router.push('/auth/login');
 			} else if (status === 400) {
-				   toast.error('Cannot join activity that is not active.');
+				   toast.warning('Cannot join activity that is not active.');
 			}
 		} finally {
 			setLoading(false);
