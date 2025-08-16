@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
 import { getSupabaseClient } from '@/lib/supabase/index';
-import { setupGlobalLoadingBarForAxios } from '@/app/shared/utils/loadingBarEvents';
+import { setupGlobalLoadingBarForAxios } from '@/utils/loadingBarEvents';
 
 const api = axios.create({
   baseURL: BASE_URLS.url,
