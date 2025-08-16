@@ -38,10 +38,10 @@ const toast = Object.assign(
   {
     success: (message, options = {}) =>
       sonnerToast.success(
-        <>
+        <div className="flex">
           <span className={iconClass}><FaCheckCircle className="text-green-600 text-xl" /></span>
           <span className={textClass}>{message}</span>
-        </>,
+        </div>,
         {
           ...options,
           className: `${baseClass} !text-[#1B6E68]`,
@@ -62,10 +62,10 @@ const toast = Object.assign(
       ),
     info: (message, options = {}) =>
       sonnerToast.info(
-        <>
+        <div className="flex">
           <span className={iconClass}><FaInfoCircle className="text-blue-600 text-xl" /></span>
           <span className={textClass}>{message}</span>
-        </>,
+        </div>,
         {
           ...options,
           className: `${baseClass} !text-[#1B6E68]`,
@@ -74,10 +74,10 @@ const toast = Object.assign(
       ),
     warning: (message, options = {}) =>
       sonnerToast.warning(
-        <>
+        <div className="flex">
           <span className={iconClass}><FaExclamationTriangle className="text-yellow-500 text-xl" /></span>
           <span className={textClass}>{message}</span>
-        </>,
+        </div>,
         {
           ...options,
           className: `${baseClass} !text-yellow-700`,
