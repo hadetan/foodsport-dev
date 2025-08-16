@@ -10,29 +10,22 @@ const statusBadgeClass = {
     completed: "bg-blue-500 text-white btn-md",
     draft: "bg-pink-400 text-white btn-md",
 };
-const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
+const ActivityRow = ({ activity }) => {
     const router = useRouter();
 
     const handleEdit = () => {
-        shouldShowEdit(true);
-        setActivity(activity);
-        // Navigate to the edit page
-        router.push("/admin/activities?view=edit");
+        router.push(`/admin/activities/${activity.id}`);
     };
-
-   
 
     return (
         <>
-            <tr key={activity.id} className="text-base">
-                <td>
+            <tr key={activity.id} className="text-base align-middle">
+                <td className="align-middle">
                     <div className="flex items-center space-x-3">
                         <div className="avatar">
                             <div className="mask mask-squircle w-16 h-16">
                                 <img
-                                    src={
-                                        activity.imageUrl 
-                                    }
+                                    src={activity.imageUrl}
                                     alt={activity.title}
                                     className="cursor-pointer hover:opacity-75"
                                     onClick={() => {
@@ -43,7 +36,8 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                                     }}
                                     onError={(e) => {
                                         e.target.onerror = null;
-                                        e.target.src = null;                                    }}
+                                        e.target.src = null;
+                                    }}
                                 />
                             </div>
                         </div>
@@ -55,32 +49,50 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                     </div>
                 </td>
                 {/* Show activity type */}
-                <td className="text-base">{activity.activityType}</td>
+                <td className="text-base align-middle">
+                    {activity.activityType}
+                </td>
                 {/* Show start date */}
-                <td className="text-base">
-                    {activity.startDate ? formatDate(activity.startDate) : ""}
+                <td className="text-base align-middle text-center whitespace-nowrap">
+                    <div className="flex items-center justify-center h-full min-h-[64px]">
+                        {activity.startDate
+                            ? formatDate(activity.startDate)
+                            : ""}
+                    </div>
                 </td>
                 {/* Show end date */}
-                <td className="text-base">
-                    {activity.endDate ? formatDate(activity.endDate) : ""}
+                <td className="text-base align-middle text-center whitespace-nowrap">
+                    <div className="flex items-center justify-center h-full min-h-[64px]">
+                        {activity.endDate ? formatDate(activity.endDate) : ""}
+                    </div>
                 </td>
                 {/* Show start time */}
-                <td className="text-base">
-                    {activity.startTime
-                        ? new Date(activity.startTime).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                          })
-                        : ""}
+                <td className="text-base align-middle text-center whitespace-nowrap">
+                    <div className="flex items-center justify-center h-full min-h-[64px]">
+                        {activity.startTime
+                            ? new Date(activity.startTime).toLocaleTimeString(
+                                  [],
+                                  {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                  }
+                              )
+                            : ""}
+                    </div>
                 </td>
                 {/* Show end time */}
-                <td className="text-base">
-                    {activity.endTime
-                        ? new Date(activity.endTime).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                          })
-                        : ""}
+                <td className="text-base align-middle text-center whitespace-nowrap">
+                    <div className="flex items-center justify-center h-full min-h-[64px]">
+                        {activity.endTime
+                            ? new Date(activity.endTime).toLocaleTimeString(
+                                  [],
+                                  {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                  }
+                              )
+                            : ""}
+                    </div>
                 </td>
                 <td className="text-base">{activity.location}</td>
                 <td>
@@ -121,7 +133,6 @@ const ActivityRow = ({ activity, shouldShowEdit, setActivity }) => {
                         </button>
                     </div>
                     {/* Confirmation Popup */}
-                    
                 </td>
             </tr>
         </>
