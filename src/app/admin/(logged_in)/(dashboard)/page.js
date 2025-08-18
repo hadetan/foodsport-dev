@@ -5,6 +5,7 @@ import Dropdown from '../components/Dropdown';
 import Status from '../components/status';
 import { useDashboard } from '@/app/shared/contexts/DashboardContext';
 import FullPageLoader from '../components/FullPageLoader';
+import Avatar from '@/app/shared/components/avatar';
 
 const DashboardPage = () => {
 	const { dashboardData, setDateRange, dateRange, loading } = useDashboard();
@@ -157,23 +158,13 @@ const DashboardPage = () => {
 										(signup) => (
 											<tr key={signup.id}>
 												<td className='flex items-center gap-2'>
-													{signup.profilePictureUrl ? (
-														<img
-															src={
-																process.env
-																	.NEXT_PUBLIC_SUPABASE_URL +
-																signup.profilePictureUrl
-															}
-															alt='Profile'
-															className='w-8 h-8 rounded-full'
-														/>
-													) : (
-														<div className='w-8 h-8 rounded-full bg-base-200 flex items-center justify-center text-xs'>
-															{signup
-																.firstname?.[0] ??
-																''}
-														</div>
-													)}
+													<Avatar
+														srcAvatar={signup.profilePictureUrl}
+														firstName={signup.firstname || ''}
+														lastName={signup.lastname || ''}
+														size="8"
+														isNav={true}
+													/>
 													<span>
 														{signup.firstname ?? ''}{' '}
 														{signup.lastname ?? ''}

@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
-import { useAdminActivities } from "@/app/shared/contexts/adminActivityContext";
+import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 
 export default function EditActivityPage() {
     const [form, setForm] = useState(null);
@@ -18,18 +18,18 @@ export default function EditActivityPage() {
     const params = useParams();
     const activityId = params?.id;
     const {
-        adminActivities,
+        activities,
         loading: actLoading,
-        setAdminActivities,
+        setActivities,
     } = useAdminActivities();
     const [activity, setActivity] = useState(undefined);
     useEffect(() => {
-        if (!adminActivities || !activityId) return;
+        if (!activities || !activityId) return;
         const found =
-            adminActivities.find((a) => String(a.id) === String(activityId)) ||
+            activities.find((a) => String(a.id) === String(activityId)) ||
             null;
         setActivity(found);
-    }, [adminActivities, activityId]);
+    }, [activities, activityId]);
 
     useEffect(() => {
         if (!activity) return;
@@ -161,8 +161,8 @@ export default function EditActivityPage() {
                     },
                 }
             );
-            if (setAdminActivities && data && data.activity) {
-                setAdminActivities((prev) =>
+            if (setActivities && data && data.activity) {
+                setActivities((prev) =>
                     prev.map((act) =>
                         act.id === data.activity.id ? data.activity : act
                     )
