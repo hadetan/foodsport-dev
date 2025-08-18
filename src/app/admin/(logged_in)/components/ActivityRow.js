@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
 import formatDate from "@/utils/formatDate";
 
@@ -10,16 +10,35 @@ const statusBadgeClass = {
     completed: "bg-blue-500 text-white btn-md",
     draft: "bg-pink-400 text-white btn-md",
 };
-const ActivityRow = ({ activity }) => {
+const ActivityRow = ({ activity, onRowClick }) => {
     const router = useRouter();
 
-    const handleEdit = () => {
+    const handleEdit = (e) => {
+        e.stopPropagation(); // Prevent row click event
         router.push(`/admin/activities/${activity.id}`);
+    };
+
+    const handleViewDetails = (e) => {
+        e.stopPropagation(); // Prevent row click event
+        router.push(`/admin/activities/viewActivity/${activity.id}`);
+    };
+
+    const handleRowClick = () => {
+        if (onRowClick) {
+            onRowClick(activity);
+        } else {
+            // If no onRowClick provided, navigate to view details
+            router.push(`/admin/activities/viewActivity/${activity.id}`);
+        }
     };
 
     return (
         <>
-            <tr key={activity.id} className="text-base align-middle">
+            <tr
+                key={activity.id}
+                className="text-base align-middle cursor-pointer hover:bg-base-200"
+                onClick={handleRowClick}
+            >
                 <td className="align-middle">
                     <div className="flex items-center space-x-3">
                         <div className="avatar">
@@ -127,12 +146,19 @@ const ActivityRow = ({ activity }) => {
                     <div className="btn-group">
                         <button
                             className="btn btn-sm btn-ghost"
+                            onClick={handleViewDetails}
+                            title="View Activity Details"
+                        >
+                            <Eye size={24} />
+                        </button>
+                        <button
+                            className="btn btn-sm btn-ghost"
                             onClick={handleEdit}
+                            title="Edit Activity"
                         >
                             <Pencil size={24} />
                         </button>
                     </div>
-                    {/* Confirmation Popup */}
                 </td>
             </tr>
         </>

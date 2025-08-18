@@ -36,6 +36,13 @@ const ActivityManagementPageContent = () => {
         "Actions",
     ];
 
+    const handleActivityClick = (activity) => {
+        console.log("Activity clicked:", activity); // Add this for debugging
+        if (activity && activity.id) {
+            router.push(`/admin/activities/viewActivity/${activity.id}`);
+        }
+    };
+
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
             <div className="flex justify-between mb-6">
@@ -64,15 +71,17 @@ const ActivityManagementPageContent = () => {
                     <div className="overflow-x-auto">
                         <Table
                             heading={tableHeading}
-                            tableData={adminActivities}
+                            tableData={paginatedActivities}
                             tableType={"acitivityPage"}
+                            onRowClick={handleActivityClick}
+                            className="cursor-pointer" // Add cursor pointer to indicate clickable rows
                         />
                     </div>
                 )}
             </div>
         </div>
     );
-}
+};
 
 export default function ActivityManagementPage() {
     return (

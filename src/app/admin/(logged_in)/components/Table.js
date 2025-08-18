@@ -7,6 +7,7 @@ const Table = ({
     tableData,
     tableType,
     onRowClick,
+    className = "",
 }) => {
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -21,7 +22,7 @@ const Table = ({
 
     return (
         <>
-            <table className="table table-zebra w-full">
+            <table className={`table table-zebra w-full ${className}`}>
                 <thead className="sticky top-0 bg-primary text-primary-content  ">
                     <tr>
                         {heading.map((columnName, idx) => (
@@ -41,10 +42,7 @@ const Table = ({
                     {tableType == "userPage"
                         ? paginatedData.map((user, idx) => (
                               <UserRow
-                                  key={
-                                      user.id 
-                                
-                                  }
+                                  key={user.id}
                                   user={user}
                                   onRowClick={onRowClick}
                               />
@@ -53,6 +51,7 @@ const Table = ({
                               <ActivityRow
                                   key={activity.id}
                                   activity={activity}
+                                  onRowClick={onRowClick}
                               />
                           ))}
                 </tbody>
