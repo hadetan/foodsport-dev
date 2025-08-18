@@ -143,20 +143,20 @@ const ActivityRow = ({ activity, onRowClick }) => {
                     </div>
                 </td>
                 <td>
-                    <div className="btn-group">
+                    <div className="flex flex-row items-center justify-center gap-2">
                         <button
-                            className="btn btn-sm btn-ghost"
+                            className="btn btn-sm btn-ghost btn-square"
                             onClick={handleViewDetails}
                             title="View Activity Details"
                         >
-                            <Eye size={24} />
+                            <Eye size={20} className="text-gray-400" />
                         </button>
                         <button
-                            className="btn btn-sm btn-ghost"
+                            className="btn btn-sm btn-ghost btn-square"
                             onClick={handleEdit}
                             title="Edit Activity"
                         >
-                            <Pencil size={24} />
+                            <Pencil size={20} className="text-gray-400" />
                         </button>
                     </div>
                 </td>

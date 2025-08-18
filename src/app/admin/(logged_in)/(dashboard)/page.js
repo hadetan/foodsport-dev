@@ -105,7 +105,6 @@ const DashboardPage = () => {
 						</div>
 					</div>
 				</div>
-
 				{/* Recent Signups Table */}
 				<div className='card bg-base-100 shadow-lg w-full mb-8'>
 					<div className='card-body'>
