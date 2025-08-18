@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
+import FullPageLoader from "../../components/FullPageLoader";
 
 export default function EditActivityPage() {
     const [form, setForm] = useState(null);
@@ -56,9 +57,7 @@ export default function EditActivityPage() {
 
     if (activity === undefined || actLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <span className="loading loading-spinner loading-lg"></span>
-            </div>
+            <FullPageLoader />
         );
     }
     if (activity === null) {
