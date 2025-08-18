@@ -7,6 +7,7 @@ import { useUsers } from "@/app/shared/contexts/usersContext";
 import Avatar from "@/app/shared/components/avatar";
 import { IoIosArrowBack } from 'react-icons/io';
 import formatDate from "@/utils/formatDate";
+import FullPageLoader from "../../components/FullPageLoader";
 
 const UserDetailPage = () => {
     const { id } = useParams();
@@ -50,7 +51,7 @@ const UserDetailPage = () => {
         }
     };
 
-    if (usersLoading) return <div>Loading...</div>;
+    if (usersLoading) return <FullPageLoader />;
     if (!user)
         return (
             <div className="flex items-center justify-center h-[60vh]">

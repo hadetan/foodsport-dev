@@ -116,11 +116,7 @@ const UserManagementPage = () => {
 
             {/* User Table */}
             <div className="overflow-x-auto rounded-lg shadow relative">
-                {loading ? (
-                    <div className="min-h-[300px] flex items-center justify-center">
-                        <span className="loading loading-spinner loading-lg"></span>
-                    </div>
-                ) : (
+                {loading ? <FullPageLoader /> : (
                     <div className="overflow-x-auto rounded-box border border-primary/60">
                         <Table
                             heading={tableHeading}
@@ -140,9 +136,6 @@ const UserManagementPage = () => {
                     <button className="btn btn-outline">»</button>
                 </div>
             </div>
-
-            {/* Loading Overlay */}
-            {loading && <FullPageLoader />}
         </>
     );
 };
