@@ -7,6 +7,7 @@ import Button from '@/app/shared/components/Button';
 import { useRouter } from 'next/navigation';
 import api from '@/utils/axios/api';
 import { useState } from 'react';
+import { toast } from '@/utils/Toast';
 import ActivityIcon from '@/app/shared/components/ActivityIcon';
 import { FaCalendar, FaClock, FaMinusCircle, FaPlusCircle, FaShare } from 'react-icons/fa';
 import ShareDialog from '@/app/shared/components/ShareDialog';
@@ -32,7 +33,6 @@ export default function ActivityItem({
 }) {
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState(null);
 	const [showShare, setShowShare] = useState(false);
 
 	const { formattedStartTime, formattedEndTime } = formatDateTime(activity);
@@ -70,16 +70,24 @@ export default function ActivityItem({
 						: act
 				)
 			);
+			   toast.success('Successfully joined the activity.');
 		} catch (error) {
-			setError(error.message || 'Something went wrong');
 			const status = error?.response?.status;
 			if (status === 401 && error.response?.data?.error?.includes('Token')) {
+				await api.delete('/auth/logout');
 				router.push('/auth/login');
+			} else if (status === 400) {
+				toast.warning('Cannot join activity that is not active.');
 			}
 		} finally {
 			setLoading(false);
 		}
 	}
+
+	function handleActTypeSearch(actType) {
+		router.push(`/activities?type=${encodeURIComponent(actType)}`);
+	}
+
 
 	async function handleLeave() {
 		if (!setUser || !setActivities) return;
@@ -105,12 +113,15 @@ export default function ActivityItem({
 						: act
 				)
 			);
-		} catch (error) {
-			setError(error.message || 'Something went wrong');
-			const status = error?.response?.status;
-			if (status === 401 && error.response?.data?.error?.includes('Token')) {
+			   toast.info('You have left the activity.');
+			} catch (error) {
+				const status = error?.response?.status;
+				if (status === 401 && error.response?.data?.error?.includes('Token')) {
+				await api.delete('/auth/logout');
 				router.push('/auth/login');
-			}
+				} else {
+				   	toast.error('Something went wrong while attempting to leave the activity.');
+				}
 		} finally {
 			setLoading(false);
 		}
@@ -150,7 +161,7 @@ export default function ActivityItem({
 							{activity.status.charAt(0).toUpperCase() +
 								activity.status.slice(1)}
 						</span>
-						<Button className={styles.filterBtn} title='Filter'>
+						<Button className={styles.filterBtn} title='Filter' onClick={() => handleActTypeSearch(activity.activityType)}>
 							<ActivityIcon type={activity.activityType} />
 						</Button>
 					</div>

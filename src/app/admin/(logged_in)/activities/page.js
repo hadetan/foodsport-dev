@@ -1,11 +1,11 @@
 "use client";
+
 import axiosClient from "@/utils/axios/api";
 import { useState, Suspense } from "react";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
-import EditActivityPage from "@/app/admin/(logged_in)/components/EditActivity";
 import ActivityStatus from "@/app/constants/ActivityStatus";
 import FullPageLoader from "../components/FullPageLoader";
 
@@ -54,36 +54,23 @@ function ActivityManagementPageContent() {
         "Actions",
     ];
 
-    // POST handler for creating a new activity
-
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
-            {/* Create Activity Button */}
-            {view === "edit" ? (
-                <EditActivityPage
-                    activity={activity}
-                    setShowEdit={(val) => {
-                        if (!val) router.push("/admin/activities?view=list");
-                    }}
-                    setActivities={setActivities} //send setActivities
-                />
-            ) : (
-                <>
-                    <div className="flex justify-between mb-6">
-                        <button
-                            className="btn btn-primary"
-                            onClick={() =>
-                                router.push("/admin/activities/createActivity")
-                            }
-                        >
-                            Create Activity
-                        </button>
-                        <h2 className="text-2xl font-bold">Activities</h2>
-                    </div>
-                    {/* Search and Filters */}
-                    <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                        {/* <Dropdown items={statusOfUser} name="Status" /> */}
-                    </div>
+            <div className="flex justify-between mb-6">
+                <button
+                    className="btn btn-primary"
+                    onClick={() =>
+                        router.push("/admin/activities/createActivity")
+                    }
+                >
+                    Create Activity
+                </button>
+                <h2 className="text-2xl font-bold">Activities</h2>
+            </div>
+            {/* Search and Filters */}
+            <div className="flex flex-col lg:flex-row gap-4 mb-6">
+                {/* <Dropdown items={statusOfUser} name="Status" /> */}
+            </div>
 
                     {/* Activities Table */}
                     <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
@@ -103,11 +90,8 @@ function ActivityManagementPageContent() {
                             </div>
                         )}
                     </div>
-                </>
-            )}
-        </div>
-    );
-}
+            </div>
+)}
 
 export default function ActivityManagementPage() {
     return (

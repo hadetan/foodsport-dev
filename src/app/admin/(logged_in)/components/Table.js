@@ -6,8 +6,6 @@ const Table = ({
     heading,
     tableData,
     tableType,
-    shouldShowEdit,
-    setActivity,
     onRowClick,
 }) => {
     // Pagination state
@@ -51,14 +49,10 @@ const Table = ({
                                   onRowClick={onRowClick}
                               />
                           ))
-                        : paginatedData.map((activity, idx) => (
+                        : paginatedData.map((activity) => (
                               <ActivityRow
-                                  key={
-                                      activity.id 
-                                  }
+                                  key={activity.id}
                                   activity={activity}
-                                  shouldShowEdit={shouldShowEdit}
-                                  setActivity={setActivity}
                               />
                           ))}
                 </tbody>

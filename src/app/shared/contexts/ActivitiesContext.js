@@ -7,10 +7,9 @@ const ActivitiesContext = createContext();
 
 export function ActivitiesProvider({ children }) {
   const [activities, setActivities] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const fetchActivities = async () => {
-    setLoading(true);
     const res = await api.get('/activities');
     setActivities(res.data?.activities);
     setLoading(false);

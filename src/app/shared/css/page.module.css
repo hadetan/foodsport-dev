@@ -227,3 +227,54 @@ a.secondary {
     gap: 24px;
   }
 }
+
+.notFoundFullWidth {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 350px;
+}
+
+.notFoundContainerCentered {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 48px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  max-width: 600px;
+  width: 100%;
+}
+/* Activity Not Found styles */
+.notFoundContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin: 2rem 0;
+}
+.notFoundIcon {
+  color: #2BBFB0;
+  margin-bottom: 1rem;
+}
+.notFoundTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #222;
+}
+.notFoundText {
+  color: #888;
+  font-size: 1rem;
+  text-align: center;
+  max-width: 400px;
+}

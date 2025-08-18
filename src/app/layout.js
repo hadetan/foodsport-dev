@@ -1,6 +1,5 @@
 import { Geist, Geist_Mono } from 'next/font/google';
-import { AuthProvider } from '@/app/shared/contexts/authContext';
-import { ActivitiesProvider } from '@/app/shared/contexts/ActivitiesContext';
+import LoadingBarRootClient from './LoadingBarRootClient';
 import '@/app/globals.css';
 
 const geistSans = Geist({
@@ -20,16 +19,14 @@ export const metadata = {
 };
 export default async function RootLayout({ children }) {
 	return (
-		<html lang='en'>
-			<body
-				className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col`}
-			>
-				<AuthProvider>
-					<ActivitiesProvider>
-						{children}
-					</ActivitiesProvider>
-				</AuthProvider>
-			</body>
-		</html>
-	);
+	       <html lang='en'>
+		       <body
+			       className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col`}
+		       >
+			       <LoadingBarRootClient>
+				       {children}
+			       </LoadingBarRootClient>
+		       </body>
+	       </html>
+	   );
 }
