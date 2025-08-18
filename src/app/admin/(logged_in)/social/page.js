@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSocialMediaImages } from "@/app/shared/contexts/socialMediaImageContext";
+import FullPageLoader from "@/app/admin/(logged_in)/components/FullPageLoader";
 import { ImagePlus, Trash2, Upload, Info, Pencil } from "lucide-react";
-import ImageCropModal from "./components/ImageCropModal";
+import ImageCropModal from "@/app/admin/(logged_in)/components/ImageCropModal";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import axiosClient from "@/utils/axios/api";
 
@@ -10,35 +12,17 @@ export default function SocialMediaPage() {
     const MAX_IMAGES = 5;
     const TARGET_RESOLUTION = 200;
 
-    const [images, setImages] = useState([]);
+    const { images, setImages, error, setError, fetchImages, updateImageById, loading } = useSocialMediaImages();
     const [currentImage, setCurrentImage] = useState(null);
     const [currentImageUrl, setCurrentImageUrl] = useState(null);
     const [editingIndex, setEditingIndex] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState("");
     const [notification, setNotification] = useState({
         show: false,
         message: "",
     });
 
     const fileInputRef = useRef(null);
-
-    const fetchImages = async () => {
-        try {
-            const response = await axiosClient.get("/admin/social");
-            if (Array.isArray(response.data.images)) {
-                setImages(response.data.images);
-            } else {
-                setImages([]);
-            }
-        } catch (err) {
-            setError(err.message || "Failed to fetch images");
-        }
-    };
-
-    useEffect(() => {
-        fetchImages();
-    }, []);
 
     const handlePostImage = async (imageBlob, socialMediaUrl) => {
         try {
@@ -49,14 +33,24 @@ export default function SocialMediaPage() {
             formData.append("file", file);
             formData.append("socialMediaUrl", socialMediaUrl);
 
-            const result = await axiosClient.post("/admin/social", formData, {
+
+            let url = "/admin/social";
+            if (editingIndex !== null && images[editingIndex]) {
+                url += `?id=${images[editingIndex].id}`;
+            }
+
+            const result = await axiosClient.post(url, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
             });
 
             if (result.data.image) {
-                setImages((prev) => [...prev, result.data.image]);
+                if (editingIndex !== null && images[editingIndex]) {
+                    updateImageById(images[editingIndex].id, result.data.image);
+                } else {
+                    setImages((prev) => [...prev, result.data.image]);
+                }
             } else {
                 setImages([]);
             }
@@ -118,7 +112,6 @@ export default function SocialMediaPage() {
 
     const handleDeleteImage = async (id) => {
         try {
-            console.log(id);
             setIsLoading(true);
             await axiosClient.delete(`/admin/social?id=${id}`);
             await fetchImages();
@@ -137,7 +130,9 @@ export default function SocialMediaPage() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <>
+            {loading && <FullPageLoader />}
+            <div className="container mx-auto px-4 py-8">
             <div className="bg-base-100 shadow-xl rounded-lg p-6">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b pb-4">
@@ -294,5 +289,6 @@ export default function SocialMediaPage() {
                 />
             )}
         </div>
+        </>
     );
 }

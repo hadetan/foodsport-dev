@@ -1,47 +1,65 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
+
+
 const Dropdown = ({ items, name, selectedValue, onSelect }) => {
-    const popoverId = `popover-${name.replace(/\s+/g, '-').toLowerCase()}`;
-    
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    const handleToggle = () => {
+        setIsOpen((prev) => !prev);
+    };
+
     const handleItemClick = (item) => {
         if (onSelect) {
             onSelect(item);
         }
-        // Close popover
-        document.getElementById(popoverId).hidePopover();
+        setIsOpen(false);
     };
 
-    return (
-        <>
-            <div className="flex flex-col lg:flex-row gap-4 mb-6 w-40">
-                <label className="flex relative input">
-                    <button
-                        popoverTarget={popoverId}
-                        className="grow h-10 input-bordered w-full md:max-w-md pr-10"
-                    >
-                        {selectedValue || name}
-                    </button>
-                    <ChevronDown className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                </label>
-            </div>
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        if (isOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isOpen]);
 
-            <ul
-                className="dropdown menu w-52 rounded-box bg-base-100 shadow-sm border-1"
-                popover="auto"
-                id={popoverId}
+    return (
+        <div className="dropdown w-40 relative" ref={dropdownRef}>
+            <button
+                type="button"
+                className="btn w-full flex justify-between items-center input-bordered bg-base-100 text-base-content"
+                onClick={handleToggle}
             >
-                {items.map((item) => (
-                    <li key={item}>
-                        <button 
-                            onClick={() => handleItemClick(item)}
-                            className="w-full text-left"
-                        >
-                            {item}
-                        </button>
-                    </li>
-                ))}
-            </ul>
-        </>
+                {selectedValue || name}
+                <ChevronDown className="h-5 w-5 ml-2 text-gray-400" />
+            </button>
+            {isOpen && (
+                <ul className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 mt-1 z-50 absolute left-0">
+                    {items.map((item) => (
+                        <li key={item}>
+                            <button
+                                type="button"
+                                className="w-full text-left"
+                                onClick={() => handleItemClick(item)}
+                            >
+                                {item}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
     );
 };
+
 export default Dropdown;

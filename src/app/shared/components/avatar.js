@@ -21,7 +21,7 @@ const Avatar = ({ srcAvatar, firstName, lastName, isNav=false, pointer=false, si
 
     return (
         <div onClick={() => pointer && handleClick()}>
-            {srcAvatar === undefined ? (
+            {!srcAvatar ? (
                 <div className="avatar avatar-placeholder">
                     <div className={maskClass}>
                         <span className={isNav ? size : "text-xl"}>{`${first}${last}`}</span>

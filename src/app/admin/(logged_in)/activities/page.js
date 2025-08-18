@@ -1,19 +1,19 @@
 "use client";
 import axiosClient from "@/utils/axios/api";
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
+import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import EditActivityPage from "@/app/admin/(logged_in)/components/EditActivity";
 import ActivityStatus from "@/app/constants/ActivityStatus";
+import FullPageLoader from "../components/FullPageLoader";
 
 function ActivityManagementPageContent() {
     const [activity, setActivity] = useState(null);
-    const [activities, setActivities] = useState([]);
     const router = useRouter();
     const searchParams = useSearchParams();
     const view = searchParams.get("view") || "list";
-    const [tableLoading, setTableLoading] = useState(true);
     const [formData, setFormData] = useState({
         title: "",
         type: "",
@@ -27,7 +27,9 @@ function ActivityManagementPageContent() {
     });
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(10);
-    const [selectedStatus, setSelectedStatus] = useState(""); // Add selected status
+    const [selectedStatus, setSelectedStatus] = useState("");
+
+    const { activities, setActivities, loading: tableLoading } = useAdminActivities();
 
     const filteredActivities = selectedStatus
         ? activities.filter((a) => a.status === selectedStatus)
@@ -51,20 +53,6 @@ function ActivityManagementPageContent() {
         "Status",
         "Actions",
     ];
-    const getActivities = async () => {
-        try {
-            setTableLoading(true);
-            const response = await axiosClient.get("/admin/activities");
-            let data = response.data;
-            setActivities(data.activities);
-        } finally {
-            setTableLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        getActivities();
-    }, []);
 
     // POST handler for creating a new activity
 
@@ -99,11 +87,7 @@ function ActivityManagementPageContent() {
 
                     {/* Activities Table */}
                     <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
-                        {tableLoading ? (
-                            <div className="min-h-[300px] flex items-center justify-center">
-                                <span className="loading loading-spinner loading-lg"></span>
-                            </div>
-                        ) : (
+                        {tableLoading ? <FullPageLoader /> : (
                             <div className="overflow-x-auto">
                                 <Table
                                     heading={tableHeading}
