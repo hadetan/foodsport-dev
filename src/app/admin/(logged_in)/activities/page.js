@@ -89,12 +89,10 @@ function ActivityManagementPageContent() {
                     <div className="overflow-x-auto">
                         <Table
                             heading={tableHeading}
-                            tableData={activities}
+                            tableData={paginatedActivities}
                             tableType={"acitivityPage"}
-                            shouldShowEdit={() =>
-                                router.push("/admin/activities?view=edit")
-                            }
-                            setActivity={setActivity}
+                            onRowClick={handleActivityClick}
+                            className="cursor-pointer"
                         />
                     </div>
                 )}
@@ -106,13 +104,13 @@ function ActivityManagementPageContent() {
                     tableData={paginatedActivities}
                     tableType={"acitivityPage"}
                     onRowClick={handleActivityClick}
-                    className="cursor-pointer" // Add cursor pointer to indicate clickable rows
+                    className="cursor-pointer"
                 />
             </div>
             )
         </div>
     );
-}
+};
 
 export default function ActivityManagementPage() {
     return (

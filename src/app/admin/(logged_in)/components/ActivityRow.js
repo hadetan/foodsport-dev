@@ -145,9 +145,16 @@ const ActivityRow = ({ activity, onRowClick }) => {
                 <td>
                     <div className="flex flex-row items-center justify-center gap-2">
                         <button
-                            className="btn btn-sm btn-ghost btn-square"
+                            className="btn btn-sm btn-ghost"
                             onClick={handleViewDetails}
                             title="View Activity Details"
+                        >
+                            <Eye size={24} />
+                        </button>
+                        <button
+                            className="btn btn-sm btn-ghost"
+                            onClick={handleEdit}
+                            title="Edit Activity"
                         >
                             <Eye size={20} className="text-gray-400" />
                         </button>
