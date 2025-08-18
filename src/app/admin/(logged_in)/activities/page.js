@@ -1,21 +1,39 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useRouter } from "next/navigation";
+import axiosClient from "@/utils/axios/api";
+import { useState, Suspense } from "react";
+import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
+import { useRouter, useSearchParams } from "next/navigation";
+import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
-import { useAdminActivities } from "@/app/shared/contexts/adminActivityContext";
+import ActivityStatus from "@/app/constants/ActivityStatus";
+import FullPageLoader from "../components/FullPageLoader";
 
-const ActivityManagementPageContent = () => {
+function ActivityManagementPageContent() {
+    const [activity, setActivity] = useState(null);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const view = searchParams.get("view") || "list";
+    const [formData, setFormData] = useState({
+        title: "",
+        type: "",
+        description: "",
+        date: "",
+        time: "",
+        location: "",
+        capacity: "",
+        images: [],
+        status: "draft",
+    });
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(10);
     const [selectedStatus, setSelectedStatus] = useState("");
 
-    const { adminActivities, loading: tableLoading } = useAdminActivities();
+    const { activities, setActivities, loading: tableLoading } = useAdminActivities();
 
     const filteredActivities = selectedStatus
-        ? adminActivities.filter((a) => a.status === selectedStatus)
-        : adminActivities;
+        ? activities.filter((a) => a.status === selectedStatus)
+        : activities;
 
     const paginatedActivities = filteredActivities.slice(
         (currentPage - 1) * pageSize,
@@ -54,25 +72,26 @@ const ActivityManagementPageContent = () => {
                 {/* <Dropdown items={statusOfUser} name="Status" /> */}
             </div>
 
-            {/* Activities Table */}
-            <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
-                {tableLoading ? (
-                    <div className="min-h-[300px] flex items-center justify-center">
-                        <span className="loading loading-spinner loading-lg"></span>
+                    {/* Activities Table */}
+                    <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
+                        {tableLoading ? <FullPageLoader /> : (
+                            <div className="overflow-x-auto">
+                                <Table
+                                    heading={tableHeading}
+                                    tableData={activities}
+                                    tableType={"acitivityPage"}
+                                    shouldShowEdit={() =>
+                                        router.push(
+                                            "/admin/activities?view=edit"
+                                        )
+                                    }
+                                    setActivity={setActivity}
+                                />
+                            </div>
+                        )}
                     </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <Table
-                            heading={tableHeading}
-                            tableData={adminActivities}
-                            tableType={"acitivityPage"}
-                        />
-                    </div>
-                )}
             </div>
-        </div>
-    );
-}
+)}
 
 export default function ActivityManagementPage() {
     return (

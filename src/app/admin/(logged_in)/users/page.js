@@ -6,7 +6,8 @@ import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import api from "@/utils/axios/api";
-import { useUsers } from "@/app/shared/contexts/usersContenxt";
+import { useUsers } from "@/app/shared/contexts/usersContext";
+import FullPageLoader from "../components/FullPageLoader";
 
 const UserManagementPage = () => {
     const router = useRouter();
@@ -141,14 +142,7 @@ const UserManagementPage = () => {
             </div>
 
             {/* Loading Overlay */}
-            {loading && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-base-100 rounded-lg p-4 flex flex-col items-center space-y-2">
-                        <span className="loading loading-spinner loading-lg"></span>
-                        <p className="text-base-content">Processing...</p>
-                    </div>
-                </div>
-            )}
+            {loading && <FullPageLoader />}
         </>
     );
 };

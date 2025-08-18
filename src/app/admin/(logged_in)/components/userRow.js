@@ -1,7 +1,8 @@
 import React from "react";
-import Status from "@/app/admin/(logged_in)/users/status";
+import Status from "@/app/admin/(logged_in)/components/status";
 import Avatar from "@/app/shared/components/avatar";
 import { Pencil, Eye } from "lucide-react";
+import formatDate from "@/utils/formatDate";
 
 export const UserRow = ({ user, onRowClick }) => {
     return (
@@ -13,22 +14,13 @@ export const UserRow = ({ user, onRowClick }) => {
                 <div className="flex items-center space-x-3">
                     <div className="avatar">
                         <div className="mask mask-squircle w-12 h-12">
-                            {user.profilePictureUrl ? (
-                                <img
-                                    src={
-                                        process.env.NEXT_PUBLIC_SUPABASE_URL +
-                                        user.profilePictureUrl
-                                    }
-                                    alt="Profile"
-                                    className="w-12 h-12 rounded-full object-cover border border-gray-400"
-                                />
-                            ) : (
+                            {
                                 <Avatar
-                                    srcAvatar={user.avatar}
+                                    srcAvatar={user.profilePictureUrl}
                                     firstName={user.firstname}
                                     lastName={user.lastname}
                                 />
-                            )}
+                            }
                         </div>
                     </div>
                     <div>
@@ -46,7 +38,7 @@ export const UserRow = ({ user, onRowClick }) => {
             <td>
                 <div className="text-sm">
                     <div className="text-l opacity-100">
-                        {new Date(user.joinDate).toLocaleDateString()}
+                        {formatDate(user.createdAt.split("T")[0])}
                     </div>
                 </div>
             </td>
@@ -55,9 +47,9 @@ export const UserRow = ({ user, onRowClick }) => {
             </td>
             <td>
                 <div className="text-sm">
-                    <div>Activities: {user.stats?.totalActivities}</div>
-                    <div>Donations: {user.stats?.totalDonations}</div>
-                    <div>Badges: {user.stats?.badgeCount}</div>
+                    <div>Activities: {user.stats?.totalActivities || 0}</div>
+                    <div>Donations: {user.stats?.totalDonations || 0}</div>
+                    <div>Badges: {user.stats?.badgeCount || 0}</div>
                 </div>
             </td>
             <td>

@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
-import RichTextEditor from "@/app/shared/components/RichTextEditor";
 import axiosClient from "@/utils/axios/api";
 import ActivityStatus, {
     MAX_IMAGE_SIZE_MB,
 } from "@/app/constants/ActivityStatus";
+import TiptapEditor from "@/app/shared/components/TiptapEditor";
 
 const CreateActivityPage = () => {
     const router = useRouter();
@@ -278,7 +278,7 @@ const CreateActivityPage = () => {
                                 Summary
                             </span>
                             <label className="flex-1 max-w-xl w-1/2">
-                                <RichTextEditor
+                                <TiptapEditor
                                     value={formData.description}
                                     onChange={(val) =>
                                         setFormData((prev) => ({

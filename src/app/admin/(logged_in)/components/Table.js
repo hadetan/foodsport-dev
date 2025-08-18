@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import UserRow from "@/app/admin/(logged_in)/users/userRow";
+import UserRow from "@/app/admin/(logged_in)/components/userRow";
 import ActivityRow from "./ActivityRow";
 
 const Table = ({
