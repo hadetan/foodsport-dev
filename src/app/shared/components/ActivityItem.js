@@ -5,6 +5,7 @@ import ParticipantCircle from './ParticipantCircle';
 import Image from 'next/image';
 import Button from '@/app/shared/components/Button';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/shared/contexts/authContext';
 import api from '@/utils/axios/api';
 import { useState } from 'react';
 import { toast } from '@/utils/Toast';
@@ -32,6 +33,7 @@ export default function ActivityItem({
 	setActivities,
 }) {
 	const router = useRouter();
+	const { authToken } = useAuth();
 	const [loading, setLoading] = useState(false);
 	const [showShare, setShowShare] = useState(false);
 
@@ -85,7 +87,10 @@ export default function ActivityItem({
 	}
 
 	function handleActTypeSearch(actType) {
-		router.push(`/activities?type=${encodeURIComponent(actType)}`);
+		authToken ?
+			router.push(`/my/activities?type=${encodeURIComponent(actType)}`)
+			:
+			router.push(`/activities?type=${encodeURIComponent(actType)}`);
 	}
 
 
