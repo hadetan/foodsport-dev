@@ -7,6 +7,7 @@ import axiosClient from "@/utils/axios/api";
 import ActivityStatus, {
     MAX_IMAGE_SIZE_MB,
 } from "@/app/constants/ActivityStatus";
+import { ImageUp } from "lucide-react";
 
 const MAX_SUMMARY_WORDS = 50;
 
@@ -95,7 +96,7 @@ const CreateActivityPage = () => {
                 // errors[field] = " This field is required."; // <-- commented out for development
             }
         });
-       
+
         // Year validation
         if (formData.startDateTime && !isValidYear(formData.startDateTime)) {
             errors.startDateTime = "Year must be at most 4 digits.";
@@ -283,21 +284,8 @@ const CreateActivityPage = () => {
                                     ) : (
                                         <>
                                             <div className="flex flex-col items-center justify-center py-4">
-                                                <svg
-                                                    width="32"
-                                                    height="32"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                    className="text-blue-400 mb-1"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M3 16V8a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2zm3-2l3.293 3.293a1 1 0 001.414 0L17 10m-4 4l4-4m-4 4V4"
-                                                    />
-                                                </svg>
+                                                {/* Lucide ImageUp icon for upload */}
+                                                <ImageUp className="w-8 h-8 text-blue-400 mb-1" />
                                                 <span className="text-sm text-blue-500 font-medium">
                                                     Drop image or{" "}
                                                     <span className="underline">
