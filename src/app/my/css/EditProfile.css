@@ -1,3 +1,52 @@
+.info {
+    font-weight: 500;
+    grid-column: span 2;
+    margin-right: 0;
+}
+
+.edit-profile-info-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.edit-profile-info-label {
+  font-size: 0.95rem;
+  color: var(--tw-prose-body, #6b7280);
+  /* flex: 1; */
+}
+.edit-profile-tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.edit-profile-tooltip-icon {
+  color: #3b82f6;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.edit-profile-tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  width: 260px;
+  background: #222;
+  color: #fff;
+  text-align: left;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  top: 120%;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  font-size: 0.95rem;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.edit-profile-tooltip-wrapper:hover .edit-profile-tooltip-text,
+.edit-profile-tooltip-wrapper:focus-within .edit-profile-tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
 /* Input Suffix Styles */
 .edit-profile-input-suffix-wrapper {
   position: relative;

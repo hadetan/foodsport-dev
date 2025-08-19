@@ -53,6 +53,11 @@ export default function ActivityItem({
 
 	async function handleJoin() {
 		if (!setUser || !setActivities) return router.push('/auth/login');
+		if (activity.status !== 'active') return toast.warning('Cannot join activity that is not active.');
+		if (!user.weight || !user.height) { 
+			toast.error('You must fill height and weight to join activities.');
+			return router.push('/my/profile?editProfile');
+		}
 		try {
 			setLoading(true);
 			const res = await api.post('/my/activities/join', {
@@ -78,7 +83,7 @@ export default function ActivityItem({
 			if (status === 401 && error.response?.data?.error?.includes('Token')) {
 				await api.delete('/auth/logout');
 				router.push('/auth/login');
-			} else if (status === 400) {
+			} else if (status === 400 && error.response?.data?.error?.includes('Activity is not')) {
 				toast.warning('Cannot join activity that is not active.');
 			}
 		} finally {

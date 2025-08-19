@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { FaInfoCircle } from 'react-icons/fa';
 import { toast } from '@/utils/Toast';
 import { useUser } from '@/app/shared/contexts/userContext';
 import api from '@/utils/axios/api';
@@ -289,6 +290,17 @@ export default function EditProfile() {
 					onChange={handleChange}
 					placeholder='Last Name'
 				/>
+				<div className='info'>
+					<div className="edit-profile-info-row">
+					<span className="edit-profile-info-label">Why provide weight and height?</span>
+					<span className="edit-profile-tooltip-wrapper">
+						<FaInfoCircle className="edit-profile-tooltip-icon" />
+						<span className="edit-profile-tooltip-text">
+							Providing your weight and height allows us to calculate your calorie burns more accurately for each activity, giving you better insights and more personalized results.
+						</span>
+					</span>
+				</div>
+				</div>
 				<div className='edit-profile-input-suffix-wrapper'>
 					<input
 						name='weight'
