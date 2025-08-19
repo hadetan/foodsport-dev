@@ -123,18 +123,9 @@ const ActivityRow = ({ activity }) => {
                         {activity.status}
                     </div>
                 </td>
-                <td>
-                    <div className="btn-group">
-                        <button
-                            className="btn btn-sm btn-ghost"
-                            onClick={handleEdit}
-                        >
-                            <Pencil size={24} />
-                        </button>
-                    </div>
-                    {/* Confirmation Popup */}
-                </td>
+            
             </tr>
+             
         </>
     );
 };

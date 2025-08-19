@@ -90,7 +90,16 @@ function ActivityManagementPageContent() {
                             </div>
                         )}
                     </div>
+                     {/* Pagination */}
+              <div className="flex justify-center mt-4">
+                <div className="btn-group">
+                    <button className="btn btn-outline">«</button>
+                    <button className="btn btn-outline">Page 1</button>
+                    <button className="btn btn-outline">»</button>
+                </div>
             </div>
+            </div>
+            
 )}
 
 export default function ActivityManagementPage() {

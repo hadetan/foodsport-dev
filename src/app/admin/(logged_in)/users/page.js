@@ -18,6 +18,7 @@ const UserManagementPage = () => {
 
     // Hong Kong regions
     const hongKongRegions = [
+        "All",
         "Central and Western",
         "Eastern",
         "Southern",
@@ -102,13 +103,7 @@ const UserManagementPage = () => {
                         onSelect={handleStatusChange}
                     />
 
-                    <select
-                        className="select select-bordered w-full lg:w-48"
-                        defaultValue="Hong Kong"
-                        disabled
-                    >
-                        <option value="Hong Kong">Hong Kong</option>
-                    </select>
+                    
 
                     <Dropdown items={hongKongRegions} name="All Districts" />
                 </div>

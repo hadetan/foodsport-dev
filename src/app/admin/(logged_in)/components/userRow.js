@@ -54,16 +54,11 @@ export const UserRow = ({ user, onRowClick }) => {
             </td>
             <td>
                 <div className="btn-group">
+                   
                     <button
                         className="btn btn-sm btn-ghost tooltip"
                         data-tip="View Profile"
                         onClick={() => router.push(`/admin/users/${user.id}`)}
-                    >
-                        <Pencil />
-                    </button>
-                    <button
-                        className="btn btn-sm btn-ghost tooltip"
-                        data-tip="Edit User"
                     >
                         <Eye />
                     </button>
