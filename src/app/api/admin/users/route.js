@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import { getMany, updateById, getUserJoinedActivitiesWithDetails } from '@/lib/prisma/db-utils';
 import { sanitizeData } from '@/utils/sanitize';
-import { formatDbError } from '@/utils/formatDbError';
 import { createServerClient } from '@/lib/supabase/server-only';
 
 function parseQueryParams(searchParams) {

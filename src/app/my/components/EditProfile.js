@@ -9,6 +9,7 @@ import '@/app/my/css/EditProfile.css';
 import { LiaUserEditSolid } from 'react-icons/lia';
 import { IoIosFemale, IoIosMale } from 'react-icons/io';
 import { FaMountainSun } from 'react-icons/fa6';
+import { DISTRICTS } from '@/app/constants/constants';
 
 export default function EditProfile() {
 	const { user, setUser } = useUser();
@@ -20,6 +21,7 @@ export default function EditProfile() {
 		height: user.height || '',
 		gender: user.gender || '',
 		phoneNumber: user.phoneNumber || '',
+		district: user.district || '',
 		bio: user.bio || '',
 	});
 	const [initialValues, setInitialValues] = useState(form);
@@ -43,6 +45,10 @@ export default function EditProfile() {
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setForm((f) => ({ ...f, [name]: value }));
+	};
+
+	const handleDistrictChange = (e) => {
+		setForm((f) => ({ ...f, district: e.target.value }));
 	};
 
 	const handleGender = (gender) => setForm((f) => ({ ...f, gender }));
@@ -379,12 +385,32 @@ export default function EditProfile() {
 					placeholder='Date of Birth'
 					className='edit-profile-fullwidth'
 				/>
-				<textarea
-					name='bio'
-					value={form.bio}
-					onChange={handleChange}
-					placeholder='Bio'
-				/>
+				<div className='edit-profile-district-bio-row'>
+					<div>
+						<select
+							id='district'
+							name='district'
+							value={form.district}
+							onChange={handleDistrictChange}
+							className='edit-profile-district-dropdown'
+						>
+							<option value='' disabled>Select your district</option>
+							{DISTRICTS.map((d) => (
+								<option key={d} value={d}>{d.replace(/_/g, ' ')}</option>
+							))}
+						</select>
+					</div>
+					<div>
+						<textarea
+							id='bio'
+							name='bio'
+							value={form.bio}
+							onChange={handleChange}
+							placeholder='Bio'
+							className='edit-profile-bio-textarea'
+						/>
+					</div>
+				</div>
 				<button
 					type='submit'
 					className='edit-profile-save-btn'
