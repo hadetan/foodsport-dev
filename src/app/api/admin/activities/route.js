@@ -11,7 +11,7 @@ import { formatDbError } from '@/utils/formatDbError';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
 import { sanitizeData } from '@/utils/sanitize';
-import { MAX_IMAGE_SIZE } from '@/app/api/constant.js';
+import { MAX_IMAGE_SIZE_MB } from '@/app/constants/constants';
 
 function parseQueryParams(searchParams) {
 	return {
@@ -188,7 +188,7 @@ export async function POST(req) {
 
 		if (file) {
 			const allowedTypes = ['image/jpeg', 'image/png'];
-			const maxSize = MAX_IMAGE_SIZE;
+			const maxSize = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
 			if (!allowedTypes.includes(file.type)) {
 				return NextResponse.json(

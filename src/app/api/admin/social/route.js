@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma/db.js';
 import { requireAdmin } from '@/lib/prisma/require-admin.js';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { NextResponse } from 'next/server';
-import { MAX_SOCIAL_MEDIA_IMAGES } from '@/app/api/constant.js';
+import { MAX_SOCIAL_MEDIA_IMAGES } from '@/app/constants/constants';
 
 // GET /api/admin/social/image
 export async function GET() {

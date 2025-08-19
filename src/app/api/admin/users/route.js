@@ -56,6 +56,7 @@ export async function GET(req) {
 				   lastname: true,
 				   dateOfBirth: true,
 				   gender: true,
+				   district: true,
 				   phoneNumber: true,
 				   profilePictureUrl: true,
 				   totalCaloriesDonated: true,

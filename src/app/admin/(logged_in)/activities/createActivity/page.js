@@ -6,7 +6,7 @@ import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import axiosClient from "@/utils/axios/api";
 import ActivityStatus, {
     MAX_IMAGE_SIZE_MB,
-} from "@/app/constants/ActivityStatus";
+} from "@/app/constants/constants";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 
 const CreateActivityPage = () => {
