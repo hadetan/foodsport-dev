@@ -66,7 +66,6 @@ const ActivityDetailPage = () => {
                 const data = await response.json();
                 // Compose activity object with all possible fields
                 const a = data.activity || {};
-                console.log("Activity data:", a); // <-- log activity data for debugging
                 setActivity({
                     id: a.id,
                     title: a.title || `Activity ${activityId}`,
@@ -90,26 +89,6 @@ const ActivityDetailPage = () => {
             } catch (err) {
                 console.error("Error fetching activity:", err);
                 setError(err.message);
-
-                // For development purposes - create mock data when API fails
-                if (process.env.NODE_ENV === "development") {
-                    console.log("Using mock data for development");
-                    setActivity({
-                        id: activityId,
-                        title: `Activity ${activityId}`,
-                        description:
-                            "This is a mock activity description since the API call failed.",
-                        content: "Mock content for development purposes.",
-                        status: "active",
-                        createdAt: new Date().toISOString(),
-                        location: "Mock Location",
-                        category: "Development",
-                        participantCount: 5,
-                        participantLimit: 15,
-                        // Add other needed fields here
-                    });
-                    setError(null);
-                }
             } finally {
                 setLoading(false);
             }
@@ -366,18 +345,12 @@ const ActivityDetailPage = () => {
                                             <Avatar
                                                 srcAvatar={user.avatar}
                                                 firstName={firstName || ""}
-                                                lastName={lastName || ""}
+                                                lastName={lastName}
                                                 size="12"
                                             />
                                             <div>
                                                 <p className="font-medium text-gray-800 dark:text-gray-200">
-                                                    {firstName && lastName
-                                                        ? `${firstName} ${lastName}`
-                                                        : firstName ||
-                                                          user.name ||
-                                                          user.email.split(
-                                                              "@"
-                                                          )[0]}
+                                                    {`${firstName} ${lastName}`}
                                                 </p>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                     {user.email}

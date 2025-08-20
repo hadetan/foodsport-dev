@@ -59,7 +59,6 @@ function ActivityManagementPageContent() {
     ];
 
     const handleActivityClick = (activity) => {
-        console.log("Activity clicked:", activity); // Add this for debugging
         if (activity && activity.id) {
             router.push(`/admin/activities/viewActivity/${activity.id}`);
         }
