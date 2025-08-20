@@ -9,7 +9,7 @@
     border-radius: 0 0 0.75rem 0.75rem;
     outline: none;
     font-size: 1rem;
-    overflow-y: hidden;
+    overflow-y: auto; /* changed from hidden to auto for scrollability */
     transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
@@ -47,8 +47,9 @@
     margin: 1rem 0;
 }
 .tiptap-editor a {
-    color: #7dd3fc;
+    color: #2563eb; /* Tailwind blue-600 */
     text-decoration: underline;
+    cursor: pointer;
 }
 .tiptap-editor .is-active {
     background: #a21caf;

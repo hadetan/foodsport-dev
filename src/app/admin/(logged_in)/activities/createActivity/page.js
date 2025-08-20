@@ -53,6 +53,20 @@ const CreateActivityPage = () => {
         }
     }, [formData.image]);
 
+    useEffect(() => {
+        const saved = localStorage.getItem("create_activity_form_data");
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                setFormData((prev) => ({
+                    ...prev,
+                    ...parsed,
+                    image: undefined, // Do not restore image from localStorage
+                }));
+            } catch {}
+        }
+    }, []);
+
     const isValidYear = (dateStr) => {
         if (!dateStr) return true;
         const year = dateStr.split("-")[0];
@@ -173,12 +187,11 @@ const CreateActivityPage = () => {
         }));
     };
 
-    const handleSubmit = async () => {
+    const handleCreateActivity = async () => {
         if (!validateFields()) {
             setError("Please fix the errors in the form.");
             return;
         }
-
         try {
             setLoading(true);
             const startISO = new Date(formData.startDateTime).toISOString();
@@ -198,7 +211,6 @@ const CreateActivityPage = () => {
                 caloriesPerHour: Number(formData.caloriesPerHour),
                 image: formData.image,
             };
-
             const formDataToSend = new FormData();
             Object.entries(payload).forEach(([key, value]) => {
                 if (key === "image" && value) {
@@ -211,11 +223,35 @@ const CreateActivityPage = () => {
                     formDataToSend.set(key, value);
                 }
             });
-
-            await axiosClient.post("/admin/activities", formDataToSend, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
-            // Go to next step page after successful save
+            // PATCH request to update activity if id exists, else POST
+            let activityId = localStorage.getItem("new_activity_id");
+            let response;
+            if (activityId) {
+                response = await axiosClient.patch(
+                    `/admin/activities?activityId=${activityId}`,
+                    formDataToSend,
+                    {
+                        headers: { "Content-Type": "multipart/form-data" },
+                    }
+                );
+            } else {
+                response = await axiosClient.post(
+                    "/admin/activities",
+                    formDataToSend,
+                    {
+                        headers: { "Content-Type": "multipart/form-data" },
+                    }
+                );
+                if (response?.data?.activity?.id) {
+                    activityId = response.data.activity.id;
+                    localStorage.setItem("new_activity_id", activityId);
+                }
+            }
+            // Save form data to localStorage for persistence
+            localStorage.setItem(
+                "create_activity_form_data",
+                JSON.stringify(formData)
+            );
             router.push("/admin/activities/createActivity/details");
         } catch (err) {
             setError(err?.response?.data?.error || err.message);
@@ -263,9 +299,14 @@ const CreateActivityPage = () => {
                                         <>
                                             <img
                                                 ref={imgRef}
-                                                src={URL.createObjectURL(
-                                                    formData.image
-                                                )}
+                                                src={
+                                                    typeof formData.image ===
+                                                    "string"
+                                                        ? formData.image
+                                                        : URL.createObjectURL(
+                                                              formData.image
+                                                          )
+                                                }
                                                 alt="Preview"
                                                 className="w-full h-full object-contain rounded-2xl max-h-[170px]"
                                                 style={{
@@ -601,7 +642,7 @@ const CreateActivityPage = () => {
                                 className={`btn btn-primary btn-sm text-base ${
                                     loading ? "loading" : ""
                                 }`}
-                                onClick={handleSubmit}
+                                onClick={handleCreateActivity}
                                 disabled={loading}
                             >
                                 Save & Next Step
