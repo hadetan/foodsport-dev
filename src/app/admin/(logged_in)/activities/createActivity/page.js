@@ -7,7 +7,7 @@ import axiosClient from "@/utils/axios/api";
 import ActivityStatus, {
     MAX_IMAGE_SIZE_MB,
 } from "@/app/constants/ActivityStatus";
-import { ImageUp } from "lucide-react";
+import { ImageUp, Pencil } from "lucide-react";
 
 const MAX_SUMMARY_WORDS = 50;
 
@@ -54,17 +54,7 @@ const CreateActivityPage = () => {
     }, [formData.image]);
 
     useEffect(() => {
-        const saved = localStorage.getItem("create_activity_form_data");
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                setFormData((prev) => ({
-                    ...prev,
-                    ...parsed,
-                    image: undefined, // Do not restore image from localStorage
-                }));
-            } catch {}
-        }
+        // Remove restoring form data from localStorage
     }, []);
 
     const isValidYear = (dateStr) => {
@@ -223,34 +213,13 @@ const CreateActivityPage = () => {
                     formDataToSend.set(key, value);
                 }
             });
-            // PATCH request to update activity if id exists, else POST
-            let activityId = localStorage.getItem("new_activity_id");
-            let response;
-            if (activityId) {
-                response = await axiosClient.patch(
-                    `/admin/activities?activityId=${activityId}`,
-                    formDataToSend,
-                    {
-                        headers: { "Content-Type": "multipart/form-data" },
-                    }
-                );
-            } else {
-                response = await axiosClient.post(
-                    "/admin/activities",
-                    formDataToSend,
-                    {
-                        headers: { "Content-Type": "multipart/form-data" },
-                    }
-                );
-                if (response?.data?.activity?.id) {
-                    activityId = response.data.activity.id;
-                    localStorage.setItem("new_activity_id", activityId);
+            // Always use POST API for activity creation
+            const response = await axiosClient.post(
+                "/admin/activities",
+                formDataToSend,
+                {
+                    headers: { "Content-Type": "multipart/form-data" },
                 }
-            }
-            // Save form data to localStorage for persistence
-            localStorage.setItem(
-                "create_activity_form_data",
-                JSON.stringify(formData)
             );
             router.push("/admin/activities/createActivity/details");
         } catch (err) {
@@ -261,395 +230,368 @@ const CreateActivityPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-base-200 p-2 text-base flex flex-col">
-            <div className="max-w-screen-xl mx-auto w-full flex flex-col flex-1">
-                <div className="flex items-center mb-4 relative">
-                    <button
-                        className="btn btn-outline btn-sm absolute left-0 text-base"
-                        onClick={() => router.push("/admin/activities")}
-                    >
-                        Back to Activities
-                    </button>
-                    <h1 className="text-2xl font-bold mx-auto text-center w-full">
-                        Create Activity
-                    </h1>
-                </div>
-
+        <div className="flex flex-col items-center justify-center w-full h-full min-h-0 bg-[#232733] px-2 sm:px-4 md:px-8 lg:px-16 flex-1">
+            {/* Back Button */}
+            <div className="w-full max-w-5xl flex justify-start mb-4">
+                <button
+                    className="btn btn-primary"
+                    onClick={() => router.push("/admin/activities")}
+                    type="button"
+                >
+                    &larr; Back
+                </button>
+            </div>
+            <div className="w-full max-w-5xl bg-transparent max-h-screen overflow-y-auto rounded-xl">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-white">
+                    Create Activity
+                </h1>
                 {error && (
                     <ErrorAlert message={error} onClose={() => setError("")} />
                 )}
-
-                <div className="card bg-base-100 shadow-xl flex-1 flex flex-col min-h-0">
-                    <div className="card-body p-2 sm:p-4 md:p-6 text-base flex-1 min-h-0 overflow-y-auto">
-                        {/* Image Upload Field */}
-                        <div className="form-control flex flex-col gap-1 mb-3 items-center">
-                            <label
-                                className="text-white text-base mb-1 self-start"
-                                htmlFor="activity-image-upload"
-                            >
-                                Upload Image
+                <form
+                    className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-6"
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleCreateActivity();
+                    }}
+                >
+                    {/* Upload Image - full width */}
+                    <div className="md:col-span-2">
+                        <label className="label text-lg font-semibold mb-2 text-white">
+                            Upload Image
+                        </label>
+                        <div className="relative flex flex-col items-center justify-center bg-[#181C23] border-2 border-dashed border-[#3B82F6] rounded-xl p-4 sm:p-8 min-h-[120px] sm:min-h-[180px] w-full">
+                            <input
+                                id="activity-image-upload"
+                                type="file"
+                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                disabled={!!formData.image}
+                                style={{ zIndex: 2 }}
+                            />
+                            {!formData.image && (
+                                <div className="flex flex-col items-center pointer-events-none select-none">
+                                    <ImageUp className="w-10 h-10 sm:w-12 sm:h-12 text-[#3B82F6] mb-2" />
+                                    <span className="text-[#3B82F6] font-medium">
+                                        Drop image or{" "}
+                                        <span className="underline cursor-pointer text-[#3B82F6]">
+                                            browse
+                                        </span>
+                                    </span>
+                                    <span className="text-xs text-gray-400 mt-1">
+                                        JPG, PNG
+                                    </span>
+                                </div>
+                            )}
+                            {formData.image && (
+                                <div className="relative w-full flex justify-center">
+                                    <div
+                                        className="bg-black flex items-center justify-center w-full"
+                                        style={{
+                                            width: "100%",
+                                            maxWidth: "100%",
+                                            minHeight: "180px",
+                                            maxHeight: "320px",
+                                            aspectRatio: "16/9",
+                                            borderRadius: "0.75rem",
+                                            overflow: "hidden",
+                                        }}
+                                    >
+                                        <img
+                                            ref={imgRef}
+                                            src={
+                                                typeof formData.image ===
+                                                "string"
+                                                    ? formData.image
+                                                    : URL.createObjectURL(
+                                                          formData.image
+                                                      )
+                                            }
+                                            alt="Preview"
+                                            className="w-full h-auto max-h-[320px] object-contain"
+                                            style={{
+                                                display: "block",
+                                                margin: "0 auto",
+                                            }}
+                                        />
+                                        {/* Pencil icon for changing image */}
+                                        <button
+                                            type="button"
+                                            className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+                                            style={{ zIndex: 10 }}
+                                            onClick={() => {
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    image: null,
+                                                }));
+                                            }}
+                                            tabIndex={0}
+                                            aria-label="Change image"
+                                        >
+                                            <Pencil className="text-[#3B82F6] w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        {fieldErrors.image && (
+                            <span className="text-error text-base">
+                                {fieldErrors.image}
+                            </span>
+                        )}
+                    </div>
+                    {/* Left column */}
+                    <div className="flex flex-col gap-4 sm:gap-6">
+                        {/* Activity Title */}
+                        <div className="form-control w-full">
+                            <label className="label text-lg font-semibold mb-2 text-white">
+                                Activity Title
                             </label>
-                            <div className="flex-1 w-full flex justify-center">
-                                <label
-                                    htmlFor="activity-image-upload"
-                                    className="w-full flex flex-col items-center justify-center border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 transition-colors rounded-2xl cursor-pointer relative group min-h-[120px] max-h-[180px] max-w-md min-w-[220px]"
-                                    style={{ aspectRatio: "16/9" }}
-                                >
-                                    {formData.image ? (
-                                        <>
-                                            <img
-                                                ref={imgRef}
-                                                src={
-                                                    typeof formData.image ===
-                                                    "string"
-                                                        ? formData.image
-                                                        : URL.createObjectURL(
-                                                              formData.image
-                                                          )
-                                                }
-                                                alt="Preview"
-                                                className="w-full h-full object-contain rounded-2xl max-h-[170px]"
-                                                style={{
-                                                    maxHeight: "170px",
-                                                    maxWidth: "100%",
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="btn btn-circle btn-sm btn-error absolute top-2 right-2 opacity-90 hover:opacity-100 transition-opacity z-10"
-                                                onClick={removeImage}
-                                            >
-                                                ×
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="flex flex-col items-center justify-center py-4">
-                                                {/* Lucide ImageUp icon for upload */}
-                                                <ImageUp className="w-8 h-8 text-blue-400 mb-1" />
-                                                <span className="text-sm text-blue-500 font-medium">
-                                                    Drop image or{" "}
-                                                    <span className="underline">
-                                                        browse
-                                                    </span>
-                                                </span>
-                                                <span className="text-xs text-gray-400 mt-1">
-                                                    JPG, PNG
-                                                </span>
-                                            </div>
-                                        </>
-                                    )}
-                                    <input
-                                        id="activity-image-upload"
-                                        type="file"
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        tabIndex={-1}
-                                    />
-                                </label>
-                            </div>
-                            {fieldErrors.image && (
-                                <span className="text-error text-xs mt-1 block self-start">
-                                    {fieldErrors.image}
+                            <input
+                                className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                name="title"
+                                value={formData.title}
+                                onChange={handleFormChange}
+                                maxLength={100}
+                                required
+                            />
+                            {fieldErrors.title && (
+                                <span className="text-error text-base">
+                                    {fieldErrors.title}
                                 </span>
                             )}
                         </div>
-                        <div className="flex flex-col md:flex-row gap-3 md:gap-4">
-                            {/* Left column: first 6 fields */}
-                            <div className="flex-1 flex flex-col gap-2 md:gap-3 min-w-0">
-                                {/* Activity Title */}
-                                <div className="form-control flex flex-col gap-1">
-                                    <label
-                                        className="text-white text-base mb-1"
-                                        htmlFor="activity-title"
-                                    >
-                                        Activity Title
-                                    </label>
-                                    <input
-                                        id="activity-title"
-                                        type="text"
-                                        name="title"
-                                        placeholder="Enter activity title"
-                                        className="input input-sm text-base w-full"
-                                        value={formData.title}
-                                        onChange={handleFormChange}
-                                    />
-                                    {fieldErrors.title && (
-                                        <span className="text-error text-xs mt-1 block">
-                                            {fieldErrors.title}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Activity Type */}
-                                <div className="form-control flex flex-col gap-1">
-                                    <label
-                                        className="text-white text-base mb-1"
-                                        htmlFor="activity-type"
-                                    >
-                                        Activity Type
-                                    </label>
-                                    <select
-                                        id="activity-type"
-                                        name="activityType"
-                                        className="select select-bordered select-sm text-base w-full"
-                                        value={formData.activityType}
-                                        onChange={handleFormChange}
-                                    >
-                                        <option value="">
-                                            Select activity type
-                                        </option>
-                                        <option value="kayak">Kayak</option>
-                                        <option value="hiking">Hiking</option>
-                                        <option value="yoga">Yoga</option>
-                                        <option value="fitness">Fitness</option>
-                                        <option value="running">Running</option>
-                                        <option value="cycling">Cycling</option>
-                                        <option value="swimming">
-                                            Swimming
-                                        </option>
-                                        <option value="dancing">Dancing</option>
-                                        <option value="boxing">Boxing</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                    {fieldErrors.activityType && (
-                                        <span className="text-error text-xs mt-1 block">
-                                            {fieldErrors.activityType}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Summary */}
-                                <div className="form-control flex flex-col gap-1">
-                                    <label
-                                        className="text-white text-base mb-1"
-                                        htmlFor="activity-description"
-                                    >
-                                        Summary
-                                    </label>
-                                    <textarea
-                                        id="activity-description"
-                                        name="description"
-                                        placeholder="Enter summary (max 50 words)"
-                                        className="textarea textarea-bordered text-base w-full min-h-[40px] max-h-[60px]"
-                                        value={formData.description}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            const words = countWords(value);
-                                            if (words <= MAX_SUMMARY_WORDS) {
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    description: value,
-                                                }));
-                                                setFieldErrors((prev) => ({
-                                                    ...prev,
-                                                    description: undefined,
-                                                }));
-                                            }
-                                        }}
-                                        rows={2}
-                                    />
-                                    <div className="flex justify-between items-center mt-1">
-                                        <span className="text-xs text-gray-400">
-                                            {countWords(formData.description)} /{" "}
-                                            {MAX_SUMMARY_WORDS} words
-                                        </span>
-                                        {fieldErrors.description && (
-                                            <span className="text-error text-xs mt-1 block">
-                                                {fieldErrors.description}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                {/* Start DateTime */}
-                                <div className="form-control flex flex-col gap-1">
-                                    <label
-                                        className="text-white text-base mb-1"
-                                        htmlFor="activity-startDateTime"
-                                    >
-                                        Start Date & Time
-                                    </label>
-                                    <input
-                                        id="activity-startDateTime"
-                                        type="datetime-local"
-                                        name="startDateTime"
-                                        className="input input-bordered input-sm text-base w-full"
-                                        value={formData.startDateTime}
-                                        onChange={handleFormChange}
-                                        max="9999-12-31T23:59"
-                                    />
-                                    {fieldErrors.startDateTime && (
-                                        <span className="text-error text-xs mt-1 block">
-                                            {fieldErrors.startDateTime}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* End DateTime */}
-                                <div className="form-control flex flex-col gap-1">
-                                    <label
-                                        className="text-white text-base mb-1"
-                                        htmlFor="activity-endDateTime"
-                                    >
-                                        End Date & Time
-                                    </label>
-                                    <input
-                                        id="activity-endDateTime"
-                                        type="datetime-local"
-                                        name="endDateTime"
-                                        className="input input-bordered input-sm text-base w-full"
-                                        value={formData.endDateTime}
-                                        onChange={handleFormChange}
-                                        max="9999-12-31T23:59"
-                                    />
-                                    {fieldErrors.endDateTime && (
-                                        <span className="text-error text-xs mt-1 block">
-                                            {fieldErrors.endDateTime}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                            {/* Right column: next 5 fields */}
-                            <div className="flex-1 flex flex-col gap-2 md:gap-3 min-w-0">
-                                {/* Location */}
-                                <div className="form-control flex flex-col gap-1">
-                                    <label
-                                        className="text-white text-base mb-1"
-                                        htmlFor="activity-location"
-                                    >
-                                        Location
-                                    </label>
-                                    <input
-                                        id="activity-location"
-                                        type="text"
-                                        name="location"
-                                        placeholder="Enter activity location"
-                                        className="input input-bordered input-sm text-base w-full"
-                                        value={formData.location}
-                                        onChange={handleFormChange}
-                                    />
-                                    {fieldErrors.location && (
-                                        <span className="text-error text-xs mt-1 block">
-                                            {fieldErrors.location}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Capacity */}
-                                <div className="form-control flex flex-col gap-1">
-                                    <label
-                                        className="text-white text-base mb-1"
-                                        htmlFor="activity-capacity"
-                                    >
-                                        Capacity
-                                    </label>
-                                    <input
-                                        id="activity-capacity"
-                                        type="number"
-                                        name="capacity"
-                                        placeholder="Enter participant limit"
-                                        className="input input-bordered input-sm text-base w-full"
-                                        value={formData.capacity}
-                                        onChange={handleFormChange}
-                                        min="1"
-                                    />
-                                    {fieldErrors.capacity && (
-                                        <span className="text-error text-xs mt-1 block">
-                                            {fieldErrors.capacity}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Points Per Participant */}
-                                <div className="form-control flex flex-col gap-1">
-                                    <label
-                                        className="text-white text-base mb-1"
-                                        htmlFor="activity-pointsPerParticipant"
-                                    >
-                                        Points Per Participant
-                                    </label>
-                                    <input
-                                        id="activity-pointsPerParticipant"
-                                        type="number"
-                                        name="pointsPerParticipant"
-                                        placeholder="Enter points per participant"
-                                        className="input input-bordered input-sm text-base w-full"
-                                        value={formData.pointsPerParticipant}
-                                        onChange={handleFormChange}
-                                        min="0"
-                                    />
-                                    {fieldErrors.pointsPerParticipant && (
-                                        <span className="text-error text-xs mt-1 block">
-                                            {fieldErrors.pointsPerParticipant}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Calories Per Hour */}
-                                <div className="form-control flex flex-col gap-1">
-                                    <label
-                                        className="text-white text-base mb-1"
-                                        htmlFor="activity-caloriesPerHour"
-                                    >
-                                        Calories Per Hour
-                                    </label>
-                                    <input
-                                        id="activity-caloriesPerHour"
-                                        type="number"
-                                        name="caloriesPerHour"
-                                        placeholder="Enter calories per hour"
-                                        className="input input-bordered input-sm text-base w-full"
-                                        value={formData.caloriesPerHour}
-                                        onChange={handleFormChange}
-                                        min="0"
-                                    />
-                                    {fieldErrors.caloriesPerHour && (
-                                        <span className="text-error text-xs mt-1 block">
-                                            {fieldErrors.caloriesPerHour}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Status Dropdown at the bottom */}
-                                <div className="form-control flex flex-col gap-1">
-                                    <label
-                                        className="text-white text-base mb-1"
-                                        htmlFor="activity-status"
-                                    >
-                                        Status
-                                    </label>
-                                    <select
-                                        id="activity-status"
-                                        name="status"
-                                        className="select select-bordered select-sm text-base w-full"
-                                        value={formData.status}
-                                        onChange={handleFormChange}
-                                    >
-                                        {ActivityStatus.map((status) => (
-                                            <option key={status} value={status}>
-                                                {status
-                                                    .charAt(0)
-                                                    .toUpperCase() +
-                                                    status.slice(1)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {fieldErrors.status && (
-                                        <span className="text-error text-xs mt-1 block">
-                                            {fieldErrors.status}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        {/* Submit Button */}
-                        <div className="flex flex-col sm:flex-row justify-start gap-2 mt-4">
-                            <button
-                                className={`btn btn-primary btn-sm text-base ${
-                                    loading ? "loading" : ""
-                                }`}
-                                onClick={handleCreateActivity}
-                                disabled={loading}
+                        {/* Activity Type */}
+                        <div className="form-control w-full">
+                            <label className="label text-lg font-semibold mb-2 text-white">
+                                Activity Type
+                            </label>
+                            <select
+                                className="select select-bordered select-lg w-full bg-[#232733] text-white"
+                                name="activityType"
+                                value={formData.activityType}
+                                onChange={handleFormChange}
+                                required
                             >
-                                Save & Next Step
-                            </button>
+                                <option value="">Select activity type</option>
+                                <option value="kayak">Kayak</option>
+                                <option value="hiking">Hiking</option>
+                                <option value="yoga">Yoga</option>
+                                <option value="fitness">Fitness</option>
+                                <option value="running">Running</option>
+                                <option value="cycling">Cycling</option>
+                                <option value="swimming">Swimming</option>
+                                <option value="dancing">Dancing</option>
+                                <option value="boxing">Boxing</option>
+                                <option value="other">Other</option>
+                            </select>
+                            {fieldErrors.activityType && (
+                                <span className="text-error text-base">
+                                    {fieldErrors.activityType}
+                                </span>
+                            )}
+                        </div>
+                        {/* Summary */}
+                        <div className="form-control w-full">
+                            <label className="label text-lg font-semibold mb-2 text-white">
+                                Summary
+                            </label>
+                            <textarea
+                                className="textarea textarea-bordered textarea-lg w-full bg-[#232733] text-white"
+                                name="description"
+                                value={formData.description}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    const words = countWords(value);
+                                    if (words <= MAX_SUMMARY_WORDS) {
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            description: value,
+                                        }));
+                                        setFieldErrors((prev) => ({
+                                            ...prev,
+                                            description: undefined,
+                                        }));
+                                    }
+                                }}
+                                maxLength={400}
+                                required
+                                rows={3}
+                                placeholder="Enter summary (max 50 words)"
+                            />
+                            <div className="flex justify-between text-xs text-gray-400 mt-1">
+                                <span>
+                                    {countWords(formData.description)} /{" "}
+                                    {MAX_SUMMARY_WORDS} words
+                                </span>
+                            </div>
+                            {fieldErrors.description && (
+                                <span className="text-error text-base">
+                                    {fieldErrors.description}
+                                </span>
+                            )}
+                        </div>
+                        {/* Start Date & Time */}
+                        <div className="form-control w-full">
+                            <label className="label text-lg font-semibold mb-2 text-white">
+                                Start Date & Time
+                            </label>
+                            <input
+                                type="date"
+                                className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                name="startDateTime"
+                                value={formData.startDateTime}
+                                onChange={handleFormChange}
+                                required
+                            />
+                            {fieldErrors.startDateTime && (
+                                <span className="text-error text-base">
+                                    {fieldErrors.startDateTime}
+                                </span>
+                            )}
                         </div>
                     </div>
-                </div>
+                    {/* Right column */}
+                    <div className="flex flex-col gap-4 sm:gap-6">
+                        {/* Location */}
+                        <div className="form-control w-full">
+                            <label className="label text-lg font-semibold mb-2 text-white">
+                                Location
+                            </label>
+                            <input
+                                className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                name="location"
+                                value={formData.location}
+                                onChange={handleFormChange}
+                                required
+                                placeholder="Enter activity location"
+                            />
+                            {fieldErrors.location && (
+                                <span className="text-error text-base">
+                                    {fieldErrors.location}
+                                </span>
+                            )}
+                        </div>
+                        {/* Capacity */}
+                        <div className="form-control w-full">
+                            <label className="label text-lg font-semibold mb-2 text-white">
+                                Capacity
+                            </label>
+                            <input
+                                type="number"
+                                className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                name="capacity"
+                                value={formData.capacity}
+                                onChange={handleFormChange}
+                                min={1}
+                                max={1000}
+                                required
+                                placeholder="Enter participant limit"
+                            />
+                            {fieldErrors.capacity && (
+                                <span className="text-error text-base">
+                                    {fieldErrors.capacity}
+                                </span>
+                            )}
+                        </div>
+                        {/* Points Per Participant */}
+                        <div className="form-control w-full">
+                            <label className="label text-lg font-semibold mb-2 text-white">
+                                Points Per Participant
+                            </label>
+                            <input
+                                type="number"
+                                className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                name="pointsPerParticipant"
+                                value={formData.pointsPerParticipant}
+                                onChange={handleFormChange}
+                                min={0.01}
+                                step="any"
+                                required
+                                placeholder="Enter points per participant"
+                            />
+                            {fieldErrors.pointsPerParticipant && (
+                                <span className="text-error text-base">
+                                    {fieldErrors.pointsPerParticipant}
+                                </span>
+                            )}
+                        </div>
+                        {/* Calories Per Hour */}
+                        <div className="form-control w-full">
+                            <label className="label text-lg font-semibold mb-2 text-white">
+                                Calories Per Hour
+                            </label>
+                            <input
+                                type="number"
+                                className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                name="caloriesPerHour"
+                                value={formData.caloriesPerHour}
+                                onChange={handleFormChange}
+                                min={0.01}
+                                step="any"
+                                required
+                                placeholder="Enter calories per hour"
+                            />
+                            {fieldErrors.caloriesPerHour && (
+                                <span className="text-error text-base">
+                                    {fieldErrors.caloriesPerHour}
+                                </span>
+                            )}
+                        </div>
+                        {/* Status */}
+                        <div className="form-control w-full">
+                            <label className="label text-lg font-semibold mb-2 text-white">
+                                Status
+                            </label>
+                            <select
+                                className="select select-bordered select-lg w-full bg-[#232733] text-white"
+                                name="status"
+                                value={formData.status}
+                                onChange={handleFormChange}
+                            >
+                                {ActivityStatus.map((status) => (
+                                    <option key={status} value={status}>
+                                        {status.charAt(0).toUpperCase() +
+                                            status.slice(1)}
+                                    </option>
+                                ))}
+                            </select>
+                            {fieldErrors.status && (
+                                <span className="text-error text-base">
+                                    {fieldErrors.status}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    {/* Actions - full width */}
+                    <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full">
+                        <button
+                            type="submit"
+                            className={`btn btn-primary btn-lg flex-1 ${
+                                loading ? "loading" : ""
+                            }`}
+                            disabled={loading}
+                            onClick={async (e) => {
+                                e.preventDefault();
+                                await handleCreateActivity();
+                                router.push(
+                                    "/admin/activities/createActivity/details"
+                                );
+                            }}
+                        >
+                            Save & Continue
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-outline btn-lg flex-1"
+                            onClick={() => router.push("/admin/activities")}
+                            disabled={loading}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
