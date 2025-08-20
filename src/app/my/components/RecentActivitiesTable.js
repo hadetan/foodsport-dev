@@ -68,7 +68,7 @@ export default function RecentActivitiesTable() {
                   <td className="recent-activities-td">{act.title}</td>
                   <td className="recent-activities-td">{getDuration(act.startTime, act.endTime)}</td>
                   <td className="recent-activities-td">{act.caloriesPerHour ? `${act.caloriesPerHour}kcal` : 'N/A'}</td>
-                  <td className="recent-activities-td">{act.pointsPerParticipant ?? 'N/A'}</td>
+                  <td className="recent-activities-td">{act.totalCaloriesBurnt ?? 'N/A'}</td>
                 </tr>
               ))
             )}

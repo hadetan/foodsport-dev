@@ -147,11 +147,11 @@ const ActivityDetails = ({
 								</span>
 								<div>
 									<div className='activityDetailsDetailsLabel'>
-										Points per Participant
+										Total Calories Burnt
 									</div>
 									<div className='activityDetailsDetailsValue'>
-										{activity.pointsPerParticipant || '—'}{' '}
-										Points
+										{activity.totalCaloriesBurnt || '—'}{' '}
+										calories burnt
 									</div>
 								</div>
 							</div>
@@ -178,7 +178,7 @@ const ActivityDetails = ({
 										Organizer
 									</div>
 									<div className='activityDetailsDetailsValue'>
-										{activity.organizerName || '—'}
+										{activity.organizerName || 'Unknown'}
 									</div>
 								</div>
 							</div>
