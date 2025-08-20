@@ -345,18 +345,12 @@ const ActivityDetailPage = () => {
                                             <Avatar
                                                 srcAvatar={user.avatar}
                                                 firstName={firstName || ""}
-                                                lastName={lastName || ""}
+                                                lastName={lastName}
                                                 size="12"
                                             />
                                             <div>
                                                 <p className="font-medium text-gray-800 dark:text-gray-200">
-                                                    {firstName && lastName
-                                                        ? `${firstName} ${lastName}`
-                                                        : firstName ||
-                                                          user.name ||
-                                                          user.email.split(
-                                                              "@"
-                                                          )[0]}
+                                                    {`${firstName} ${lastName}`}
                                                 </p>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                                     {user.email}
