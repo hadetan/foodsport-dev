@@ -138,13 +138,26 @@ export async function PATCH(req) {
 			return NextResponse.json({ error: 'User not found' }, { status: 404 });
 		}
 
-		const allowedFields = ['isActive'];
+		const allowedFields = ['isActive', 'email'];
 		const updates = sanitizeData(body, allowedFields);
 		if (Object.keys(updates).length === 0) {
 			return NextResponse.json(
 				{ error: 'No valid fields to update' },
 				{ status: 400 }
 			);
+		}
+
+		if (updates.email) {
+			const existingEmailUser = await getMany('user', { email: updates.email }, { id: true });
+			if (existingEmailUser && existingEmailUser.length > 0 && existingEmailUser[0].id !== userId) {
+				return NextResponse.json({ error: 'Email already in use' }, { status: 409 });
+			}
+			try {
+				const supabaseAdmin = await createServerClient();
+				await supabaseAdmin.auth.admin.updateUserById(userId, { email: updates.email });
+			} catch (e) {
+				return NextResponse.json({ error: 'Failed to update email in auth provider', details: e.message }, { status: 500 });
+			}
 		}
 
 		const updatedUser = await updateById('user', userId, updates);

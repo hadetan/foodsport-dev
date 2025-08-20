@@ -192,7 +192,6 @@ export async function getUserJoinedActivitiesWithDetails(userId) {
 						participantLimit: true,
 						organizerId: true,
 						imageUrl: true,
-						pointsPerParticipant: true,
 						caloriesPerHour: true,
 						isFeatured: true,
 						createdAt: true,

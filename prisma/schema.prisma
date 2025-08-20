@@ -159,7 +159,7 @@ model Activity {
   participantLimit     Int?          @map("participant_limit")
   organizerId          String?       @map("organizer_id") // Get organizer name from the id
   imageUrl             String?       @map("image_url")
-  pointsPerParticipant Int           @default(10) @map("points_per_participant")
+  totalCaloriesBurnt   Int           @default(0) @map("total_calories_burnt")
   caloriesPerHour      Int           @default(300) @map("calories_per_hour")
   isFeatured           Boolean       @default(false) @map("is_featured")
   createdAt            DateTime      @default(now()) @map("created_at")
