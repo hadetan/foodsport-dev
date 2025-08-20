@@ -53,6 +53,16 @@ export default function ActivityItem({
 
 	async function handleJoin() {
 		if (!setUser || !setActivities) return router.push('/auth/login');
+		if (activity.status !== 'active') {
+			toast.warning('Cannot join activity that is not active.');
+			return;
+		}
+		if (!user.weight || !user.height) {
+			toast.error('You must fill height and weight to join activities.');
+			// Fallback to current path or default if asPath is undefined
+			const returnTo = typeof window !== 'undefined' && window.location.pathname ? window.location.pathname : '/my/activities';
+			return router.push(`/my/profile?editProfile=1&returnTo=${encodeURIComponent(returnTo)}`);
+		}
 		try {
 			setLoading(true);
 			const res = await api.post('/my/activities/join', {
@@ -72,14 +82,21 @@ export default function ActivityItem({
 						: act
 				)
 			);
-			   toast.success('Successfully joined the activity.');
+			toast.success('Successfully joined the activity.');
 		} catch (error) {
 			const status = error?.response?.status;
-			if (status === 401 && error.response?.data?.error?.includes('Token')) {
+			const serverMsg = error?.response?.data?.error;
+			if (status === 401 && serverMsg?.includes('Token')) {
 				await api.delete('/auth/logout');
 				router.push('/auth/login');
-			} else if (status === 400) {
+			} else if (status === 400 && serverMsg?.includes('Activity is not')) {
 				toast.warning('Cannot join activity that is not active.');
+			} else if (serverMsg) {
+				toast.error(serverMsg);
+				if (serverMsg.toLowerCase().includes('height') || serverMsg.toLowerCase().includes('weight')) {
+					const returnTo = typeof window !== 'undefined' && window.location.pathname ? window.location.pathname : '/my/activities';
+					router.push(`/my/profile?editProfile=1&returnTo=${encodeURIComponent(returnTo)}`);
+				}
 			}
 		} finally {
 			setLoading(false);

@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import { getMany, updateById, getUserJoinedActivitiesWithDetails } from '@/lib/prisma/db-utils';
 import { sanitizeData } from '@/utils/sanitize';
-import { formatDbError } from '@/utils/formatDbError';
 import { createServerClient } from '@/lib/supabase/server-only';
 
 function parseQueryParams(searchParams) {
@@ -50,18 +49,21 @@ export async function GET(req) {
 			'user',
 			filters,
 			{
-				id: true,
-				email: true,
-				firstname: true,
-				lastname: true,
-				dateOfBirth: true,
-				gender: true,
-				phoneNumber: true,
-				profilePictureUrl: true,
-				totalCaloriesDonated: true,
-				isActive: true,
-				createdAt: true,
-				updatedAt: true,
+				   id: true,
+				   email: true,
+				   firstname: true,
+				   lastname: true,
+				   dateOfBirth: true,
+				   gender: true,
+				   district: true,
+				   phoneNumber: true,
+				   profilePictureUrl: true,
+				   totalCaloriesDonated: true,
+				   isActive: true,
+				   createdAt: true,
+				   updatedAt: true,
+				   height: true,
+				   weight: true,
 			},
 			options
 		);
@@ -136,13 +138,26 @@ export async function PATCH(req) {
 			return NextResponse.json({ error: 'User not found' }, { status: 404 });
 		}
 
-		const allowedFields = ['isActive'];
+		const allowedFields = ['isActive', 'email'];
 		const updates = sanitizeData(body, allowedFields);
 		if (Object.keys(updates).length === 0) {
 			return NextResponse.json(
 				{ error: 'No valid fields to update' },
 				{ status: 400 }
 			);
+		}
+
+		if (updates.email) {
+			const existingEmailUser = await getMany('user', { email: updates.email }, { id: true });
+			if (existingEmailUser && existingEmailUser.length > 0 && existingEmailUser[0].id !== userId) {
+				return NextResponse.json({ error: 'Email already in use' }, { status: 409 });
+			}
+			try {
+				const supabaseAdmin = await createServerClient();
+				await supabaseAdmin.auth.admin.updateUserById(userId, { email: updates.email });
+			} catch (e) {
+				return NextResponse.json({ error: 'Failed to update email in auth provider', details: e.message }, { status: 500 });
+			}
 		}
 
 		const updatedUser = await updateById('user', userId, updates);

@@ -60,7 +60,6 @@ export async function GET(req) {
 				participantLimit: true,
 				organizerId: true,
 				imageUrl: true,
-				pointsPerParticipant: true,
 				caloriesPerHour: true,
 				isFeatured: true,
 			},
@@ -103,7 +102,6 @@ export async function GET(req) {
 			participantCount: participantCountMap[a.id] || 0,
 			organizerName: a.organizerId ? organizerNameMap[a.organizerId] : undefined,
 			imageUrl: a.imageUrl,
-			pointsPerParticipant: a.pointsPerParticipant,
 			caloriesPerHour: a.caloriesPerHour,
 			isFeatured: a.isFeatured,
 		}));

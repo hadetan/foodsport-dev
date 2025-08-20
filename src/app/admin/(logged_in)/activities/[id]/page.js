@@ -42,7 +42,7 @@ export default function EditActivityPage() {
             location: activity.location || "",
             capacity: activity.participantLimit || "",
             status: activity.status || "active",
-            pointsPerParticipant: activity.pointsPerParticipant || "",
+            totalCaloriesBurnt: activity.totalCaloriesBurnt || "",
             caloriesPerHour: activity.caloriesPerHour || "",
         });
         setAudit({
@@ -92,10 +92,10 @@ export default function EditActivityPage() {
         const cap = parseInt(form.capacity, 10);
         if (!cap || cap < 1 || cap > 1000)
             errs.capacity = "Capacity must be 1-1000.";
-        const points = parseFloat(form.pointsPerParticipant);
+        const points = parseFloat(form.totalCaloriesBurnt);
         if (isNaN(points) || points <= 0)
-            errs.pointsPerParticipant =
-                "Points per participant must be a positive number.";
+            errs.totalCaloriesBurnt =
+                "Total calories burnt must be a positive number.";
         const calories = parseFloat(form.caloriesPerHour);
         if (isNaN(calories) || calories <= 0)
             errs.caloriesPerHour =
@@ -364,16 +364,16 @@ export default function EditActivityPage() {
                         <input
                             type="number"
                             className="input input-bordered input-lg w-full"
-                            name="pointsPerParticipant"
-                            value={form.pointsPerParticipant}
+                            name="totalCaloriesBurnt"
+                            value={form.totalCaloriesBurnt}
                             onChange={handleInput}
                             min={0.01}
                             step="any"
                             required
                         />
-                        {errors.pointsPerParticipant && (
+                        {errors.totalCaloriesBurnt && (
                             <span className="text-error text-base">
-                                {errors.pointsPerParticipant}
+                                {errors.totalCaloriesBurnt}
                             </span>
                         )}
                     </div>
