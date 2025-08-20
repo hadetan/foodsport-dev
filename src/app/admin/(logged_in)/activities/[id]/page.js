@@ -95,7 +95,7 @@ export default function EditActivityPage() {
         const points = parseFloat(form.totalCaloriesBurnt);
         if (isNaN(points) || points <= 0)
             errs.totalCaloriesBurnt =
-                "Points per participant must be a positive number.";
+                "Total calories burnt must be a positive number.";
         const calories = parseFloat(form.caloriesPerHour);
         if (isNaN(calories) || calories <= 0)
             errs.caloriesPerHour =

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { FaInfoCircle } from 'react-icons/fa';
 import { toast } from '@/utils/Toast';
 import { useUser } from '@/app/shared/contexts/userContext';
@@ -13,6 +14,8 @@ import { DISTRICTS } from '@/app/constants/constants';
 
 export default function EditProfile() {
 	const { user, setUser } = useUser();
+	const searchParams = useSearchParams();
+	const router = useRouter();
 	const [form, setForm] = useState({
 		firstname: user.firstname,
 		lastname: user.lastname,
@@ -153,6 +156,12 @@ export default function EditProfile() {
 			});
 			setInitialValues(form);
 			toast.info('Profile has been updated successfully.');
+			// Redirect to returnTo if present
+			const returnTo = searchParams.get('returnTo');
+			if (returnTo) {
+				setTimeout(() => router.push(returnTo), 500);
+				return;
+			}
 		} catch (err) {
 			setError('Something went wrong, please try again.');
 			toast.error('Something went wrong, please try again');

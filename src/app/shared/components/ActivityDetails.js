@@ -33,6 +33,14 @@ const ActivityDetails = ({
 	}, []);
 
 	async function handleJoin() {
+		if (activity.status !== 'active') {
+			setError('Cannot join activity that is not active.');
+			return;
+		}
+		if (!user.weight || !user.height) {
+			setError('You must fill height and weight to join activities.');
+			return window.location.href = `/my/profile?editProfile=1&returnTo=${encodeURIComponent(window.location.pathname)}`;
+		}
 		try {
 			setLoading(true);
 			const res = await api.post('/my/activities/join', {
@@ -51,9 +59,17 @@ const ActivityDetails = ({
 					: act
 			));
 		} catch (error) {
-			setError(error.message || 'Something went wrong');
-			if (error.response?.status === 401 && error.response?.data?.error?.includes('Token')) {
+			const status = error?.response?.status;
+			const serverMsg = error?.response?.data?.error;
+			setError(serverMsg || error.message || 'Something went wrong');
+			if (status === 401 && serverMsg?.includes('Token')) {
 				window.location.href = '/auth/login';
+			} else if (status === 400 && serverMsg?.includes('Activity is not')) {
+				setError('Cannot join activity that is not active.');
+			} else if (serverMsg) {
+				if (serverMsg.toLowerCase().includes('height') || serverMsg.toLowerCase().includes('weight')) {
+					window.location.href = `/my/profile?editProfile=1&returnTo=${encodeURIComponent(window.location.pathname)}`;
+				}
 			}
 		} finally {
 			setLoading(false);
