@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import Avatar from "@/app/shared/components/avatar";
 import FullPageLoader from "../../../components/FullPageLoader";
+import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 
 const ActivityDetailPage = () => {
     const [activity, setActivity] = useState(null);
@@ -16,6 +17,7 @@ const ActivityDetailPage = () => {
     const params = useParams();
     const router = useRouter();
 
+    const { activities, loading: activitiesLoading } = useActivities();
     const activityId = params?.id;
 
     // Filter users who have joined this activity
@@ -36,62 +38,23 @@ const ActivityDetailPage = () => {
     }, [users, activityId]);
 
     useEffect(() => {
-        if (!activityId) return;
-        const fetchActivityDetails = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                const response = await fetch(`/api/activities/${activityId}`);
-                if (!response.ok) {
-                    const contentType = response.headers.get("content-type");
-                    if (
-                        contentType &&
-                        contentType.indexOf("text/html") !== -1
-                    ) {
-                        throw new Error(
-                            "Received HTML response instead of JSON"
-                        );
-                    }
-                    try {
-                        const errorData = await response.json();
-                        throw new Error(
-                            errorData.error ||
-                                "Failed to fetch activity details"
-                        );
-                    } catch (jsonError) {
-                        throw new Error(`Server error: ${response.status}`);
-                    }
-                }
-                const data = await response.json();
-                const a = data.activity || {};
-                setActivity({
-                    id: a.id,
-                    title: a.title,
-                    description: a.description,
-                    activityType: a.activityType,
-                    location: a.location,
-                    startDate: a.startDate,
-                    endDate: a.endDate,
-                    startTime: a.startTime,
-                    endTime: a.endTime,
-                    status: a.status,
-                    participantLimit: a.participantLimit,
-                    organizerId: a.organizerId,
-                    imageUrl: a.imageUrl,
-                    pointsPerParticipant: a.pointsPerParticipant,
-                    caloriesPerHour: a.caloriesPerHour,
-                    isFeatured: a.isFeatured,
-                });
-            } catch (err) {
-                console.error("Error fetching activity:", err);
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchActivityDetails();
-    }, [activityId]);
+        if (!activityId || activitiesLoading) return;
+        setLoading(true);
+        setError(null);
+        // Find the activity from the activities context
+        const found = activities?.find(
+            (a) =>
+                a.id === activityId ||
+                a.id?.toString() === activityId?.toString()
+        );
+        if (found) {
+            setActivity(found);
+            setLoading(false);
+        } else {
+            setActivity(null);
+            setLoading(false);
+        }
+    }, [activityId, activities, activitiesLoading]);
 
     if (loading) {
         return <FullPageLoader />;
@@ -207,16 +170,32 @@ const ActivityDetailPage = () => {
                                 </div>
                             )}
                             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                                {/* Title */}
                                 <h1 className="text-3xl md:text-4xl font-bold text-white">
                                     {activity.title}
                                 </h1>
-                                <div className="flex items-center mt-2 text-white/90">
-                                    <span className="mr-4">
-                                        {activity.status}
+                                {/* Date and status badge, styled like the card preview */}
+                                <div className="flex items-center mt-2">
+                                    <span className="text-white text-base mr-4">
+                                        {activity.startDate
+                                            ? formatDate(activity.startDate)
+                                            : "Date not specified"}
                                     </span>
-                                    <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                        {activity.isFeatured ? "Featured" : ""}
-                                    </span>
+                                    {activity.status && (
+                                        <span
+                                            className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold
+                                            ${
+                                                activity.status === "active"
+                                                    ? "bg-green-600 text-white"
+                                                    : activity.status ===
+                                                      "inactive"
+                                                    ? "bg-gray-400 text-white"
+                                                    : "bg-yellow-500 text-white"
+                                            }`}
+                                        >
+                                            {activity.status}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -234,8 +213,7 @@ const ActivityDetailPage = () => {
                                         Type
                                     </p>
                                     <p className="font-medium text-gray-800 dark:text-gray-200">
-                                        {activity.activityType ||
-                                            "Uncategorized"}
+                                        {activity.activityType}
                                     </p>
                                 </div>
                                 <div>
@@ -243,7 +221,7 @@ const ActivityDetailPage = () => {
                                         Location
                                     </p>
                                     <p className="font-medium text-gray-800 dark:text-gray-200">
-                                        {activity.location || "Not specified"}
+                                        {activity.location}
                                     </p>
                                 </div>
                                 <div>
@@ -288,22 +266,7 @@ const ActivityDetailPage = () => {
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Organizer ID
-                                    </p>
-                                    <p className="font-medium text-gray-800 dark:text-gray-200">
-                                        {activity.organizerId ||
-                                            "Not specified"}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Points Per Participant
-                                    </p>
-                                    <p className="font-medium text-gray-800 dark:text-gray-200">
-                                        {activity.pointsPerParticipant ??
-                                            "Not specified"}
-                                    </p>
+                                   
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
