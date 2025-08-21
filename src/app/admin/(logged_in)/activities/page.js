@@ -29,7 +29,11 @@ function ActivityManagementPageContent() {
     const [pageSize] = useState(10);
     const [selectedStatus, setSelectedStatus] = useState("");
 
-    const { activities, setActivities, loading: tableLoading } = useAdminActivities();
+    const {
+        activities,
+        setActivities,
+        loading: tableLoading,
+    } = useAdminActivities();
 
     const filteredActivities = selectedStatus
         ? activities.filter((a) => a.status === selectedStatus)
@@ -54,6 +58,12 @@ function ActivityManagementPageContent() {
         "Actions",
     ];
 
+    const handleActivityClick = (activity) => {
+        if (activity && activity.id) {
+            router.push(`/admin/activities/viewActivity/${activity.id}`);
+        }
+    };
+
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
             <div className="flex justify-between mb-6">
@@ -71,27 +81,27 @@ function ActivityManagementPageContent() {
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
                 {/* <Dropdown items={statusOfUser} name="Status" /> */}
             </div>
-
-                    {/* Activities Table */}
-                    <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
-                        {tableLoading ? <FullPageLoader /> : (
-                            <div className="overflow-x-auto">
-                                <Table
-                                    heading={tableHeading}
-                                    tableData={activities}
-                                    tableType={"acitivityPage"}
-                                    shouldShowEdit={() =>
-                                        router.push(
-                                            "/admin/activities?view=edit"
-                                        )
-                                    }
-                                    setActivity={setActivity}
-                                />
-                            </div>
-                        )}
+            {/* Activities Table */}
+            <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
+                {tableLoading ? (
+                    <FullPageLoader />
+                ) : (
+                    <div className="overflow-x-auto">
+                        <Table
+                            heading={tableHeading}
+                            tableData={paginatedActivities}
+                            tableType={"acitivityPage"}
+                            onRowClick={handleActivityClick}
+                            className="cursor-pointer"
+                        />
                     </div>
+                )}
             </div>
-)}
+           
+            
+        </div>
+    );
+};
 
 export default function ActivityManagementPage() {
     return (
