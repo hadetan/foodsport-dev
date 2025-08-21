@@ -11,12 +11,11 @@ const ActivityDetailPage = () => {
     const [activity, setActivity] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const { users, loading: usersLoading } = useUsers();
+    const { users } = useUsers();
     const [participatingUsers, setParticipatingUsers] = useState([]);
     const params = useParams();
     const router = useRouter();
 
-    // Fix: Always treat params as an object, not a Promise (client component)
     const activityId = params?.id;
 
     // Filter users who have joined this activity
@@ -42,7 +41,6 @@ const ActivityDetailPage = () => {
             try {
                 setLoading(true);
                 setError(null);
-                // Fetch activity details from API
                 const response = await fetch(`/api/activities/${activityId}`);
                 if (!response.ok) {
                     const contentType = response.headers.get("content-type");
@@ -65,27 +63,24 @@ const ActivityDetailPage = () => {
                     }
                 }
                 const data = await response.json();
-                // Compose activity object with all possible fields
                 const a = data.activity || {};
                 setActivity({
                     id: a.id,
-                    title: a.title || `Activity ${activityId}`,
-                    description: a.description || "No description provided",
-                    content: a.content || "No content provided",
-                    status: a.status || "active",
-                    createdAt: a.createdAt || new Date().toISOString(),
-                    location: a.location || "Not specified",
-                    category: a.activityType || "Uncategorized",
-                    participantCount: a.participantCount ?? 0,
-                    participantLimit: a.participantLimit ?? 0,
-                    date: a.startDate || null,
-                    duration: a.duration || null,
-                    tags: a.tags || [],
-                    // Prefer imageUrl, fallback to coverImage
-                    coverImage: a.imageUrl || a.coverImage || null,
-                    media: a.media || [],
-                    startTime: a.startTime || a.date || a.start_time || null,
-                    endTime: a.endTime || a.endDate || a.end_time || null,
+                    title: a.title,
+                    description: a.description,
+                    activityType: a.activityType,
+                    location: a.location,
+                    startDate: a.startDate,
+                    endDate: a.endDate,
+                    startTime: a.startTime,
+                    endTime: a.endTime,
+                    status: a.status,
+                    participantLimit: a.participantLimit,
+                    organizerId: a.organizerId,
+                    imageUrl: a.imageUrl,
+                    pointsPerParticipant: a.pointsPerParticipant,
+                    caloriesPerHour: a.caloriesPerHour,
+                    isFeatured: a.isFeatured,
                 });
             } catch (err) {
                 console.error("Error fetching activity:", err);
@@ -129,12 +124,13 @@ const ActivityDetailPage = () => {
     }
 
     const formatDate = (dateString) => {
+        if (!dateString) return "Not specified";
         const options = { year: "numeric", month: "long", day: "numeric" };
         return new Date(dateString).toLocaleDateString("en-US", options);
     };
 
     const formatTime = (dateString) => {
-        if (!dateString) return null;
+        if (!dateString) return "Not specified";
         const options = { hour: "2-digit", minute: "2-digit", hour12: false };
         return new Date(dateString).toLocaleTimeString("en-US", options);
     };
@@ -194,9 +190,9 @@ const ActivityDetailPage = () => {
                             className="relative w-full"
                             style={{ aspectRatio: "16/9" }}
                         >
-                            {activity.coverImage ? (
+                            {activity.imageUrl ? (
                                 <Image
-                                    src={activity.coverImage}
+                                    src={activity.imageUrl}
                                     alt={activity.title}
                                     fill
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
@@ -206,7 +202,7 @@ const ActivityDetailPage = () => {
                             ) : (
                                 <div className="absolute inset-0 w-full h-full bg-gray-200 flex items-center justify-center">
                                     <p className="text-gray-500">
-                                        No cover image available
+                                        No image available
                                     </p>
                                 </div>
                             )}
@@ -216,10 +212,10 @@ const ActivityDetailPage = () => {
                                 </h1>
                                 <div className="flex items-center mt-2 text-white/90">
                                     <span className="mr-4">
-                                        {formatDate(activity.createdAt)}
+                                        {activity.status}
                                     </span>
                                     <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                        {activity.status}
+                                        {activity.isFeatured ? "Featured" : ""}
                                     </span>
                                 </div>
                             </div>
@@ -235,10 +231,11 @@ const ActivityDetailPage = () => {
                             <div className="space-y-3">
                                 <div>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Category
+                                        Type
                                     </p>
                                     <p className="font-medium text-gray-800 dark:text-gray-200">
-                                        {activity.category || "Uncategorized"}
+                                        {activity.activityType ||
+                                            "Uncategorized"}
                                     </p>
                                 </div>
                                 <div>
@@ -251,12 +248,18 @@ const ActivityDetailPage = () => {
                                 </div>
                                 <div>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Date
+                                        Start Date
                                     </p>
                                     <p className="font-medium text-gray-800 dark:text-gray-200">
-                                        {formatDate(activity.date)
-                                            ? formatDate(activity.date)
-                                            : "Not specified"}
+                                        {formatDate(activity.startDate)}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        End Date
+                                    </p>
+                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                        {formatDate(activity.endDate)}
                                     </p>
                                 </div>
                                 <div>
@@ -264,11 +267,7 @@ const ActivityDetailPage = () => {
                                         Start Time
                                     </p>
                                     <p className="font-medium text-gray-800 dark:text-gray-200">
-                                        {formatTime(activity.startTime)
-                                            ? formatTime(activity.startTime)
-                                            : activity.date
-                                            ? formatTime(activity.date)
-                                            : "Not specified"}
+                                        {formatTime(activity.startTime)}
                                     </p>
                                 </div>
                                 <div>
@@ -276,11 +275,51 @@ const ActivityDetailPage = () => {
                                         End Time
                                     </p>
                                     <p className="font-medium text-gray-800 dark:text-gray-200">
-                                        {activity.endTime
-                                            ? formatTime(activity.endTime)
-                                            : activity.endDate
-                                            ? formatTime(activity.endDate)
-                                            : "Not specified"}
+                                        {formatTime(activity.endTime)}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Participant Limit
+                                    </p>
+                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                        {activity.participantLimit ??
+                                            "Not specified"}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Organizer ID
+                                    </p>
+                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                        {activity.organizerId ||
+                                            "Not specified"}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Points Per Participant
+                                    </p>
+                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                        {activity.pointsPerParticipant ??
+                                            "Not specified"}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Calories Per Hour
+                                    </p>
+                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                        {activity.caloriesPerHour ??
+                                            "Not specified"}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Featured
+                                    </p>
+                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                        {activity.isFeatured ? "Yes" : "No"}
                                     </p>
                                 </div>
                             </div>
@@ -307,7 +346,6 @@ const ActivityDetailPage = () => {
                             )}
                         </div>
                     </div>
-
                     {/* Participating Users */}
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 w-full">
                         <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
@@ -316,14 +354,12 @@ const ActivityDetailPage = () => {
                         {participatingUsers && participatingUsers.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                 {participatingUsers.map((user, index) => {
-                                    // Extract first and last name from user data
                                     let firstName = "";
                                     let lastName = "";
-
                                     if (user.firstname && user.lastname) {
                                         firstName = user.firstname;
                                         lastName = user.lastname;
-                                    } 
+                                    }
                                     return (
                                         <div
                                             key={index}
@@ -353,52 +389,6 @@ const ActivityDetailPage = () => {
                             </p>
                         )}
                     </div>
-
-                    {/* Media Gallery */}
-                    {activity.media && activity.media.length > 0 && (
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 w-full">
-                            <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
-                                Media Gallery
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {activity.media.map((item, index) => (
-                                    <div
-                                        key={index}
-                                        className="relative h-48 rounded-md overflow-hidden"
-                                    >
-                                        <Image
-                                            src={item.url}
-                                            alt={
-                                                item.caption ||
-                                                `Media ${index + 1}`
-                                            }
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Tags */}
-                    {activity.tags && activity.tags.length > 0 && (
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 w-full">
-                            <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">
-                                Tags
-                            </h2>
-                            <div className="flex flex-wrap gap-2">
-                                {activity.tags.map((tag, index) => (
-                                    <span
-                                        key={index}
-                                        className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full text-sm"
-                                    >
-                                        {tag}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

@@ -59,16 +59,7 @@ const CreateActivityPage = () => {
                 errors[field] = " This field is required.";
             }
         });
-        // Description minimum word limit
-        if (
-            formData.description &&
-            formData.description
-                .replace(/<[^>]+>/g, " ") // Remove HTML tags if any
-                .split(/\s+/)
-                .filter((w) => w.length > 0).length < 5
-        ) {
-            errors.description = "Description must be at least 5 words.";
-        }
+      
         // Year validation
         if (formData.startDateTime && !isValidYear(formData.startDateTime)) {
             errors.startDateTime = "Year must be at most 4 digits.";
