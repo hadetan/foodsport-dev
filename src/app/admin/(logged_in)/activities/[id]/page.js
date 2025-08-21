@@ -5,6 +5,8 @@ import axios from "axios";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import FullPageLoader from "../../components/FullPageLoader";
 import { Pencil } from "lucide-react";
+import statusOptions from "@/app/constants/constants";
+import { ACTIVITY_TYPES } from "@/app/constants/constants";
 
 export default function EditActivityPage() {
     const [form, setForm] = useState(null);
@@ -36,7 +38,7 @@ export default function EditActivityPage() {
         if (!activity) return;
         setForm({
             title: activity.title || "",
-            summary: activity.description || "", // renamed
+            description: activity.description || "", // renamed
             activityType: activity.activityType || "",
             date: activity.startDate ? activity.startDate.slice(0, 10) : "",
             location: activity.location || "",
@@ -130,7 +132,7 @@ export default function EditActivityPage() {
         setImageFile(null);
     };
 
-    const handleSave = async (status = "active") => {
+    const handleSave = async () => {
         if (!validate()) return;
         setLoading(true);
         setError("");
@@ -369,16 +371,12 @@ export default function EditActivityPage() {
                                 required
                             >
                                 <option value="">Select activity type</option>
-                                <option value="kayak">Kayak</option>
-                                <option value="hiking">Hiking</option>
-                                <option value="yoga">Yoga</option>
-                                <option value="fitness">Fitness</option>
-                                <option value="running">Running</option>
-                                <option value="cycling">Cycling</option>
-                                <option value="swimming">Swimming</option>
-                                <option value="dancing">Dancing</option>
-                                <option value="boxing">Boxing</option>
-                                <option value="other">Other</option>
+                                {ACTIVITY_TYPES.map((type) => (
+                                    <option key={type} value={type}>
+                                        {type.charAt(0).toUpperCase() +
+                                            type.slice(1)}
+                                    </option>
+                                ))}
                             </select>
                             {errors.activityType && (
                                 <span className="text-error text-base">
@@ -480,28 +478,7 @@ export default function EditActivityPage() {
                                 </span>
                             )}
                         </div>
-                        {/* Points Per Participant */}
-                        <div className="form-control w-full">
-                            <label className="label text-lg font-semibold mb-2">
-                                Points Per Participant
-                            </label>
-                            <input
-                                type="number"
-                                className="input input-bordered input-lg w-full"
-                                name="pointsPerParticipant"
-                                value={form.pointsPerParticipant}
-                                onChange={handleInput}
-                                min={0.01}
-                                step="any"
-                                required
-                                placeholder="Enter points per participant"
-                            />
-                            {errors.pointsPerParticipant && (
-                                <span className="text-error text-base">
-                                    {errors.pointsPerParticipant}
-                                </span>
-                            )}
-                        </div>
+
                         {/* Calories Per Hour */}
                         <div className="form-control w-full">
                             <label className="label text-lg font-semibold mb-2">
@@ -512,6 +489,27 @@ export default function EditActivityPage() {
                                 className="input input-bordered input-lg w-full"
                                 name="caloriesPerHour"
                                 value={form.caloriesPerHour}
+                                onChange={handleInput}
+                                min={0.01}
+                                step="any"
+                                required
+                                placeholder="Enter calories per hour"
+                            />
+                            {errors.caloriesPerHour && (
+                                <span className="text-error text-base">
+                                    {errors.caloriesPerHour}
+                                </span>
+                            )}
+                        </div>
+                        <div className="form-control w-full">
+                            <label className="label text-lg font-semibold mb-2">
+                                Total Calories Burnt{" "}
+                            </label>
+                            <input
+                                type="number"
+                                className="input input-bordered input-lg w-full"
+                                name="caloriesPerHour"
+                                value={form.totalCaloriesBurnt}
                                 onChange={handleInput}
                                 min={0.01}
                                 step="any"
@@ -535,12 +533,12 @@ export default function EditActivityPage() {
                                 value={form.status}
                                 onChange={handleInput}
                             >
-                                <option value="draft">Draft</option>
-                                <option value="upcoming">Upcoming</option>
-                                <option value="active">Active</option>
-                                <option value="closed">Closed</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
+                                {statusOptions.map((status) => (
+                                    <option key={status} value={status}>
+                                        {status.charAt(0).toUpperCase() +
+                                            status.slice(1)}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -565,7 +563,6 @@ export default function EditActivityPage() {
                             <span className="loading loading-spinner"></span>
                         )}
                     </div>
-                  
                 </form>
                 {/* Cancel Confirmation */}
                 {showCancelConfirm && (

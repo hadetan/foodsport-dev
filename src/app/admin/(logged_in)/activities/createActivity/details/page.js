@@ -11,51 +11,16 @@ const ActivityDetailsStep = () => {
     const [details, setDetails] = useState("");
     const [showPreview, setShowPreview] = useState(false);
 
-    useEffect(() => {
-        // Load saved details from localStorage if available
-        const saved = localStorage.getItem("create_activity_form_data");
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                if (parsed.description) setDetails(parsed.description);
-            } catch {}
-        }
-    }, []);
-
     const handleSave = async () => {
         try {
-            const activityId =
-                params?.id || localStorage.getItem("new_activity_id");
+            const activityId = params?.id;
             if (!activityId) {
                 alert("Missing activity ID. Please create the activity first.");
                 return;
             }
-            // Get all form data from localStorage
-            const saved = localStorage.getItem("create_activity_form_data");
-            let payload = { description: details };
-            if (saved) {
-                try {
-                    payload = { ...JSON.parse(saved), description: details };
-                } catch {}
-            }
-            // Save updated details to localStorage for persistence
-            localStorage.setItem(
-                "create_activity_form_data",
-                JSON.stringify(payload)
-            );
-            // Prepare FormData for PATCH
+            // Only send description to API
             const formDataToSend = new FormData();
-            Object.entries(payload).forEach(([key, value]) => {
-                if (key === "image" && value) {
-                    formDataToSend.set("image", value);
-                } else if (
-                    value !== undefined &&
-                    value !== null &&
-                    typeof value !== "object"
-                ) {
-                    formDataToSend.set(key, value);
-                }
-            });
+            formDataToSend.set("description", details);
             await axiosClient.patch(
                 `/admin/activities?activityId=${activityId}`,
                 formDataToSend,
@@ -63,7 +28,6 @@ const ActivityDetailsStep = () => {
                     headers: { "Content-Type": "multipart/form-data" },
                 }
             );
-            localStorage.setItem("activities_should_refresh", "1");
             router.push("/admin/activities");
         } catch (err) {
             alert(
@@ -71,6 +35,43 @@ const ActivityDetailsStep = () => {
                     (err?.response?.data?.error || err.message)
             );
         }
+    };
+
+    const validate = () => {
+        const errs = {};
+        if (!form.title || form.title.length < 5 || form.title.length > 100)
+            errs.title = "Title must be 5-100 characters.";
+       
+        if (!form.activityType)
+            errs.activityType = "Activity type is required.";
+        if (!form.date) errs.datetime = "Date is required.";
+        else {
+            const dt = new Date(form.date);
+            if (dt < new Date()) errs.datetime = "Date must be in the future.";
+        }
+        if (!form.location) errs.location = "Location is required.";
+        const cap = parseInt(form.capacity, 10);
+        if (!cap || cap < 1 || cap > 1000)
+            errs.capacity = "Capacity must be 1-1000.";
+        const points = parseFloat(form.totalCaloriesBurnt);
+        if (isNaN(points) || points <= 0)
+            errs.totalCaloriesBurnt =
+                "Total calories burnt must be a positive number.";
+        const calories = parseFloat(form.caloriesPerHour);
+        if (isNaN(calories) || calories <= 0)
+            errs.caloriesPerHour =
+                "Calories per hour must be a positive number.";
+        if (imageFile === null) errs.images = "An image is required.";
+        if (
+            imageFile &&
+            imageFile.type &&
+            !["image/jpeg", "image/png"].includes(imageFile.type)
+        )
+            errs.image = "Only JPG/PNG allowed.";
+        if (imageFile && imageFile.size && imageFile.size > 5 * 1024 * 1024)
+            errs.image = "Max size 5MB.";
+        setErrors(errs);
+        return Object.keys(errs).length === 0;
     };
 
     return (

@@ -4,12 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import axiosClient from "@/utils/axios/api";
-import ActivityStatus, {
-    MAX_IMAGE_SIZE_MB,
-} from "@/app/constants/ActivityStatus";
+import ActivityStatus, { MAX_IMAGE_SIZE_MB } from "@/app/constants/constants";
 import { ImageUp, Pencil } from "lucide-react";
-
-const MAX_SUMMARY_WORDS = 50;
 
 const CreateActivityPage = () => {
     const router = useRouter();
@@ -63,20 +59,7 @@ const CreateActivityPage = () => {
         return /^\d{1,4}$/.test(year);
     };
 
-    // Helper to count words
-    const countWords = (text) =>
-        text
-            ? text
-                  .replace(/<[^>]+>/g, " ")
-                  .split(/\s+/)
-                  .filter((w) => w.length > 0).length
-            : 0;
-
-    // Helper to check required fields and set field errors
     const validateFields = () => {
-        // The following fields are compulsory (required):
-        // title, activityType, description, startDateTime, endDateTime, location,
-        // capacity, pointsPerParticipant, caloriesPerHour, image, status
         const requiredFields = [
             "title",
             "activityType",
@@ -97,18 +80,15 @@ const CreateActivityPage = () => {
                 formData[field] === null ||
                 typeof formData[field] === "undefined"
             ) {
-                // errors[field] = " This field is required."; // <-- commented out for development
             }
         });
 
-        // Year validation
         if (formData.startDateTime && !isValidYear(formData.startDateTime)) {
             errors.startDateTime = "Year must be at most 4 digits.";
         }
         if (formData.endDateTime && !isValidYear(formData.endDateTime)) {
             errors.endDateTime = "Year must be at most 4 digits.";
         }
-        // Start date must not be after end date
         if (
             formData.startDateTime &&
             formData.endDateTime &&
@@ -402,30 +382,20 @@ const CreateActivityPage = () => {
                                 name="description"
                                 value={formData.description}
                                 onChange={(e) => {
-                                    const value = e.target.value;
-                                    const words = countWords(value);
-                                    if (words <= MAX_SUMMARY_WORDS) {
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            description: value,
-                                        }));
-                                        setFieldErrors((prev) => ({
-                                            ...prev,
-                                            description: undefined,
-                                        }));
-                                    }
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        description: e.target.value,
+                                    }));
+                                    setFieldErrors((prev) => ({
+                                        ...prev,
+                                        description: undefined,
+                                    }));
                                 }}
-                                maxLength={400}
                                 required
                                 rows={3}
-                                placeholder="Enter summary (max 50 words)"
+                                placeholder="Enter summary"
                             />
-                            <div className="flex justify-between text-xs text-gray-400 mt-1">
-                                <span>
-                                    {countWords(formData.description)} /{" "}
-                                    {MAX_SUMMARY_WORDS} words
-                                </span>
-                            </div>
+                            {/* Removed word count display and maxLength */}
                             {fieldErrors.description && (
                                 <span className="text-error text-base">
                                     {fieldErrors.description}
@@ -485,7 +455,6 @@ const CreateActivityPage = () => {
                                 value={formData.capacity}
                                 onChange={handleFormChange}
                                 min={1}
-                                max={1000}
                                 required
                                 placeholder="Enter participant limit"
                             />

@@ -25,6 +25,19 @@ export default [
     "completed",
     "draft",
 ];
+export const ACTIVITY_TYPES = [
+    "kayak",
+    "hiking",
+    "yoga",
+    "fitness",
+    "running",
+    "cycling",
+    "swimming",
+    "dancing",
+    "boxing",
+    "other",
+];
+
 
 export const MAX_IMAGE_SIZE_MB = 10;
 
