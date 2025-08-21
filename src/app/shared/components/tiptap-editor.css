@@ -1,56 +1,56 @@
 /* Tiptap Editor Content Styles */
 .tiptap-editor {
-  background-color: var(--tw-bg-opacity, 1) var(--tw-bg-base-100, #fff);
-  color: var(--tw-text-opacity, 1) var(--tw-text-base-content, #18181b);
-  border: 1px solid #dadada;
-  min-height: 500px;
-  max-height: 500px;
-  padding: 1.25rem 10rem;
-  border-radius: 0 0 0.75rem 0.75rem;
-  outline: none;
-  font-size: 1rem;
-  overflow-y: auto;
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    background-color: #181a1b;
+    color: #fff;
+    border: 1.5px solid #fff;
+    min-height: calc(100vh - 230px);
+    padding: 1.25rem 10rem;
+    border-radius: 0 0 0.75rem 0.75rem;
+    outline: none;
+    font-size: 1rem;
+    overflow-y: auto; /* changed from hidden to auto for scrollability */
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .tiptap-editor h1 {
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 2rem 0 1rem 0;
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 2rem 0 1rem 0;
 }
 .tiptap-editor h2 {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin: 1.5rem 0 1rem 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 1.5rem 0 1rem 0;
 }
 .tiptap-editor h3 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin: 1.2rem 0 0.8rem 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 1.2rem 0 0.8rem 0;
 }
 .tiptap-editor p {
-  margin: 0.5rem 0;
+    margin: 0.5rem 0;
 }
 .tiptap-editor ul,
 .tiptap-editor ol {
-  padding-left: 2rem;
-  margin: 1rem 0;
+    padding-left: 2rem;
+    margin: 1rem 0;
 }
 .tiptap-editor hr {
-  border: none;
-  border-top: 1px solid #333;
-  margin: 2rem 0;
+    border: none;
+    border-top: 1px solid #333;
+    margin: 2rem 0;
 }
 .tiptap-editor img {
-  max-width: 100%;
-  border-radius: 0.5rem;
-  margin: 1rem 0;
+    max-width: 100%;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
 }
 .tiptap-editor a {
-  color: #7dd3fc;
-  text-decoration: underline;
+    color: #2563eb; /* Tailwind blue-600 */
+    text-decoration: underline;
+    cursor: pointer;
 }
 .tiptap-editor .is-active {
-  background: #a21caf;
-  color: #fff;
+    background: #a21caf;
+    color: #fff;
 }

@@ -1,7 +1,6 @@
 "use client";
 
-import axiosClient from "@/utils/axios/api";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
@@ -97,8 +96,6 @@ function ActivityManagementPageContent() {
                     </div>
                 )}
             </div>
-           
-            
         </div>
     );
 };
