@@ -149,6 +149,7 @@ model Activity {
   id                   String        @id @default(uuid())
   title                String
   description          String?
+  summary              String?   @db.Text
   activityType         ActivityType  @map("activity_type")
   location             String
   startDate            DateTime      @map("start_date")
