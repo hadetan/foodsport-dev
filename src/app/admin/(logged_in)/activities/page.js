@@ -1,6 +1,5 @@
 "use client";
 
-import axiosClient from "@/utils/axios/api";
 import { useState, useEffect, Suspense } from "react";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -58,17 +57,7 @@ function ActivityManagementPageContent() {
         "Actions",
     ];
 
-    useEffect(() => {
-        if (
-            typeof window !== "undefined" &&
-            localStorage.getItem("activities_should_refresh")
-        ) {
-            // Optionally, you could call a fetch/refresh function here
-            window.location.reload();
-            localStorage.removeItem("activities_should_refresh");
-        }
-    }, []);
-
+  
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
             <div className="flex justify-between mb-6">
