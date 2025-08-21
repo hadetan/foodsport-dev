@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { FaInfoCircle } from 'react-icons/fa';
 import { toast } from '@/utils/Toast';
 import { useUser } from '@/app/shared/contexts/userContext';
 import api from '@/utils/axios/api';
@@ -8,9 +10,12 @@ import '@/app/my/css/EditProfile.css';
 import { LiaUserEditSolid } from 'react-icons/lia';
 import { IoIosFemale, IoIosMale } from 'react-icons/io';
 import { FaMountainSun } from 'react-icons/fa6';
+import { DISTRICTS } from '@/app/constants/constants';
 
 export default function EditProfile() {
 	const { user, setUser } = useUser();
+	const searchParams = useSearchParams();
+	const router = useRouter();
 	const [form, setForm] = useState({
 		firstname: user.firstname,
 		lastname: user.lastname,
@@ -19,6 +24,7 @@ export default function EditProfile() {
 		height: user.height || '',
 		gender: user.gender || '',
 		phoneNumber: user.phoneNumber || '',
+		district: user.district || '',
 		bio: user.bio || '',
 	});
 	const [initialValues, setInitialValues] = useState(form);
@@ -42,6 +48,10 @@ export default function EditProfile() {
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setForm((f) => ({ ...f, [name]: value }));
+	};
+
+	const handleDistrictChange = (e) => {
+		setForm((f) => ({ ...f, district: e.target.value }));
 	};
 
 	const handleGender = (gender) => setForm((f) => ({ ...f, gender }));
@@ -146,6 +156,12 @@ export default function EditProfile() {
 			});
 			setInitialValues(form);
 			toast.info('Profile has been updated successfully.');
+			// Redirect to returnTo if present
+			const returnTo = searchParams.get('returnTo');
+			if (returnTo) {
+				setTimeout(() => router.push(returnTo), 500);
+				return;
+			}
 		} catch (err) {
 			setError('Something went wrong, please try again.');
 			toast.error('Something went wrong, please try again');
@@ -289,6 +305,17 @@ export default function EditProfile() {
 					onChange={handleChange}
 					placeholder='Last Name'
 				/>
+				<div className='info'>
+					<div className="edit-profile-info-row">
+					<span className="edit-profile-info-label">Why provide weight and height?</span>
+					<span className="edit-profile-tooltip-wrapper">
+						<FaInfoCircle className="edit-profile-tooltip-icon" />
+						<span className="edit-profile-tooltip-text">
+							Providing your weight and height allows us to calculate your calorie burns more accurately for each activity, giving you better insights and more personalized results.
+						</span>
+					</span>
+				</div>
+				</div>
 				<div className='edit-profile-input-suffix-wrapper'>
 					<input
 						name='weight'
@@ -367,12 +394,32 @@ export default function EditProfile() {
 					placeholder='Date of Birth'
 					className='edit-profile-fullwidth'
 				/>
-				<textarea
-					name='bio'
-					value={form.bio}
-					onChange={handleChange}
-					placeholder='Bio'
-				/>
+				<div className='edit-profile-district-bio-row'>
+					<div>
+						<select
+							id='district'
+							name='district'
+							value={form.district}
+							onChange={handleDistrictChange}
+							className='edit-profile-district-dropdown'
+						>
+							<option value='' disabled>Select your district</option>
+							{DISTRICTS.map((d) => (
+								<option key={d} value={d}>{d.replace(/_/g, ' ')}</option>
+							))}
+						</select>
+					</div>
+					<div>
+						<textarea
+							id='bio'
+							name='bio'
+							value={form.bio}
+							onChange={handleChange}
+							placeholder='Bio'
+							className='edit-profile-bio-textarea'
+						/>
+					</div>
+				</div>
 				<button
 					type='submit'
 					className='edit-profile-save-btn'

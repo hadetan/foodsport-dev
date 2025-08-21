@@ -52,17 +52,12 @@ export async function PATCH(req) {
   }
 
   const body = await req.json();
-  const fields = [
-    'firstname', 'lastname', 'dateOfBirth', 'weight', 'height', 'gender', 'phoneNumber',
-    'title', 'bio', 'dailyGoal', 'weeklyGoal', 'monthlyGoal', 'yearlyGoal'
-  ];
+  const fields = [ 'firstname', 'lastname', 'dateOfBirth', 'weight', 'height', 'gender', 'district', 'phoneNumber', 'title', 'bio' ];
   let updateData = {};
   for (const field of fields) {
     let value = body[field];
     if (value !== undefined && value !== null && value !== '') {
-      if ([
-        'weight', 'height', 'dailyGoal', 'weeklyGoal', 'monthlyGoal', 'yearlyGoal'
-      ].includes(field)) {
+      if ([ 'weight', 'height' ].includes(field)) {
         value = Number(value);
         if (isNaN(value)) continue;
       }

@@ -1,4 +1,4 @@
-import { executeTransaction, getById, getByIdComposite, getCount, insert } from '@/lib/prisma/db-utils';
+import { executeTransaction, getById, getCount } from '@/lib/prisma/db-utils';
 import { requireUser } from '@/lib/prisma/require-user';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
@@ -36,13 +36,21 @@ export async function POST(request) {
 			);
 		}
 
-		const user = await getById('user', User.id, { id: true });
+		const user = await getById('user', User.id, { id: true, height: true, weight: true });
 		if (!user) {
 			return Response.json(
 				{
 					error: 'User not found',
 				},
 				{ status: 404 }
+			);
+		}
+		if (!user.height || !user.weight) {
+			return Response.json(
+				{
+					error: 'Please fill in your height and weight before joining an activity.'
+				},
+				{ status: 400 }
 			);
 		}
 

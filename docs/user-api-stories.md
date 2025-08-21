@@ -45,7 +45,7 @@ Response: {
     organizerName?: string,
     organizerId?: string,
     imageUrl?: string,
-    pointsPerParticipant: number,
+    totalCaloriesBurnt: number,
     caloriesPerHour: number,
     isFeatured: boolean,
     joined: boolean, // true if the current user has joined
@@ -74,7 +74,7 @@ Response: {
   organizerName?: string,
   organizerId?: string,
   imageUrl?: string,
-  pointsPerParticipant: number,
+  totalCaloriesBurnt: number,
   caloriesPerHour: number,
   isFeatured: boolean,
   joined: boolean

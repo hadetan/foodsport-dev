@@ -6,7 +6,7 @@ import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import axiosClient from "@/utils/axios/api";
 import ActivityStatus, {
     MAX_IMAGE_SIZE_MB,
-} from "@/app/constants/ActivityStatus";
+} from "@/app/constants/constants";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 
 const CreateActivityPage = () => {
@@ -19,7 +19,7 @@ const CreateActivityPage = () => {
         endDateTime: "",
         location: "",
         capacity: "",
-        pointsPerParticipant: "",
+        totalCaloriesBurnt: "",
         caloriesPerHour: "",
         image: null,
         status: "draft",
@@ -44,7 +44,7 @@ const CreateActivityPage = () => {
             "endDateTime",
             "location",
             "capacity",
-            "pointsPerParticipant",
+            "totalCaloriesBurnt",
             "caloriesPerHour",
             "image",
             "status",
@@ -157,7 +157,7 @@ const CreateActivityPage = () => {
                 description: formData.description,
                 status: formData.status,
                 participantLimit: Number(formData.capacity),
-                pointsPerParticipant: Number(formData.pointsPerParticipant),
+                totalCaloriesBurnt: Number(formData.totalCaloriesBurnt),
                 caloriesPerHour: Number(formData.caloriesPerHour),
                 image: formData.image,
             };
@@ -383,16 +383,16 @@ const CreateActivityPage = () => {
                             <label className="flex-1">
                                 <input
                                     type="number"
-                                    name="pointsPerParticipant"
+                                    name="totalCaloriesBurnt"
                                     placeholder="Enter points per participant"
                                     className="input input-bordered input-md text-base"
-                                    value={formData.pointsPerParticipant}
+                                    value={formData.totalCaloriesBurnt}
                                     onChange={handleFormChange}
                                     min="0"
                                 />
-                                {fieldErrors.pointsPerParticipant && (
+                                {fieldErrors.totalCaloriesBurnt && (
                                     <span className="text-error text-sm mt-2 block">
-                                        {fieldErrors.pointsPerParticipant}
+                                        {fieldErrors.totalCaloriesBurnt}
                                     </span>
                                 )}
                             </label>

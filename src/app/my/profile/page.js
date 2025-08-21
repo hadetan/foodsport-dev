@@ -15,7 +15,7 @@ export default function ProfilePage() {
 	}
 
 	const displayName = `${user.firstname} ${user.lastname}`;
-	const userId = `# ${user.id.slice(0, 8)}`;
+	const userId = `# ${user.id}`;
 	const caloriesDonated = user.totalCaloriesDonated;
 	const fsPoints = Math.floor(user.totalCaloriesDonated / 500);
 	const activitiesJoined = user.joinedActivityIds.length;
