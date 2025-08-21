@@ -24,7 +24,7 @@ import {
     FaAlignJustify,
 } from "react-icons/fa6";
 import { IoMdUndo, IoMdRedo } from "react-icons/io";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 export default function TiptapEditor({ value, onChange }) {
     const editor = useEditor({
@@ -74,31 +74,48 @@ export default function TiptapEditor({ value, onChange }) {
         },
     });
 
+    const fileInputRef = useRef(null);
+
+    // Handle local image selection and insert as data URL
+    const handleImageSelect = (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const src = e.target.result;
+            if (src && editor) {
+                editor.chain().focus().setImage({ src }).run();
+            }
+        };
+        reader.readAsDataURL(file);
+        // Reset input so same file can be selected again
+        event.target.value = "";
+    };
 
     const [toolbarState, setToolbarState] = useState({});
 
     const computeToolbarState = useCallback(() => {
         if (!editor) return {};
         return {
-            isBold: editor.isActive('bold'),
+            isBold: editor.isActive("bold"),
             canBold: editor.can().chain().toggleBold().run(),
-            isItalic: editor.isActive('italic'),
+            isItalic: editor.isActive("italic"),
             canItalic: editor.can().chain().toggleItalic().run(),
-            isStrike: editor.isActive('strike'),
+            isStrike: editor.isActive("strike"),
             canStrike: editor.can().chain().toggleStrike().run(),
             canClearMarks: editor.can().chain().unsetAllMarks().run(),
-            isParagraph: editor.isActive('paragraph'),
-            isHeading1: editor.isActive('heading', { level: 1 }),
-            isHeading2: editor.isActive('heading', { level: 2 }),
-            isHeading3: editor.isActive('heading', { level: 3 }),
-            isBulletList: editor.isActive('bulletList'),
-            isOrderedList: editor.isActive('orderedList'),
+            isParagraph: editor.isActive("paragraph"),
+            isHeading1: editor.isActive("heading", { level: 1 }),
+            isHeading2: editor.isActive("heading", { level: 2 }),
+            isHeading3: editor.isActive("heading", { level: 3 }),
+            isBulletList: editor.isActive("bulletList"),
+            isOrderedList: editor.isActive("orderedList"),
             canUndo: editor.can().chain().undo().run(),
             canRedo: editor.can().chain().redo().run(),
-            alignLeft: editor.isActive({ textAlign: 'left' }),
-            alignCenter: editor.isActive({ textAlign: 'center' }),
-            alignRight: editor.isActive({ textAlign: 'right' }),
-            alignJustify: editor.isActive({ textAlign: 'justify' }),
+            alignLeft: editor.isActive({ textAlign: "left" }),
+            alignCenter: editor.isActive({ textAlign: "center" }),
+            alignRight: editor.isActive({ textAlign: "right" }),
+            alignJustify: editor.isActive({ textAlign: "justify" }),
         };
     }, [editor]);
 
@@ -106,11 +123,11 @@ export default function TiptapEditor({ value, onChange }) {
         if (!editor) return;
         setToolbarState(computeToolbarState());
         const updateHandler = () => setToolbarState(computeToolbarState());
-        editor.on('update', updateHandler);
-        editor.on('selectionUpdate', updateHandler);
+        editor.on("update", updateHandler);
+        editor.on("selectionUpdate", updateHandler);
         return () => {
-            editor.off('update', updateHandler);
-            editor.off('selectionUpdate', updateHandler);
+            editor.off("update", updateHandler);
+            editor.off("selectionUpdate", updateHandler);
         };
     }, [editor, computeToolbarState]);
 
@@ -119,7 +136,6 @@ export default function TiptapEditor({ value, onChange }) {
             editor.commands.setContent(value);
         }
     }, [value, editor]);
-
 
     if (!editor)
         return (
@@ -133,12 +149,35 @@ export default function TiptapEditor({ value, onChange }) {
                 <div className="relative">
                     <select
                         className={`p-2 rounded bg-base-100 text-base-content border border-base-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 appearance-none`}
-                        value={toolbarState.isHeading1 ? 'h1' : toolbarState.isHeading2 ? 'h2' : toolbarState.isHeading3 ? 'h3' : 'p'}
-                        onChange={e => {
+                        value={
+                            toolbarState.isHeading1
+                                ? "h1"
+                                : toolbarState.isHeading2
+                                ? "h2"
+                                : toolbarState.isHeading3
+                                ? "h3"
+                                : "p"
+                        }
+                        onChange={(e) => {
                             const val = e.target.value;
-                            if (val === 'h1') editor.chain().focus().toggleHeading({ level: 1 }).run();
-                            else if (val === 'h2') editor.chain().focus().toggleHeading({ level: 2 }).run();
-                            else if (val === 'h3') editor.chain().focus().toggleHeading({ level: 3 }).run();
+                            if (val === "h1")
+                                editor
+                                    .chain()
+                                    .focus()
+                                    .toggleHeading({ level: 1 })
+                                    .run();
+                            else if (val === "h2")
+                                editor
+                                    .chain()
+                                    .focus()
+                                    .toggleHeading({ level: 2 })
+                                    .run();
+                            else if (val === "h3")
+                                editor
+                                    .chain()
+                                    .focus()
+                                    .toggleHeading({ level: 3 })
+                                    .run();
                             else editor.chain().focus().setParagraph().run();
                         }}
                         title="Heading Level"
@@ -152,7 +191,11 @@ export default function TiptapEditor({ value, onChange }) {
                 <button
                     onClick={() => editor.chain().focus().toggleBold().run()}
                     disabled={!toolbarState.canBold}
-                    className={`p-2 rounded hover:bg-base-300 ${toolbarState.isBold ? "bg-base-300 text-yellow-400" : "text-base-content"}`}
+                    className={`p-2 rounded hover:bg-base-300 ${
+                        toolbarState.isBold
+                            ? "bg-base-300 text-yellow-400"
+                            : "text-base-content"
+                    }`}
                     title="Bold"
                 >
                     <FaBold />
@@ -160,14 +203,24 @@ export default function TiptapEditor({ value, onChange }) {
                 <button
                     onClick={() => editor.chain().focus().toggleItalic().run()}
                     disabled={!toolbarState.canItalic}
-                    className={`p-2 rounded hover:bg-base-300 ${toolbarState.isItalic ? "bg-base-300 text-yellow-400" : "text-base-content"}`}
+                    className={`p-2 rounded hover:bg-base-300 ${
+                        toolbarState.isItalic
+                            ? "bg-base-300 text-yellow-400"
+                            : "text-base-content"
+                    }`}
                     title="Italic"
                 >
                     <FaItalic />
                 </button>
                 <button
-                    onClick={() => editor.chain().focus().toggleUnderline().run()}
-                    className={`p-2 rounded hover:bg-base-300 ${editor.isActive("underline") ? "bg-base-300 text-yellow-400" : "text-base-content"}`}
+                    onClick={() =>
+                        editor.chain().focus().toggleUnderline().run()
+                    }
+                    className={`p-2 rounded hover:bg-base-300 ${
+                        editor.isActive("underline")
+                            ? "bg-base-300 text-yellow-400"
+                            : "text-base-content"
+                    }`}
                     title="Underline"
                 >
                     <FaUnderline />
@@ -175,82 +228,132 @@ export default function TiptapEditor({ value, onChange }) {
                 <button
                     onClick={() => editor.chain().focus().toggleStrike().run()}
                     disabled={!toolbarState.canStrike}
-                    className={`p-2 rounded hover:bg-base-300 ${toolbarState.isStrike ? "bg-base-300 text-yellow-400" : "text-base-content"}`}
+                    className={`p-2 rounded hover:bg-base-300 ${
+                        toolbarState.isStrike
+                            ? "bg-base-300 text-yellow-400"
+                            : "text-base-content"
+                    }`}
                     title="Strikethrough"
                 >
                     <FaStrikethrough />
                 </button>
                 <button
-                    onClick={() => editor.chain().focus().toggleBulletList().run()}
-                    className={`p-2 rounded hover:bg-base-300 ${toolbarState.isBulletList ? "bg-base-300 text-yellow-400" : "text-base-content"}`}
+                    onClick={() =>
+                        editor.chain().focus().toggleBulletList().run()
+                    }
+                    className={`p-2 rounded hover:bg-base-300 ${
+                        toolbarState.isBulletList
+                            ? "bg-base-300 text-yellow-400"
+                            : "text-base-content"
+                    }`}
                     title="Bullet List"
                 >
                     <FaListUl />
                 </button>
                 <button
-                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                    className={`p-2 rounded hover:bg-base-300 ${toolbarState.isOrderedList ? "bg-base-300 text-yellow-400" : "text-base-content"}`}
+                    onClick={() =>
+                        editor.chain().focus().toggleOrderedList().run()
+                    }
+                    className={`p-2 rounded hover:bg-base-300 ${
+                        toolbarState.isOrderedList
+                            ? "bg-base-300 text-yellow-400"
+                            : "text-base-content"
+                    }`}
                     title="Ordered List"
                 >
                     <FaListOl />
                 </button>
                 <button
-                    onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                    onClick={() =>
+                        editor.chain().focus().setHorizontalRule().run()
+                    }
                     className="p-2 rounded hover:bg-base-300 text-base-content"
                     title="Horizontal Rule"
                 >
                     <FaMinus />
                 </button>
                 <button
-                    onClick={() =>
-                        editor
-                            .chain()
-                            .focus()
-                            .setLink({ href: prompt("Enter URL") || "" })
-                            .run()
-                    }
-                    className={`p-2 rounded hover:bg-base-300 ${editor.isActive("link") ? "bg-base-300 text-yellow-400" : "text-base-content"}`}
+                    onClick={() => {
+                        // Toggle link on selection: if already a link, remove; else, add with default href
+                        if (editor.isActive("link")) {
+                            editor.chain().focus().unsetLink().run();
+                        } else {
+                            editor.chain().focus().setLink({ href: "#" }).run();
+                        }
+                    }}
+                    className={`p-2 rounded hover:bg-base-300 ${
+                        editor.isActive("link")
+                            ? "bg-base-300 text-yellow-400"
+                            : "text-base-content"
+                    }`}
                     title="Link"
                 >
                     <FaLink />
                 </button>
                 <button
                     onClick={() =>
-                        editor
-                            .chain()
-                            .focus()
-                            .setImage({ src: prompt("Enter image URL") || "" })
-                            .run()
+                        fileInputRef.current && fileInputRef.current.click()
                     }
                     className="p-2 rounded hover:bg-base-300 text-base-content"
-                    title="Image"
+                    title="Insert Image from Device"
                 >
                     <FaImage />
                 </button>
+                <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    style={{ display: "none" }}
+                    onChange={handleImageSelect}
+                />
                 <button
-                    onClick={() => editor.chain().focus().setTextAlign('left').run()}
-                    className={`p-2 rounded hover:bg-base-300 ${toolbarState.alignLeft ? "bg-base-300 text-yellow-400" : "text-base-content"}`}
+                    onClick={() =>
+                        editor.chain().focus().setTextAlign("left").run()
+                    }
+                    className={`p-2 rounded hover:bg-base-300 ${
+                        toolbarState.alignLeft
+                            ? "bg-base-300 text-yellow-400"
+                            : "text-base-content"
+                    }`}
                     title="Align Left"
                 >
                     <FaAlignLeft />
                 </button>
                 <button
-                    onClick={() => editor.chain().focus().setTextAlign('center').run()}
-                    className={`p-2 rounded hover:bg-base-300 ${toolbarState.alignCenter ? "bg-base-300 text-yellow-400" : "text-base-content"}`}
+                    onClick={() =>
+                        editor.chain().focus().setTextAlign("center").run()
+                    }
+                    className={`p-2 rounded hover:bg-base-300 ${
+                        toolbarState.alignCenter
+                            ? "bg-base-300 text-yellow-400"
+                            : "text-base-content"
+                    }`}
                     title="Align Center"
                 >
                     <FaAlignCenter />
                 </button>
                 <button
-                    onClick={() => editor.chain().focus().setTextAlign('right').run()}
-                    className={`p-2 rounded hover:bg-base-300 ${toolbarState.alignRight ? "bg-base-300 text-yellow-400" : "text-base-content"}`}
+                    onClick={() =>
+                        editor.chain().focus().setTextAlign("right").run()
+                    }
+                    className={`p-2 rounded hover:bg-base-300 ${
+                        toolbarState.alignRight
+                            ? "bg-base-300 text-yellow-400"
+                            : "text-base-content"
+                    }`}
                     title="Align Right"
                 >
                     <FaAlignRight />
                 </button>
                 <button
-                    onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-                    className={`p-2 rounded hover:bg-base-300 ${toolbarState.alignJustify ? "bg-base-300 text-yellow-400" : "text-base-content"}`}
+                    onClick={() =>
+                        editor.chain().focus().setTextAlign("justify").run()
+                    }
+                    className={`p-2 rounded hover:bg-base-300 ${
+                        toolbarState.alignJustify
+                            ? "bg-base-300 text-yellow-400"
+                            : "text-base-content"
+                    }`}
                     title="Justify"
                 >
                     <FaAlignJustify />
@@ -272,7 +375,9 @@ export default function TiptapEditor({ value, onChange }) {
                     <IoMdRedo />
                 </button>
             </div>
-            <EditorContent editor={editor} />
+            <div className="overflow-auto w-full">
+                <EditorContent editor={editor} />
+            </div>
         </div>
     );
 }

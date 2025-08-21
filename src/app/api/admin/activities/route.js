@@ -11,7 +11,7 @@ import { formatDbError } from '@/utils/formatDbError';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
 import { sanitizeData } from '@/utils/sanitize';
-import { MAX_IMAGE_SIZE } from '@/app/api/constant.js';
+import { MAX_IMAGE_SIZE_MB } from '@/app/constants/constants';
 
 function parseQueryParams(searchParams) {
 	return {
@@ -62,9 +62,9 @@ export async function GET(req) {
 				participantLimit: true,
 				organizerId: true,
 				imageUrl: true,
-				pointsPerParticipant: true,
 				caloriesPerHour: true,
 				isFeatured: true,
+				totalCaloriesBurnt: true,
 				createdAt: true,
 				updatedAt: true,
 			},
@@ -99,9 +99,9 @@ export async function GET(req) {
 					organizerId: a.organizerId,
 					organizerName,
 					imageUrl: a.imageUrl,
-					pointsPerParticipant: a.pointsPerParticipant,
 					caloriesPerHour: a.caloriesPerHour,
 					isFeatured: a.isFeatured,
+					totalCaloriesBurnt: a.totalCaloriesBurnt,
 					createdAt: a.createdAt,
 					updatedAt: a.updatedAt,
 				};
@@ -188,7 +188,7 @@ export async function POST(req) {
 
 		if (file) {
 			const allowedTypes = ['image/jpeg', 'image/png'];
-			const maxSize = MAX_IMAGE_SIZE;
+			const maxSize = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
 			if (!allowedTypes.includes(file.type)) {
 				return NextResponse.json(
@@ -247,7 +247,6 @@ export async function POST(req) {
 			'status',
 			'participantLimit',
 			'organizerId',
-			'pointsPerParticipant',
 			'caloriesPerHour',
 			'isFeatured',
 			'imageUrl',
@@ -270,15 +269,6 @@ export async function POST(req) {
 			if (isNaN(activityData.participantLimit)) {
 				return NextResponse.json(
 					{ error: 'participantLimit must be a number' },
-					{ status: 400 }
-				);
-			}
-		}
-		if (activityData.pointsPerParticipant) {
-			activityData.pointsPerParticipant = Number(activityData.pointsPerParticipant);
-			if (isNaN(activityData.pointsPerParticipant)) {
-				return NextResponse.json(
-					{ error: 'pointsPerParticipant must be a number' },
 					{ status: 400 }
 				);
 			}
@@ -370,22 +360,22 @@ export async function PATCH(req) {
             );
         }
 
-        const allowedFields = [
-            'title',
-            'description',
-            'activityType',
-            'location',
-            'startDate',
-            'endDate',
-            'startTime',
-            'endTime',
-            'status',
-            'participantLimit',
-            'organizerId',
-            'pointsPerParticipant',
-            'caloriesPerHour',
-            'isFeatured',
-        ];
+		const allowedFields = [
+			'title',
+			'description',
+			'activityType',
+			'location',
+			'startDate',
+			'endDate',
+			'startTime',
+			'endTime',
+			'status',
+			'participantLimit',
+			'organizerId',
+			'caloriesPerHour',
+			'isFeatured',
+			'totalCaloriesBurnt',
+		];
         let updates = {};
         for (const field of allowedFields) {
             if (formData.has(field)) {
@@ -408,24 +398,25 @@ export async function PATCH(req) {
             }
         }
 
-        if (updates.pointsPerParticipant) {
-            updates.pointsPerParticipant = Number(updates.pointsPerParticipant);
-            if (isNaN(updates.pointsPerParticipant)) {
-                return NextResponse.json(
-                    { error: 'pointsPerParticipant must be a number' },
-                    { status: 400 }
-                );
-            }
-        }
 
-        if (updates.caloriesPerHour) {
-            updates.caloriesPerHour = Number(updates.caloriesPerHour);
-            if (isNaN(updates.caloriesPerHour))
-                return NextResponse.json(
-                    { error: 'caloriesPerHour must be a number' },
-                    { status: 400 }
-                );
-        }
+		if (updates.caloriesPerHour) {
+			updates.caloriesPerHour = Number(updates.caloriesPerHour);
+			if (isNaN(updates.caloriesPerHour))
+				return NextResponse.json(
+					{ error: 'caloriesPerHour must be a number' },
+					{ status: 400 }
+				);
+		}
+
+		if (updates.totalCaloriesBurnt !== undefined) {
+			updates.totalCaloriesBurnt = Number(updates.totalCaloriesBurnt);
+			if (isNaN(updates.totalCaloriesBurnt)) {
+				return NextResponse.json(
+					{ error: 'totalCaloriesBurnt must be a number' },
+					{ status: 400 }
+				);
+			}
+		}
 
         let newImageUrl = null;
         let oldImageUrl = null;
