@@ -97,17 +97,8 @@ function ActivityManagementPageContent() {
                     </div>
                 )}
             </div>
-            : (
-            <div className="overflow-x-auto">
-                <Table
-                    heading={tableHeading}
-                    tableData={paginatedActivities}
-                    tableType={"acitivityPage"}
-                    onRowClick={handleActivityClick}
-                    className="cursor-pointer"
-                />
-            </div>
-            )
+           
+            
         </div>
     );
 };

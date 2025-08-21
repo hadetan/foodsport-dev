@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import Avatar from "@/app/shared/components/avatar";
+import FullPageLoader from "../../../components/FullPageLoader";
 
 const ActivityDetailPage = () => {
     const [activity, setActivity] = useState(null);
@@ -98,11 +99,7 @@ const ActivityDetailPage = () => {
     }, [activityId]);
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-            </div>
-        );
+        return <FullPageLoader />;
     }
 
     if (error) {
@@ -222,7 +219,7 @@ const ActivityDetailPage = () => {
                                         {formatDate(activity.createdAt)}
                                     </span>
                                     <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
-                                        {activity.status || "Active"}
+                                        {activity.status}
                                     </span>
                                 </div>
                             </div>
@@ -257,7 +254,7 @@ const ActivityDetailPage = () => {
                                         Date
                                     </p>
                                     <p className="font-medium text-gray-800 dark:text-gray-200">
-                                        {activity.date
+                                        {formatDate(activity.date)
                                             ? formatDate(activity.date)
                                             : "Not specified"}
                                     </p>
@@ -267,7 +264,7 @@ const ActivityDetailPage = () => {
                                         Start Time
                                     </p>
                                     <p className="font-medium text-gray-800 dark:text-gray-200">
-                                        {activity.startTime
+                                        {formatTime(activity.startTime)
                                             ? formatTime(activity.startTime)
                                             : activity.date
                                             ? formatTime(activity.date)
@@ -326,17 +323,7 @@ const ActivityDetailPage = () => {
                                     if (user.firstname && user.lastname) {
                                         firstName = user.firstname;
                                         lastName = user.lastname;
-                                    } else if (user.name) {
-                                        const nameParts = user.name
-                                            .trim()
-                                            .split(" ");
-                                        firstName = nameParts[0] || "";
-                                        lastName =
-                                            nameParts.length > 1
-                                                ? nameParts.slice(1).join(" ")
-                                                : "";
-                                    }
-
+                                    } 
                                     return (
                                         <div
                                             key={index}
@@ -344,7 +331,7 @@ const ActivityDetailPage = () => {
                                         >
                                             <Avatar
                                                 srcAvatar={user.avatar}
-                                                firstName={firstName || ""}
+                                                firstName={firstName}
                                                 lastName={lastName}
                                                 size="12"
                                             />
