@@ -8,7 +8,7 @@ import ActivityItemSkeleton from '@/app/shared/components/skeletons/ActivityItem
 import { useUser } from '@/app/shared/contexts/userContext';
 import sortActivities from '@/utils/sortActivities';
 import ActivitiesFilter from '@/app/shared/components/ActivitiesFilter';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import ActivityNotFound from '@/app/shared/components/ActivityNotFound';
 
 export default function ActivitiesPage() {
@@ -25,7 +25,9 @@ export default function ActivitiesPage() {
 		<div className='main-activities'>
 			<>
 				<ActivityImg />
-				<ActivitiesFilter activities={sortedActivities} setFilteredActivities={setFilteredActivities} />
+				<Suspense fallback={null}>
+					<ActivitiesFilter activities={sortedActivities} setFilteredActivities={setFilteredActivities} />
+				</Suspense>
 				{!filteredActivities.length && !loading ? <ActivityNotFound /> : (
 					<div className={styles.grid3}>
 						{!sortedActivities.length && loading ? (
