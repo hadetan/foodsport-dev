@@ -16,10 +16,12 @@ export async function GET(req) {
 	}
 
 	const activity = await getById('activity', id, { summary: true });
+	if (activity && activity.error) {
+		return NextResponse.json({ error: 'Failed to fetch activity' }, { status: 500 });
+	}
 	if (!activity) {
 		return NextResponse.json({ error: 'Activity not found' }, { status: 404 });
 	}
-
 	return NextResponse.json({ summary: activity.summary || '' });
 }
 
