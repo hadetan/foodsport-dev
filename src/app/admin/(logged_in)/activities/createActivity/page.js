@@ -82,7 +82,6 @@ const CreateActivityPage = () => {
             ) {
             }
         });
-
         if (formData.startDateTime && !isValidYear(formData.startDateTime)) {
             errors.startDateTime = "Year must be at most 4 digits.";
         }

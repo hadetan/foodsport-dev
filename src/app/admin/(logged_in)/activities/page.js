@@ -57,7 +57,12 @@ function ActivityManagementPageContent() {
         "Actions",
     ];
 
-  
+    const handleActivityClick = (activity) => {
+        if (activity && activity.id) {
+            router.push(`/admin/activities/viewActivity/${activity.id}`);
+        }
+    };
+
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
             <div className="flex justify-between mb-6">
@@ -75,7 +80,6 @@ function ActivityManagementPageContent() {
             <div className="flex flex-col lg:flex-row gap-4 mb-6">
                 {/* <Dropdown items={statusOfUser} name="Status" /> */}
             </div>
-
             {/* Activities Table */}
             <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
                 {tableLoading ? (
@@ -84,19 +88,17 @@ function ActivityManagementPageContent() {
                     <div className="overflow-x-auto">
                         <Table
                             heading={tableHeading}
-                            tableData={activities}
+                            tableData={paginatedActivities}
                             tableType={"acitivityPage"}
-                            shouldShowEdit={() =>
-                                router.push("/admin/activities?view=edit")
-                            }
-                            setActivity={setActivity}
+                            onRowClick={handleActivityClick}
+                            className="cursor-pointer"
                         />
                     </div>
                 )}
             </div>
         </div>
     );
-}
+};
 
 export default function ActivityManagementPage() {
     return (
