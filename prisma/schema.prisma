@@ -69,6 +69,27 @@ enum OtpEntityType {
   password_reset
 }
 
+enum District {
+  Central_and_Western
+  Eastern
+  Southern
+  Wan_Chai
+  Kowloon_City
+  Kwun_Tong
+  Sham_Shui_Po
+  Wong_Tai_Sin
+  Yau_Tsim_Mong
+  Islands
+  Kwai_Tsing
+  North
+  Sai_Kung
+  Sha_Tin
+  Tai_Po
+  Tsuen_Wan
+  Tuen_Mun
+  Yuen_Long
+}
+
 model User {
   id                    String   @id @default(uuid())
   email                 String   @unique
@@ -78,6 +99,7 @@ model User {
   weight                Decimal? @db.Decimal(5, 2)
   height                Decimal? @db.Decimal(5, 2)
   gender                String?
+  district              District?  @map("district")
   phoneNumber           String?  @map("phone_number")
   profilePictureUrl     String?  @map("profile_picture_url")
   border                String?  @default("default")
@@ -137,7 +159,7 @@ model Activity {
   participantLimit     Int?          @map("participant_limit")
   organizerId          String?       @map("organizer_id") // Get organizer name from the id
   imageUrl             String?       @map("image_url")
-  pointsPerParticipant Int           @default(10) @map("points_per_participant")
+  totalCaloriesBurnt   Int           @default(0) @map("total_calories_burnt")
   caloriesPerHour      Int           @default(300) @map("calories_per_hour")
   isFeatured           Boolean       @default(false) @map("is_featured")
   createdAt            DateTime      @default(now()) @map("created_at")
