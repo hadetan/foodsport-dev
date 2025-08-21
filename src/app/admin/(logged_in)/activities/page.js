@@ -7,6 +7,7 @@ import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import ActivityStatus from "@/app/constants/constants";
 import FullPageLoader from "../components/FullPageLoader";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 function ActivityManagementPageContent() {
     const [activity, setActivity] = useState(null);
@@ -98,9 +99,34 @@ function ActivityManagementPageContent() {
                 {/* Pagination */}
                 <div className="flex justify-center mt-4">
                     <div className="btn-group">
-                        <button className="btn btn-outline">«</button>
-                        <button className="btn btn-outline">Page 1</button>
-                        <button className="btn btn-outline">»</button>
+                        <button
+                            className="btn btn-outline"
+                            onClick={() =>
+                                setCurrentPage((p) => Math.max(1, p - 1))
+                            }
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft size={18} />
+                        </button>
+                        <button
+                            className="btn btn-outline cursor-default"
+                            disabled
+                        >
+                            Page {currentPage}
+                        </button>
+                        <button
+                            className="btn btn-outline"
+                            onClick={() =>
+                                setCurrentPage((p) =>
+                                    Math.min(totalPages, p + 1)
+                                )
+                            }
+                            disabled={
+                                currentPage === totalPages || totalPages === 0
+                            }
+                        >
+                            <ChevronRight size={18} />
+                        </button>
                     </div>
                 </div>
             </div>

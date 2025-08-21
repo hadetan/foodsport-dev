@@ -8,6 +8,7 @@ import Table from "@/app/admin/(logged_in)/components/Table";
 import api from "@/utils/axios/api";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import FullPageLoader from "../components/FullPageLoader";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const UserManagementPage = () => {
     const router = useRouter();
@@ -15,6 +16,9 @@ const UserManagementPage = () => {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 10;
+    const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
     // Hong Kong regions
     const hongKongRegions = [
@@ -78,6 +82,12 @@ const UserManagementPage = () => {
         setStatusFilter(status.toLowerCase());
     };
 
+    // Only show users for current page
+    const paginatedUsers = filteredUsers.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize
+    );
+
     return (
         <>
             <div className="text-2xl mb-5 text-base-content">Manage Users</div>
@@ -103,19 +113,19 @@ const UserManagementPage = () => {
                         onSelect={handleStatusChange}
                     />
 
-                    
-
                     <Dropdown items={hongKongRegions} name="All Districts" />
                 </div>
             </div>
 
             {/* User Table */}
             <div className="overflow-x-auto rounded-lg shadow relative">
-                {loading ? <FullPageLoader /> : (
+                {loading ? (
+                    <FullPageLoader />
+                ) : (
                     <div className="overflow-x-auto rounded-box border border-primary/60">
                         <Table
                             heading={tableHeading}
-                            tableData={filteredUsers}
+                            tableData={paginatedUsers}
                             tableType={"userPage"}
                             onRowClick={handleRowClick}
                         />
@@ -126,9 +136,29 @@ const UserManagementPage = () => {
             {/* Pagination */}
             <div className="flex justify-center mt-4">
                 <div className="btn-group">
-                    <button className="btn btn-outline">«</button>
-                    <button className="btn btn-outline">Page 1</button>
-                    <button className="btn btn-outline">»</button>
+                    <button
+                        className="btn btn-outline"
+                        onClick={() =>
+                            setCurrentPage((p) => Math.max(1, p - 1))
+                        }
+                        disabled={currentPage === 1}
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+                    <button className="btn btn-outline cursor-default" disabled>
+                        Page {currentPage}
+                    </button>
+                    <button
+                        className="btn btn-outline"
+                        onClick={() =>
+                            setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={
+                            currentPage === totalPages || totalPages === 0
+                        }
+                    >
+                        <ChevronRight size={18} />
+                    </button>
                 </div>
             </div>
         </>

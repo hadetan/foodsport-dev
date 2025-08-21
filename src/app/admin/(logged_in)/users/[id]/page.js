@@ -6,6 +6,7 @@ import api from "@/utils/axios/api";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import Avatar from "@/app/shared/components/avatar";
 import { IoIosArrowBack } from "react-icons/io";
+import { Pencil, Check } from "lucide-react";
 import formatDate from "@/utils/formatDate";
 import FullPageLoader from "../../components/FullPageLoader";
 
@@ -15,11 +16,14 @@ const UserDetailPage = () => {
     const { users, loading: usersLoading, setUsers } = useUsers();
     const [user, setUser] = useState(null);
     const [statusLoading, setStatusLoading] = useState(false);
+    const [isEditingEmail, setIsEditingEmail] = useState(false);
+    const [email, setEmail] = useState("");
 
     useEffect(() => {
         if (users && users.length > 0) {
             const filtered = users.filter((u) => String(u.id) === String(id));
             setUser(filtered.length > 0 ? filtered[0] : null);
+            if (filtered.length > 0) setEmail(filtered[0].email || "");
         }
     }, [users, id]);
 
@@ -49,6 +53,11 @@ const UserDetailPage = () => {
         } finally {
             setStatusLoading(false);
         }
+    };
+
+    const handleEmailSave = () => {
+        setIsEditingEmail(false);
+        // Optionally, update email in backend here
     };
 
     if (usersLoading) return <FullPageLoader />;
@@ -97,8 +106,42 @@ const UserDetailPage = () => {
                             <div className="text-2xl font-semibold text-base-content">
                                 {user.firstname} {user.lastname}
                             </div>
-                            <div className="text-base-content/70 text-sm mt-1">
-                                {user.email}
+                            <div className="text-base-content/70 text-sm mt-1 flex items-center gap-2">
+                                {isEditingEmail ? (
+                                    <>
+                                        <input
+                                            className="input input-bordered input-sm"
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) =>
+                                                setEmail(e.target.value)
+                                            }
+                                            autoFocus
+                                        />
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={handleEmailSave}
+                                            aria-label="Save Email"
+                                        >
+                                            <Check className="w-4 h-4 text-success" />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>{email}</span>
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={() =>
+                                                setIsEditingEmail(true)
+                                            }
+                                            aria-label="Edit Email"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                    </>
+                                )}
                             </div>
                             <div className="mt-3 flex flex-col md:flex-row gap-2 items-center md:items-start">
                                 <span
