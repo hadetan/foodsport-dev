@@ -56,28 +56,7 @@ const Table = ({
                           ))}
                 </tbody>
             </table>
-            {/* Pagination Controls */}
-            <div className="flex justify-center items-center mt-4 gap-2">
-                <button
-                    className="btn btn-sm"
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                >
-                    Prev
-                </button>
-                <span className="mx-2">
-                    Page {currentPage} of {totalPages}
-                </span>
-                <button
-                    className="btn btn-sm"
-                    onClick={() =>
-                        setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                >
-                    Next
-                </button>
-            </div>
+          
         </>
     );
 };

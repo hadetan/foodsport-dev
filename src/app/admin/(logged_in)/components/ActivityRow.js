@@ -161,6 +161,7 @@ const ActivityRow = ({ activity, onRowClick }) => {
                     </div>
                 </td>
             </tr>
+             
         </>
     );
 };

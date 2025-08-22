@@ -8,6 +8,9 @@ import Table from "@/app/admin/(logged_in)/components/Table";
 import api from "@/utils/axios/api";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import FullPageLoader from "../components/FullPageLoader";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DISTRICTS } from "@/app/constants/constants";
+import Pagination from "@/app/admin/(logged_in)/components/Pagination";
 
 const UserManagementPage = () => {
     const router = useRouter();
@@ -15,28 +18,15 @@ const UserManagementPage = () => {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 10;
+    const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
-    // Hong Kong regions
-    const hongKongRegions = [
-        "Central and Western",
-        "Eastern",
-        "Southern",
-        "Wan Chai",
-        "Kowloon City",
-        "Kwun Tong",
-        "Sham Shui Po",
-        "Wong Tai Sin",
-        "Yau Tsim Mong",
-        "Islands",
-        "Kwai Tsing",
-        "North",
-        "Sai Kung",
-        "Sha Tin",
-        "Tai Po",
-        "Tsuen Wan",
-        "Tuen Mun",
-        "Yuen Long",
-    ];
+    // Format district names for display (replace underscores with spaces, capitalize)
+    const formatDistrict = (district) =>
+        district.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+    const hongKongRegions = ["All", ...DISTRICTS.map(formatDistrict)];
 
     useEffect(() => {
         if (!Array.isArray(users) || loading) {
@@ -77,6 +67,14 @@ const UserManagementPage = () => {
         setStatusFilter(status.toLowerCase());
     };
 
+    // Only show users for current page
+    const paginatedUsers = filteredUsers.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize
+    );
+
+    const handlePageChange = (page) => setCurrentPage(page);
+
     return (
         <>
             <div className="text-2xl mb-5 text-base-content">Manage Users</div>
@@ -102,25 +100,19 @@ const UserManagementPage = () => {
                         onSelect={handleStatusChange}
                     />
 
-                    <select
-                        className="select select-bordered w-full lg:w-48"
-                        defaultValue="Hong Kong"
-                        disabled
-                    >
-                        <option value="Hong Kong">Hong Kong</option>
-                    </select>
-
                     <Dropdown items={hongKongRegions} name="All Districts" />
                 </div>
             </div>
 
             {/* User Table */}
             <div className="overflow-x-auto rounded-lg shadow relative">
-                {loading ? <FullPageLoader /> : (
+                {loading ? (
+                    <FullPageLoader />
+                ) : (
                     <div className="overflow-x-auto rounded-box border border-primary/60">
                         <Table
                             heading={tableHeading}
-                            tableData={filteredUsers}
+                            tableData={paginatedUsers}
                             tableType={"userPage"}
                             onRowClick={handleRowClick}
                         />
@@ -129,13 +121,11 @@ const UserManagementPage = () => {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-center mt-4">
-                <div className="btn-group">
-                    <button className="btn btn-outline">«</button>
-                    <button className="btn btn-outline">Page 1</button>
-                    <button className="btn btn-outline">»</button>
-                </div>
-            </div>
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
         </>
     );
 };

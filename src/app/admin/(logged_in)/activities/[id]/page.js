@@ -591,5 +591,5 @@ export default function EditActivityPage() {
                 )}
             </div>
         </div>
-    );
-}
+    
+)};

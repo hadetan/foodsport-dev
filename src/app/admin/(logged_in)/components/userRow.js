@@ -3,8 +3,10 @@ import Status from "@/app/admin/(logged_in)/components/status";
 import Avatar from "@/app/shared/components/avatar";
 import { Pencil, Eye } from "lucide-react";
 import formatDate from "@/utils/formatDate";
+import { useRouter } from "next/navigation";
 
 export const UserRow = ({ user, onRowClick }) => {
+    const router = useRouter();
     return (
         <tr
             className="cursor-pointer hover:bg-base-200"
@@ -56,14 +58,21 @@ export const UserRow = ({ user, onRowClick }) => {
                 <div className="btn-group">
                     <button
                         className="btn btn-sm btn-ghost tooltip"
-                        data-tip="View Profile"
-                        onClick={() => router.push(`/admin/users/${user.id}`)}
+                        data-tip="Edit User"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/admin/users/${user.id}`);
+                        }}
                     >
                         <Pencil />
                     </button>
                     <button
                         className="btn btn-sm btn-ghost tooltip"
-                        data-tip="Edit User"
+                        data-tip="View Profile"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/admin/users/${user.id}`);
+                        }}
                     >
                         <Eye />
                     </button>

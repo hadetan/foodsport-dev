@@ -7,6 +7,8 @@ import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import ActivityStatus from "@/app/constants/constants";
 import FullPageLoader from "../components/FullPageLoader";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Pagination from "@/app/admin/(logged_in)/components/Pagination";
 
 function ActivityManagementPageContent() {
     const [activity, setActivity] = useState(null);
@@ -63,6 +65,8 @@ function ActivityManagementPageContent() {
         }
     };
 
+    const handlePageChange = (page) => setCurrentPage(page);
+
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
             <div className="flex justify-between mb-6">
@@ -95,10 +99,16 @@ function ActivityManagementPageContent() {
                         />
                     </div>
                 )}
+                {/* Pagination */}
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                />
             </div>
         </div>
     );
-};
+}
 
 export default function ActivityManagementPage() {
     return (
