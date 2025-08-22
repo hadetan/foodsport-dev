@@ -6,7 +6,8 @@ import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import axiosClient from "@/utils/axios/api";
 import ActivityStatus, { MAX_IMAGE_SIZE_MB } from "@/app/constants/constants";
 import { ImageUp, Pencil } from "lucide-react";
-
+import Tabs from "@/app/admin/(logged_in)/components/Tabs";
+import ActivityDetailsStep from '@/app/admin/(logged_in)/components/descriptionBox'
 const CreateActivityPage = () => {
     const router = useRouter();
     const [formData, setFormData] = useState({
@@ -26,6 +27,8 @@ const CreateActivityPage = () => {
     const [loading, setLoading] = useState(false);
     const [imageAspect, setImageAspect] = useState(null); // {width, height}
     const imgRef = useRef(null);
+    const [tab,setTab] =useState('details');
+    const [activityId,setActivityId] =useState(null)
 
     useEffect(() => {
         if (formData.image && imgRef.current) {
@@ -48,9 +51,6 @@ const CreateActivityPage = () => {
         }
     }, [formData.image]);
 
-    useEffect(() => {
-        // Remove restoring form data from localStorage
-    }, []);
 
     const isValidYear = (dateStr) => {
         if (!dateStr) return true;
@@ -199,9 +199,9 @@ const CreateActivityPage = () => {
                 }
             );
             if (response?.data?.id) {
-                localStorage.setItem("createdActivityId", response.data.id);
+                setActivityId(response?.data?.id)
             }
-            router.push("/admin/activities/createActivity/details");
+            setTab('description')
         } catch (err) {
             setError(err?.response?.data?.error || err.message);
         } finally {
@@ -221,8 +221,14 @@ const CreateActivityPage = () => {
                     &larr; Back
                 </button>
             </div>
-            <div className="w-full max-w-5xl bg-transparent max-h-screen overflow-y-auto rounded-xl">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-white">
+            <div className="w-full max-w-5xl bg-transparent  overflow-y-auto rounded-xl">
+                {/* Tabs */}
+                <Tabs setTab={setTab}/>
+
+                {tab==='details'?
+                (
+                    <>
+                    <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-white">
                     Create Activity
                 </h1>
                 {error && (
@@ -550,6 +556,8 @@ const CreateActivityPage = () => {
                         </button>
                     </div>
                 </form>
+                    </>
+                ) : <ActivityDetailsStep activityId={activityId}/>}
             </div>
         </div>
     );

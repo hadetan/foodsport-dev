@@ -5,17 +5,11 @@ import { useRouter, useParams } from "next/navigation";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import axiosClient from "@/utils/axios/api"; // import your axios client
 
-const ActivityDetailsStep = () => {
+const ActivityDetailsStep = ({ activityId }) => {
     const router = useRouter();
     const params = useParams();
     const [details, setDetails] = useState("");
     const [showPreview, setShowPreview] = useState(false);
-    const [activityId, setActivityId] = useState("");
-
-    useEffect(() => {
-        const id = localStorage.getItem("createdActivityId") || "";
-        setActivityId(id);
-    }, [params]);
 
     const handleSave = async () => {
         try {
