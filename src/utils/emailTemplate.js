@@ -8,12 +8,16 @@
  * @returns {string} - The full HTML email.
  */
 export function wrapHtmlEmail(html, subject) {
+  const safeTitle = String(subject)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${subject}</title>
+  <title>${safeTitle}</title>
   <style>
     body { font-family: Arial, sans-serif; background: #fff; color: #222; }
   </style>

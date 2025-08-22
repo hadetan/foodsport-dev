@@ -19,6 +19,9 @@ export async function POST(req) {
     if (!SENDER_EMAIL_NAME) {
 		return NextResponse.json({ error: "Missing SENDER_EMAIL_NAME env variable" }, { status: 500 });
 	}
+    if (!BREVO_URL) {
+		return NextResponse.json({ error: "Missing BREVO_URL env variable" }, { status: 500 });
+	}
 
 	let body;
 	try {
@@ -60,9 +63,9 @@ export async function POST(req) {
 			}
 		);
 		const brevoData = brevoRes.data;
-		return NextResponse.json({ success: true, messageId: brevoData.messageId, brevoData });
+		return NextResponse.json({ success: true, messageId: brevoData.messageId });
 	} catch (err) {
 		const brevoData = err.response?.data;
-		return NextResponse.json({ error: brevoData?.message || "Error sending email", details: brevoData || err.message }, { status: 500 });
+		return NextResponse.json({ error: brevoData?.message || "Error sending email", details: err.message }, { status: 500 });
 	}
 }
