@@ -17,7 +17,6 @@ const CreateActivityPage = () => {
         endDateTime: "",
         location: "",
         capacity: "",
-        totalCaloriesBurnt: "",
         caloriesPerHour: "",
         image: null,
         status: "draft",
@@ -64,14 +63,13 @@ const CreateActivityPage = () => {
             "title",
             "activityType",
             "description",
-            "startDateTime",
-            "endDateTime",
             "location",
             "capacity",
-            "totalCaloriesBurnt",
             "caloriesPerHour",
             "image",
             "status",
+            "startDateTime",
+            "endDateTime",
         ];
         const errors = {};
         requiredFields.forEach((field) => {
@@ -80,21 +78,19 @@ const CreateActivityPage = () => {
                 formData[field] === null ||
                 typeof formData[field] === "undefined"
             ) {
+                errors[field] = "This field is required.";
             }
         });
-        if (formData.startDateTime && !isValidYear(formData.startDateTime)) {
-            errors.startDateTime = "Year must be at most 4 digits.";
-        }
-        if (formData.endDateTime && !isValidYear(formData.endDateTime)) {
-            errors.endDateTime = "Year must be at most 4 digits.";
-        }
-        if (
-            formData.startDateTime &&
-            formData.endDateTime &&
-            new Date(formData.startDateTime) > new Date(formData.endDateTime)
-        ) {
-            errors.startDateTime = "Start date cannot be after end date.";
-            errors.endDateTime = "End date cannot be before start date.";
+        // Validate that startDateTime is before endDateTime
+        if (formData.startDateTime && formData.endDateTime) {
+            const start = new Date(formData.startDateTime);
+            const end = new Date(formData.endDateTime);
+            if (start > end) {
+                errors.startDateTime =
+                    "Start date/time cannot be after end date/time.";
+                errors.endDateTime =
+                    "End date/time cannot be before start date/time.";
+            }
         }
         setFieldErrors(errors);
         return Object.keys(errors).length === 0;
@@ -163,8 +159,12 @@ const CreateActivityPage = () => {
         }
         try {
             setLoading(true);
-            const startISO = new Date(formData.startDateTime).toISOString();
-            const endISO = new Date(formData.endDateTime).toISOString();
+            const startISO = formData.startDateTime
+                ? new Date(formData.startDateTime).toISOString()
+                : "";
+            const endISO = formData.endDateTime
+                ? new Date(formData.endDateTime).toISOString()
+                : "";
             const payload = {
                 title: formData.title,
                 activityType: formData.activityType,
@@ -176,7 +176,6 @@ const CreateActivityPage = () => {
                 description: formData.description,
                 status: formData.status,
                 participantLimit: Number(formData.capacity),
-                totalCaloriesBurnt: Number(formData.totalCaloriesBurnt),
                 caloriesPerHour: Number(formData.caloriesPerHour),
                 image: formData.image,
             };
@@ -192,7 +191,6 @@ const CreateActivityPage = () => {
                     formDataToSend.set(key, value);
                 }
             });
-            // Always use POST API for activity creation
             const response = await axiosClient.post(
                 "/admin/activities",
                 formDataToSend,
@@ -200,6 +198,9 @@ const CreateActivityPage = () => {
                     headers: { "Content-Type": "multipart/form-data" },
                 }
             );
+            if (response?.data?.id) {
+                localStorage.setItem("createdActivityId", response.data.id);
+            }
             router.push("/admin/activities/createActivity/details");
         } catch (err) {
             setError(err?.response?.data?.error || err.message);
@@ -229,9 +230,9 @@ const CreateActivityPage = () => {
                 )}
                 <form
                     className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-6"
-                    onSubmit={(e) => {
+                    onSubmit={async (e) => {
                         e.preventDefault();
-                        handleCreateActivity();
+                        await handleCreateActivity();
                     }}
                 >
                     {/* Upload Image - full width */}
@@ -394,7 +395,6 @@ const CreateActivityPage = () => {
                                 rows={3}
                                 placeholder="Enter summary"
                             />
-                            {/* Removed word count display and maxLength */}
                             {fieldErrors.description && (
                                 <span className="text-error text-base">
                                     {fieldErrors.description}
@@ -404,10 +404,10 @@ const CreateActivityPage = () => {
                         {/* Start Date & Time */}
                         <div className="form-control w-full">
                             <label className="label text-lg font-semibold mb-2 text-white">
-                                Start Date & Time
+                                Start Date &amp; Time
                             </label>
                             <input
-                                type="date"
+                                type="datetime-local"
                                 className="input input-bordered input-lg w-full bg-[#232733] text-white"
                                 name="startDateTime"
                                 value={formData.startDateTime}
@@ -463,28 +463,6 @@ const CreateActivityPage = () => {
                                 </span>
                             )}
                         </div>
-                        {/* Points Per Participant */}
-                        <div className="form-control w-full">
-                            <label className="label text-lg font-semibold mb-2 text-white">
-                                Points Per Participant
-                            </label>
-                            <input
-                                type="number"
-                                className="input input-bordered input-lg w-full bg-[#232733] text-white"
-                                name="pointsPerParticipant"
-                                value={formData.pointsPerParticipant}
-                                onChange={handleFormChange}
-                                min={0.01}
-                                step="any"
-                                required
-                                placeholder="Enter points per participant"
-                            />
-                            {fieldErrors.pointsPerParticipant && (
-                                <span className="text-error text-base">
-                                    {fieldErrors.pointsPerParticipant}
-                                </span>
-                            )}
-                        </div>
                         {/* Calories Per Hour */}
                         <div className="form-control w-full">
                             <label className="label text-lg font-semibold mb-2 text-white">
@@ -504,6 +482,25 @@ const CreateActivityPage = () => {
                             {fieldErrors.caloriesPerHour && (
                                 <span className="text-error text-base">
                                     {fieldErrors.caloriesPerHour}
+                                </span>
+                            )}
+                        </div>
+                        {/* End Date & Time */}
+                        <div className="form-control w-full">
+                            <label className="label text-lg font-semibold mb-2 text-white">
+                                End Date &amp; Time
+                            </label>
+                            <input
+                                type="datetime-local"
+                                className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                name="endDateTime"
+                                value={formData.endDateTime}
+                                onChange={handleFormChange}
+                                required
+                            />
+                            {fieldErrors.endDateTime && (
+                                <span className="text-error text-base">
+                                    {fieldErrors.endDateTime}
                                 </span>
                             )}
                         </div>
@@ -540,13 +537,6 @@ const CreateActivityPage = () => {
                                 loading ? "loading" : ""
                             }`}
                             disabled={loading}
-                            onClick={async (e) => {
-                                e.preventDefault();
-                                await handleCreateActivity();
-                                router.push(
-                                    "/admin/activities/createActivity/details"
-                                );
-                            }}
                         >
                             Save & Continue
                         </button>
