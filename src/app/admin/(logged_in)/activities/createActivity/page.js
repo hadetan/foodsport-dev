@@ -223,7 +223,7 @@ const CreateActivityPage = () => {
             </div>
             <div className="w-full max-w-5xl bg-transparent  overflow-y-auto rounded-xl">
                 {/* Tabs */}
-                <Tabs setTab={setTab}/>
+                <Tabs setTab={setTab} activeTab={tab}/>
 
                 {tab==='details'?
                 (

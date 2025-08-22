@@ -16,9 +16,13 @@ export default function Tabs({ setTab, activeTab }) {
                                 ? "bg-primary text-white border-primary"
                                 : "bg-background text-primary border-primary"
                         }
-                        hover:bg-primary hover:text-white hover:border-primary
-                        active:bg-primary active:text-white active:border-primary
-                    `}
+                            ${
+                                activeTab === "details" &&
+                                "bg-primary text-white border-primary"
+                            }
+                         hover:bg-primary-light hover:text-white hover:border-primary-light
+
+                        `}
                     type="button"
                     onClick={() => setTab("details")}
                 >
@@ -31,8 +35,11 @@ export default function Tabs({ setTab, activeTab }) {
                                 ? "bg-primary text-white border-primary"
                                 : "bg-background text-primary border-primary"
                         }
-                        hover:bg-primary hover:text-white hover:border-primary
-                        active:bg-primary active:text-white active:border-primary
+                        hover:bg-primary-light hover:text-white hover:border-primary-light
+                      ${
+                         activeTab ===  "description" && "bg-primary text-white border-primary"
+                        }
+
                     `}
                     type="button"
                     onClick={() => setTab("description")}
