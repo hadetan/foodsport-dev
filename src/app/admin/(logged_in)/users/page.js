@@ -9,6 +9,8 @@ import api from "@/utils/axios/api";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import FullPageLoader from "../components/FullPageLoader";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DISTRICTS } from "@/app/constants/constants";
+import Pagination from "@/app/admin/(logged_in)/components/Pagination";
 
 const UserManagementPage = () => {
     const router = useRouter();
@@ -20,28 +22,11 @@ const UserManagementPage = () => {
     const pageSize = 10;
     const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
-    // Hong Kong regions
-    const hongKongRegions = [
-        "All",
-        "Central and Western",
-        "Eastern",
-        "Southern",
-        "Wan Chai",
-        "Kowloon City",
-        "Kwun Tong",
-        "Sham Shui Po",
-        "Wong Tai Sin",
-        "Yau Tsim Mong",
-        "Islands",
-        "Kwai Tsing",
-        "North",
-        "Sai Kung",
-        "Sha Tin",
-        "Tai Po",
-        "Tsuen Wan",
-        "Tuen Mun",
-        "Yuen Long",
-    ];
+    // Format district names for display (replace underscores with spaces, capitalize)
+    const formatDistrict = (district) =>
+        district.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+    const hongKongRegions = ["All", ...DISTRICTS.map(formatDistrict)];
 
     useEffect(() => {
         if (!Array.isArray(users) || loading) {
@@ -87,6 +72,8 @@ const UserManagementPage = () => {
         (currentPage - 1) * pageSize,
         currentPage * pageSize
     );
+
+    const handlePageChange = (page) => setCurrentPage(page);
 
     return (
         <>
@@ -134,33 +121,11 @@ const UserManagementPage = () => {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-center mt-4">
-                <div className="btn-group">
-                    <button
-                        className="btn btn-outline"
-                        onClick={() =>
-                            setCurrentPage((p) => Math.max(1, p - 1))
-                        }
-                        disabled={currentPage === 1}
-                    >
-                        <ChevronLeft size={18} />
-                    </button>
-                    <button className="btn btn-outline cursor-default" disabled>
-                        Page {currentPage}
-                    </button>
-                    <button
-                        className="btn btn-outline"
-                        onClick={() =>
-                            setCurrentPage((p) => Math.min(totalPages, p + 1))
-                        }
-                        disabled={
-                            currentPage === totalPages || totalPages === 0
-                        }
-                    >
-                        <ChevronRight size={18} />
-                    </button>
-                </div>
-            </div>
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
         </>
     );
 };

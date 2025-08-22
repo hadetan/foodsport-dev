@@ -8,6 +8,7 @@ import Table from "@/app/admin/(logged_in)/components/Table";
 import ActivityStatus from "@/app/constants/constants";
 import FullPageLoader from "../components/FullPageLoader";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Pagination from "@/app/admin/(logged_in)/components/Pagination";
 
 function ActivityManagementPageContent() {
     const [activity, setActivity] = useState(null);
@@ -64,6 +65,8 @@ function ActivityManagementPageContent() {
         }
     };
 
+    const handlePageChange = (page) => setCurrentPage(page);
+
     return (
         <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
             <div className="flex justify-between mb-6">
@@ -97,38 +100,11 @@ function ActivityManagementPageContent() {
                     </div>
                 )}
                 {/* Pagination */}
-                <div className="flex justify-center mt-4">
-                    <div className="btn-group">
-                        <button
-                            className="btn btn-outline"
-                            onClick={() =>
-                                setCurrentPage((p) => Math.max(1, p - 1))
-                            }
-                            disabled={currentPage === 1}
-                        >
-                            <ChevronLeft size={18} />
-                        </button>
-                        <button
-                            className="btn btn-outline cursor-default"
-                            disabled
-                        >
-                            Page {currentPage}
-                        </button>
-                        <button
-                            className="btn btn-outline"
-                            onClick={() =>
-                                setCurrentPage((p) =>
-                                    Math.min(totalPages, p + 1)
-                                )
-                            }
-                            disabled={
-                                currentPage === totalPages || totalPages === 0
-                            }
-                        >
-                            <ChevronRight size={18} />
-                        </button>
-                    </div>
-                </div>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                />
             </div>
         </div>
     );
