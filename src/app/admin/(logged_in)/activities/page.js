@@ -1,44 +1,173 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
-import { useRouter, useSearchParams } from "next/navigation";
-import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
+import { useRouter } from "next/navigation";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import ActivityStatus from "@/app/constants/constants";
 import FullPageLoader from "../components/FullPageLoader";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import Pagination from "@/app/admin/(logged_in)/components/Pagination";
+import { ACTIVITY_TYPES, MONTHS } from "@/app/constants/constants"; // Ensure this exists or define locally
+
+// Responsive filter bar
+const FilterBar = ({ setFilters, filters }) => {
+    return (
+        <div className="flex flex-col gap-2 md:flex-row md:gap-4 w-full mb-6">
+            {/* Type Filter */}
+            <div className="flex flex-col min-w-[160px]">
+                <label className="text-xs font-semibold mb-1">Type</label>
+                <select
+                    className="input input-bordered min-w-[160px]"
+                    value={filters.type}
+                    onChange={(e) =>
+                        setFilters((f) => ({ ...f, type: e.target.value }))
+                    }
+                >
+                    <option value="">All</option>
+                    {ACTIVITY_TYPES?.map((type) => (
+                        <option key={type} value={type}>
+                            {type}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            {/* Month Filter */}
+            <div className="flex flex-col min-w-[160px]">
+                <label className="text-xs font-semibold mb-1">Month</label>
+                <select
+                    className="input input-bordered min-w-[160px]"
+                    value={filters.month}
+                    onChange={(e) =>
+                        setFilters((f) => ({ ...f, month: e.target.value }))
+                    }
+                >
+                    <option value="">All</option>
+                    {MONTHS.map((m) => (
+                        <option key={m.value} value={m.value}>
+                            {m.label}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            {/* Location Filter */}
+            <div className="flex flex-col min-w-[180px]">
+                <label className="text-xs font-semibold mb-1">Location</label>
+                <input
+                    type="text"
+                    className="input input-bordered min-w-[180px]"
+                    placeholder="Location"
+                    value={filters.location}
+                    onChange={(e) =>
+                        setFilters((f) => ({ ...f, location: e.target.value }))
+                    }
+                />
+            </div>
+            {/* Status Filter */}
+            <div className="flex flex-col min-w-[140px]">
+                <label className="text-xs font-semibold mb-1">Status</label>
+                <select
+                    className="input input-bordered min-w-[140px]"
+                    value={filters.status}
+                    onChange={(e) =>
+                        setFilters((f) => ({ ...f, status: e.target.value }))
+                    }
+                >
+                    <option value="">All</option>
+                    {Object.values(ActivityStatus).map((status) => (
+                        <option key={status} value={status}>
+                            {status}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            {/* Activity Name Filter */}
+            <div className="flex flex-col min-w-[180px]">
+                <label className="text-xs font-semibold mb-1">
+                    Activity Name
+                </label>
+                <input
+                    type="text"
+                    className="input input-bordered min-w-[180px]"
+                    placeholder="Search activity name"
+                    value={filters.activityName || ""}
+                    onChange={(e) =>
+                        setFilters((f) => ({
+                            ...f,
+                            activityName: e.target.value,
+                        }))
+                    }
+                />
+            </div>
+            {/* Reset Icon */}
+            <div className="flex items-end">
+                <button
+                    type="button"
+                    className="btn btn-ghost p-2"
+                    title="Reset filters"
+                    onClick={() =>
+                        setFilters({
+                            type: "",
+                            month: "",
+                            location: "",
+                            status: "",
+                            activityName: "",
+                        })
+                    }
+                >
+                    <RotateCcw className="w-5 h-5" />
+                </button>
+            </div>
+        </div>
+    );
+};
 
 function ActivityManagementPageContent() {
-    const [activity, setActivity] = useState(null);
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const view = searchParams.get("view") || "list";
-    const [formData, setFormData] = useState({
-        title: "",
-        type: "",
-        description: "",
-        date: "",
-        time: "",
-        location: "",
-        capacity: "",
-        images: [],
-        status: "draft",
-    });
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(10);
-    const [selectedStatus, setSelectedStatus] = useState("");
+    const [filters, setFilters] = useState({
+        type: "",
+        month: "",
+        location: "",
+        status: "",
+        activityName: "",
+    });
 
-    const {
-        activities,
-        setActivities,
-        loading: tableLoading,
-    } = useAdminActivities();
+    const { activities, loading: tableLoading } = useAdminActivities();
 
-    const filteredActivities = selectedStatus
-        ? activities.filter((a) => a.status === selectedStatus)
-        : activities;
+    const filteredActivities = activities.filter((a) => {
+        // Type filter
+        if (filters.type && a.activityType !== filters.type) return false;
+        // Month filter (checks month of startDate)
+        if (
+            filters.month &&
+            (!a.startDate ||
+                a.startDate.length < 7 ||
+                a.startDate.slice(5, 7) !== filters.month)
+        )
+            return false;
+        // Status filter
+        if (filters.status && a.status !== filters.status) return false;
+        // Location filter (partial match, case-insensitive)
+        if (
+            filters.location &&
+            (!a.location ||
+                !a.location
+                    .toLowerCase()
+                    .includes(filters.location.toLowerCase()))
+        )
+            return false;
+        if (
+            filters.activityName &&
+            (!a.title ||
+                !a.title
+                    .toLowerCase()
+                    .includes(filters.activityName.toLowerCase()))
+        )
+            return false;
+        return true;
+    });
 
     const paginatedActivities = filteredActivities.slice(
         (currentPage - 1) * pageSize,
@@ -80,10 +209,8 @@ function ActivityManagementPageContent() {
                 </button>
                 <h2 className="text-2xl font-bold">Activities</h2>
             </div>
-            {/* Search and Filters */}
-            <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                {/* <Dropdown items={statusOfUser} name="Status" /> */}
-            </div>
+            {/* Responsive Filters */}
+            <FilterBar setFilters={setFilters} filters={filters} />
             {/* Activities Table */}
             <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
                 {tableLoading ? (

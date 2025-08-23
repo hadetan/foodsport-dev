@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import axiosClient from "@/utils/axios/api"; // import your axios client
 
-const ActivityDetailsStep = () => {
+const ActivityDetailsStep = ({ activityId }) => {
     const router = useRouter();
     const params = useParams();
     const [details, setDetails] = useState("");
@@ -13,19 +13,12 @@ const ActivityDetailsStep = () => {
 
     const handleSave = async () => {
         try {
-            const activityId = params?.id;
-            if (!activityId) {
-                alert("Missing activity ID. Please create the activity first.");
-                return;
-            }
-            // Only send description to API
-            const formDataToSend = new FormData();
-            formDataToSend.set("description", details);
+            // Send description as JSON
             await axiosClient.patch(
-                `/admin/activities?activityId=${activityId}`,
-                formDataToSend,
+                `/admin/activities/summary?id=${activityId}`,
+                { summary: details },
                 {
-                    headers: { "Content-Type": "multipart/form-data" },
+                    headers: { "Content-Type": "application/json" },
                 }
             );
             router.push("/admin/activities");
@@ -41,7 +34,7 @@ const ActivityDetailsStep = () => {
         const errs = {};
         if (!form.title || form.title.length < 5 || form.title.length > 100)
             errs.title = "Title must be 5-100 characters.";
-       
+
         if (!form.activityType)
             errs.activityType = "Activity type is required.";
         if (!form.date) errs.datetime = "Date is required.";
