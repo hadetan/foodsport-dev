@@ -2,7 +2,6 @@
 import { usePathname } from 'next/navigation';
 import SidebarItem from '@/app/admin/(logged_in)//components/SidebarItem';
 import { Users, Calendar1, CircleGauge, Share2, Mail } from 'lucide-react';
-import ThemeController from '@/app/admin/(logged_in)//components/ThemeController';
 import { UsersProvider } from '@/app/shared/contexts/usersContext';
 import { DashboardProvider } from '@/app/shared/contexts/DashboardContext';
 import { AdminActivitiesProvider } from '@/app/shared/contexts/AdminActivitiesContext';
@@ -80,7 +79,6 @@ export default function AdminLoggedInLayout({ children }) {
 										<div className='text-xl font-bold px-4 py-2'>
 											Welcome Admin
 										</div>
-										<ThemeController />
 									</div>
 									<div className='p-4'>
 										<ul className='menu menu-lg gap-2 p-0 w-full sm:w-64'>
