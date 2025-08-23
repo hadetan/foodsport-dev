@@ -32,7 +32,6 @@ function ActivityManagementPageContent() {
 
     const {
         activities,
-        setActivities,
         loading: tableLoading,
     } = useAdminActivities();
 

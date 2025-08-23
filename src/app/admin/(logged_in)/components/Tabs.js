@@ -1,11 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import ActivityDetailsStep from "./descriptionBox";
-
-export default function Tabs({ setTab, activeTab }) {
-    const router = useRouter();
-
+export default function Tabs({ setTab, activeTab, activityId }) {
     return (
         <div>
             <div className="flex gap-2 mb-6">
@@ -16,12 +11,7 @@ export default function Tabs({ setTab, activeTab }) {
                                 ? "bg-primary text-white border-primary"
                                 : "bg-background text-primary border-primary"
                         }
-                            ${
-                                activeTab === "details" &&
-                                "bg-primary text-white border-primary"
-                            }
                          hover:bg-primary-light hover:text-white hover:border-primary-light
-
                         `}
                     type="button"
                     onClick={() => setTab("details")}
@@ -36,10 +26,6 @@ export default function Tabs({ setTab, activeTab }) {
                                 : "bg-background text-primary border-primary"
                         }
                         hover:bg-primary-light hover:text-white hover:border-primary-light
-                      ${
-                         activeTab ===  "description" && "bg-primary text-white border-primary"
-                        }
-
                     `}
                     type="button"
                     onClick={() => setTab("description")}
