@@ -250,7 +250,7 @@ const CreateActivityPage = () => {
                                 await handleCreateActivity();
                             }}
                         >
-                            {/* Upload Image - full width */}
+                            {/* Upload Image - full width */}back
                             <div className="md:col-span-2">
                                 <label className="label text-lg font-semibold mb-2 text-white">
                                     Upload Image

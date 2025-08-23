@@ -449,7 +449,6 @@ export default function EditActivityPage() {
                                     value={form.capacity}
                                     onChange={handleInput}
                                     min={1}
-                                    max={1000}
                                     required
                                     placeholder="Enter participant limit"
                                 />
@@ -484,7 +483,7 @@ export default function EditActivityPage() {
                             {/* Total Calories Burnt */}
                             <div className="form-control w-full">
                                 <label className="label text-lg font-semibold mb-2">
-                                    Total Calories Burnt{" "}
+                                    Total Calories Burnt
                                 </label>
                                 <input
                                     type="number"
