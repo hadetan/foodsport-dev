@@ -9,6 +9,8 @@ import { ImageUp, Pencil } from "lucide-react";
 import Tabs from "@/app/admin/(logged_in)/components/Tabs";
 import ActivityDetailsStep from "@/app/admin/(logged_in)/components/descriptionBox";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
+import { ACTIVITY_TYPES } from "@/app/constants/constants";
+
 const CreateActivityPage = () => {
     const router = useRouter();
     const [formData, setFormData] = useState({
@@ -372,18 +374,12 @@ const CreateActivityPage = () => {
                                         <option value="">
                                             Select activity type
                                         </option>
-                                        <option value="kayak">Kayak</option>
-                                        <option value="hiking">Hiking</option>
-                                        <option value="yoga">Yoga</option>
-                                        <option value="fitness">Fitness</option>
-                                        <option value="running">Running</option>
-                                        <option value="cycling">Cycling</option>
-                                        <option value="swimming">
-                                            Swimming
-                                        </option>
-                                        <option value="dancing">Dancing</option>
-                                        <option value="boxing">Boxing</option>
-                                        <option value="other">Other</option>
+                                        {ACTIVITY_TYPES.map((type) => (
+                                            <option key={type} value={type}>
+                                                {type.charAt(0).toUpperCase() +
+                                                    type.slice(1)}
+                                            </option>
+                                        ))}
                                     </select>
                                     {fieldErrors.activityType && (
                                         <span className="text-error text-base">
