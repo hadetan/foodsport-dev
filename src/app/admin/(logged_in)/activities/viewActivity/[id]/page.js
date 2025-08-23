@@ -99,7 +99,7 @@ const ActivityDetailPage = () => {
     };
 
     return (
-        <div className="w-full min-h-screen bg-gray-900 dark:bg-gray-950">
+    <div className="w-full min-h-screen bg-gray-900">
             {/* Navigation Buttons */}
             <div className="container mx-auto px-4 pt-6 flex justify-between items-center">
                 <button
@@ -203,64 +203,64 @@ const ActivityDetailPage = () => {
 
                     {/* Activity Details - Takes 1/3 of the width on large screens */}
                     <div>
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 h-full">
-                            <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+                        <div className="bg-white rounded-lg shadow-md p-6 h-full">
+                            <h2 className="text-xl font-bold mb-4 text-gray-800">
                                 Activity Details
                             </h2>
                             <div className="space-y-3">
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-gray-500">
                                         Type
                                     </p>
-                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                    <p className="font-medium text-gray-800">
                                         {activity.activityType}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-gray-500">
                                         Location
                                     </p>
-                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                    <p className="font-medium text-gray-800">
                                         {activity.location}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-gray-500">
                                         Start Date
                                     </p>
-                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                    <p className="font-medium text-gray-800">
                                         {formatDate(activity.startDate)}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-gray-500">
                                         End Date
                                     </p>
-                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                    <p className="font-medium text-gray-800">
                                         {formatDate(activity.endDate)}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-gray-500">
                                         Start Time
                                     </p>
-                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                    <p className="font-medium text-gray-800">
                                         {formatTime(activity.startTime)}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-gray-500">
                                         End Time
                                     </p>
-                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                    <p className="font-medium text-gray-800">
                                         {formatTime(activity.endTime)}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-gray-500">
                                         Participant Limit
                                     </p>
-                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                    <p className="font-medium text-gray-800">
                                         {activity.participantLimit ??
                                             "Not specified"}
                                     </p>
@@ -269,19 +269,19 @@ const ActivityDetailPage = () => {
                                    
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-gray-500">
                                         Calories Per Hour
                                     </p>
-                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                    <p className="font-medium text-gray-800">
                                         {activity.caloriesPerHour ??
                                             "Not specified"}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    <p className="text-sm text-gray-500">
                                         Featured
                                     </p>
-                                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                                    <p className="font-medium text-gray-800">
                                         {activity.isFeatured ? "Yes" : "No"}
                                     </p>
                                 </div>
@@ -293,25 +293,25 @@ const ActivityDetailPage = () => {
                 {/* Main Content */}
                 <div className="w-full">
                     {/* Description */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 w-full">
-                        <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+                    <div className="bg-white rounded-lg shadow-md p-6 mb-8 w-full">
+                        <h2 className="text-2xl font-bold mb-4 text-gray-800">
                             Description
                         </h2>
                         <div className="prose max-w-none">
                             {activity.description ? (
-                                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                                <p className="text-gray-700 whitespace-pre-line">
                                     {activity.description}
                                 </p>
                             ) : (
-                                <p className="text-gray-500 dark:text-gray-400 italic">
+                                <p className="text-gray-500 italic">
                                     No description provided
                                 </p>
                             )}
                         </div>
                     </div>
                     {/* Participating Users */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 w-full">
-                        <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+                    <div className="bg-white rounded-lg shadow-md p-6 mb-8 w-full">
+                        <h2 className="text-2xl font-bold mb-4 text-gray-800">
                             Participating Users - {participatingUsers.length}
                         </h2>
                         {participatingUsers && participatingUsers.length > 0 ? (
@@ -326,7 +326,7 @@ const ActivityDetailPage = () => {
                                     return (
                                         <div
                                             key={index}
-                                            className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                                            className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
                                         >
                                             <Avatar
                                                 srcAvatar={user.avatar}
@@ -335,10 +335,10 @@ const ActivityDetailPage = () => {
                                                 size="12"
                                             />
                                             <div>
-                                                <p className="font-medium text-gray-800 dark:text-gray-200">
+                                                <p className="font-medium text-gray-800">
                                                     {`${firstName} ${lastName}`}
                                                 </p>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                <p className="text-sm text-gray-500">
                                                     {user.email}
                                                 </p>
                                             </div>
@@ -347,7 +347,7 @@ const ActivityDetailPage = () => {
                                 })}
                             </div>
                         ) : (
-                            <p className="text-gray-500 dark:text-gray-400 italic">
+                            <p className="text-gray-500 italic">
                                 No users have joined this activity yet
                             </p>
                         )}

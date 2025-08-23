@@ -215,7 +215,7 @@ export default function RichTextEditor({ value, onChange }) {
                 {/* Editor area */}
                 <div
                     ref={editorRef}
-                    className="min-h-[180px] max-h-[400px] w-full p-4 outline-none bg-base-100 text-base resize-y text-black dark:text-inherit"
+                    className="min-h-[180px] max-h-[400px] w-full p-4 outline-none bg-base-100 text-base resize-y text-black"
                     contentEditable
                     spellCheck={true}
                     onInput={handleInput}
