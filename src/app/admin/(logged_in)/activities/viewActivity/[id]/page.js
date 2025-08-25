@@ -99,7 +99,7 @@ const ActivityDetailPage = () => {
     };
 
     return (
-    <div className="w-full min-h-screen bg-gray-900">
+        <div className="w-full min-h-screen bg-gray-50">
             {/* Navigation Buttons */}
             <div className="container mx-auto px-4 pt-6 flex justify-between items-center">
                 <button
@@ -145,10 +145,10 @@ const ActivityDetailPage = () => {
             </div>
 
             {/* Header Section with Image and Activity Details Side by Side */}
-            <div className="container mx-auto px-4 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div className="container mx-auto px-4 py-8 ">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 ">
                     {/* Cover Image - Takes 2/3 of the width on large screens */}
-                    <div className="lg:col-span-2">
+                    <div className="lg:col-span-2 border-2">
                         <div
                             className="relative w-full"
                             style={{ aspectRatio: "16/9" }}
@@ -265,9 +265,7 @@ const ActivityDetailPage = () => {
                                             "Not specified"}
                                     </p>
                                 </div>
-                                <div>
-                                   
-                                </div>
+                                <div></div>
                                 <div>
                                     <p className="text-sm text-gray-500">
                                         Calories Per Hour

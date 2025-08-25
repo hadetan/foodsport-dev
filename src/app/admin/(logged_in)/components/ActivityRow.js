@@ -149,14 +149,14 @@ const ActivityRow = ({ activity, onRowClick }) => {
                             onClick={handleViewDetails}
                             title="View Activity Details"
                         >
-                            <Eye size={20} className="text-gray-400" />
+                            <Eye size={25} className="text-black-400" />
                         </button>
                         <button
                             className="btn btn-sm btn-ghost btn-square"
                             onClick={handleEdit}
                             title="Edit Activity"
                         >
-                            <Pencil size={20} className="text-gray-400" />
+                            <Pencil size={25} className="text-black-400" />
                         </button>
                     </div>
                 </td>
