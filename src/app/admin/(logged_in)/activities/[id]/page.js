@@ -229,7 +229,7 @@ export default function EditActivityPage() {
                             <label className="label text-lg font-semibold mb-2 text-white">
                                 Upload Image
                             </label>
-                            <div className="relative flex flex-col items-center justify-center bg-[#181C23] border-2 border-dashed border-[#3B82F6] rounded-xl p-8 min-h-[180px]">
+                            <div className="relative flex flex-col items-center justify-center bg-light border-2 border-dashed border-[#3B82F6] rounded-xl p-8 min-h-[180px]">
                                 <input
                                     type="file"
                                     className="absolute inset-0 opacity-0 cursor-pointer"

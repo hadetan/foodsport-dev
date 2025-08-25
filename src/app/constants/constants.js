@@ -19,10 +19,7 @@ export const DISTRICTS = [
     "Yuen_Long",
 ];
 export default [
-    "upcoming",
     "active",
-    "closed",
-    "completed",
     "draft",
 ];
 export const ACTIVITY_TYPES = [
