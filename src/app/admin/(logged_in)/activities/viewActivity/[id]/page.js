@@ -7,6 +7,8 @@ import { useUsers } from "@/app/shared/contexts/usersContext";
 import Avatar from "@/app/shared/components/avatar";
 import FullPageLoader from "../../../components/FullPageLoader";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
+import { Download, Upload } from "lucide-react";
+import { toast } from "@/utils/Toast";
 
 const ActivityDetailPage = () => {
     const [activity, setActivity] = useState(null);
@@ -99,7 +101,9 @@ const ActivityDetailPage = () => {
     };
 
     return (
-        <div className="w-full min-h-screen bg-gray-50">
+
+        <div className="w-full min-h-screen bg-white">
+
             {/* Navigation Buttons */}
             <div className="container mx-auto px-4 pt-6 flex justify-between items-center">
                 <button
@@ -121,6 +125,124 @@ const ActivityDetailPage = () => {
                     </svg>
                     Back
                 </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors mb-4"
+                        onClick={() => {
+                            /* handle import */
+                        }}
+                        title="Import"
+                    >
+                        <Upload className="w-5 h-5 mr-2" />
+                        Import
+                    </button>
+                    <button
+                        className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors mb-4"
+                        onClick={() => {
+                            // Export selected activity details and participating users as CSV
+                            if (!activity) {
+                                toast.error("No activity data to export");
+                                return;
+                            }
+
+                            // Activity fields to export
+                            const activityFields = [
+                                "id",
+                                "title",
+                                "description",
+                                "activityType",
+                                "location",
+                                "startDate",
+                                "endDate",
+                                "startTime",
+                                "endTime",
+                                "caloriesPerHour",
+                            ];
+                            const activityHeader = activityFields
+                                .map((field) => `"${field}"`)
+                                .concat(['"duration"', '"calories"']) // add empty columns
+                                .join(",");
+                            const activityRow = activityFields
+                                .map((field) =>
+                                    activity[field] !== undefined &&
+                                    activity[field] !== null
+                                        ? `"${String(activity[field]).replace(
+                                              /"/g,
+                                              '""'
+                                          )}"`
+                                        : ""
+                                )
+                                .concat(["", ""]) // empty duration and calories
+                                .join(",");
+
+                            // Participating users fields to export
+                            const userFields = [
+                                "firstname",
+                                "lastname",
+                                "email",
+                                "joinedDate",
+                                "height",
+                                "weight",
+                                "dob",
+                                "gender",
+                            ];
+                            const userHeader = userFields
+                                .map((field) => `"${field}"`)
+                                .join(",");
+                            const userRows =
+                                participatingUsers &&
+                                participatingUsers.length > 0
+                                    ? participatingUsers.map((user) =>
+                                          userFields
+                                              .map((key) =>
+                                                  user[key] !== undefined &&
+                                                  user[key] !== null
+                                                      ? `"${String(
+                                                            user[key]
+                                                        ).replace(/"/g, '""')}"`
+                                                      : ""
+                                              )
+                                              .join(",")
+                                      )
+                                    : [];
+
+                            let usersSection = "";
+                            if (userRows.length > 0) {
+                                usersSection =
+                                    "\r\n\r\nParticipating Users\r\n" +
+                                    userHeader +
+                                    "\r\n" +
+                                    userRows.join("\r\n");
+                            }
+
+                            const csvContent =
+                                "Activity Details\r\n" +
+                                activityHeader +
+                                "\r\n" +
+                                activityRow +
+                                usersSection;
+
+                            const blob = new Blob([csvContent], {
+                                type: "text/csv;charset=utf-8;",
+                            });
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement("a");
+                            link.href = url;
+                            link.setAttribute(
+                                "download",
+                                `activity_${activityId}_details_and_users.csv`
+                            );
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                        }}
+                        title="Export Activity Details & Users"
+                    >
+                        <Download className="w-5 h-5 mr-2" />
+                        Export Activity
+                    </button>
+                </div>
                 <button
                     className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors mb-4"
                     onClick={() =>
