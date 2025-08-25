@@ -36,7 +36,7 @@ const ActivityRow = ({ activity, onRowClick }) => {
         <>
             <tr
                 key={activity.id}
-                className="text-base align-middle cursor-pointer hover:bg-base-200"
+                className="text-base align-middle cursor-pointer hover:bg-purple-100"
                 onClick={handleRowClick}
             >
                 <td className="align-middle">
