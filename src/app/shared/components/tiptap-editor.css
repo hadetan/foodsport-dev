@@ -1,8 +1,8 @@
 /* Tiptap Editor Content Styles */
 .tiptap-editor {
-    background-color: #181a1b;
-    color: #fff;
-    border: 1.5px solid #fff;
+    background-color: #ffffff;
+    color: #000000;
+    border: 1.5px solid #000000;
     min-height: calc(100vh - 230px);
     padding: 1.25rem 10rem;
     border-radius: 0 0 0.75rem 0.75rem;

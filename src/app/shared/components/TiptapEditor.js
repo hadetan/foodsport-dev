@@ -8,6 +8,8 @@ import { BulletList } from "@tiptap/extension-bullet-list";
 import { OrderedList } from "@tiptap/extension-ordered-list";
 import { ListItem } from "@tiptap/extension-list-item";
 import TextAlign from "@tiptap/extension-text-align";
+import { TextStyle } from "@tiptap/extension-text-style";
+import FontFamily from "@tiptap/extension-font-family";
 import {
     FaBold,
     FaItalic,
@@ -25,6 +27,15 @@ import {
 } from "react-icons/fa6";
 import { IoMdUndo, IoMdRedo } from "react-icons/io";
 import { useEffect, useState, useCallback, useRef } from "react";
+
+const FONT_FAMILIES = [
+    { label: "Default", value: "" },
+    { label: "Arial", value: "Arial, Helvetica, sans-serif" },
+    { label: "Times New Roman", value: "'Times New Roman', Times, serif" },
+    { label: "Georgia", value: "Georgia, serif" },
+    { label: "Courier New", value: "'Courier New', Courier, monospace" },
+    { label: "Verdana", value: "Verdana, Geneva, sans-serif" },
+];
 
 export default function TiptapEditor({ value, onChange }) {
     const editor = useEditor({
@@ -58,6 +69,10 @@ export default function TiptapEditor({ value, onChange }) {
                 types: ["heading", "paragraph"],
                 alignments: ["left", "center", "right", "justify"],
                 defaultAlignment: "left",
+            }),
+            TextStyle,
+            FontFamily.configure({
+                types: ["textStyle"],
             }),
         ],
         immediatelyRender: false,
@@ -116,6 +131,8 @@ export default function TiptapEditor({ value, onChange }) {
             alignCenter: editor.isActive({ textAlign: "center" }),
             alignRight: editor.isActive({ textAlign: "right" }),
             alignJustify: editor.isActive({ textAlign: "justify" }),
+            currentFontFamily:
+                editor.getAttributes("textStyle")?.fontFamily || "",
         };
     }, [editor]);
 
@@ -186,6 +203,28 @@ export default function TiptapEditor({ value, onChange }) {
                         <option value="h1">Heading 1</option>
                         <option value="h2">Heading 2</option>
                         <option value="h3">Heading 3</option>
+                    </select>
+                </div>
+                {/* Font Family Dropdown */}
+                <div className="relative">
+                    <select
+                        className="p-2 rounded bg-base-100 text-base-content border border-base-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 appearance-none"
+                        value={toolbarState.currentFontFamily}
+                        onChange={(e) =>
+                            editor
+                                .chain()
+                                .focus()
+                                .setFontFamily(e.target.value)
+                                .run()
+                        }
+                        title="Font Family"
+                        style={{ minWidth: 120 }}
+                    >
+                        {FONT_FAMILIES.map((f) => (
+                            <option key={f.value} value={f.value}>
+                                {f.label}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 <button
