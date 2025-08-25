@@ -69,7 +69,7 @@ const UserDetailPage = () => {
                         User Not Found
                     </div>
                     <div className="text-lg text-gray-300">
-                        Sorry, we couldn't find a user with this ID.
+                        Sorry, we could not find a user with this ID.
                     </div>
                 </div>
             </div>

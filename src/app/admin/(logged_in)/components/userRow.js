@@ -57,7 +57,7 @@ export const UserRow = ({ user, onRowClick }) => {
             <td>
                 <div className="btn-group">
                     <button
-                        className="btn btn-sm btn-ghost tooltip"
+                        className="btn btn-sm btn-ghost tooltip "
                         data-tip="Edit User"
                         onClick={(e) => {
                             e.stopPropagation();
@@ -66,16 +66,7 @@ export const UserRow = ({ user, onRowClick }) => {
                     >
                         <Pencil />
                     </button>
-                    <button
-                        className="btn btn-sm btn-ghost tooltip"
-                        data-tip="View Profile"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/admin/users/${user.id}`);
-                        }}
-                    >
-                        <Eye />
-                    </button>
+                   
                 </div>
             </td>
         </tr>
