@@ -219,7 +219,7 @@ const CreateActivityPage = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center w-full h-full min-h-0 bg-[#232733] px-2 sm:px-4 md:px-8 lg:px-16 flex-1">
+        <div className="flex flex-col items-center justify-center w-full h-full min-h-0 bg-white px-2 sm:px-4 md:px-8 lg:px-16 flex-1">
             {/* Back Button */}
             <div className="w-full max-w-5xl flex justify-start mb-4">
                 <button
@@ -230,13 +230,13 @@ const CreateActivityPage = () => {
                     &larr; Back
                 </button>
             </div>
-            <div className="w-full max-w-5xl bg-transparent  overflow-y-auto rounded-xl">
+            <div className="w-full max-w-5xl bg-white  overflow-y-auto rounded-xl">
                 {/* Tabs */}
                 <Tabs setTab={setTab} activeTab={tab} />
 
                 {tab === "details" ? (
                     <>
-                        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-white">
+                        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-black">
                             Create Activity
                         </h1>
                         {error && (
@@ -252,12 +252,12 @@ const CreateActivityPage = () => {
                                 await handleCreateActivity();
                             }}
                         >
-                            {/* Upload Image - full width */}back
+                            {/* Upload Image - full width */}
                             <div className="md:col-span-2">
-                                <label className="label text-lg font-semibold mb-2 text-white">
+                                <label className="label text-lg font-semibold mb-2 text-black">
                                     Upload Image
                                 </label>
-                                <div className="relative flex flex-col items-center justify-center bg-[#181C23] border-2 border-dashed border-[#3B82F6] rounded-xl p-4 sm:p-8 min-h-[120px] sm:min-h-[180px] w-full">
+                                <div className="relative flex flex-col items-center justify-center bg-white border-2 border-dashed border-[#3B82F6] rounded-xl p-4 sm:p-8 min-h-[120px] sm:min-h-[180px] w-full">
                                     <input
                                         id="activity-image-upload"
                                         type="file"
@@ -284,7 +284,7 @@ const CreateActivityPage = () => {
                                     {formData.image && (
                                         <div className="relative w-full flex justify-center">
                                             <div
-                                                className="bg-black flex items-center justify-center w-full"
+                                                className="bg-white flex items-center justify-center w-full"
                                                 style={{
                                                     width: "100%",
                                                     maxWidth: "100%",
@@ -342,11 +342,11 @@ const CreateActivityPage = () => {
                             <div className="flex flex-col gap-4 sm:gap-6">
                                 {/* Activity Title */}
                                 <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-white">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
                                         Activity Title
                                     </label>
                                     <input
-                                        className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                        className="input input-bordered input-lg w-full bg-white text-black"
                                         name="title"
                                         value={formData.title}
                                         onChange={handleFormChange}
@@ -361,11 +361,11 @@ const CreateActivityPage = () => {
                                 </div>
                                 {/* Activity Type */}
                                 <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-white">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
                                         Activity Type
                                     </label>
                                     <select
-                                        className="select select-bordered select-lg w-full bg-[#232733] text-white"
+                                        className="select select-bordered select-lg w-full bg-white text-black"
                                         name="activityType"
                                         value={formData.activityType}
                                         onChange={handleFormChange}
@@ -389,11 +389,11 @@ const CreateActivityPage = () => {
                                 </div>
                                 {/* Summary */}
                                 <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-white">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
                                         Summary
                                     </label>
                                     <textarea
-                                        className="textarea textarea-bordered textarea-lg w-full bg-[#232733] text-white"
+                                        className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
                                         name="description"
                                         value={formData.description}
                                         onChange={(e) => {
@@ -418,12 +418,12 @@ const CreateActivityPage = () => {
                                 </div>
                                 {/* Start Date & Time */}
                                 <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-white">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
                                         Start Date &amp; Time
                                     </label>
                                     <input
                                         type="datetime-local"
-                                        className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                        className="input input-bordered input-lg w-full bg-white text-black"
                                         name="startDateTime"
                                         value={formData.startDateTime}
                                         onChange={handleFormChange}
@@ -440,11 +440,11 @@ const CreateActivityPage = () => {
                             <div className="flex flex-col gap-4 sm:gap-6">
                                 {/* Location */}
                                 <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-white">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
                                         Location
                                     </label>
                                     <input
-                                        className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                        className="input input-bordered input-lg w-full bg-white text-black"
                                         name="location"
                                         value={formData.location}
                                         onChange={handleFormChange}
@@ -459,12 +459,12 @@ const CreateActivityPage = () => {
                                 </div>
                                 {/* Capacity */}
                                 <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-white">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
                                         Capacity
                                     </label>
                                     <input
                                         type="number"
-                                        className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                        className="input input-bordered input-lg w-full bg-white text-black"
                                         name="capacity"
                                         value={formData.capacity}
                                         onChange={handleFormChange}
@@ -480,12 +480,12 @@ const CreateActivityPage = () => {
                                 </div>
                                 {/* Calories Per Hour */}
                                 <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-white">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
                                         Calories Per Hour
                                     </label>
                                     <input
                                         type="number"
-                                        className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                        className="input input-bordered input-lg w-full bg-white text-black"
                                         name="caloriesPerHour"
                                         value={formData.caloriesPerHour}
                                         onChange={handleFormChange}
@@ -502,12 +502,12 @@ const CreateActivityPage = () => {
                                 </div>
                                 {/* End Date & Time */}
                                 <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-white">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
                                         End Date &amp; Time
                                     </label>
                                     <input
                                         type="datetime-local"
-                                        className="input input-bordered input-lg w-full bg-[#232733] text-white"
+                                        className="input input-bordered input-lg w-full bg-white text-black"
                                         name="endDateTime"
                                         value={formData.endDateTime}
                                         onChange={handleFormChange}
@@ -521,11 +521,11 @@ const CreateActivityPage = () => {
                                 </div>
                                 {/* Status */}
                                 <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-white">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
                                         Status
                                     </label>
                                     <select
-                                        className="select select-bordered select-lg w-full bg-[#232733] text-white"
+                                        className="select select-bordered select-lg w-full bg-white text-black"
                                         name="status"
                                         value={formData.status}
                                         onChange={handleFormChange}
