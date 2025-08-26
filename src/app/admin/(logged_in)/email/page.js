@@ -5,7 +5,7 @@ import UsersDropdown from "../components/UsersDropdown";
 import EmailPreview from "../components/EmailPreview";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import UserPicker from "../components/UserPicker";
-
+import axios from "axios";
 
 export default function AdminEmailPage() {
     const [subject, setSubject] = useState("");
@@ -78,7 +78,14 @@ export default function AdminEmailPage() {
         setFeedback({ show: false, type: "", message: "" });
 
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            // Call the backend API to send the email using axios
+            const response = await axios.post("/api/admin/email/custom_email", {
+                to: selectedUsers.map((u) => u.email),
+                subject,
+                html: content,
+            });
+
+            const data = response.data;
 
             setFeedback({
                 show: true,
@@ -94,7 +101,9 @@ export default function AdminEmailPage() {
             setFeedback({
                 show: true,
                 type: "error",
-                message: "Failed to send email. Please try again later.",
+                message:
+                    error.response?.data?.error ||
+                    "Failed to send email. Please try again later.",
             });
         } finally {
             setIsLoading(false);
@@ -109,8 +118,19 @@ export default function AdminEmailPage() {
         <div className="h-screen flex flex-col items-stretch justify-start bg-base-100 py-0">
             <div className="w-full h-full bg-base-200 rounded-2xl shadow-lg border border-base-300 px-0 flex flex-col flex-grow">
                 <div className="flex items-center gap-2 px-16 pt-10 pb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-8 h-8 text-red-500"><path fill="currentColor" d="M44 8v32H4V8l20 16Zm-2.5 0H6.5L24 21.95Z"/></svg>
-                    <h1 className="text-2xl font-semibold tracking-tight text-base-content">Send New Email</h1>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 48 48"
+                        className="w-8 h-8 text-red-500"
+                    >
+                        <path
+                            fill="currentColor"
+                            d="M44 8v32H4V8l20 16Zm-2.5 0H6.5L24 21.95Z"
+                        />
+                    </svg>
+                    <h1 className="text-2xl font-semibold tracking-tight text-base-content">
+                        Send New Email
+                    </h1>
                 </div>
                 <div className="divider my-0"></div>
                 <div className="px-16 pb-12 pt-2 flex-grow flex flex-col">
@@ -153,17 +173,21 @@ export default function AdminEmailPage() {
                         onSubmit={handleSubmit}
                         className="flex flex-col gap-4"
                     >
-
                         {/* Recipients + Actions Row */}
                         <div>
-                            <label className="block text-xl font-medium text-base-content mb-1 pl-2">To:</label>
+                            <label className="block text-xl font-medium text-base-content mb-1 pl-2">
+                                To:
+                            </label>
                             <div className="flex flex-row items-end gap-2 w-full">
                                 <div className="flex-1 min-w-0">
                                     <UserPicker
                                         selectedUsers={selectedUsers}
                                         setSelectedUsers={setSelectedUsers}
                                     />
-                                    <UsersDropdown users={selectedUsers} onRemove={removeUser} />
+                                    <UsersDropdown
+                                        users={selectedUsers}
+                                        onRemove={removeUser}
+                                    />
                                 </div>
                                 <div className="flex flex-row gap-2 pb-1">
                                     <button
@@ -195,7 +219,9 @@ export default function AdminEmailPage() {
 
                         {/* Subject */}
                         <div>
-                            <label className="block text-xl font-medium text-base-content mb-1 pl-2">Subject:</label>
+                            <label className="block text-xl font-medium text-base-content mb-1 pl-2">
+                                Subject:
+                            </label>
                             <input
                                 type="text"
                                 placeholder="Email subject"
@@ -214,7 +240,9 @@ export default function AdminEmailPage() {
 
                         {/* Email Body */}
                         <div>
-                            <label className="block text-xl font-medium text-base-content mb-1 pl-2">Email Body:</label>
+                            <label className="block text-xl font-medium text-base-content mb-1 pl-2">
+                                Email Body:
+                            </label>
                             <div className="rounded-lg border border-base-300 bg-base-100">
                                 <TiptapEditor
                                     value={content}
