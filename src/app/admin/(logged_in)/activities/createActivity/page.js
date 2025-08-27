@@ -33,6 +33,9 @@ const CreateActivityPage = () => {
     const imgRef = useRef(null);
     const [tab, setTab] = useState("details");
     const [activityId, setActivityId] = useState(null);
+    const [mapUrl, setMapUrl] = useState(
+        "https://www.google.com/maps?q=&output=embed"
+    );
 
     useEffect(() => {
         if (formData.image && imgRef.current) {
@@ -54,6 +57,22 @@ const CreateActivityPage = () => {
             setImageAspect(null);
         }
     }, [formData.image]);
+
+    useEffect(() => {
+        if (formData.location) {
+            const encodedLocation = encodeURIComponent(
+                formData.location + ", Hong Kong"
+            );
+            setMapUrl(
+                `https://www.google.com/maps?q=${encodedLocation}&output=embed&z=14`
+            );
+        } else {
+            // Center on Hong Kong only
+            setMapUrl(
+                "https://www.google.com/maps?q=Hong+Kong&output=embed&z=12"
+            );
+        }
+    }, [formData.location]);
 
     const isValidYear = (dateStr) => {
         if (!dateStr) return true;
@@ -573,6 +592,24 @@ const CreateActivityPage = () => {
                 ) : (
                     <ActivityDetailsStep activityId={activityId} />
                 )}
+            </div>
+            {/* Google Map at the bottom */}
+            <div className="w-full max-w-5xl mt-8 mb-4">
+                <h2 className="text-lg font-semibold mb-2 text-black">
+                    Location Map
+                </h2>
+                <div className="w-full h-[320px] rounded-xl overflow-hidden border border-gray-200">
+                    <iframe
+                        title="Google Map"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0, width: "100%", height: "100%" }}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src={mapUrl}
+                    ></iframe>
+                </div>
             </div>
         </div>
     );
