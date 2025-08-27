@@ -19,6 +19,7 @@ export default function EditActivityPage() {
     const [success, setSuccess] = useState("");
     const [error, setError] = useState("");
     const [audit, setAudit] = useState({});
+    const [mapUrl, setMapUrl] = useState("https://www.google.com/maps?q=Hong+Kong&output=embed&z=12");
     const router = useRouter();
     const fileInputRef = useRef();
     const params = useParams();
@@ -59,6 +60,15 @@ export default function EditActivityPage() {
             setImageFile(null);
         }
     }, [activity]);
+
+    useEffect(() => {
+        if (form && form.location) {
+            const encodedLocation = encodeURIComponent(form.location + ", Hong Kong");
+            setMapUrl(`https://www.google.com/maps?q=${encodedLocation}&output=embed&z=14`);
+        } else {
+            setMapUrl("https://www.google.com/maps?q=Hong+Kong&output=embed&z=12");
+        }
+    }, [form && form.location]);
 
     if (activity === undefined || actLoading) {
         return <FullPageLoader />;
@@ -544,6 +554,22 @@ export default function EditActivityPage() {
                             )}
                         </div>
                     </form>
+                    {/* Google Map at the bottom */}
+                    <div className="w-full max-w-5xl mt-8 mb-4">
+                        <h2 className="text-lg font-semibold mb-2 text-black">Location Map</h2>
+                        <div className="w-full h-[320px] rounded-xl overflow-hidden border border-gray-200">
+                            <iframe
+                                title="Google Map"
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0, width: '100%', height: '100%' }}
+                                loading="lazy"
+                                allowFullScreen
+                                referrerPolicy="no-referrer-when-downgrade"
+                                src={mapUrl}
+                            ></iframe>
+                        </div>
+                    </div>
                     {/* Cancel Confirmation */}
                     {showCancelConfirm && (
                         <div className="modal modal-open">
