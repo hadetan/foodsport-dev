@@ -136,7 +136,14 @@ function ActivityManagementPageContent() {
 
     const { activities, loading: tableLoading } = useAdminActivities();
 
-    const filteredActivities = activities.filter((a) => {
+    // Sort activities by creation date (descending)
+    const sortedActivities = [...activities].sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.created_at || 0);
+        const dateB = new Date(b.createdAt || b.created_at || 0);
+        return dateB - dateA;
+    });
+
+    const filteredActivities = sortedActivities.filter((a) => {
         // Type filter
         if (filters.type && a.activityType !== filters.type) return false;
         // Month filter (checks month of startDate)
@@ -197,43 +204,47 @@ function ActivityManagementPageContent() {
     const handlePageChange = (page) => setCurrentPage(page);
 
     return (
-        <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
-            <div className="flex justify-between mb-6">
-                <button
-                    className="btn btn-primary"
-                    onClick={() =>
-                        router.push("/admin/activities/createActivity")
-                    }
-                >
-                    Create Activity
-                </button>
-                <h2 className="text-2xl font-bold">Activities</h2>
+        <>
+            {" "}
+            <h2 className="text-2xl font-bold">Activities</h2>
+            <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
+                <div className="flex justify-between mb-6">
+                    <button
+                        className="btn btn-primary"
+                        onClick={() =>
+                            router.push("/admin/activities/createActivity")
+                        }
+                    >
+                        Create Activity
+                    </button>
+                </div>
+
+                {/* Responsive Filters */}
+                <FilterBar setFilters={setFilters} filters={filters} />
+                {/* Activities Table */}
+                <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
+                    {tableLoading ? (
+                        <FullPageLoader />
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <Table
+                                heading={tableHeading}
+                                tableData={paginatedActivities}
+                                tableType={"acitivityPage"}
+                                onRowClick={handleActivityClick}
+                                className="cursor-pointer"
+                            />
+                        </div>
+                    )}
+                    {/* Pagination */}
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                    />
+                </div>
             </div>
-            {/* Responsive Filters */}
-            <FilterBar setFilters={setFilters} filters={filters} />
-            {/* Activities Table */}
-            <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
-                {tableLoading ? (
-                    <FullPageLoader />
-                ) : (
-                    <div className="overflow-x-auto">
-                        <Table
-                            heading={tableHeading}
-                            tableData={paginatedActivities}
-                            tableType={"acitivityPage"}
-                            onRowClick={handleActivityClick}
-                            className="cursor-pointer"
-                        />
-                    </div>
-                )}
-                {/* Pagination */}
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                />
-            </div>
-        </div>
+        </>
     );
 }
 

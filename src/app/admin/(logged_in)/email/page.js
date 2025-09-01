@@ -6,7 +6,7 @@ import EmailPreview from "../components/EmailPreview";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import UserPicker from "../components/UserPicker";
 import axios from "axios";
-import Field from "@/app/shared/components/Field";
+// import Field from "@/app/shared/components/Field";
 
 function TemplatePreviewModal({ open, onClose, templateId, params }) {
     const [html, setHtml] = useState("");
@@ -112,17 +112,20 @@ export default function AdminEmailPage() {
         if (activeTab === "template") {
             setIsTemplatesLoading(true);
             setTemplatesError("");
-            axios
-                .get("/api/admin/email/all_templates")
-                .then((res) => {
+            (async () => {
+                try {
+                    const res = await axios.get(
+                        "/api/admin/email/all_templates"
+                    );
                     setTemplates(res.data.templates || []);
-                })
-                .catch((err) => {
+                } catch (err) {
                     setTemplatesError(
                         err.response?.data?.error || "Failed to load templates"
                     );
-                })
-                .finally(() => setIsTemplatesLoading(false));
+                } finally {
+                    setIsTemplatesLoading(false);
+                }
+            })();
         }
     }, [activeTab]);
 
@@ -132,20 +135,24 @@ export default function AdminEmailPage() {
             setVarsError("");
             setTemplateVars([]);
             setParams({});
-            axios
-                .post("/api/admin/email/template_vars", {
-                    templateId: selectedTemplateId,
-                })
-                .then((res) => {
+            (async () => {
+                try {
+                    const res = await axios.post(
+                        "/api/admin/email/template_vars",
+                        {
+                            templateId: selectedTemplateId,
+                        }
+                    );
                     setTemplateVars(res.data.variables || []);
-                })
-                .catch((err) => {
+                } catch (err) {
                     setVarsError(
                         err.response?.data?.error ||
                             "Failed to load template variables"
                     );
-                })
-                .finally(() => setIsVarsLoading(false));
+                } finally {
+                    setIsVarsLoading(false);
+                }
+            })();
         } else {
             setTemplateVars([]);
             setParams({});
