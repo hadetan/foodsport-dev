@@ -20,6 +20,7 @@ const CreateActivityPage = () => {
         startDateTime: "",
         endDateTime: "",
         location: "",
+        mapLocation: "", // renamed from location for map search
         capacity: "",
         caloriesPerHour: "",
         image: null,
@@ -59,9 +60,9 @@ const CreateActivityPage = () => {
     }, [formData.image]);
 
     useEffect(() => {
-        if (formData.location) {
+        if (formData.mapLocation) {
             const encodedLocation = encodeURIComponent(
-                formData.location + ", Hong Kong"
+                formData.mapLocation + ", Hong Kong"
             );
             setMapUrl(
                 `https://www.google.com/maps?q=${encodedLocation}&output=embed&z=14`
@@ -72,7 +73,7 @@ const CreateActivityPage = () => {
                 "https://www.google.com/maps?q=Hong+Kong&output=embed&z=12"
             );
         }
-    }, [formData.location]);
+    }, [formData.mapLocation]);
 
     const isValidYear = (dateStr) => {
         if (!dateStr) return true;
@@ -265,12 +266,13 @@ const CreateActivityPage = () => {
                             />
                         )}
                         <form
-                            className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-6"
                             onSubmit={async (e) => {
                                 e.preventDefault();
                                 await handleCreateActivity();
                             }}
                         >
+                            <div                             className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-6"
+>
                             {/* Upload Image - full width */}
                             <div className="md:col-span-2">
                                 <label className="label text-lg font-semibold mb-2 text-black">
@@ -460,14 +462,14 @@ const CreateActivityPage = () => {
                                     </label>
                                     <input
                                         className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="location"
+                                        name="mapLocation"
                                         onChange={handleFormChange}
                                         required
                                         placeholder="Enter activity location"
                                     />
-                                    {fieldErrors.location && (
+                                    {fieldErrors.mapLocation && (
                                         <span className="text-error text-base">
-                                            {fieldErrors.location}
+                                            {fieldErrors.mapLocation}
                                         </span>
                                     )}
                                 </div>
@@ -581,7 +583,8 @@ const CreateActivityPage = () => {
                                     )}
                                 </div>
                             </div>
-                        </form>
+                            </div>
+                             
                         {/* Google Map at the bottom */}
                         <div className="w-full max-w-5xl mt-8 mb-4">
                             <h2 className="text-lg font-semibold mb-2 text-black">
@@ -624,6 +627,8 @@ const CreateActivityPage = () => {
                                 Cancel
                             </button>
                         </div>
+                        </form>
+                       
                     </>
                 ) : (
                     <ActivityDetailsStep activityId={activityId} />
