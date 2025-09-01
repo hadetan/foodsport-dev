@@ -6,7 +6,7 @@ import EmailPreview from "../components/EmailPreview";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import UserPicker from "../components/UserPicker";
 import axios from "axios";
-// import Field from "@/app/shared/components/Field";
+import Field from "@/app/shared/components/Field";
 
 function TemplatePreviewModal({ open, onClose, templateId, params }) {
     const [html, setHtml] = useState("");
@@ -326,7 +326,7 @@ export default function AdminEmailPage() {
 
     return (
         <div className="h-screen flex flex-col items-stretch justify-start bg-base-100 py-0">
-            <div className="w-full h-full bg-base-200 rounded-2xl shadow-lg border border-base-300 px-0 flex flex-col flex-grow">
+            <div className="bg-base-200 rounded-2xl shadow-lg border border-base-300 px-0 flex flex-col flex-grow">
                 {/* Tabs */}
                 <div className="flex items-center gap-2 px-16 pt-10 pb-2">
                     <svg
@@ -509,7 +509,7 @@ export default function AdminEmailPage() {
                     {/* Placeholder for Template email tab */}
                     {activeTab === "template" && (
                         <div className="flex flex-col items-center justify-center h-full text-base-content w-full">
-                            <div className="w-full max-w-xl">
+                            <div className="w-full  ">
                                 {/* Feedback for template email send */}
                                 {templateSendFeedback.show && (
                                     <div
@@ -613,22 +613,56 @@ export default function AdminEmailPage() {
                                                 </div>
                                             )}
                                         <div className="flex flex-col gap-4">
-                                            {templateVars.map((varName) => (
-                                                <Field
-                                                    key={varName}
-                                                    label={varName}
-                                                    value={
-                                                        params[varName] || ""
-                                                    }
-                                                    onChange={(val) =>
-                                                        setParams((p) => ({
-                                                            ...p,
-                                                            [varName]: val,
-                                                        }))
-                                                    }
-                                                    editor={isRichText(varName)}
-                                                />
-                                            ))}
+                                            {templateVars
+                                                .filter(
+                                                    (v) => v !== "description"
+                                                )
+                                                .map((varName) => (
+                                                    <Field
+                                                        key={varName}
+                                                        label={varName}
+                                                        value={
+                                                            params[varName] ||
+                                                            ""
+                                                        }
+                                                        onChange={(val) =>
+                                                            setParams((p) => ({
+                                                                ...p,
+                                                                [varName]: val,
+                                                            }))
+                                                        }
+                                                    />
+                                                ))}
+                                            {templateVars.includes(
+                                                "description"
+                                            ) && (
+                                                <div
+                                                    className="flex flex-col gap-1"
+                                                    key="description"
+                                                >
+                                                    <label className="text-base font-medium text-base-content mb-1 pl-1 capitalize">
+                                                        description
+                                                    </label>
+                                                    <div className="rounded-lg border border-base-300 bg-base-100">
+                                                        <TiptapEditor
+                                                            value={
+                                                                params[
+                                                                    "description"
+                                                                ] || ""
+                                                            }
+                                                            onChange={(val) =>
+                                                                setParams(
+                                                                    (p) => ({
+                                                                        ...p,
+                                                                        description:
+                                                                            val,
+                                                                    })
+                                                                )
+                                                            }
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex flex-row gap-2 mt-4">
                                             <button
