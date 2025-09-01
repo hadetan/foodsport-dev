@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid';
 
-const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 6);
+const nanoid = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 6);
 
 /**
  * Generate a unique 6-character alphanumeric ticket code.
