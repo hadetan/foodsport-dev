@@ -1,10 +1,12 @@
 import { getById, getByIdComposite, getCount, remove } from '@/lib/prisma/db-utils';
+import api from '@/utils/axios/api';
+import { prisma } from '@/lib/prisma/db';
 import { requireUser } from '@/lib/prisma/require-user';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
 import { NextResponse } from 'next/server';
 
-// POST /api/my/activities/leave
+// DELETE /api/my/activities/leave
 export async function DELETE(request) {
 	const supabase = await createServerClient();
 	const { error, user: User } = await requireUser(supabase, NextResponse);
@@ -24,6 +26,7 @@ export async function DELETE(request) {
 		}
 
 		const activity = await getById('activity', body.activityId, {
+			title: true,
 			status: true,
 			participantLimit: true,
 		});
@@ -45,7 +48,7 @@ export async function DELETE(request) {
 			);
 		}
 
-		const user = await getById('user', User.id, { id: true });
+		const user = await getById('user', User.id, { id: true, firstname: true, lastname: true, email: true });
 		if (!user) {
 			return Response.json(
 				{
@@ -68,6 +71,32 @@ export async function DELETE(request) {
 			);
 		}
 
+		const templateId = 192;
+		const params = {
+			name: `${user.firstname} ${user.lastname}`,
+			activity: activity.title,
+		};
+		let emailError;
+		try {
+			await api.post('/admin/email/template_email', {
+				to: user.email,
+				templateId,
+				params,
+			});
+		} catch (e) {
+			emailError = e;
+		}
+
+		await prisma.ticket.updateMany({
+			where: {
+				userId: user.id,
+				activityId: body.activityId,
+			},
+			data: {
+				status: 'cancelled',
+			},
+		});
+
 		const currentCount = await getCount('userActivity', {
 			activityId: body.activityId,
 		});
@@ -77,6 +106,7 @@ export async function DELETE(request) {
 		return Response.json({
 			message: 'Left activity successfully.',
 			participantCount: updatedCount,
+			emailError,
 		});
 	} catch (error) {
 		return Response.json(
