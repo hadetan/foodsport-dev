@@ -71,6 +71,13 @@ export async function POST(request) {
 		);
 	}
 
+	if (!userActivity.ticketId || userActivity.ticketId !== ticket.id) {
+		return NextResponse.json(
+			{ error: 'This ticket is not valid for this user/activity. Maybe a new ticket has already been issued and expired the given ticket. Please your mail again.' },
+			{ status: 400 }
+		);
+	}
+
 	await prisma.ticket.update({
 		where: { id: ticket.id },
 		data: { ticketUsed: true, status: 'used', usedAt: new Date() },
