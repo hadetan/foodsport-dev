@@ -249,7 +249,7 @@ const CreateActivityPage = () => {
                     &larr; Back
                 </button>
             </div>
-            <div className="w-full max-w-5xl bg-white  overflow-y-auto rounded-xl">
+            <div className="w-full max-w-5xl bg-white  overflow-y-auto mb-2">
                 {/* Tabs */}
                 <Tabs setTab={setTab} activeTab={tab} />
 
@@ -454,10 +454,27 @@ const CreateActivityPage = () => {
                                         </span>
                                     )}
                                 </div>
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Search Map
+                                    </label>
+                                    <input
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="location"
+                                        onChange={handleFormChange}
+                                        required
+                                        placeholder="Enter activity location"
+                                    />
+                                    {fieldErrors.location && (
+                                        <span className="text-error text-base">
+                                            {fieldErrors.location}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                             {/* Right column */}
                             <div className="flex flex-col gap-4 sm:gap-6">
-                                {/* Location */}
+                                {/* Location (Event Address) */}
                                 <div className="form-control w-full">
                                     <label className="label text-lg font-semibold mb-2 text-black">
                                         Location
@@ -465,10 +482,9 @@ const CreateActivityPage = () => {
                                     <input
                                         className="input input-bordered input-lg w-full bg-white text-black"
                                         name="location"
-                                        value={formData.location}
+                                        value={formData.location || ""}
                                         onChange={handleFormChange}
-                                        required
-                                        placeholder="Enter activity location"
+                                        placeholder="Enter event address"
                                     />
                                     {fieldErrors.location && (
                                         <span className="text-error text-base">
@@ -565,51 +581,53 @@ const CreateActivityPage = () => {
                                     )}
                                 </div>
                             </div>
-                            {/* Actions - full width */}
-                            <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full">
-                                <button
-                                    type="submit"
-                                    className={`btn btn-primary btn-lg flex-1 ${
-                                        loading ? "loading" : ""
-                                    }`}
-                                    disabled={loading}
-                                >
-                                    Save & Continue
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-outline btn-lg flex-1"
-                                    onClick={() =>
-                                        router.push("/admin/activities")
-                                    }
-                                    disabled={loading}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
                         </form>
+                        {/* Google Map at the bottom */}
+                        <div className="w-full max-w-5xl mt-8 mb-4">
+                            <h2 className="text-lg font-semibold mb-2 text-black">
+                                Location Map
+                            </h2>
+                            <div className="w-full h-[320px] rounded-xl overflow-hidden border border-gray-200">
+                                <iframe
+                                    title="Google Map"
+                                    width="100%"
+                                    height="100%"
+                                    style={{
+                                        border: 0,
+                                        width: "100%",
+                                        height: "100%",
+                                    }}
+                                    loading="lazy"
+                                    allowFullScreen
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                    src={mapUrl}
+                                ></iframe>
+                            </div>
+                        </div>
+                        {/* Actions - full width */}
+                        <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full">
+                            <button
+                                type="submit"
+                                className={`btn btn-primary btn-lg flex-1 ${
+                                    loading ? "loading" : ""
+                                }`}
+                                disabled={loading}
+                            >
+                                Save & Continue
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-outline btn-lg flex-1"
+                                onClick={() => router.push("/admin/activities")}
+                                disabled={loading}
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </>
                 ) : (
                     <ActivityDetailsStep activityId={activityId} />
                 )}
-            </div>
-            {/* Google Map at the bottom */}
-            <div className="w-full max-w-5xl mt-8 mb-4">
-                <h2 className="text-lg font-semibold mb-2 text-black">
-                    Location Map
-                </h2>
-                <div className="w-full h-[320px] rounded-xl overflow-hidden border border-gray-200">
-                    <iframe
-                        title="Google Map"
-                        width="100%"
-                        height="100%"
-                        style={{ border: 0, width: "100%", height: "100%" }}
-                        loading="lazy"
-                        allowFullScreen
-                        referrerPolicy="no-referrer-when-downgrade"
-                        src={mapUrl}
-                    ></iframe>
-                </div>
             </div>
         </div>
     );
