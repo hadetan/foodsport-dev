@@ -1,8 +1,10 @@
-import { executeTransaction, getById, getCount } from '@/lib/prisma/db-utils';
+import { executeTransaction, getById, getCount, updateById } from '@/lib/prisma/db-utils';
 import { requireUser } from '@/lib/prisma/require-user';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
 import { NextResponse } from 'next/server';
+import api from '@/utils/axios/api';
+import { generateUniqueTicketCode } from '@/utils/generateUniqueTicketCode';
 
 // POST /api/my/activities/join
 export async function POST(request) {
@@ -15,10 +17,7 @@ export async function POST(request) {
 		const validation = validateRequiredFields(body, ['activityId']);
 		if (!validation.isValid) {
 			return Response.json(
-				{
-					error: 'Missing required fields',
-					details: validation.error,
-				},
+				{ error: 'Missing required fields', details: validation.error },
 				{ status: 400 }
 			);
 		}
@@ -26,81 +25,118 @@ export async function POST(request) {
 		const activity = await getById('activity', body.activityId, {
 			status: true,
 			participantLimit: true,
+			title: true,
 		});
 		if (!activity) {
 			return Response.json(
-				{
-					error: 'Activity not found',
-				},
+				{ error: 'Activity not found' },
 				{ status: 404 }
 			);
 		}
 
-		const user = await getById('user', User.id, { id: true, height: true, weight: true });
+		const user = await getById('user', User.id, {
+			id: true,
+			height: true,
+			weight: true,
+			email: true,
+			firstname: true,
+			lastname: true,
+		});
 		if (!user) {
-			return Response.json(
-				{
-					error: 'User not found',
-				},
-				{ status: 404 }
-			);
+			return Response.json({ error: 'User not found' }, { status: 404 });
 		}
 		if (!user.height || !user.weight) {
 			return Response.json(
-				{
-					error: 'Please fill in your height and weight before joining an activity.'
-				},
+				{ error: 'Please fill in your height and weight before joining an activity.' },
 				{ status: 400 }
 			);
 		}
 
 		if (activity.status !== 'active') {
 			return Response.json(
-				{
-					error: 'Activity is not active',
-				},
+				{ error: 'Activity is not active' },
 				{ status: 400 }
 			);
 		}
 
-		const userActivity = await executeTransaction(async (tx) => {
- 			const participantCount = await tx.userActivity.count({ where: { activityId: body.activityId } });
- 			if (
- 				typeof activity.participantLimit === 'number' &&
- 				participantCount >= activity.participantLimit
- 			) {
- 				throw new Error('Activity is full');
- 			}
- 
- 			const alreadyJoined = await tx.userActivity.findUnique({
- 				where: {
- 					userId_activityId: {
- 						userId: user.id,
- 						activityId: body.activityId,
- 					},
- 				},
- 			});
- 			if (alreadyJoined) {
- 				throw new Error('User has already joined this activity');
- 			}
- 
- 			return await tx.userActivity.create({
- 				data: {
- 					userId: user.id,
- 					activityId: body.activityId,
- 				},
- 			});
- 		});
+		const result = await executeTransaction(async (tx) => {
+			const participantCount = await tx.userActivity.count({
+				where: { activityId: body.activityId },
+			});
+			if (
+				typeof activity.participantLimit === 'number' &&
+				participantCount >= activity.participantLimit
+			) {
+				throw new Error('Activity is full');
+			}
 
-		const updatedCount = await getCount('userActivity', { activityId: body.activityId });
+			const alreadyJoined = await tx.userActivity.findUnique({
+				where: {
+					userId_activityId: {
+						userId: user.id,
+						activityId: body.activityId,
+					},
+				},
+			});
+			if (alreadyJoined) {
+				throw new Error('User has already joined this activity');
+			}
 
-		return Response.json({ message: 'Joined activity successfully.', userActivity, participantCount: updatedCount });
+			const ticketCode = await generateUniqueTicketCode(tx);
+
+			const ticket = await tx.ticket.create({
+				data: {
+					ticketCode,
+					activityId: body.activityId,
+					userId: user.id,
+					status: 'active',
+					ticketSent: false,
+					ticketUsed: false,
+				},
+			});
+
+			const userActivity = await tx.userActivity.create({
+				data: {
+					userId: user.id,
+					activityId: body.activityId,
+					ticketId: ticket.id,
+				},
+			});
+
+			return { ticket, userActivity };
+		});
+
+		const templateId = 191;
+		const params = {
+			name: `${user.firstname} ${user.lastname}`,
+			code: result.ticket.ticketCode,
+			title: activity.title,
+		};
+		const emailRes = await api.post(
+			`/admin/email/template_email`,
+			{
+				to: user.email,
+				templateId,
+				params,
+			}
+		);
+		if (!emailRes.data || !emailRes.data.success) {
+			throw new Error('Failed to send ticket email');
+		}
+
+		await updateById('ticket', result.ticket.id, { ticketSent: true });
+
+		const updatedCount = await getCount('userActivity', {
+			activityId: body.activityId,
+		});
+		return Response.json({
+			message: 'Joined activity successfully. Ticket sent.',
+			userActivity: result.userActivity,
+			participantCount: updatedCount,
+		});
 	} catch (error) {
 		return Response.json(
-			{
-				error: 'Failed to join activity',
-				details: error.message,
-			},
+			{ error: 'Failed to join activity', details: error.message },
 			{ status: 500 }
 		);
 	}
