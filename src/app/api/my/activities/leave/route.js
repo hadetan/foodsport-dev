@@ -87,21 +87,25 @@ export async function DELETE(request) {
 			emailError = e;
 		}
 
-		await prisma.ticket.updateMany({
-			where: {
-				userId: user.id,
-				activityId: body.activityId,
-			},
-			data: {
-				status: 'cancelled',
-			},
-		});
+		// Transaction: cancel tickets and remove userActivity atomically
+		await prisma.$transaction([
+			prisma.ticket.updateMany({
+				where: {
+					userId: user.id,
+					activityId: body.activityId,
+				},
+				data: {
+					status: 'cancelled',
+				},
+			}),
+			prisma.userActivity.delete({
+				where: { id: userActivity.id },
+			}),
+		]);
 
-		const currentCount = await getCount('userActivity', {
+		const updatedCount = await getCount('userActivity', {
 			activityId: body.activityId,
 		});
-		await remove('userActivity', { id: userActivity.id });
-		const updatedCount = currentCount - 1;
 
 		return Response.json({
 			message: 'Left activity successfully.',

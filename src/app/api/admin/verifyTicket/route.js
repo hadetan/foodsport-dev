@@ -73,7 +73,7 @@ export async function POST(request) {
 
 	if (!userActivity.ticketId || userActivity.ticketId !== ticket.id) {
 		return NextResponse.json(
-			{ error: 'This ticket is not valid for this user/activity. Maybe a new ticket has already been issued and expired the given ticket. Please your mail again.' },
+			{ error: 'This ticket is not valid for this user and event. Please ensure you are using the most recent ticket sent to your email.' },
 			{ status: 400 }
 		);
 	}
