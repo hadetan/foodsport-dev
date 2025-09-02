@@ -75,7 +75,14 @@ export async function POST(req) {
 			return NextResponse.json({ error: 'Title and description are required.' }, { status: 400 });
 		}
 
-		const existing = await prisma.tnc.findUnique({ where: { title } });
+        const existing = await prisma.tnc.findFirst({ 
+            where: { 
+                title: { 
+                    equals: title,
+                    mode: 'insensitive'
+                }
+            }
+        });
 		if (existing) {
 			return NextResponse.json({ error: 'A TNC with this title already exists.' }, { status: 409 });
 		}
@@ -155,31 +162,47 @@ export async function PATCH(req) {
 			if (admin) updatedBy = admin.id;
 		}
 
-		if (title) {
-			const existing = await prisma.tnc.findFirst({ where: { title, id: { not: tncId } } });
-			if (existing) {
-				return NextResponse.json({ error: 'A TNC with this title already exists.' }, { status: 409 });
-			}
-		}
+        if (title) {
+            const existing = await prisma.tnc.findFirst({ 
+                where: { 
+                    title: { 
+                        equals: title,
+                        mode: 'insensitive'
+                    }, 
+                    id: { not: tncId } 
+                }
+            });
+            if (existing) {
+                return NextResponse.json({ error: 'A TNC with this title already exists.' }, { status: 409 });
+            }
+        }
 
 		const updateData = {};
 		if (title) updateData.title = title;
 		if (description) updateData.description = description;
 		updateData.updatedBy = updatedBy;
 
-		const tnc = await prisma.tnc.update({
-			where: { id: tncId },
-			data: updateData,
-			select: {
-				id: true,
-				title: true,
-				description: true,
-				adminUserId: true,
-				updatedBy: true,
-				createdAt: true,
-				updatedAt: true,
-			},
-		});
+        let tnc;
+        try {
+            tnc = await prisma.tnc.update({
+                where: { id: tncId },
+                data: updateData,
+                select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    adminUserId: true,
+                    updatedBy: true,
+                    createdAt: true,
+                    updatedAt: true,
+                },
+            });
+        } catch (updateError) {
+            if (updateError.code === 'P2025') {
+                return NextResponse.json({ error: 'TNC not found.' }, { status: 404 });
+            }
+            throw updateError;
+        }
 
 		let adminName = null;
 		let updatedByName = null;

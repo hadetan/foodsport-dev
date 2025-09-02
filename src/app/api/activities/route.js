@@ -69,18 +69,15 @@ export async function GET(req) {
 			options
 		);
 
-		// Optimize: fetch participant counts and organizer names in bulk
 		const activityIds = (activities || []).map(a => a.id);
 		const organizerIds = Array.from(new Set((activities || []).map(a => a.organizerId).filter(Boolean)));
 
-		// Bulk fetch participant counts
 		const participantCountsRaw = await getMany('userActivity', { activityId: { in: activityIds } }, { activityId: true });
 		const participantCountMap = {};
 		for (const { activityId } of participantCountsRaw) {
 			participantCountMap[activityId] = (participantCountMap[activityId] || 0) + 1;
 		}
 
-		// Bulk fetch organizer names
 		let organizerNameMap = {};
 		if (organizerIds.length > 0) {
 			const organizers = await getMany('adminUser', { id: { in: organizerIds } }, { id: true, name: true });
@@ -90,7 +87,6 @@ export async function GET(req) {
 			}, {});
 		}
 
-		// Bulk fetch TNCs for all activities with tncId
 		const tncIds = Array.from(new Set((activities || []).map(a => a.tncId).filter(Boolean)));
 		let tncMap = {};
 		if (tncIds.length > 0) {
@@ -98,7 +94,6 @@ export async function GET(req) {
 				id: true,
 				title: true,
 				description: true,
-				adminUserId: true,
 			});
 			tncMap = tncs.reduce((acc, tnc) => {
 				acc[tnc.id] = tnc;

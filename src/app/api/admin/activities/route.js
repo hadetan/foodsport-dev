@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import {
 	getById,
-	getCount,
 	getMany,
 	insert,
 	updateById,
@@ -80,7 +79,6 @@ export async function GET(req) {
 			participantCountMap[activityId] = (participantCountMap[activityId] || 0) + 1;
 		}
 
-		// Bulk fetch organizer names
 		const organizerIds = Array.from(new Set((activities || []).map(a => a.organizerId).filter(Boolean)));
 		let organizerNameMap = {};
 		if (organizerIds.length > 0) {
@@ -98,7 +96,6 @@ export async function GET(req) {
 			...tncIds,
 			...((activities || []).map(a => a.tncId).filter(Boolean)),
 		];
-		// Also collect updatedBy ids from TNCs
 		if (tncIds.length > 0) {
 			const tncs = await getMany('tnc', { id: { in: tncIds } }, {
 				id: true,
@@ -109,7 +106,6 @@ export async function GET(req) {
 				createdAt: true,
 				updatedAt: true,
 			});
-			// Collect updatedBy ids
 			const updatedByIds = tncs.map(tnc => tnc.updatedBy).filter(Boolean);
 			adminIds = [...new Set([...adminIds, ...updatedByIds])];
 			tncMap = tncs.reduce((acc, tnc) => {
@@ -117,7 +113,6 @@ export async function GET(req) {
 				return acc;
 			}, {});
 		}
-		// Bulk fetch all relevant admin users for mapping names
 		let adminMap = {};
 		if (adminIds.length > 0) {
 			const admins = await getMany('adminUser', { id: { in: adminIds } }, { id: true, name: true });
@@ -336,7 +331,6 @@ export async function POST(req) {
 			}
 		}
 
-		// Add validation for other fields
 		if (activityData.startDate && isNaN(Date.parse(activityData.startDate))) {
 			return NextResponse.json(
 				{ error: 'Invalid startDate format.' },
