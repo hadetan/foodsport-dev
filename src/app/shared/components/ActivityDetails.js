@@ -199,19 +199,23 @@ const ActivityDetails = ({
 							</div>
 						</div>
 					</div>
-					{/* Map Section - full width below details */}
-					{activity.mapUrl && (
-						<div style={{ width: '100%', margin: '32px 0' }}>
-							<iframe
-								title='Activity Map'
-								src={activity.mapUrl}
-								width='100%'
-								height='320'
-								style={{ border: 0, borderRadius: '12px' }}
-								allowFullScreen
-								loading='lazy'
-								referrerPolicy='no-referrer-when-downgrade'
-							></iframe>
+					{activity.mapUrl ?
+						/^https:\/\/(www\.)?google\.(com|co\.[a-z]{2})\/maps/.test(activity.mapUrl) && (
+							<div style={{ width: '100%', margin: '32px 0' }}>
+								<iframe
+									title='Activity Map'
+									src={activity.mapUrl}
+									width='100%'
+									height='320'
+									style={{ border: 0, borderRadius: '12px' }}
+									allowFullScreen
+									loading='lazy'
+									referrerPolicy='no-referrer-when-downgrade'
+								></iframe>
+							</div>
+						) : (
+						<div style={{ width: '100%', margin: '32px 0', color: 'red', textAlign: 'center' }}>
+							Something went wrong while loading the google map.
 						</div>
 					)}
 				</main>
