@@ -9,6 +9,6 @@ const BASE_URLS = {
   url: process.env.NEXT_PUBLIC_BASEURL || '/api'
 };
 
-const DEFAULT_TIMEOUT = 30000;
+const DEFAULT_TIMEOUT = 60000;
 
 export { BASE_URLS, DEFAULT_TIMEOUT };

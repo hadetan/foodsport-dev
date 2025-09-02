@@ -1,8 +1,11 @@
 "use client";
 import { useState } from "react";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
+    const router =useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [formData, setFormData] = useState({
@@ -14,13 +17,22 @@ const LoginPage = () => {
         e.preventDefault();
         setLoading(true);
         setError("");
-
         try {
-            // TODO: Implement login logic here
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            throw new Error("Login functionality not implemented yet");
+            const response = await axios.post("/api/admin/auth/login", formData);
+            if (response.data && response.data.admin && response.data.session) {
+                if (response.data.session.access_token) {
+                    localStorage.setItem('admin_auth_token', response.data.session.access_token);
+                }
+                router.push('/admin');
+            } else {
+                setError("Unexpected response from server.");
+            }
         } catch (err) {
-            setError(err.message);
+            if (err.response && err.response.data && err.response.data.error) {
+                setError(err.response.data.error);
+            } else {
+                setError("Login failed. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
