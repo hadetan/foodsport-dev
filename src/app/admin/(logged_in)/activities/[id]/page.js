@@ -253,338 +253,339 @@ export default function EditActivityPage() {
                                 handleSave();
                             }}
                         >
-                            <div
-                            className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-6"
-                            >
-                            {/* Upload Image - full width */}
-                            <div className="md:col-span-2">
-                                <label className="label text-lg font-semibold mb-2 text-black">
-                                    Upload Image
-                                </label>
-                                <div className="relative flex flex-col items-center justify-center bg-white border-2 border-dashed border-[#3B82F6] rounded-xl p-4 sm:p-8 min-h-[120px] sm:min-h-[180px] w-full">
-                                    <input
-                                        type="file"
-                                        className="absolute inset-0 opacity-0 cursor-pointer"
-                                        accept="image/jpeg,image/png"
-                                        multiple={false}
-                                        ref={fileInputRef}
-                                        onChange={handleImageChange}
-                                        disabled={!!imageFile}
-                                        style={{ zIndex: 2 }}
-                                    />
-                                    {!imageFile && (
-                                        <div className="flex flex-col items-center pointer-events-none select-none">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-12 w-12 text-[#3B82F6] mb-2"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-4 4h-4a1 1 0 01-1-1v-4h6v4a1 1 0 01-1 1z"
-                                                />
-                                            </svg>
-                                            <span className="text-[#3B82F6] font-medium">
-                                                Drop image or{" "}
-                                                <span className="underline cursor-pointer text-[#3B82F6]">
-                                                    browse
-                                                </span>
-                                            </span>
-                                            <span className="text-xs text-gray-400 mt-1">
-                                                JPG, PNG
-                                            </span>
-                                        </div>
-                                    )}
-                                    {imageFile && (
-                                        <div className="relative w-full flex justify-center">
-                                            <div
-                                                className="bg-white flex items-center justify-center w-full"
-                                                style={{
-                                                    width: "100%",
-                                                    maxWidth: "100%",
-                                                    minHeight: "180px",
-                                                    maxHeight: "320px",
-                                                    aspectRatio: "16/9",
-                                                    borderRadius: "0.75rem",
-                                                    overflow: "hidden",
-                                                }}
-                                            >
-                                                <img
-                                                    src={
-                                                        imageFile.url
-                                                            ? imageFile.url
-                                                            : URL.createObjectURL(
-                                                                  imageFile
-                                                              )
-                                                    }
-                                                    alt="Activity"
-                                                    className="w-full h-auto max-h-[320px] object-contain"
-                                                    style={{
-                                                        display: "block",
-                                                        margin: "0 auto",
-                                                    }}
-                                                />
-                                                {/* Pencil icon (lucide-react) for changing image */}
-                                                <button
-                                                    type="button"
-                                                    className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white rounded-full p-1 shadow hover:bg-gray-100"
-                                                    style={{ zIndex: 10 }}
-                                                    onClick={() => {
-                                                        if (
-                                                            fileInputRef.current
-                                                        ) {
-                                                            fileInputRef.current.value =
-                                                                "";
-                                                            fileInputRef.current.disabled = false;
-                                                            fileInputRef.current.click();
-                                                        }
-                                                    }}
-                                                    tabIndex={0}
-                                                    aria-label="Change image"
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-6">
+                                {/* Upload Image - full width */}
+                                <div className="md:col-span-2">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Upload Image
+                                    </label>
+                                    <div className="relative flex flex-col items-center justify-center bg-white border-2 border-dashed border-[#3B82F6] rounded-xl p-4 sm:p-8 min-h-[120px] sm:min-h-[180px] w-full">
+                                        <input
+                                            type="file"
+                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                            accept="image/jpeg,image/png"
+                                            multiple={false}
+                                            ref={fileInputRef}
+                                            onChange={handleImageChange}
+                                            disabled={!!imageFile}
+                                            style={{ zIndex: 2 }}
+                                        />
+                                        {!imageFile && (
+                                            <div className="flex flex-col items-center pointer-events-none select-none">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-12 w-12 text-[#3B82F6] mb-2"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
                                                 >
-                                                    <Pencil className="text-[#3B82F6] w-5 h-5" />
-                                                </button>
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-4 4h-4a1 1 0 01-1-1v-4h6v4a1 1 0 01-1 1z"
+                                                    />
+                                                </svg>
+                                                <span className="text-[#3B82F6] font-medium">
+                                                    Drop image or{" "}
+                                                    <span className="underline cursor-pointer text-[#3B82F6]">
+                                                        browse
+                                                    </span>
+                                                </span>
+                                                <span className="text-xs text-gray-400 mt-1">
+                                                    JPG, PNG
+                                                </span>
                                             </div>
-                                        </div>
-                                    )}
-                                </div>
-                                {errors.images && (
-                                    <span className="text-error text-base">
-                                        {errors.images}
-                                    </span>
-                                )}
-                                {errors.image && (
-                                    <span className="text-error text-base">
-                                        {errors.image}
-                                    </span>
-                                )}
-                            </div>
-                            {/* Left column */}
-                            <div className="flex flex-col gap-4 sm:gap-6">
-                                {/* Activity Title */}
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Activity Title
-                                    </label>
-                                    <input
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="title"
-                                        value={form.title}
-                                        onChange={handleInput}
-                                        maxLength={100}
-                                        required
-                                    />
-                                    {errors.title && (
+                                        )}
+                                        {imageFile && (
+                                            <div className="relative w-full flex justify-center">
+                                                <div
+                                                    className="bg-white flex items-center justify-center w-full"
+                                                    style={{
+                                                        width: "100%",
+                                                        maxWidth: "100%",
+                                                        minHeight: "180px",
+                                                        maxHeight: "320px",
+                                                        aspectRatio: "16/9",
+                                                        borderRadius: "0.75rem",
+                                                        overflow: "hidden",
+                                                    }}
+                                                >
+                                                    <img
+                                                        src={
+                                                            imageFile.url
+                                                                ? imageFile.url
+                                                                : URL.createObjectURL(
+                                                                      imageFile
+                                                                  )
+                                                        }
+                                                        alt="Activity"
+                                                        className="w-full h-auto max-h-[320px] object-contain"
+                                                        style={{
+                                                            display: "block",
+                                                            margin: "0 auto",
+                                                        }}
+                                                    />
+                                                    {/* Pencil icon (lucide-react) for changing image */}
+                                                    <button
+                                                        type="button"
+                                                        className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+                                                        style={{ zIndex: 10 }}
+                                                        onClick={() => {
+                                                            if (
+                                                                fileInputRef.current
+                                                            ) {
+                                                                fileInputRef.current.value =
+                                                                    "";
+                                                                fileInputRef.current.disabled = false;
+                                                                fileInputRef.current.click();
+                                                            }
+                                                        }}
+                                                        tabIndex={0}
+                                                        aria-label="Change image"
+                                                    >
+                                                        <Pencil className="text-[#3B82F6] w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {errors.images && (
                                         <span className="text-error text-base">
-                                            {errors.title}
+                                            {errors.images}
+                                        </span>
+                                    )}
+                                    {errors.image && (
+                                        <span className="text-error text-base">
+                                            {errors.image}
                                         </span>
                                     )}
                                 </div>
-                                {/* Activity Type */}
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Activity Type
-                                    </label>
-                                    <select
-                                        className="select select-bordered select-lg w-full bg-white text-black"
-                                        name="activityType"
-                                        value={form.activityType}
-                                        onChange={handleInput}
-                                        required
-                                    >
-                                        <option value="">
-                                            Select activity type
-                                        </option>
-                                        {ACTIVITY_TYPES.map((type) => (
-                                            <option key={type} value={type}>
-                                                {type.charAt(0).toUpperCase() +
-                                                    type.slice(1)}
+                                {/* Left column */}
+                                <div className="flex flex-col gap-4 sm:gap-6">
+                                    {/* Activity Title */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Activity Title
+                                        </label>
+                                        <input
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="title"
+                                            value={form.title}
+                                            onChange={handleInput}
+                                            maxLength={100}
+                                            required
+                                        />
+                                        {errors.title && (
+                                            <span className="text-error text-base">
+                                                {errors.title}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Activity Type */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Activity Type
+                                        </label>
+                                        <select
+                                            className="select select-bordered select-lg w-full bg-white text-black"
+                                            name="activityType"
+                                            value={form.activityType}
+                                            onChange={handleInput}
+                                            required
+                                        >
+                                            <option value="">
+                                                Select activity type
                                             </option>
-                                        ))}
-                                    </select>
-                                    {errors.activityType && (
-                                        <span className="text-error text-base">
-                                            {errors.activityType}
-                                        </span>
-                                    )}
+                                            {ACTIVITY_TYPES.map((type) => (
+                                                <option key={type} value={type}>
+                                                    {type
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                        type.slice(1)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.activityType && (
+                                            <span className="text-error text-base">
+                                                {errors.activityType}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Summary */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Summary
+                                        </label>
+                                        <textarea
+                                            className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
+                                            name="description"
+                                            value={form.description}
+                                            onChange={handleInput}
+                                            required
+                                            rows={3}
+                                            placeholder="Enter summary"
+                                        />
+                                        {errors.description && (
+                                            <span className="text-error text-base">
+                                                {errors.description}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Start Date & Time */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Start Date
+                                        </label>
+                                        <input
+                                            type="date"
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="date"
+                                            value={form.date}
+                                            onChange={handleInput}
+                                            required
+                                        />
+                                        {errors.datetime && (
+                                            <span className="text-error text-base">
+                                                {errors.datetime}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
-                                {/* Summary */}
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Summary
-                                    </label>
-                                    <textarea
-                                        className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
-                                        name="description"
-                                        value={form.description}
-                                        onChange={handleInput}
-                                        required
-                                        rows={3}
-                                        placeholder="Enter summary"
-                                    />
-                                    {errors.description && (
-                                        <span className="text-error text-base">
-                                            {errors.description}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Start Date & Time */}
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Start Date
-                                    </label>
-                                    <input
-                                        type="date"
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="date"
-                                        value={form.date}
-                                        onChange={handleInput}
-                                        required
-                                    />
-                                    {errors.datetime && (
-                                        <span className="text-error text-base">
-                                            {errors.datetime}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Search Map */}
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Search Map
-                                    </label>
-                                    <input
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="mapLocation"
-                                        onChange={handleInput}
-                                        required
-                                        placeholder="Enter map location"
-                                    />
-                                    {errors.mapLocation && (
-                                        <span className="text-error text-base">
-                                            {errors.mapLocation}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                            {/* Right column */}
+                                {/* Right column */}
 
-                            <div className="flex flex-col gap-4 sm:gap-6">
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Location
-                                    </label>
-                                    <input
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="location"
-                                        value={form.location}
-                                        onChange={handleInput}
-                                        required
-                                        placeholder="Enter activity location"
-                                    />
-                                    {errors.location && (
-                                        <span className="text-error text-base">
-                                            {errors.location}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Capacity */}
+                                <div className="flex flex-col gap-4 sm:gap-6">
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Location
+                                        </label>
+                                        <input
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="location"
+                                            value={form.location}
+                                            onChange={handleInput}
+                                            required
+                                            placeholder="Search In Map "
+                                        />
+                                        {errors.location && (
+                                            <span className="text-error text-base">
+                                                {errors.location}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Capacity */}
 
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Capacity
-                                    </label>
-                                    <input
-                                        type="number"
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="capacity"
-                                        value={form.capacity}
-                                        onChange={handleInput}
-                                        min={1}
-                                        required
-                                        placeholder="Enter participant limit"
-                                    />
-                                    {errors.capacity && (
-                                        <span className="text-error text-base">
-                                            {errors.capacity}
-                                        </span>
-                                    )}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Capacity
+                                        </label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="capacity"
+                                            value={form.capacity}
+                                            onChange={handleInput}
+                                            min={1}
+                                            required
+                                            placeholder="Enter participant limit"
+                                        />
+                                        {errors.capacity && (
+                                            <span className="text-error text-base">
+                                                {errors.capacity}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Calories Per Hour */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Calories Per Hour
+                                        </label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="caloriesPerHour"
+                                            value={form.caloriesPerHour}
+                                            onChange={handleInput}
+                                            min={0.01}
+                                            step="any"
+                                            required
+                                            placeholder="Enter calories per hour"
+                                        />
+                                        {errors.caloriesPerHour && (
+                                            <span className="text-error text-base">
+                                                {errors.caloriesPerHour}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Total Calories Burnt */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Total Calories Burnt
+                                        </label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="totalCaloriesBurnt"
+                                            value={form.totalCaloriesBurnt}
+                                            onChange={handleInput}
+                                            min={0.01}
+                                            step="any"
+                                            required
+                                            placeholder="Enter total calories burnt"
+                                        />
+                                        {errors.totalCaloriesBurnt && (
+                                            <span className="text-error text-base">
+                                                {errors.totalCaloriesBurnt}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Status */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Status
+                                        </label>
+                                        <select
+                                            className="select select-bordered select-lg w-full bg-white text-black"
+                                            name="status"
+                                            value={form.status}
+                                            onChange={handleInput}
+                                        >
+                                            {statusOptions.map((status) => (
+                                                <option
+                                                    key={status}
+                                                    value={status}
+                                                >
+                                                    {status
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                        status.slice(1)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
-                                {/* Calories Per Hour */}
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Calories Per Hour
-                                    </label>
-                                    <input
-                                        type="number"
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="caloriesPerHour"
-                                        value={form.caloriesPerHour}
-                                        onChange={handleInput}
-                                        min={0.01}
-                                        step="any"
-                                        required
-                                        placeholder="Enter calories per hour"
-                                    />
-                                    {errors.caloriesPerHour && (
-                                        <span className="text-error text-base">
-                                            {errors.caloriesPerHour}
-                                        </span>
-                                    )}
+                                {/* Search Map - full width */}
+                                <div className="md:col-span-2">
+                                    <div className="form-control w-full">
+                                       
+                                        <input
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="mapLocation"
+                                            onChange={handleInput}
+                                            required
+                                            placeholder="Search In Map"
+                                        />
+                                        {errors.mapLocation && (
+                                            <span className="text-error text-base">
+                                                {errors.mapLocation}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
-                                {/* Total Calories Burnt */}
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Total Calories Burnt
-                                    </label>
-                                    <input
-                                        type="number"
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="totalCaloriesBurnt"
-                                        value={form.totalCaloriesBurnt}
-                                        onChange={handleInput}
-                                        min={0.01}
-                                        step="any"
-                                        required
-                                        placeholder="Enter total calories burnt"
-                                    />
-                                    {errors.totalCaloriesBurnt && (
-                                        <span className="text-error text-base">
-                                            {errors.totalCaloriesBurnt}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Status */}
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Status
-                                    </label>
-                                    <select
-                                        className="select select-bordered select-lg w-full bg-white text-black"
-                                        name="status"
-                                        value={form.status}
-                                        onChange={handleInput}
-                                    >
-                                        {statusOptions.map((status) => (
-                                            <option key={status} value={status}>
-                                                {status
-                                                    .charAt(0)
-                                                    .toUpperCase() +
-                                                    status.slice(1)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
                             </div>
                             {/* Google Map at the bottom */}
                             <div className="w-full max-w-5xl mt-8 mb-4">
-                                <h2 className="text-lg font-semibold mb-2 text-black">
-                                    Location Map
-                                </h2>
+                                
                                 <div className="w-full h-[320px] rounded-xl overflow-hidden border border-gray-200">
                                     <iframe
                                         title="Google Map"
