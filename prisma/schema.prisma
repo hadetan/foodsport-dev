@@ -184,7 +184,7 @@ model Tnc {
   adminUserId String?   @map("admin_user_id")
   updatedBy   String?   @map("updated_by")
   createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
 
   activities  Activity[]
 

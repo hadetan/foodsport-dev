@@ -66,62 +66,106 @@ export async function GET(req) {
 				isFeatured: true,
 				totalCaloriesBurnt: true,
 				mapUrl: true,
+				tncId: true,
 				createdAt: true,
 				updatedAt: true,
 			},
 			options
 		);
 
-		const activitiesList = await Promise.all(
-			(activities || []).map(async (a) => {
-				const participantCount = await getCount('userActivity', {
-					activityId: a.id,
-				});
-				let organizerName;
-				if (a.organizerId) {
-					const organizer = await getById('adminUser', a.organizerId, {
-						name: true,
-					});
-					organizerName = organizer.name;
-				}
-				let tnc = null;
-				if (a.tncId) {
-					tnc = await getById('tnc', a.tncId, {
-						id: true,
-						title: true,
-						description: true,
-						adminUserId: true,
-						updatedBy: true,
-						createdAt: true,
-						updatedAt: true,
-					});
-				}
-				return {
-					id: a.id,
-					title: a.title,
-					description: a.description,
-					activityType: a.activityType,
-					location: a.location,
-					startDate: a.startDate,
-					endDate: a.endDate,
-					startTime: a.startTime,
-					endTime: a.endTime,
-					status: a.status,
-					participantLimit: a.participantLimit,
-					participantCount,
-					organizerId: a.organizerId,
-					organizerName,
-					imageUrl: a.imageUrl,
-					caloriesPerHour: a.caloriesPerHour,
-					isFeatured: a.isFeatured,
-					totalCaloriesBurnt: a.totalCaloriesBurnt,
-					mapUrl: a.mapUrl,
-					tnc,
-					createdAt: a.createdAt,
-					updatedAt: a.updatedAt,
+		const activityIds = (activities || []).map(a => a.id);
+		const participantCountsRaw = await getMany('userActivity', { activityId: { in: activityIds } }, { activityId: true });
+		const participantCountMap = {};
+		for (const { activityId } of participantCountsRaw) {
+			participantCountMap[activityId] = (participantCountMap[activityId] || 0) + 1;
+		}
+
+		// Bulk fetch organizer names
+		const organizerIds = Array.from(new Set((activities || []).map(a => a.organizerId).filter(Boolean)));
+		let organizerNameMap = {};
+		if (organizerIds.length > 0) {
+			const organizers = await getMany('adminUser', { id: { in: organizerIds } }, { id: true, name: true });
+			organizerNameMap = organizers.reduce((acc, org) => {
+				acc[org.id] = org.name;
+				return acc;
+			}, {});
+		}
+
+		const tncIds = Array.from(new Set((activities || []).map(a => a.tncId).filter(Boolean)));
+		let tncMap = {};
+		let adminIds = [
+			...organizerIds,
+			...tncIds,
+			...((activities || []).map(a => a.tncId).filter(Boolean)),
+		];
+		// Also collect updatedBy ids from TNCs
+		if (tncIds.length > 0) {
+			const tncs = await getMany('tnc', { id: { in: tncIds } }, {
+				id: true,
+				title: true,
+				description: true,
+				adminUserId: true,
+				updatedBy: true,
+				createdAt: true,
+				updatedAt: true,
+			});
+			// Collect updatedBy ids
+			const updatedByIds = tncs.map(tnc => tnc.updatedBy).filter(Boolean);
+			adminIds = [...new Set([...adminIds, ...updatedByIds])];
+			tncMap = tncs.reduce((acc, tnc) => {
+				acc[tnc.id] = tnc;
+				return acc;
+			}, {});
+		}
+		// Bulk fetch all relevant admin users for mapping names
+		let adminMap = {};
+		if (adminIds.length > 0) {
+			const admins = await getMany('adminUser', { id: { in: adminIds } }, { id: true, name: true });
+			adminMap = admins.reduce((acc, admin) => {
+				acc[admin.id] = admin.name;
+				return acc;
+			}, {});
+		}
+
+		const activitiesList = (activities || []).map((a) => {
+			let tnc = null;
+			if (a.tncId && tncMap[a.tncId]) {
+				const tncRaw = tncMap[a.tncId];
+				tnc = {
+					id: tncRaw.id,
+					title: tncRaw.title,
+					description: tncRaw.description,
+					createdBy: tncRaw.adminUserId ? adminMap[tncRaw.adminUserId] || null : null,
+					updatedBy: tncRaw.updatedBy ? adminMap[tncRaw.updatedBy] || null : null,
+					createdAt: tncRaw.createdAt,
+					updatedAt: tncRaw.updatedAt,
 				};
-			})
-		);
+			}
+			return {
+				id: a.id,
+				title: a.title,
+				description: a.description,
+				activityType: a.activityType,
+				location: a.location,
+				startDate: a.startDate,
+				endDate: a.endDate,
+				startTime: a.startTime,
+				endTime: a.endTime,
+				status: a.status,
+				participantLimit: a.participantLimit,
+				participantCount: participantCountMap[a.id] || 0,
+				organizerId: a.organizerId,
+				organizerName: a.organizerId ? organizerNameMap[a.organizerId] : undefined,
+				imageUrl: a.imageUrl,
+				caloriesPerHour: a.caloriesPerHour,
+				isFeatured: a.isFeatured,
+				totalCaloriesBurnt: a.totalCaloriesBurnt,
+				mapUrl: a.mapUrl,
+				tnc,
+				createdAt: a.createdAt,
+				updatedAt: a.updatedAt,
+			};
+		});
 
 		const responseData = {
 			activities: activitiesList,
