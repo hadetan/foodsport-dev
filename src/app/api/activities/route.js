@@ -64,6 +64,7 @@ export async function GET(req) {
 				caloriesPerHour: true,
 				isFeatured: true,
 				mapUrl: true,
+				tncId: true,
 			},
 			options
 		);
@@ -89,6 +90,22 @@ export async function GET(req) {
 			}, {});
 		}
 
+		// Bulk fetch TNCs for all activities with tncId
+		const tncIds = Array.from(new Set((activities || []).map(a => a.tncId).filter(Boolean)));
+		let tncMap = {};
+		if (tncIds.length > 0) {
+			const tncs = await getMany('tnc', { id: { in: tncIds } }, {
+				id: true,
+				title: true,
+				description: true,
+				adminUserId: true,
+			});
+			tncMap = tncs.reduce((acc, tnc) => {
+				acc[tnc.id] = tnc;
+				return acc;
+			}, {});
+		}
+
 		const activitiesList = (activities || []).map((a) => ({
 			id: a.id,
 			title: a.title,
@@ -107,6 +124,7 @@ export async function GET(req) {
 			caloriesPerHour: a.caloriesPerHour,
 			isFeatured: a.isFeatured,
 			mapUrl: a.mapUrl,
+			tnc: a.tncId ? tncMap[a.tncId] || null : null,
 		}));
 
 		const responseData = {

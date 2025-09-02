@@ -84,6 +84,18 @@ export async function GET(req) {
 					});
 					organizerName = organizer.name;
 				}
+				let tnc = null;
+				if (a.tncId) {
+					tnc = await getById('tnc', a.tncId, {
+						id: true,
+						title: true,
+						description: true,
+						adminUserId: true,
+						updatedBy: true,
+						createdAt: true,
+						updatedAt: true,
+					});
+				}
 				return {
 					id: a.id,
 					title: a.title,
@@ -104,6 +116,7 @@ export async function GET(req) {
 					isFeatured: a.isFeatured,
 					totalCaloriesBurnt: a.totalCaloriesBurnt,
 					mapUrl: a.mapUrl,
+					tnc,
 					createdAt: a.createdAt,
 					updatedAt: a.updatedAt,
 				};
@@ -254,6 +267,7 @@ export async function POST(req) {
 			'isFeatured',
 			'imageUrl',
 			'mapUrl',
+			'tncId',
 		];
 		const activityData = {};
 		for (const field of allowedFields) {
@@ -316,7 +330,20 @@ export async function POST(req) {
 				{ status: 500 }
 			);
 		}
-		return NextResponse.json(activity, { status: 201 });
+		let tnc = null;
+		if (activity.tncId) {
+			tnc = await getById('tnc', activity.tncId, {
+				id: true,
+				title: true,
+				description: true,
+				adminUserId: true,
+				updatedBy: true,
+				createdAt: true,
+				updatedAt: true,
+			});
+		}
+
+		return NextResponse.json({ ...activity, tnc }, { status: 201 });
 	} catch (error) {
 		console.error('Error in POST /api/admin/activities:', error);
 		return new NextResponse(
@@ -371,6 +398,7 @@ export async function PATCH(req) {
 			'isFeatured',
 			'totalCaloriesBurnt',
 			'mapUrl',
+			'tncId',
 		];
         let updates = {};
         for (const field of allowedFields) {
@@ -480,14 +508,27 @@ export async function PATCH(req) {
             }
         }
 
-        const updatedActivity = await updateById('activity', activityId, updates);
-        if (updatedActivity && updatedActivity.error)
-            return NextResponse.json(
-                { error: formatDbError(updatedActivity.error) },
-                { status: 500 }
-            );
+		const updatedActivity = await updateById('activity', activityId, updates);
+		if (updatedActivity && updatedActivity.error)
+			return NextResponse.json(
+				{ error: formatDbError(updatedActivity.error) },
+				{ status: 500 }
+			);
 
-        return NextResponse.json(updatedActivity, { status: 200 });
+		let tnc = null;
+		if (updatedActivity.tncId) {
+			tnc = await getById('tnc', updatedActivity.tncId, {
+				id: true,
+				title: true,
+				description: true,
+				adminUserId: true,
+				updatedBy: true,
+				createdAt: true,
+				updatedAt: true,
+			});
+		}
+
+		return NextResponse.json({ ...updatedActivity, tnc }, { status: 200 });
     } catch (error) {
         console.error('Error in PATCH /api/admin/activities:', error);
         return new NextResponse(
