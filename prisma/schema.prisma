@@ -163,6 +163,7 @@ model Activity {
   totalCaloriesBurnt   Int           @default(0) @map("total_calories_burnt")
   caloriesPerHour      String        @map("calories_per_hour")
   isFeatured           Boolean       @default(false) @map("is_featured")
+  tncId                String?       @map("tnc_id")
   createdAt            DateTime      @default(now()) @map("created_at")
   updatedAt            DateTime      @updatedAt @map("updated_at")
 
@@ -171,8 +172,23 @@ model Activity {
   tickets              Ticket[]
   userActivities       UserActivity[]
   calorieSubmissions   CalorieSubmission[]
+  tnc                  Tnc?          @relation(fields: [tncId], references: [id])
 
   @@map("activities")
+}
+
+model Tnc {
+  id          String    @id @default(uuid())
+  title       String    @unique
+  description String    @db.Text
+  adminUserId String?   @map("admin_user_id")
+  updatedBy   String?   @map("updated_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  activities  Activity[]
+
+  @@map("tncs")
 }
 
 model Ticket {

@@ -64,27 +64,39 @@ export async function GET(req) {
 				caloriesPerHour: true,
 				isFeatured: true,
 				mapUrl: true,
+				tncId: true,
 			},
 			options
 		);
 
-		// Optimize: fetch participant counts and organizer names in bulk
 		const activityIds = (activities || []).map(a => a.id);
 		const organizerIds = Array.from(new Set((activities || []).map(a => a.organizerId).filter(Boolean)));
 
-		// Bulk fetch participant counts
 		const participantCountsRaw = await getMany('userActivity', { activityId: { in: activityIds } }, { activityId: true });
 		const participantCountMap = {};
 		for (const { activityId } of participantCountsRaw) {
 			participantCountMap[activityId] = (participantCountMap[activityId] || 0) + 1;
 		}
 
-		// Bulk fetch organizer names
 		let organizerNameMap = {};
 		if (organizerIds.length > 0) {
 			const organizers = await getMany('adminUser', { id: { in: organizerIds } }, { id: true, name: true });
 			organizerNameMap = organizers.reduce((acc, org) => {
 				acc[org.id] = org.name;
+				return acc;
+			}, {});
+		}
+
+		const tncIds = Array.from(new Set((activities || []).map(a => a.tncId).filter(Boolean)));
+		let tncMap = {};
+		if (tncIds.length > 0) {
+			const tncs = await getMany('tnc', { id: { in: tncIds } }, {
+				id: true,
+				title: true,
+				description: true,
+			});
+			tncMap = tncs.reduce((acc, tnc) => {
+				acc[tnc.id] = tnc;
 				return acc;
 			}, {});
 		}
@@ -107,6 +119,7 @@ export async function GET(req) {
 			caloriesPerHour: a.caloriesPerHour,
 			isFeatured: a.isFeatured,
 			mapUrl: a.mapUrl,
+			tnc: a.tncId ? tncMap[a.tncId] || null : null,
 		}));
 
 		const responseData = {
