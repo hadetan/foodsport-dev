@@ -58,9 +58,9 @@ export async function GET(req) {
 		);
 
 		const newUsers = await getCount('user', { createdAt: { gte: fromDate } });
+		const nowIso = new Date().toISOString();
 		const completedActivities = await getCount('activity', {
-			status: 'completed',
-			updatedAt: { gte: fromDate },
+			endDate: { lt: nowIso },
 		});
 		const donationsRange = await prisma.calorieDonation.findMany({
 			where: { createdAt: { gte: fromDate } },
