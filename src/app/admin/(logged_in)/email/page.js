@@ -553,28 +553,32 @@ export default function AdminEmailPage() {
                                 <label className="block text-xl font-medium text-base-content mb-2 pl-2">
                                     Select Template:
                                 </label>
-                                <select
-                                    className="select select-bordered w-full text-base-content"
-                                    value={selectedTemplateId || ""}
-                                    onChange={(e) =>
-                                        setSelectedTemplateId(e.target.value)
-                                    }
-                                    disabled={
-                                        isTemplatesLoading ||
-                                        templates.length === 0
-                                    }
-                                >
-                                    <option value="" disabled>
-                                        {isTemplatesLoading
-                                            ? "Loading templates..."
-                                            : "Choose a template"}
-                                    </option>
-                                    {templates.map((t) => (
-                                        <option key={t.id} value={t.id}>
-                                            {t.name}
+                                <div className="dropdown dropdown-bottom ">
+                                    <select
+                                        className="select select-bordered w-full text-base-content"
+                                        value={selectedTemplateId || ""}
+                                        onChange={(e) =>
+                                            setSelectedTemplateId(
+                                                e.target.value
+                                            )
+                                        }
+                                        disabled={
+                                            isTemplatesLoading ||
+                                            templates.length === 0
+                                        }
+                                    >
+                                        <option value="" disabled>
+                                            {isTemplatesLoading
+                                                ? "Loading templates..."
+                                                : "Choose a template"}
                                         </option>
-                                    ))}
-                                </select>
+                                        {templates.map((t) => (
+                                            <option key={t.id} value={t.id}>
+                                                {t.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                                 {templatesError && (
                                     <div className="alert alert-error mt-4">
                                         {templatesError}
