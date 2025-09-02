@@ -21,7 +21,8 @@ export async function GET(req) {
 		const { status, page, limit, type, organizerId } = parseQueryParams(searchParams);
 		const skip = (page - 1) * limit;
 		const filters = {};
-		if (status) filters.status = status;
+	if (status) filters.status = status;
+	filters.status = filters.status && filters.status !== 'draft' ? filters.status : undefined;
 		if (type) filters.type = type;
 		if (organizerId) filters.organizerId = organizerId;
 		const options = {
@@ -39,9 +40,9 @@ export async function GET(req) {
 			);
 		}
 
-		// Sanitize filters before querying the database
-		const allowedFilters = ['status', 'type', 'organizerId'];
-		const sanitizedFilters = sanitizeData(filters, allowedFilters);
+	const allowedFilters = ['status', 'type', 'organizerId'];
+	let sanitizedFilters = sanitizeData(filters, allowedFilters);
+	sanitizedFilters = { ...sanitizedFilters, NOT: { status: 'draft' } };
 
 		const activities = await getMany(
 			'activity',

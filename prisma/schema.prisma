@@ -203,6 +203,7 @@ model UserActivity {
   activityId String   @map("activity_id")
   ticketId   String?  @map("ticket_id")
   joinedAt   DateTime @default(now()) @map("joined_at")
+  wasPresent Boolean  @default(false) @map("was_present")
 
   // Relations
   user       User     @relation(fields: [userId], references: [id])
