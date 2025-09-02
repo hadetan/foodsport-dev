@@ -1,26 +1,36 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-export async function POST(req) {
+export async function POST(_) {
   try {
-    const { session } = await req.json();
-    if (!session || !session.refresh_token || !session.access_token) {
-      return NextResponse.json({ error: 'No valid session or tokens provided.' }, { status: 401 });
-    }
     const cookieStore = await cookies();
-    cookieStore.set('auth_token', session.access_token, {
+    const refreshToken = cookieStore.get('refresh_token')?.value;
+    if (!refreshToken) {
+      return NextResponse.json({ error: 'No refresh token.' }, { status: 401 });
+    }
+    // Use Supabase SSR client to refresh session
+    const { createServerClient } = await import('@/lib/supabase/server-only');
+    const supabase = await createServerClient();
+    const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+    if (error || !data.session) {
+      return NextResponse.json({ error: 'Failed to refresh session.' }, { status: 401 });
+    }
+    // Update cookies with new tokens
+    cookieStore.set('auth_token', data.session.access_token, {
       httpOnly: true,
       path: '/',
       sameSite: 'lax',
-      maxAge: session.expires_in || 3600
+      maxAge: data.session.expires_in || 3600,
     });
-    cookieStore.set('refresh_token', session.refresh_token, {
-      httpOnly: true,
-      path: '/',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30
-    });
-    return NextResponse.json({ success: true });
+    if (data.session.refresh_token) {
+      cookieStore.set('refresh_token', data.session.refresh_token, {
+        httpOnly: true,
+        path: '/',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30,
+      });
+    }
+    return NextResponse.json({ session: data.session });
   } catch (err) {
     return NextResponse.json({ error: err.message || 'Unexpected error.' }, { status: 500 });
   }

@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/supabase/server-only';
 import { prisma } from '@/lib/prisma/db';
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 // POST /api/admin/login
 export async function POST(req) {
@@ -30,6 +31,23 @@ export async function POST(req) {
 				{ error: 'Access denied.' },
 				{ status: 403 }
 			);
+		}
+		const cookieStore = await cookies();
+		if (session.session?.access_token) {
+			cookieStore.set('admin_auth_token', session.session.access_token, {
+				httpOnly: true,
+				path: '/',
+				sameSite: 'lax',
+				maxAge: session.session.expires_in || 3600,
+			});
+			if (session.session.refresh_token) {
+				cookieStore.set('admin_refresh_token', session.session.refresh_token, {
+					httpOnly: true,
+					path: '/',
+					sameSite: 'lax',
+					maxAge: 60 * 60 * 24 * 30,
+				});
+			}
 		}
 		return NextResponse.json({
 			session: session.session,

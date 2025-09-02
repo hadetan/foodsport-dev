@@ -13,9 +13,18 @@ import { UsersProvider } from "@/app/shared/contexts/usersContext";
 import { DashboardProvider } from "@/app/shared/contexts/DashboardContext";
 import { AdminActivitiesProvider } from "@/app/shared/contexts/AdminActivitiesContext";
 import { SocialMediaImageProvider } from "@/app/shared/contexts/socialMediaImageContext";
+import { useEffect } from "react";
 
 export default function AdminLoggedInLayout({ children }) {
     const pathname = usePathname();
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem('admin_auth_token');
+            if (!token) {
+                window.location.href = '/admin/login';
+            }
+        }
+    }, []);
 
     return (
         <div data-theme="light">
@@ -101,7 +110,7 @@ export default function AdminLoggedInLayout({ children }) {
                                                 <SidebarItem
                                                     href="/admin/users"
                                                     icon={<Users />}
-                                                    label="Users"
+                                                    label="All Users"
                                                     isSelected={
                                                         pathname ===
                                                         "/admin/users"
@@ -110,7 +119,7 @@ export default function AdminLoggedInLayout({ children }) {
                                                 <SidebarItem
                                                     href="/admin/activities"
                                                     icon={<Calendar1 />}
-                                                    label="Activities"
+                                                    label="All Activities"
                                                     isSelected={
                                                         pathname ===
                                                         "/admin/activities"
@@ -119,7 +128,7 @@ export default function AdminLoggedInLayout({ children }) {
                                                 <SidebarItem
                                                     href="/admin/social"
                                                     icon={<Share2 />}
-                                                    label="Social Media"
+                                                    label="Social Media Images"
                                                     isSelected={
                                                         pathname ===
                                                         "/admin/social"
@@ -128,7 +137,7 @@ export default function AdminLoggedInLayout({ children }) {
                                                 <SidebarItem
                                                     href="/admin/email"
                                                     icon={<Mail />}
-                                                    label="Email Send"
+                                                    label="Send Emails"
                                                     isSelected={
                                                         pathname ===
                                                         "/admin/email"
@@ -137,7 +146,7 @@ export default function AdminLoggedInLayout({ children }) {
                                                 <SidebarItem
                                                     href="/admin/register"
                                                     icon={<UserPlus />}
-                                                    label="Register"
+                                                    label="Create New Admin"
                                                     isSelected={
                                                         pathname ===
                                                         "/admin/register"

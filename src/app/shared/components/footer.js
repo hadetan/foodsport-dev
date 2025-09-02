@@ -33,7 +33,7 @@ export default function Footer() {
         try {
             const data = await api.request({
                 method: "GET",
-                url: "/admin/social",
+                url: "/social",
             });
             if (Array.isArray(data.data.images)) {
                 setGalleryImages(data.data.images.map((img) => img.imageUrl));

@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
-import { getSupabaseClient } from '@/lib/supabase/index';
 import { setupGlobalLoadingBarForAxios } from '@/utils/loadingBarEvents';
 
 const api = axios.create({
@@ -23,47 +22,73 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response && error.response.status === 401) {
       try {
-        // Avoid retry loop if the failing call is already the refresh endpoint
+        // Admin API handling
+        if (error.config?.url?.includes('/admin/')) {
+          // ...existing code for admin refresh...
+          if (error.config?.url?.includes('/admin/auth/refresh')) {
+            await api.delete('/admin/auth/logout');
+            localStorage.removeItem('admin_auth_token');
+            localStorage.removeItem('admin_refresh_token');
+            window.location.href = '/admin/login';
+            return Promise.reject(error);
+          }
+          const refreshRes = await api.post('/admin/auth/refresh');
+          const { session } = refreshRes.data;
+          if (!session || !session.access_token) {
+            showApiError({ message: 'Failed to refresh admin session.' });
+            await api.delete('/admin/auth/logout');
+            localStorage.removeItem('admin_auth_token');
+            localStorage.removeItem('admin_refresh_token');
+            window.location.href = '/admin/login';
+            return Promise.reject(error);
+          }
+          error.config.headers['Authorization'] = `Bearer ${session.access_token}`;
+          localStorage.setItem('admin_auth_token', session.access_token);
+          if (session.refresh_token) {
+            localStorage.setItem('admin_refresh_token', session.refresh_token);
+          }
+          return api.request(error.config);
+        }
+        // User API refresh logic
+        // Avoid retry loop if the failing call is already the user refresh endpoint
         if (error.config?.url?.includes('/auth/refresh')) {
+          // Only logout if refresh itself fails
           await api.delete('/auth/logout');
           localStorage.removeItem('auth_token');
-          window.location.href = '/auth/login';
+          localStorage.removeItem('refresh_token');
           return Promise.reject(error);
         }
-
-        // Attempt to refresh session using Supabase client
-        const { data: { session }, error: refreshError } = await getSupabaseClient().auth.refreshSession();
-        if (refreshError || !session) {
-          console.warn('Session refresh failed:', refreshError);
-          showApiError(refreshError || { message: 'Failed to refresh session.' });
+        // Attempt to refresh user session
+        const refreshRes = await api.post('/auth/refresh');
+        const { session } = refreshRes.data;
+        if (!session || !session.access_token) {
+          showApiError({ message: 'Failed to refresh user session.' });
           await api.delete('/auth/logout');
           localStorage.removeItem('auth_token');
-          window.location.href = '/auth/login';
+          localStorage.removeItem('refresh_token');
           return Promise.reject(error);
         }
-
-        // Send session to refresh API to update cookies
-        const refreshRes = await api.post('/auth/refresh', { session });
-        const { access_token } = refreshRes.data;
-        if (!access_token) {
-          console.warn('Refresh API did not return a new access token.');
-          showApiError({ message: 'Failed to refresh session.' });
-          await api.delete('/auth/logout');
-          localStorage.removeItem('auth_token');
-          window.location.href = '/auth/login';
-          return Promise.reject(error);
+        // Update Authorization header and localStorage for user
+        error.config.headers['Authorization'] = `Bearer ${session.access_token}`;
+        localStorage.setItem('auth_token', session.access_token);
+        if (session.refresh_token) {
+          localStorage.setItem('refresh_token', session.refresh_token);
         }
-
-        // Update Authorization header and localStorage
-        error.config.headers['Authorization'] = `Bearer ${access_token}`;
-        localStorage.setItem('auth_token', access_token);
         return api.request(error.config);
       } catch (refreshError) {
-        console.error('Unexpected error during session refresh:', refreshError);
         showApiError(refreshError);
-        await api.delete('/auth/logout');
-        localStorage.removeItem('auth_token');
-        window.location.href = '/auth/login';
+        // Determine if admin or user
+        if (error.config?.url?.includes('/admin/')) {
+          await api.delete('/admin/auth/logout');
+          localStorage.removeItem('admin_auth_token');
+          localStorage.removeItem('admin_refresh_token');
+          window.location.href = '/admin/login';
+        } else {
+          await api.delete('/auth/logout');
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
+          window.location.href = '/auth/login';
+        }
         return Promise.reject(refreshError);
       }
     }

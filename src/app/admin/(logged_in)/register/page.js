@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 
 const RegisterPage = () => {
-    const [form, setForm] = useState({ name: "", id: "", password: "" });
+    const [form, setForm] = useState({ name: "", email: "", password: "" });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
 
@@ -16,15 +16,14 @@ const RegisterPage = () => {
         setLoading(true);
         setMessage(null);
 
-        // Map "id" to "email" for the API
         const payload = {
             name: form.name,
-            email: form.id,
+            email: form.email,
             password: form.password,
         };
 
         try {
-            const res = await axios.post("/api/admin/register", payload);
+            const res = await axios.post("/api/admin/auth/register", payload);
             setMessage({
                 type: "success",
                 text: res.data.message || "Registration successful.",
@@ -73,15 +72,15 @@ const RegisterPage = () => {
                     />
                 </div>
                 <div>
-                    <label className="block mb-1 font-medium" htmlFor="id">
-                        ID
+                    <label className="block mb-1 font-medium" htmlFor="email">
+                        Email
                     </label>
                     <input
                         className="input input-bordered w-full"
-                        type="text"
-                        id="id"
-                        name="id"
-                        value={form.id}
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={form.email}
                         onChange={handleChange}
                         required
                     />

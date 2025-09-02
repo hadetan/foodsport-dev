@@ -17,13 +17,14 @@ const LoginPage = () => {
         e.preventDefault();
         setLoading(true);
         setError("");
-
         try {
-            const response = await axios.post("/api/admin/login", formData);
-            if (response.data && response.data.admin) {
-                router.push('/admin')
+            const response = await axios.post("/api/admin/auth/login", formData);
+            if (response.data && response.data.admin && response.data.session) {
+                if (response.data.session.access_token) {
+                    localStorage.setItem('admin_auth_token', response.data.session.access_token);
+                }
+                router.push('/admin');
             } else {
-
                 setError("Unexpected response from server.");
             }
         } catch (err) {
