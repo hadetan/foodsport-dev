@@ -21,25 +21,24 @@ enum ActivityLevel {
 }
 
 enum ActivityStatus {
-  upcoming
   active
-  closed
-  completed
-  cancelled
   draft
 }
 
 enum ActivityType {
-  kayak
-  hiking
-  yoga
-  fitness
-  running
-  cycling
-  swimming
-  dancing
-  boxing
-  other
+  Running
+  Hiking
+  Water_Sport
+  Volunteering
+  Racket_Sport
+  Yoga
+  Dance
+  Fitness
+  Cycling
+  Mindfulness
+  Team_Sport
+  Virtual
+  Multi_Sports
 }
 
 enum TicketStatus {
@@ -161,7 +160,7 @@ model Activity {
   organizerId          String?       @map("organizer_id") // Get organizer name from the id
   imageUrl             String?       @map("image_url")
   totalCaloriesBurnt   Int           @default(0) @map("total_calories_burnt")
-  caloriesPerHour      Int           @default(300) @map("calories_per_hour")
+  caloriesPerHour      String        @map("calories_per_hour")
   isFeatured           Boolean       @default(false) @map("is_featured")
   createdAt            DateTime      @default(now()) @map("created_at")
   updatedAt            DateTime      @updatedAt @map("updated_at")
