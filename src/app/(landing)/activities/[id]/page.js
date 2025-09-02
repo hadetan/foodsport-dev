@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import { useParams } from "next/navigation";
 import ActivityDetails from "@/app/shared/components/ActivityDetails";
@@ -52,7 +51,7 @@ export default function ActivityDetailsPage() {
                         No Activity Found
                     </div>
                     <div className='activityDetailsEmptyDesc'>
-                        We couldn't find the activity you're looking for.
+                        We couldn&apos;t find the activity you&apos;re looking for.
                         <br />
                         Please check the link again.
                     </div>

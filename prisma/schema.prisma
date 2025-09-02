@@ -148,7 +148,7 @@ model Activity {
   id                   String        @id @default(uuid())
   title                String
   description          String?
-  summary              String?   @db.Text
+  summary              String?       @db.Text
   activityType         ActivityType  @map("activity_type")
   location             String
   startDate            DateTime      @map("start_date")
@@ -159,6 +159,7 @@ model Activity {
   participantLimit     Int?          @map("participant_limit")
   organizerId          String?       @map("organizer_id") // Get organizer name from the id
   imageUrl             String?       @map("image_url")
+  mapUrl               String?       @map("map_url")
   totalCaloriesBurnt   Int           @default(0) @map("total_calories_burnt")
   caloriesPerHour      String        @map("calories_per_hour")
   isFeatured           Boolean       @default(false) @map("is_featured")

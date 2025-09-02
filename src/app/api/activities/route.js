@@ -63,6 +63,7 @@ export async function GET(req) {
 				imageUrl: true,
 				caloriesPerHour: true,
 				isFeatured: true,
+				mapUrl: true,
 			},
 			options
 		);
@@ -105,6 +106,7 @@ export async function GET(req) {
 			imageUrl: a.imageUrl,
 			caloriesPerHour: a.caloriesPerHour,
 			isFeatured: a.isFeatured,
+			mapUrl: a.mapUrl,
 		}));
 
 		const responseData = {
