@@ -65,6 +65,7 @@ export async function GET(req) {
 				caloriesPerHour: true,
 				isFeatured: true,
 				totalCaloriesBurnt: true,
+				mapUrl: true,
 				createdAt: true,
 				updatedAt: true,
 			},
@@ -102,6 +103,7 @@ export async function GET(req) {
 					caloriesPerHour: a.caloriesPerHour,
 					isFeatured: a.isFeatured,
 					totalCaloriesBurnt: a.totalCaloriesBurnt,
+					mapUrl: a.mapUrl,
 					createdAt: a.createdAt,
 					updatedAt: a.updatedAt,
 				};
@@ -167,6 +169,7 @@ export async function POST(req) {
 			'startTime',
 			'endTime',
 			'image',
+			'mapUrl',
 		];
 		const missingFields = requiredFields.filter(
 			(field) => !formData.get(field)
@@ -250,6 +253,7 @@ export async function POST(req) {
 			'caloriesPerHour',
 			'isFeatured',
 			'imageUrl',
+			'mapUrl',
 		];
 		const activityData = {};
 		for (const field of allowedFields) {
@@ -269,15 +273,6 @@ export async function POST(req) {
 			if (isNaN(activityData.participantLimit)) {
 				return NextResponse.json(
 					{ error: 'participantLimit must be a number' },
-					{ status: 400 }
-				);
-			}
-		}
-		if (activityData.caloriesPerHour) {
-			activityData.caloriesPerHour = Number(activityData.caloriesPerHour);
-			if (isNaN(activityData.caloriesPerHour)) {
-				return NextResponse.json(
-					{ error: 'caloriesPerHour must be a number' },
 					{ status: 400 }
 				);
 			}
@@ -375,6 +370,7 @@ export async function PATCH(req) {
 			'caloriesPerHour',
 			'isFeatured',
 			'totalCaloriesBurnt',
+			'mapUrl',
 		];
         let updates = {};
         for (const field of allowedFields) {
@@ -399,14 +395,6 @@ export async function PATCH(req) {
         }
 
 
-		if (updates.caloriesPerHour) {
-			updates.caloriesPerHour = Number(updates.caloriesPerHour);
-			if (isNaN(updates.caloriesPerHour))
-				return NextResponse.json(
-					{ error: 'caloriesPerHour must be a number' },
-					{ status: 400 }
-				);
-		}
 
 		if (updates.totalCaloriesBurnt !== undefined) {
 			updates.totalCaloriesBurnt = Number(updates.totalCaloriesBurnt);
