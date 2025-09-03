@@ -1,4 +1,5 @@
 import React from 'react';
+import '@/app/shared/css/TncDetails.css';
 
 const TncDetails = ({ title, description }) => {
     return (
