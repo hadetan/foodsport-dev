@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import '@/app/shared/css/ActivityDetails.css';
 import Image from 'next/image';
 import Avatar from '@/app/shared/components/avatar';
@@ -11,6 +12,7 @@ import { IoIosArrowBack } from 'react-icons/io';
 import Featured from './Featured';
 import api from '@/utils/axios/api';
 import ShareDialog from '@/app/shared/components/ShareDialog';
+import toast from '@/utils/Toast';
 
 const ActivityDetails = ({
 	activity,
@@ -24,6 +26,7 @@ const ActivityDetails = ({
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [showShare, setShowShare] = useState(false);
+  const [tncChecked, setTncChecked] = useState(false);
 
 	useEffect(() => {
 		if (topRef.current) {
@@ -32,12 +35,16 @@ const ActivityDetails = ({
 	}, []);
 
 	async function handleJoin() {
+		if (!tncChecked) {
+			toast.warning('You must agree to the Conditions first.');
+			return;
+		}
 		if (activity.status !== 'active') {
-			setError('Cannot join activity that is not active.');
+			toast.warning('Cannot join activity that is not active.');
 			return;
 		}
 		if (!user.weight || !user.height) {
-			setError('You must fill height and weight to join activities.');
+			toast.warning('You must fill height and weight to join activities.');
 			return window.location.href = `/my/profile?editProfile=1&returnTo=${encodeURIComponent(window.location.pathname)}`;
 		}
 		try {
@@ -60,11 +67,10 @@ const ActivityDetails = ({
 		} catch (error) {
 			const status = error?.response?.status;
 			const serverMsg = error?.response?.data?.error;
-			setError(serverMsg || error.message || 'Something went wrong');
 			if (status === 401 && serverMsg?.includes('Token')) {
 				window.location.href = '/auth/login';
 			} else if (status === 400 && serverMsg?.includes('Activity is not')) {
-				setError('Cannot join activity that is not active.');
+				toast.warning('Cannot join activity that is not active.');
 			} else if (serverMsg) {
 				if (serverMsg.toLowerCase().includes('height') || serverMsg.toLowerCase().includes('weight')) {
 					window.location.href = `/my/profile?editProfile=1&returnTo=${encodeURIComponent(window.location.pathname)}`;
@@ -95,7 +101,6 @@ const ActivityDetails = ({
 					: act
 			));
 		} catch (error) {
-			setError(error.message || 'Something went wrong');
 			if (error.status === 401 && error.response?.data?.error?.includes('Token')) {
 				window.location.href = '/auth/login';
 			}
@@ -103,6 +108,8 @@ const ActivityDetails = ({
 			setLoading(false);
 		}
 	}
+
+	// if (error) toast.warning(error);
 
 	return (
 		<div className='activityDetailsPage' ref={topRef}>
@@ -265,12 +272,41 @@ const ActivityDetails = ({
 						)}
 					</div>
 					<div className='activityDetailsSidebarActions'>
+						{/* TNC Checkbox for joining */}
+						{!user?.joinedActivityIds?.includes(activity.id) && activity.tnc && (
+							<div className='activityDetailsTncCheckbox' style={{ marginBottom: '12px' }}>
+								<label style={{ fontSize: '0.95em', flexWrap: 'wrap', lineHeight: '1.4' }}>
+									<input
+										type='checkbox'
+										checked={tncChecked}
+										onChange={e => setTncChecked(e.target.checked)}
+										style={{ marginRight: '8px', marginTop: '3px' }}
+									/>
+									<span style={{ display: 'inline', wordBreak: 'break-word', whiteSpace: 'normal' }}>
+										I accept to the{' '}
+										<Link
+											href={`/activities/${activity.id}/${activity.tnc.title.replace(/\s+/g, '-')}`}
+											style={{ color: '#0099c4', textDecoration: 'underline', margin: '0 4px', wordBreak: 'break-word', whiteSpace: 'normal' }}
+											target='_blank'
+											rel='noopener noreferrer'
+										>
+											conditions
+										</Link>
+										{' '}for participating on the event
+									</span>
+								</label>
+							</div>
+						)}
 						{user?.joinedActivityIds?.includes(activity.id) ? (
 							<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading}>
 								{loading ? 'LEAVING' : 'LEAVE'}
 							</button>
 						) : (
-							<button className='activityDetailsBtn' onClick={handleJoin} disabled={loading}>
+							<button
+								className='activityDetailsBtn'
+								onClick={handleJoin}
+								disabled={loading}
+							>
 								{loading ? 'JOINING' : 'JOIN NOW'}
 							</button>
 						)}

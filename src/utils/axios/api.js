@@ -71,9 +71,6 @@ api.interceptors.response.use(
         // Update Authorization header and localStorage for user
         error.config.headers['Authorization'] = `Bearer ${session.access_token}`;
         localStorage.setItem('auth_token', session.access_token);
-        if (session.refresh_token) {
-          localStorage.setItem('refresh_token', session.refresh_token);
-        }
         return api.request(error.config);
       } catch (refreshError) {
         showApiError(refreshError);

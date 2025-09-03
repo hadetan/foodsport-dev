@@ -82,7 +82,13 @@ export async function DELETE(request) {
 				to: user.email,
 				templateId,
 				params,
-			});
+			},
+			{
+				headers: {
+					'x-internal-api': process.env.INTERNAL_API_SECRET,
+				},
+			}
+		);
 		} catch (e) {
 			emailError = e;
 		}

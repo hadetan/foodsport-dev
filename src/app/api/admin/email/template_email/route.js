@@ -5,7 +5,7 @@ import { requireAdmin } from "@/lib/prisma/require-admin";
 
 export async function POST(req) {
 	const supabase = await createServerClient();
-	const { error } = await requireAdmin(supabase, NextResponse);
+	const { error } = await requireAdmin(supabase, NextResponse, req);
 	if (error) return error;
 
 	const { BREVO_API_KEY, SENDER_EMAIL_ID, SENDER_EMAIL_NAME, BREVO_URL } = process.env;
