@@ -9,6 +9,7 @@ import FullPageLoader from "../../../components/FullPageLoader";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import { Download, Upload } from "lucide-react";
 import { toast } from "@/utils/Toast";
+import axios from "axios";
 
 const ActivityDetailPage = () => {
     const [activity, setActivity] = useState(null);
@@ -21,6 +22,39 @@ const ActivityDetailPage = () => {
 
     const { activities, loading: activitiesLoading } = useActivities();
     const activityId = params?.id;
+
+    const [showVerifyDropdown, setShowVerifyDropdown] = useState(false);
+    const [ticketCode, setTicketCode] = useState("");
+    const [verifying, setVerifying] = useState(false);
+    const [verifyError, setVerifyError] = useState(null);
+    const [verifySuccess, setVerifySuccess] = useState(null);
+
+    const handleVerify = async () => {
+        setVerifying(true);
+        setVerifyError(null);
+        setVerifySuccess(null);
+        try {
+            const res = await axios.post("/api/admin/verifyTicket", {
+                activityId,
+                ticketCode: ticketCode.trim(),
+            });
+            const data = res.data;
+            setVerifySuccess(data.message || "Ticket verified successfully!");
+            setTicketCode("");
+        } catch (error) {
+            if (
+                error.response &&
+                error.response.data &&
+                error.response.data.error
+            ) {
+                setVerifyError(error.response.data.error);
+            } else {
+                setVerifyError("An error occurred while verifying the ticket.");
+            }
+        } finally {
+            setVerifying(false);
+        }
+    };
 
     // Filter users who have joined this activity
     useEffect(() => {
@@ -101,9 +135,7 @@ const ActivityDetailPage = () => {
     };
 
     return (
-
         <div className="w-full min-h-screen bg-white">
-
             {/* Navigation Buttons */}
             <div className="container mx-auto px-4 pt-6 flex justify-between items-center">
                 <button
@@ -264,6 +296,81 @@ const ActivityDetailPage = () => {
                     </svg>
                     Edit Activity
                 </button>
+            </div>
+
+            {/* Verify Tickets Dropdown Card */}
+            <div className="container mx-auto px-4 pt-4">
+                <div className="max-w-xl mx-auto mb-8">
+                    <div className="bg-white rounded-lg shadow border border-gray-200">
+                        <button
+                            className="w-full flex justify-between items-center px-6 py-4 focus:outline-none"
+                            onClick={() =>
+                                setShowVerifyDropdown((prev) => !prev)
+                            }
+                            aria-expanded={showVerifyDropdown}
+                        >
+                            <div>
+                                <span className="text-lg font-semibold text-gray-800">
+                                    Verify tickets
+                                </span>
+                                <div className="text-xs text-gray-400 mt-1">
+                                    Click to expand
+                                </div>
+                            </div>
+                            <svg
+                                className={`w-5 h-5 ml-2 transition-transform duration-200 ${
+                                    showVerifyDropdown ? "rotate-180" : ""
+                                }`}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19 9l-7 7-7-7"
+                                />
+                            </svg>
+                        </button>
+                        {showVerifyDropdown && (
+                            <div className="px-6 pb-6 pt-2">
+                                {verifyError && (
+                                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4 text-sm">
+                                        {verifyError}
+                                    </div>
+                                )}
+                                <div className="flex flex-col sm:flex-row items-end gap-2">
+                                    <input
+                                        type="text"
+                                        className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
+                                        placeholder="Enter ticket code"
+                                        value={ticketCode}
+                                        onChange={(e) =>
+                                            setTicketCode(e.target.value)
+                                        }
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter")
+                                                handleVerify();
+                                        }}
+                                    />
+                                    <button
+                                        className="ml-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded shadow disabled:opacity-60"
+                                        onClick={handleVerify}
+                                        disabled={verifying}
+                                    >
+                                        {verifying ? "Verifying..." : "Verify"}
+                                    </button>
+                                </div>
+                                {verifySuccess && (
+                                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded mt-4 text-sm">
+                                        {verifySuccess}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* Header Section with Image and Activity Details Side by Side */}

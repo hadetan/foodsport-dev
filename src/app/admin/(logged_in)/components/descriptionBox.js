@@ -70,12 +70,7 @@ const ActivityDetailsStep = ({ activityId }) => {
     return (
         <div className="min-h-screen w-full text-base">
             <div className="flex items-center justify-between mb-10 px-0 md:px-8 pt-8">
-                <button
-                    className="btn btn-outline btn-md text-base"
-                    onClick={() => router.back()}
-                >
-                    Back
-                </button>
+                
                 <h1 className="text-4xl font-bold text-center flex-1 tracking-tight">
                     Add Detailed Description
                 </h1>
