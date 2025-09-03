@@ -13,6 +13,27 @@ import {
 import Tabs from "../../components/Tabs";
 import ActivityDetailsStep from "../../components/descriptionBox";
 
+// Helper to extract 'q' param (location) from stored mapUrl
+function extractMapLocationFromUrl(raw) {
+    if (!raw) return "";
+    try {
+        const urlObj = new URL(raw);
+        const q = urlObj.searchParams.get("q");
+        return q ? decodeURIComponent(q.replace(/\+/g, " ")) : "";
+    } catch {
+        return "";
+    }
+}
+
+// Build embed map URL from a plain location string
+function buildEmbedMapUrl(loc) {
+    return loc
+        ? `https://www.google.com/maps?q=${encodeURIComponent(
+              loc + ", Hong Kong"
+          )}&output=embed&z=14`
+        : "";
+}
+
 export default function EditActivityPage() {
     const [form, setForm] = useState(null);
     const [errors, setErrors] = useState({});
@@ -73,7 +94,7 @@ export default function EditActivityPage() {
                 : "",
             endDateTime: activity.endDate ? activity.endDate.slice(0, 16) : "",
             location: activity.location || "",
-            mapLocation: "",
+            mapLocation: extractMapLocationFromUrl(activity.mapUrl) || "",
             capacity: activity.participantLimit || "",
             status: activity.status || "active",
             totalCaloriesBurnt: activity.totalCaloriesBurnt || "",
@@ -91,7 +112,7 @@ export default function EditActivityPage() {
     }, [activity]);
 
     useEffect(() => {
-        if (form && form.mapLocation) {
+        if (form?.mapLocation) {
             const encodedLocation = encodeURIComponent(
                 form.mapLocation + ", Hong Kong"
             );
@@ -103,7 +124,7 @@ export default function EditActivityPage() {
                 "https://www.google.com/maps?q=Hong+Kong&output=embed&z=12"
             );
         }
-    }, [form && form.mapLocation]);
+    }, [form?.mapLocation]);
 
     if (activity === undefined || actLoading) {
         return <FullPageLoader />;
@@ -203,19 +224,22 @@ export default function EditActivityPage() {
                 if (
                     key === "time" ||
                     key === "caloriesPerHourMin" ||
-                    key === "caloriesPerHourMax"
+                    key === "caloriesPerHourMax" ||
+                    key === "mapLocation" // we will send derived mapUrl instead
                 )
                     return;
-                // No conversion needed, use formatted value directly
                 if (value !== "" && value !== null && value !== undefined) {
                     formData.append(key, value);
                 }
             });
-            // Join min-max for caloriesPerHour
+
+            // Derived fields
             formData.append(
                 "caloriesPerHour",
                 `${form.caloriesPerHourMin}-${form.caloriesPerHourMax}`
             );
+            formData.append("mapUrl", buildEmbedMapUrl(form.mapLocation));
+
             if (imageFile && imageFile.url === undefined) {
                 formData.append("image", imageFile);
             }
@@ -233,11 +257,10 @@ export default function EditActivityPage() {
                 }
             );
             if (setActivities && data) {
-                console.log("trying to set acts");
                 setActivities((prev) =>
                     prev.map((act) =>
                         String(act.id) === String(data.id)
-                            ? { ...act, ...data }
+                            ? { ...act, ...data, mapUrl: data.mapUrl }
                             : act
                     )
                 );
@@ -510,8 +533,8 @@ export default function EditActivityPage() {
                                             </span>
                                         )}
                                     </div>
-                                      {/* End Date & Time */}
-                                      <div className="form-control w-full">
+                                    {/* End Date & Time */}
+                                    <div className="form-control w-full">
                                         <label className="label text-lg font-semibold mb-2 text-black">
                                             End Date & Time
                                         </label>
@@ -629,7 +652,6 @@ export default function EditActivityPage() {
                                             onChange={handleInput}
                                             min={0.01}
                                             step="any"
-                                            required
                                             placeholder="Enter total calories burnt"
                                         />
                                         {errors.totalCaloriesBurnt && (
@@ -638,7 +660,7 @@ export default function EditActivityPage() {
                                             </span>
                                         )}
                                     </div>
-                                  
+
                                     {/* Status */}
                                     <div className="form-control w-full">
                                         <label className="label text-lg font-semibold mb-2 text-black">
@@ -671,7 +693,7 @@ export default function EditActivityPage() {
                                             className="input input-bordered input-lg w-full bg-white text-black"
                                             name="mapLocation"
                                             onChange={handleInput}
-                                            required
+                                            value={form.mapLocation}
                                             placeholder="Search In Map"
                                         />
                                         {errors.mapLocation && (
