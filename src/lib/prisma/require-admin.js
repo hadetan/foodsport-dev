@@ -9,14 +9,23 @@ import jwt from 'jsonwebtoken';
  * @param {object} NextResponse - Next.js Response helper
  * @returns {Promise<{user?: object, error?: object}>}
  */
-export async function requireAdmin(supabase, NextResponse) {
-	// Get admin_auth_token from cookies
+export async function requireAdmin(supabase, NextResponse, request) {
+	const INTERNAL_API_SECRET = process.env.INTERNAL_API_SECRET;
+	let isInternalApi = false;
+	if (request) {
+		const internalHeader = request.headers.get('x-internal-api');
+		if (internalHeader && INTERNAL_API_SECRET && internalHeader === INTERNAL_API_SECRET) {
+			isInternalApi = true;
+		}
+	}
+	if (isInternalApi) {
+		return { user: { internal: true } };
+	}
 	let token;
 	try {
 		const cookieStore = await cookies();
 		token = cookieStore.get('admin_auth_token')?.value;
 	} catch (e) {
-		// fallback: try process.env (for tests)
 		token = null;
 	}
 	if (!token) {
@@ -56,7 +65,6 @@ export async function requireAdmin(supabase, NextResponse) {
 			),
 		};
 	}
-	// If not expired, continue with Supabase user check
 	const { data: { user }, error: userError } = await supabase.auth.getUser();
 	if (userError || !user) {
 		return {

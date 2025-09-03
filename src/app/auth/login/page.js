@@ -1,7 +1,6 @@
 "use client";
 import '@/app/auth/css/loginAndRegister.css'
 import { useState, useEffect } from "react";
-import api from "@/utils/axios/api";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import Link from 'next/link';

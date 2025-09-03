@@ -45,7 +45,7 @@ export async function POST(req) {
 					httpOnly: true,
 					path: '/',
 					sameSite: 'lax',
-					maxAge: 60 * 60 * 24 * 30,
+					maxAge: 10,
 				});
 			}
 		}

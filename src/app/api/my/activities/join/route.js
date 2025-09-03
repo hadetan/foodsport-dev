@@ -5,6 +5,7 @@ import { validateRequiredFields } from '@/utils/validation';
 import { NextResponse } from 'next/server';
 import api from '@/utils/axios/api';
 import { generateUniqueTicketCode } from '@/utils/generateUniqueTicketCode';
+import serverApi from '@/utils/axios/serverApi';
 
 // POST /api/my/activities/join
 export async function POST(request) {
@@ -84,24 +85,40 @@ export async function POST(request) {
 
 			const ticketCode = await generateUniqueTicketCode(tx);
 
-			const ticket = await tx.ticket.create({
-				data: {
-					ticketCode,
-					activityId: body.activityId,
-					userId: user.id,
-					status: 'active',
-					ticketSent: false,
-					ticketUsed: false,
-				},
-			});
+			let ticket, userActivity;
+			try {
+				ticket = await tx.ticket.create({
+					data: {
+						ticketCode,
+						activityId: body.activityId,
+						userId: user.id,
+						status: 'active',
+						ticketSent: false,
+						ticketUsed: false,
+					},
+				});
+			} catch (err) {
+				console.error('Failed to create ticket:', err);
+				throw new Error('Failed to create ticket', err);
+			}
 
-			const userActivity = await tx.userActivity.create({
-				data: {
-					userId: user.id,
-					activityId: body.activityId,
-					ticketId: ticket.id,
-				},
-			});
+			try {
+				userActivity = await tx.userActivity.create({
+					data: {
+						userId: user.id,
+						activityId: body.activityId,
+						ticketId: ticket?.id,
+					},
+				});
+			} catch (err) {
+				console.error('Failed to create userActivity:', err);
+				throw new Error('Failed to create userActivity');
+			}
+
+			if (!ticket || !userActivity) {
+				console.error('Transaction result missing ticket or userActivity:', { ticket, userActivity });
+				throw new Error('Internal error: ticket or userActivity not created');
+			}
 
 			return { ticket, userActivity };
 		});
@@ -112,12 +129,17 @@ export async function POST(request) {
 			code: result.ticket.ticketCode,
 			title: activity.title,
 		};
-		const emailRes = await api.post(
+		const emailRes = await serverApi.post(
 			`/admin/email/template_email`,
 			{
 				to: user.email,
 				templateId,
 				params,
+			},
+			{
+				headers: {
+					'x-internal-api': process.env.INTERNAL_API_SECRET,
+				},
 			}
 		);
 		if (!emailRes.data || !emailRes.data.success) {

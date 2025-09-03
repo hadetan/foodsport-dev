@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 
 export function middleware(request) {
-  const token = request.cookies.get('auth_token');
+  // Find any cookie starting with 'sb' (Supabase session cookie)
+  let token = null;
+  for (const [name, value] of request.cookies) {
+    if (name.startsWith('sb')) {
+      token = value;
+      break;
+    }
+  }
   const url = request.nextUrl;
 
   // If not logged in and visiting /my/activities/:id, redirect to /activities/:id
@@ -31,5 +38,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/', '/my/:path*', '/activities/:path*'],
+  matcher: ['/', '/my/:path*', '/activities/:path*', '/admin/:path*'],
 };
