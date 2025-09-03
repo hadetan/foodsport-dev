@@ -26,7 +26,7 @@ export async function POST(_) {
 				httpOnly: true,
 				path: '/',
 				sameSite: 'lax',
-				maxAge: 10,
+				maxAge: 60 * 60 * 24 * 30,
 			});
 		}
 		return NextResponse.json({ session: data.session });
