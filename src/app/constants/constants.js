@@ -50,6 +50,7 @@ export const ACTIVITY_TYPES_FORMATTED = [
     "Mindfulness",
     "Team_Sport",
     "Virtual",
+    "Multi_Sports",
 ];
 
 export const MONTHS = [
