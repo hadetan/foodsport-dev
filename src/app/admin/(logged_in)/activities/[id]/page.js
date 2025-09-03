@@ -6,7 +6,7 @@ import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext
 import FullPageLoader from "../../components/FullPageLoader";
 import { Pencil } from "lucide-react";
 import statusOptions from "@/app/constants/constants";
-import { ACTIVITY_TYPES } from "@/app/constants/constants";
+import { ACTIVITY_TYPES, ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
 import Tabs from "../../components/Tabs";
 import ActivityDetailsStep from "../../components/descriptionBox";
 
@@ -42,10 +42,16 @@ export default function EditActivityPage() {
 
     useEffect(() => {
         if (!activity) return;
+        // Find the formatted value for the activityType
+        let formattedActivityType = "";
+        if (activity.activityType) {
+            const idx = ACTIVITY_TYPES.indexOf(activity.activityType);
+            formattedActivityType = idx !== -1 ? ACTIVITY_TYPES_FORMATTED[idx] : "";
+        }
         setForm({
             title: activity.title || "",
             description: activity.description || "",
-            activityType: activity.activityType || "",
+            activityType: formattedActivityType,
             date: activity.startDate ? activity.startDate.slice(0, 10) : "",
             location: activity.location || "",
             mapLocation: "",
@@ -157,7 +163,12 @@ export default function EditActivityPage() {
 
             Object.entries(form).forEach(([key, value]) => {
                 if (key === "time") return;
-                if (value !== "" && value !== null && value !== undefined) {
+                // Convert formatted activityType back to original for API
+                if (key === "activityType") {
+                    const idx = ACTIVITY_TYPES_FORMATTED.indexOf(value);
+                    const originalType = idx !== -1 ? ACTIVITY_TYPES[idx] : value;
+                    formData.append(key, originalType);
+                } else if (value !== "" && value !== null && value !== undefined) {
                     formData.append(key, value);
                 }
             });
@@ -397,12 +408,9 @@ export default function EditActivityPage() {
                                             <option value="">
                                                 Select activity type
                                             </option>
-                                            {ACTIVITY_TYPES.map((type) => (
-                                                <option key={type} value={type}>
-                                                    {type
-                                                        .charAt(0)
-                                                        .toUpperCase() +
-                                                        type.slice(1)}
+                                            {ACTIVITY_TYPES_FORMATEED.map((type, idx) => (
+                                                <option key={type} value={ACTIVITY_TYPES_FORMATTED[idx]}>
+                                                    {type.charAt(0).toUpperCase() + type.slice(1)}
                                                 </option>
                                             ))}
                                         </select>
