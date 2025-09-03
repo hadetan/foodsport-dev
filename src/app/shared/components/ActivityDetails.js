@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import '@/app/shared/css/ActivityDetails.css';
 import Image from 'next/image';
 import Avatar from '@/app/shared/components/avatar';
@@ -24,6 +25,7 @@ const ActivityDetails = ({
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [showShare, setShowShare] = useState(false);
+  const [tncChecked, setTncChecked] = useState(false);
 
 	useEffect(() => {
 		if (topRef.current) {
@@ -32,6 +34,10 @@ const ActivityDetails = ({
 	}, []);
 
 	async function handleJoin() {
+		if (!tncChecked) {
+			setError('You must agree to the Terms & Conditions to join.');
+			return;
+		}
 		if (activity.status !== 'active') {
 			setError('Cannot join activity that is not active.');
 			return;
@@ -265,12 +271,38 @@ const ActivityDetails = ({
 						)}
 					</div>
 					<div className='activityDetailsSidebarActions'>
+						{/* TNC Checkbox for joining */}
+						{!user?.joinedActivityIds?.includes(activity.id) && activity.tnc && (
+							<div className='activityDetailsTncCheckbox' style={{ marginBottom: '12px' }}>
+								<label style={{ display: 'flex', alignItems: 'center', fontSize: '0.95em' }}>
+									<input
+										type='checkbox'
+										checked={tncChecked}
+										onChange={e => setTncChecked(e.target.checked)}
+										style={{ marginRight: '8px' }}
+									/>
+									I agree to the{' '}
+									<Link
+										href={`/activities/${activity.id}/${activity.tnc.title.replace(/\s+/g, '-')}`}
+										style={{ color: '#0070f3', textDecoration: 'underline', marginLeft: '4px' }}
+										target='_blank'
+										rel='noopener noreferrer'
+									>
+										{activity.tnc.title}
+									</Link>
+								</label>
+							</div>
+						)}
 						{user?.joinedActivityIds?.includes(activity.id) ? (
 							<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading}>
 								{loading ? 'LEAVING' : 'LEAVE'}
 							</button>
 						) : (
-							<button className='activityDetailsBtn' onClick={handleJoin} disabled={loading}>
+							<button
+								className='activityDetailsBtn'
+								onClick={handleJoin}
+								disabled={loading || !tncChecked}
+							>
 								{loading ? 'JOINING' : 'JOIN NOW'}
 							</button>
 						)}
