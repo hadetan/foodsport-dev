@@ -8,9 +8,9 @@ import { prisma } from '@/lib/prisma/db';
 import { createServerClient } from '@/lib/supabase/server-only';
 
 export async function POST(request) {
-    // const supabase = await createServerClient();
-    // const { error } = await requireUser(supabase, NextResponse, request);
-    // if (error) return error;
+    const supabase = await createServerClient();
+    const { error } = await requireUser(supabase, NextResponse, request);
+    if (error) return error;
 
     try {
         const body = await request.json();
