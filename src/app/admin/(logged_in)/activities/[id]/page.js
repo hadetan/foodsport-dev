@@ -68,7 +68,10 @@ export default function EditActivityPage() {
             title: activity.title || "",
             description: activity.description || "",
             activityType: formattedActivityType,
-            date: activity.startDate ? activity.startDate.slice(0, 10) : "",
+            startDateTime: activity.startDate
+                ? activity.startDate.slice(0, 16)
+                : "",
+            endDateTime: activity.endDate ? activity.endDate.slice(0, 16) : "",
             location: activity.location || "",
             mapLocation: "",
             capacity: activity.participantLimit || "",
@@ -124,10 +127,22 @@ export default function EditActivityPage() {
         if (!form.description) errs.description = "Summary is required.";
         if (!form.activityType)
             errs.activityType = "Activity type is required.";
-        if (!form.date) errs.datetime = "Date is required.";
+        if (!form.startDateTime)
+            errs.startDateTime = "Start date and time are required.";
         else {
-            const dt = new Date(form.date);
-            if (dt < new Date()) errs.datetime = "Date must be in the future.";
+            const dt = new Date(form.startDateTime);
+            if (dt < new Date())
+                errs.startDateTime =
+                    "Start date and time must be in the future.";
+        }
+        if (!form.endDateTime)
+            errs.endDateTime = "End date and time are required.";
+        else {
+            const startDt = new Date(form.startDateTime);
+            const endDt = new Date(form.endDateTime);
+            if (endDt <= startDt)
+                errs.endDateTime =
+                    "End date and time must be after start date and time.";
         }
         if (!form.location) errs.location = "Location is required.";
         const cap = parseInt(form.capacity, 10);
@@ -479,19 +494,38 @@ export default function EditActivityPage() {
                                     {/* Start Date & Time */}
                                     <div className="form-control w-full">
                                         <label className="label text-lg font-semibold mb-2 text-black">
-                                            Start Date
+                                            Start Date & Time
                                         </label>
                                         <input
-                                            type="date"
+                                            type="datetime-local"
                                             className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="date"
-                                            value={form.date}
+                                            name="startDateTime"
+                                            value={form.startDateTime}
                                             onChange={handleInput}
                                             required
                                         />
-                                        {errors.datetime && (
+                                        {errors.startDateTime && (
                                             <span className="text-error text-base">
-                                                {errors.datetime}
+                                                {errors.startDateTime}
+                                            </span>
+                                        )}
+                                    </div>
+                                      {/* End Date & Time */}
+                                      <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            End Date & Time
+                                        </label>
+                                        <input
+                                            type="datetime-local"
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="endDateTime"
+                                            value={form.endDateTime}
+                                            onChange={handleInput}
+                                            required
+                                        />
+                                        {errors.endDateTime && (
+                                            <span className="text-error text-base">
+                                                {errors.endDateTime}
                                             </span>
                                         )}
                                     </div>
@@ -604,6 +638,7 @@ export default function EditActivityPage() {
                                             </span>
                                         )}
                                     </div>
+                                  
                                     {/* Status */}
                                     <div className="form-control w-full">
                                         <label className="label text-lg font-semibold mb-2 text-black">
