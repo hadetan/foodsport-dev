@@ -18,21 +18,39 @@ export const DISTRICTS = [
     "Tuen_Mun",
     "Yuen_Long",
 ];
-export default [
-    "active",
-    "draft",
-];
+const ACTIVITY_STATUSES = ["active", "draft"];
+export default ACTIVITY_STATUSES;
 export const ACTIVITY_TYPES = [
-    "kayak",
-    "hiking",
-    "yoga",
-    "fitness",
     "running",
+    "hiking",
+    "water sport",
+    "volunteering",
+    "racket sport",
+    "yoga",
+    "dance",
+    "fitness",
     "cycling",
-    "swimming",
-    "dancing",
-    "boxing",
-    "other",
+    "mindfulness",
+    "team sport",
+    "virtual",
+    "multi sports",
+];
+
+// Added formatted activity types (capitalized and underscored)
+export const ACTIVITY_TYPES_FORMATTED = [
+    "Running",
+    "Hiking",
+    "Water_Sport",
+    "Volunteering",
+    "Racket_Sport",
+    "Yoga",
+    "Dance",
+    "Fitness",
+    "Cycling",
+    "Mindfulness",
+    "Team_Sport",
+    "Virtual",
+    "Multi_Sports",
 ];
 
 export const MONTHS = [

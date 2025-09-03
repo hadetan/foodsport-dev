@@ -9,22 +9,27 @@ import { ImageUp, Pencil } from "lucide-react";
 import Tabs from "@/app/admin/(logged_in)/components/Tabs";
 import ActivityDetailsStep from "@/app/admin/(logged_in)/components/descriptionBox";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
-import { ACTIVITY_TYPES } from "@/app/constants/constants";
+import {
+    ACTIVITY_TYPES,
+    ACTIVITY_TYPES_FORMATTED,
+} from "@/app/constants/constants";
 
 const CreateActivityPage = () => {
     const router = useRouter();
     const [formData, setFormData] = useState({
         title: "",
-        activityType: "",
+        activityType: "", // will store the formatted value
         description: "",
         startDateTime: "",
         endDateTime: "",
         location: "",
         mapLocation: "", // renamed from location for map search
         capacity: "",
-        caloriesPerHour: "",
+        caloriesPerHourMin: "",
+        caloriesPerHourMax: "",
         image: null,
         status: "draft",
+        mapUrl: "",
     });
     const { setActivities } = useAdminActivities();
     const [error, setError] = useState("");
@@ -64,14 +69,21 @@ const CreateActivityPage = () => {
             const encodedLocation = encodeURIComponent(
                 formData.mapLocation + ", Hong Kong"
             );
-            setMapUrl(
-                `https://www.google.com/maps?q=${encodedLocation}&output=embed&z=14`
-            );
+            const url = `https://www.google.com/maps?q=${encodedLocation}&output=embed&z=14`;
+            setMapUrl(url);
+            setFormData((prev) => ({
+                ...prev,
+                mapUrl: url,
+            }));
         } else {
             // Center on Hong Kong only
-            setMapUrl(
-                "https://www.google.com/maps?q=Hong+Kong&output=embed&z=12"
-            );
+            const url =
+                "https://www.google.com/maps?q=Hong+Kong&output=embed&z=12";
+            setMapUrl(url);
+            setFormData((prev) => ({
+                ...prev,
+                mapUrl: url,
+            }));
         }
     }, [formData.mapLocation]);
 
@@ -88,7 +100,8 @@ const CreateActivityPage = () => {
             "description",
             "location",
             "capacity",
-            "caloriesPerHour",
+            "caloriesPerHourMin",
+            "caloriesPerHourMax",
             "image",
             "status",
             "startDateTime",
@@ -113,6 +126,23 @@ const CreateActivityPage = () => {
                     "Start date/time cannot be after end date/time.";
                 errors.endDateTime =
                     "End date/time cannot be before start date/time.";
+            }
+        }
+        // Validate calories min/max
+        if (
+            formData.caloriesPerHourMin &&
+            formData.caloriesPerHourMax &&
+            !isNaN(Number(formData.caloriesPerHourMin)) &&
+            !isNaN(Number(formData.caloriesPerHourMax))
+        ) {
+            if (
+                Number(formData.caloriesPerHourMin) >
+                Number(formData.caloriesPerHourMax)
+            ) {
+                errors.caloriesPerHourMin =
+                    "Minimum must be less than or equal to maximum.";
+                errors.caloriesPerHourMax =
+                    "Maximum must be greater than or equal to minimum.";
             }
         }
         setFieldErrors(errors);
@@ -188,9 +218,13 @@ const CreateActivityPage = () => {
             const endISO = formData.endDateTime
                 ? new Date(formData.endDateTime).toISOString()
                 : "";
+            const caloriesPerHour =
+                formData.caloriesPerHourMin && formData.caloriesPerHourMax
+                    ? `${formData.caloriesPerHourMin}-${formData.caloriesPerHourMax}`
+                    : "";
             const payload = {
                 title: formData.title,
-                activityType: formData.activityType,
+                activityType: formData.activityType, // already formatted
                 location: formData.location,
                 startDate: startISO,
                 endDate: endISO,
@@ -199,8 +233,9 @@ const CreateActivityPage = () => {
                 description: formData.description,
                 status: formData.status,
                 participantLimit: Number(formData.capacity),
-                caloriesPerHour: Number(formData.caloriesPerHour),
+                caloriesPerHour,
                 image: formData.image,
+                mapUrl: formData.mapUrl,
             };
             const formDataToSend = new FormData();
             Object.entries(payload).forEach(([key, value]) => {
@@ -396,14 +431,21 @@ const CreateActivityPage = () => {
                                             <option value="">
                                                 Select activity type
                                             </option>
-                                            {ACTIVITY_TYPES.map((type) => (
-                                                <option key={type} value={type}>
-                                                    {type
-                                                        .charAt(0)
-                                                        .toUpperCase() +
-                                                        type.slice(1)}
-                                                </option>
-                                            ))}
+                                            {ACTIVITY_TYPES_FORMATTED.map(
+                                                (formatted, idx) => (
+                                                    <option
+                                                        key={formatted}
+                                                        value={formatted}
+                                                    >
+                                                        {ACTIVITY_TYPES[idx]
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            ACTIVITY_TYPES[
+                                                                idx
+                                                            ].slice(1)}
+                                                    </option>
+                                                )
+                                            )}
                                         </select>
                                         {fieldErrors.activityType && (
                                             <span className="text-error text-base">
@@ -506,20 +548,40 @@ const CreateActivityPage = () => {
                                         <label className="label text-lg font-semibold mb-2 text-black">
                                             Calories Per Hour
                                         </label>
-                                        <input
-                                            type="number"
-                                            className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="caloriesPerHour"
-                                            value={formData.caloriesPerHour}
-                                            onChange={handleFormChange}
-                                            min={0.01}
-                                            step="any"
-                                            required
-                                            placeholder="Enter calories per hour"
-                                        />
-                                        {fieldErrors.caloriesPerHour && (
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="number"
+                                                className="input input-bordered input-lg w-1/2 bg-white text-black"
+                                                name="caloriesPerHourMin"
+                                                value={
+                                                    formData.caloriesPerHourMin
+                                                }
+                                                onChange={handleFormChange}
+                                                min={0}
+                                                required
+                                                placeholder="Min"
+                                            />
+                                            <span className="flex items-center px-1 text-lg text-gray-500">
+                                                -
+                                            </span>
+                                            <input
+                                                type="number"
+                                                className="input input-bordered input-lg w-1/2 bg-white text-black"
+                                                name="caloriesPerHourMax"
+                                                value={
+                                                    formData.caloriesPerHourMax
+                                                }
+                                                onChange={handleFormChange}
+                                                min={0}
+                                                required
+                                                placeholder="Max"
+                                            />
+                                        </div>
+                                        {(fieldErrors.caloriesPerHourMin ||
+                                            fieldErrors.caloriesPerHourMax) && (
                                             <span className="text-error text-base">
-                                                {fieldErrors.caloriesPerHour}
+                                                {fieldErrors.caloriesPerHourMin ||
+                                                    fieldErrors.caloriesPerHourMax}
                                             </span>
                                         )}
                                     </div>
@@ -575,7 +637,6 @@ const CreateActivityPage = () => {
                                 {/* Search Map - full width */}
                                 <div className="md:col-span-2">
                                     <div className="form-control w-full">
-                                        
                                         <input
                                             className="input input-bordered input-lg w-full bg-white text-black"
                                             name="mapLocation"
@@ -593,7 +654,6 @@ const CreateActivityPage = () => {
                             </div>
                             {/* Google Map at the bottom */}
                             <div className="w-full max-w-5xl mt-8 mb-4">
-                                
                                 <div className="w-full h-[320px] rounded-xl overflow-hidden border border-gray-200">
                                     <iframe
                                         title="Google Map"

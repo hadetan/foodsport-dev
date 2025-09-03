@@ -6,7 +6,10 @@ import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext
 import FullPageLoader from "../../components/FullPageLoader";
 import { Pencil } from "lucide-react";
 import statusOptions from "@/app/constants/constants";
-import { ACTIVITY_TYPES } from "@/app/constants/constants";
+import {
+    ACTIVITY_TYPES,
+    ACTIVITY_TYPES_FORMATTED,
+} from "@/app/constants/constants";
 import Tabs from "../../components/Tabs";
 import ActivityDetailsStep from "../../components/descriptionBox";
 
@@ -42,17 +45,37 @@ export default function EditActivityPage() {
 
     useEffect(() => {
         if (!activity) return;
+        // Find the formatted value for the activityType
+        let formattedActivityType = "";
+        if (activity.activityType) {
+            // activity.activityType is already formatted (e.g., Water_Sport)
+            formattedActivityType = activity.activityType;
+        }
+        // Parse caloriesPerHour as min-max
+        let caloriesPerHourMin = "";
+        let caloriesPerHourMax = "";
+        if (
+            activity.caloriesPerHour &&
+            typeof activity.caloriesPerHour === "string"
+        ) {
+            const [min, max] = activity.caloriesPerHour
+                .split("-")
+                .map((s) => s.trim());
+            caloriesPerHourMin = min || "";
+            caloriesPerHourMax = max || "";
+        }
         setForm({
             title: activity.title || "",
             description: activity.description || "",
-            activityType: activity.activityType || "",
+            activityType: formattedActivityType,
             date: activity.startDate ? activity.startDate.slice(0, 10) : "",
             location: activity.location || "",
             mapLocation: "",
             capacity: activity.participantLimit || "",
             status: activity.status || "active",
             totalCaloriesBurnt: activity.totalCaloriesBurnt || "",
-            caloriesPerHour: activity.caloriesPerHour || "",
+            caloriesPerHourMin,
+            caloriesPerHourMax,
         });
         setAudit({
             createdBy: activity.organizerName || "Unknown",
@@ -114,10 +137,16 @@ export default function EditActivityPage() {
         if (isNaN(points) || points <= 0)
             errs.totalCaloriesBurnt =
                 "Total calories burnt must be a positive number.";
-        const calories = parseFloat(form.caloriesPerHour);
-        if (isNaN(calories) || calories <= 0)
+        // Calories per hour min/max validation (string, not number)
+        const min = form.caloriesPerHourMin?.trim();
+        const max = form.caloriesPerHourMax?.trim();
+        if (!min || !max) {
             errs.caloriesPerHour =
-                "Calories per hour must be a positive number.";
+                "Both min and max calories per hour are required.";
+        } else if (min > max) {
+            errs.caloriesPerHour =
+                "Min calories per hour should not be greater than max.";
+        }
         if (imageFile === null) errs.images = "An image is required.";
         if (
             imageFile &&
@@ -156,12 +185,22 @@ export default function EditActivityPage() {
             const formData = new FormData();
 
             Object.entries(form).forEach(([key, value]) => {
-                if (key === "time") return;
+                if (
+                    key === "time" ||
+                    key === "caloriesPerHourMin" ||
+                    key === "caloriesPerHourMax"
+                )
+                    return;
+                // No conversion needed, use formatted value directly
                 if (value !== "" && value !== null && value !== undefined) {
                     formData.append(key, value);
                 }
             });
-
+            // Join min-max for caloriesPerHour
+            formData.append(
+                "caloriesPerHour",
+                `${form.caloriesPerHourMin}-${form.caloriesPerHourMax}`
+            );
             if (imageFile && imageFile.url === undefined) {
                 formData.append("image", imageFile);
             }
@@ -397,20 +436,25 @@ export default function EditActivityPage() {
                                             <option value="">
                                                 Select activity type
                                             </option>
-                                            {ACTIVITY_TYPES.map((type) => (
-                                                <option key={type} value={type}>
-                                                    {type
-                                                        .charAt(0)
-                                                        .toUpperCase() +
-                                                        type.slice(1)}
-                                                </option>
-                                            ))}
+                                            {ACTIVITY_TYPES_FORMATTED.map(
+                                                (formatted, idx) => (
+                                                    <option
+                                                        key={formatted}
+                                                        value={formatted}
+                                                    >
+                                                        {formatted.replace(
+                                                            /_/g,
+                                                            " "
+                                                        )}
+                                                    </option>
+                                                )
+                                            )}
                                         </select>
-                                        {errors.activityType && (
+                                        {/* {fieldErrors.activityType && (
                                             <span className="text-error text-base">
-                                                {errors.activityType}
+                                                {fieldErrors.activityType}
                                             </span>
-                                        )}
+                                        )} */}
                                     </div>
                                     {/* Summary */}
                                     <div className="form-control w-full">
@@ -500,17 +544,38 @@ export default function EditActivityPage() {
                                         <label className="label text-lg font-semibold mb-2 text-black">
                                             Calories Per Hour
                                         </label>
-                                        <input
-                                            type="number"
-                                            className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="caloriesPerHour"
-                                            value={form.caloriesPerHour}
-                                            onChange={handleInput}
-                                            min={0.01}
-                                            step="any"
-                                            required
-                                            placeholder="Enter calories per hour"
-                                        />
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="number"
+                                                className="input input-bordered input-lg w-full bg-white text-black"
+                                                name="caloriesPerHourMin"
+                                                value={form.caloriesPerHourMin}
+                                                onChange={handleInput}
+                                                min={0.01}
+                                                step="any"
+                                                required
+                                                placeholder="Min"
+                                            />
+                                            <span className="self-center text-lg font-bold">
+                                                -
+                                            </span>
+                                            <input
+                                                type="number"
+                                                className="input input-bordered input-lg w-full bg-white text-black"
+                                                name="caloriesPerHourMax"
+                                                value={form.caloriesPerHourMax}
+                                                onChange={handleInput}
+                                                min={0.01}
+                                                step="any"
+                                                required
+                                                placeholder="Max"
+                                            />
+                                        </div>
+                                        <span className="text-xs text-gray-400 mt-1">
+                                            Enter minimum and maximum calories
+                                            participants could lose per hour
+                                            (e.g. 150-200)
+                                        </span>
                                         {errors.caloriesPerHour && (
                                             <span className="text-error text-base">
                                                 {errors.caloriesPerHour}
@@ -567,7 +632,6 @@ export default function EditActivityPage() {
                                 {/* Search Map - full width */}
                                 <div className="md:col-span-2">
                                     <div className="form-control w-full">
-                                       
                                         <input
                                             className="input input-bordered input-lg w-full bg-white text-black"
                                             name="mapLocation"
@@ -585,7 +649,6 @@ export default function EditActivityPage() {
                             </div>
                             {/* Google Map at the bottom */}
                             <div className="w-full max-w-5xl mt-8 mb-4">
-                                
                                 <div className="w-full h-[320px] rounded-xl overflow-hidden border border-gray-200">
                                     <iframe
                                         title="Google Map"
