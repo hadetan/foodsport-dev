@@ -68,6 +68,49 @@ export async function GET(req) {
 			options
 		);
 
+		// Fetch temp users
+		const tempUsers = await getMany(
+			'tempUser',
+			{},
+			{
+				id: true,
+				email: true,
+				firstname: true,
+				lastname: true,
+				dateOfBirth: true,
+				createdAt: true,
+				updatedAt: true,
+				height: true,
+				weight: true,
+				totalCaloriesBurned: true,
+			}
+		);
+
+		const tempUsersWithActivities = await Promise.all(
+			(tempUsers || []).map(async (u) => {
+				try {
+					const joinedActivities = (await getUserJoinedActivitiesWithDetails(u.id, true)) || [];
+					return {
+						...u,
+						joinDate: u.createdAt,
+						lastActive: u.updatedAt,
+						totalActivities: joinedActivities.length,
+						joinedActivities,
+						isRegistered: false, // Not part of app yet
+					};
+				} catch {
+					return {
+						...u,
+						joinDate: u.createdAt,
+						lastActive: u.updatedAt,
+						totalActivities: 0,
+						joinedActivities: [],
+						isRegistered: false,
+					};
+				}
+			})
+		);
+
 		const usersWithActivities = await Promise.all(
 			(users || []).map(async (u) => {
 				try {
@@ -78,6 +121,7 @@ export async function GET(req) {
 						lastActive: u.updatedAt,
 						totalActivities: joinedActivities.length,
 						joinedActivities,
+						isRegistered: true,
 					};
 				} catch {
 					return {
@@ -86,17 +130,23 @@ export async function GET(req) {
 						lastActive: u.updatedAt,
 						totalActivities: 0,
 						joinedActivities: [],
+						isRegistered: true,
 					};
 				}
 			})
 		);
 
+		const allUsers = [
+			...usersWithActivities,
+			...tempUsersWithActivities
+		];
+
 		const responseData = {
-			users: usersWithActivities,
+			users: allUsers,
 			pagination: {
 				page,
 				limit,
-				total: usersWithActivities.length,
+				total: allUsers.length,
 			},
 		};
 		return new NextResponse(JSON.stringify(responseData), {
