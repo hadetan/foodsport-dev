@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
+import { DEFAULT_TIMEOUT } from './config';
 
 const serverApi = axios.create({
-  baseURL: BASE_URLS.url,
+  baseURL: process.env.NEXT_SERVER_BASEURL,
   timeout: DEFAULT_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',

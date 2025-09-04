@@ -6,7 +6,7 @@
  */ 
 
 const BASE_URLS = {
-  url: process.env.NEXT_SERVER_BASEURL
+  url: process.env.NEXT_PUBLIC_BASEURL
 };
 
 const DEFAULT_TIMEOUT = 60000;
