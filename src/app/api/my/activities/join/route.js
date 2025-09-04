@@ -1,4 +1,4 @@
-import { executeTransaction, getById, getCount, updateById } from '@/lib/prisma/db-utils';
+import { executeTransaction, getById, getCount } from '@/lib/prisma/db-utils';
 import { requireUser } from '@/lib/prisma/require-user';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
