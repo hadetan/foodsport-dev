@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../css/ActivitiesFilter.css";
 import { useSearchParams, usePathname } from "next/navigation";
+import { ACTIVITY_TYPES, ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
 
 
 export default function ActivitiesFilter({ activities, setFilteredActivities }) {
@@ -13,21 +14,6 @@ export default function ActivitiesFilter({ activities, setFilteredActivities }) 
         date: searchParams.get("date") || "",
         type: searchParams.get("type") || "",
     });
-
-    const statusOptions = Array.from(new Set(activities.map(a => a.status))).filter(Boolean);
-    const allActivityTypes = [
-        "kayak",
-        "hiking",
-        "yoga",
-        "fitness",
-        "running",
-        "cycling",
-        "swimming",
-        "dancing",
-        "boxing",
-        "other"
-    ];
-    const typeOptions = allActivityTypes;
 
     useEffect(() => {
         const params = new URLSearchParams();
@@ -73,7 +59,6 @@ export default function ActivitiesFilter({ activities, setFilteredActivities }) 
                 return (a.date && a.date === filters.date) || (a.startDate && a.startDate === filters.date);
             });
         }
-        // !filtered.length ? setFilteredActivities([null]) : setFilteredActivities(filtered);
         setFilteredActivities(filtered);
         console.log(filtered);
     }
@@ -94,25 +79,14 @@ export default function ActivitiesFilter({ activities, setFilteredActivities }) 
                 className="filter-input enhanced-input"
             />
             <select
-                name="status"
-                value={filters.status}
-                onChange={handleChange}
-                className="filter-select enhanced-select"
-            >
-                <option value="">All Status</option>
-                {statusOptions.map(status => (
-                    <option key={status} value={status}>{status}</option>
-                ))}
-            </select>
-            <select
                 name="type"
                 value={filters.type}
                 onChange={handleChange}
                 className="filter-select enhanced-select"
             >
                 <option value="">All Types</option>
-                {typeOptions.map(type => (
-                    <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
+                {ACTIVITY_TYPES.map((type, idx) => (
+                    <option key={type} value={ACTIVITY_TYPES_FORMATTED[idx]}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
                 ))}
             </select>
             <input

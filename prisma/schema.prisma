@@ -242,6 +242,7 @@ model UserActivity {
   ticketId   String?  @map("ticket_id")
   joinedAt   DateTime @default(now()) @map("joined_at")
   wasPresent Boolean  @default(false) @map("was_present")
+  totalDuration Int?  @map("total_duration")
 
   // Relations
   user       User?     @relation(fields: [userId], references: [id])

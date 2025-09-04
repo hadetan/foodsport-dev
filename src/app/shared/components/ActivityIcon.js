@@ -1,30 +1,34 @@
-import {
-  FaHiking,
-  FaRunning
-} from 'react-icons/fa';
-import { MdKayaking } from 'react-icons/md';
+import React from 'react';
+import { FaBezierCurve, FaBrain, FaHiking, FaMendeley, FaRunning } from 'react-icons/fa';
 import { GrYoga } from "react-icons/gr";
 import { IoIosFitness } from "react-icons/io";
 import { BiCycling } from "react-icons/bi";
-import { FaPersonSwimming } from "react-icons/fa6";
-import { RiBoxingFill } from "react-icons/ri";
+import { FaPersonSwimming, FaUserGroup } from "react-icons/fa6";
+import { RiBoxingFill, RiTeamFill } from "react-icons/ri";
 import { HiQuestionMarkCircle } from "react-icons/hi2";
-import React from 'react';
+import { GiBodyBalance, GiTennisRacket } from "react-icons/gi";
+import { ACTIVITY_TYPES, ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
 
 const iconMap = {
-   kayak: { Component: MdKayaking, title: "Kayak" },
-   hiking: { Component: FaHiking, title: "Hiking" },
-   yoga: { Component: GrYoga, title: "Yoga" },
-   fitness: { Component: IoIosFitness, title: "Fitness" },
-   running: { Component: FaRunning, title: "Running" },
-   cycling: { Component: BiCycling, title: "Cycling" },
-   swimming: { Component: FaPersonSwimming, title: "Swimming" },
-   boxing: { Component: RiBoxingFill, title: "Boxing" },
-   other: { Component: HiQuestionMarkCircle, title: "Other" },
- };
+  "Running": { Component: FaRunning },
+  "Hiking": { Component: FaHiking },
+  "Water_Sport": { Component: FaPersonSwimming },
+  "Volunteering": { Component: FaUserGroup },
+  "Racket_Sport": { Component: GiTennisRacket },
+  "Yoga": { Component: GrYoga },
+  "Dance": { Component: GiBodyBalance },
+  "Fitness": { Component: IoIosFitness },
+  "Cycling": { Component: BiCycling },
+  "Mindfulness": { Component: FaBrain },
+  "Team_Sport": { Component: RiTeamFill },
+  "Virtual": { Component: FaBezierCurve },
+  "Multi_Sports": { Component: FaMendeley },
+};
 
 export default function ActivityIcon({ type, size = 24, className = '' }) {
-  const iconConfig = iconMap[type] || iconMap.other;
-  const { Component, title } = iconConfig;
+  const iconConfig = iconMap[type] || { Component: HiQuestionMarkCircle };
+  const { Component } = iconConfig;
+  const idx = ACTIVITY_TYPES_FORMATTED.indexOf(type);
+  const title = idx !== -1 ? ACTIVITY_TYPES[idx] : "other";
   return <Component size={size} className={className} title={title} />;
 }
