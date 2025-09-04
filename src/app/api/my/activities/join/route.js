@@ -3,7 +3,6 @@ import { requireUser } from '@/lib/prisma/require-user';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
 import { NextResponse } from 'next/server';
-import api from '@/utils/axios/api';
 import { generateUniqueTicketCode } from '@/utils/generateUniqueTicketCode';
 import serverApi from '@/utils/axios/serverApi';
 
@@ -13,12 +12,14 @@ export async function POST(request) {
 	const { error, user: User } = await requireUser(supabase, NextResponse, request);
 	if (error) return error;
 
+	const { NEXT_PUBLIC_BASE_URL, NODE_ENV } = process.env
+
 	try {
 		const body = await request.json();
 		const validation = validateRequiredFields(body, ['activityId']);
 		if (!validation.isValid) {
 			return Response.json(
-				{ error: 'Missing required fields', details: validation.error },
+			{ error: 'Missing required fields', details: validation.error },
 				{ status: 400 }
 			);
 		}
@@ -129,6 +130,8 @@ export async function POST(request) {
 			code: result.ticket.ticketCode,
 			title: activity.title,
 		};
+
+		const url = NODE_ENV === 'production' ? NEXT_PUBLIC_BASE_URL : '';
 		const emailRes = await serverApi.post(
 			`/admin/email/template_email`,
 			{

@@ -1,10 +1,10 @@
-import { getById, getByIdComposite, getCount, remove } from '@/lib/prisma/db-utils';
-import api from '@/utils/axios/api';
+import { getById, getByIdComposite, getCount } from '@/lib/prisma/db-utils';
 import { prisma } from '@/lib/prisma/db';
 import { requireUser } from '@/lib/prisma/require-user';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
 import { NextResponse } from 'next/server';
+import serverApi from '@/utils/axios/serverApi';
 
 // DELETE /api/my/activities/leave
 export async function DELETE(request) {
@@ -78,7 +78,7 @@ export async function DELETE(request) {
 		};
 		let emailError;
 		try {
-			await api.post('/admin/email/template_email', {
+			await serverApi.post('/admin/email/template_email', {
 				to: user.email,
 				templateId,
 				params,

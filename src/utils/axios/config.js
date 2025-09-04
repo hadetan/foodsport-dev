@@ -6,7 +6,7 @@
  */ 
 
 const BASE_URLS = {
-  url: process.env.NEXT_PUBLIC_BASEURL || '/api'
+  url: process.env.NEXT_SERVER_BASEURL
 };
 
 const DEFAULT_TIMEOUT = 60000;
