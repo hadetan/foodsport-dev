@@ -68,7 +68,6 @@ export async function GET(req) {
 			options
 		);
 
-		// Fetch temp users
 		const tempUsers = await getMany(
 			'tempUser',
 			{},
@@ -165,68 +164,112 @@ export async function GET(req) {
 	}
 }
 
+// Takes either userId if updating user or tempUserId if updating an unregistered user
 export async function PATCH(req) {
-	try {
-		const supabase = await createServerClient();
-		const { error } = await requireAdmin(supabase, NextResponse);
-		if (error) return error;
+    try {
+        const supabase = await createServerClient();
+        const { error } = await requireAdmin(supabase, NextResponse);
+        if (error) return error;
 
-		let body;
-		try {
-			body = await req.json();
-		} catch {
-			return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-		}
+        let body;
+        try {
+            body = await req.json();
+        } catch {
+            return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+        }
 
-		const userId = body.userId;
-		if (!userId) {
-			return NextResponse.json({ error: 'Missing userId' }, { status: 400 });
-		}
+        const userId = body.userId;
+        const tempUserId = body.tempUserId;
 
-		const existingUser = await getMany('user', { id: userId }, { id: true });
-		if (!existingUser || existingUser.length === 0) {
-			return NextResponse.json({ error: 'User not found' }, { status: 404 });
-		}
+        if (!userId && !tempUserId) {
+            return NextResponse.json({ error: 'Missing userId or tempUserId' }, { status: 400 });
+        }
 
-		const allowedFields = ['isActive', 'email'];
-		const updates = sanitizeData(body, allowedFields);
-		if (Object.keys(updates).length === 0) {
-			return NextResponse.json(
-				{ error: 'No valid fields to update' },
-				{ status: 400 }
-			);
-		}
+        const allowedFields = ['isActive', 'email'];
 
-		if (updates.email) {
-			const existingEmailUser = await getMany('user', { email: updates.email }, { id: true });
-			if (existingEmailUser && existingEmailUser.length > 0 && existingEmailUser[0].id !== userId) {
-				return NextResponse.json({ error: 'Email already in use' }, { status: 409 });
-			}
-			try {
-				const supabaseAdmin = await createServerClient();
-				await supabaseAdmin.auth.admin.updateUserById(userId, { email: updates.email });
-			} catch (e) {
-				return NextResponse.json({ error: 'Failed to update email in auth provider', details: e.message }, { status: 500 });
-			}
-		}
+        if (userId) {
+            const existingUser = await getMany('user', { id: userId }, { id: true });
+            if (!existingUser || existingUser.length === 0) {
+                return NextResponse.json({ error: 'User not found' }, { status: 404 });
+            }
 
-		const updatedUser = await updateById('user', userId, updates);
-		if (updatedUser && updatedUser.error) {
-			return NextResponse.json(
-				{ error: updatedUser.error },
-				{ status: 500 }
-			);
-		}
+            const updates = sanitizeData(body, allowedFields);
+            if (Object.keys(updates).length === 0) {
+                return NextResponse.json(
+                    { error: 'No valid fields to update' },
+                    { status: 400 }
+                );
+            }
 
-		return NextResponse.json(updatedUser, { status: 200 });
-	} catch (error) {
-		console.error('Error in PATCH /api/admin/users:', error);
-		return new NextResponse(
-			JSON.stringify({ error: 'Failed to update the user. Please try again later.', message: error.message }),
-			{
-				status: 500,
-				headers: { 'Content-Type': 'application/json' },
-			}
-		);
-	}
+            if (updates.email) {
+                const existingEmailUser = await getMany('user', { email: updates.email }, { id: true });
+                const existingEmailTempUser = await getMany('tempUser', { email: updates.email }, { id: true });
+                if (
+                    (existingEmailUser && existingEmailUser.length > 0 && existingEmailUser[0].id !== userId) ||
+                    (existingEmailTempUser && existingEmailTempUser.length > 0)
+                ) {
+                    return NextResponse.json({ error: 'Email already in use' }, { status: 409 });
+                }
+                try {
+                    const supabaseAdmin = await createServerClient();
+                    await supabaseAdmin.auth.admin.updateUserById(userId, { email: updates.email });
+                } catch (e) {
+                    return NextResponse.json({ error: 'Failed to update email in auth provider', details: e.message }, { status: 500 });
+                }
+            }
+
+            const updatedUser = await updateById('user', userId, updates);
+            if (updatedUser && updatedUser.error) {
+                return NextResponse.json(
+                    { error: updatedUser.error },
+                    { status: 500 }
+                );
+            }
+            return NextResponse.json(updatedUser, { status: 200 });
+        }
+
+        if (tempUserId) {
+            const existingTempUser = await getMany('tempUser', { id: tempUserId }, { id: true });
+            if (!existingTempUser || existingTempUser.length === 0) {
+                return NextResponse.json({ error: 'Temp user not found' }, { status: 404 });
+            }
+
+            const updates = sanitizeData(body, allowedFields);
+            if (Object.keys(updates).length === 0) {
+                return NextResponse.json(
+                    { error: 'No valid fields to update' },
+                    { status: 400 }
+                );
+            }
+
+            if (updates.email) {
+                const existingEmailUser = await getMany('user', { email: updates.email }, { id: true });
+                const existingEmailTempUser = await getMany('tempUser', { email: updates.email }, { id: true });
+                if (
+                    (existingEmailUser && existingEmailUser.length > 0) ||
+                    (existingEmailTempUser && existingEmailTempUser.length > 0 && existingEmailTempUser[0].id !== tempUserId)
+                ) {
+                    return NextResponse.json({ error: 'Email already in use' }, { status: 409 });
+                }
+            }
+
+            const updatedTempUser = await updateById('tempUser', tempUserId, updates);
+            if (updatedTempUser && updatedTempUser.error) {
+                return NextResponse.json(
+                    { error: updatedTempUser.error },
+                    { status: 500 }
+                );
+            }
+            return NextResponse.json(updatedTempUser, { status: 200 });
+        }
+    } catch (error) {
+        console.error('Error in PATCH /api/admin/users:', error);
+        return new NextResponse(
+            JSON.stringify({ error: 'Failed to update the user. Please try again later.', message: error.message }),
+            {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            }
+        );
+    }
 }
