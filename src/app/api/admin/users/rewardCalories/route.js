@@ -37,6 +37,20 @@ export async function POST(req) {
 			continue;
 		}
 
+		let validDuration = undefined;
+		if (typeof duration === 'number') {
+			if (Number.isFinite(duration) && duration <= 1440) {
+				validDuration = Math.round(duration);
+			} else {
+				results.push({
+					email,
+					success: false,
+					error: 'Invalid duration: must be a positive integer between 1 and 1440',
+				});
+				continue;
+			}
+		}
+
 		let user = await prisma.user.findUnique({ where: { email } });
 		let tempUser = null;
 		let userType = 'user';
@@ -51,25 +65,27 @@ export async function POST(req) {
 		}
 
 		try {
-			if (user) {
-				await prisma.user.update({
-					where: { email },
-					data: { totalCaloriesBurned: { increment: calories } },
-				});
-				await prisma.userActivity.updateMany({
-					where: { userId: user.id, activityId },
-					data: { wasPresent: true, totalDuration: typeof duration === 'number' ? duration : undefined },
-				});
-			} else if (tempUser) {
-				await prisma.tempUser.update({
-					where: { email },
-					data: { totalCaloriesBurned: { increment: calories } },
-				});
-				await prisma.userActivity.updateMany({
-					where: { tempUserId: tempUser.id, activityId },
-					data: { wasPresent: true, totalDuration: typeof duration === 'number' ? duration : undefined },
-				});
-			}
+			await prisma.$transaction(async (tx) => {
+				if (user) {
+					await tx.user.update({
+						where: { email },
+						data: { totalCaloriesBurned: { increment: calories } },
+					});
+					await tx.userActivity.updateMany({
+						where: { userId: user.id, activityId },
+						data: { wasPresent: true, totalDuration: validDuration },
+					});
+				} else if (tempUser) {
+					await tx.tempUser.update({
+						where: { email },
+						data: { totalCaloriesBurned: { increment: calories } },
+					});
+					await tx.userActivity.updateMany({
+						where: { tempUserId: tempUser.id, activityId },
+						data: { wasPresent: true, totalDuration: validDuration },
+					});
+				}
+			});
 			results.push({ email, success: true, userType });
 		} catch (err) {
 			results.push({ email, success: false, error: err.message });
