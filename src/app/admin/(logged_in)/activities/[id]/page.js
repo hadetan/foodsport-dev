@@ -68,6 +68,8 @@ export default function EditActivityPage() {
     } = useAdminActivities();
     const [activity, setActivity] = useState(undefined);
     const [activeTab, setActiveTab] = useState("details");
+    const [tncOptions, setTncOptions] = useState([]); // T&C list
+    const [tncLoading, setTncLoading] = useState(false);
     useEffect(() => {
         if (!activities || !activityId) return;
         const found =
@@ -112,6 +114,7 @@ export default function EditActivityPage() {
             totalCaloriesBurnt: activity.totalCaloriesBurnt || "",
             caloriesPerHourMin,
             caloriesPerHourMax,
+            tncId: activity.tncId || activity.tnc?.id || "", // new field
         });
         setAudit({
             createdBy: activity.organizerName || "Unknown",
@@ -137,6 +140,28 @@ export default function EditActivityPage() {
             );
         }
     }, [form?.mapLocation]);
+
+    useEffect(() => {
+        // fetch available T&Cs once
+        const fetchTncs = async () => {
+            try {
+                setTncLoading(true);
+                const { data } = await axios.get("/api/admin/tnc");
+                if (Array.isArray(data)) {
+                    setTncOptions(data);
+                } else if (Array.isArray(data?.data)) {
+                    setTncOptions(data.data);
+                } else if (Array.isArray(data?.tncs)) {
+                    setTncOptions(data.tncs);
+                }
+            } catch (e) {
+                // ignore silently
+            } finally {
+                setTncLoading(false);
+            }
+        };
+        fetchTncs();
+    }, []);
 
     if (activity === undefined || actLoading) {
         return <FullPageLoader />;
@@ -709,6 +734,30 @@ export default function EditActivityPage() {
                                                         .charAt(0)
                                                         .toUpperCase() +
                                                         status.slice(1)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    {/* Terms & Conditions */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Terms & Conditions
+                                        </label>
+                                        <select
+                                            className="select select-bordered select-lg w-full bg-white text-black"
+                                            name="tncId"
+                                            value={form.tncId || ""}
+                                            onChange={handleInput}
+                                            disabled={tncLoading}
+                                        >
+                                            <option value="">
+                                                {tncLoading
+                                                    ? "Loading..."
+                                                    : "Select T&C"}
+                                            </option>
+                                            {tncOptions.map((t) => (
+                                                <option key={t.id} value={t.id}>
+                                                    {t.title}
                                                 </option>
                                             ))}
                                         </select>

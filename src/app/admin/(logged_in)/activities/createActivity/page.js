@@ -30,6 +30,7 @@ const CreateActivityPage = () => {
         image: null,
         status: "draft",
         mapUrl: "",
+        tncId: "", // newly added field for selected T&C
     });
     const { setActivities } = useAdminActivities();
     const [error, setError] = useState("");
@@ -42,6 +43,8 @@ const CreateActivityPage = () => {
     const [mapUrl, setMapUrl] = useState(
         "https://www.google.com/maps?q=&output=embed"
     );
+    const [tncOptions, setTncOptions] = useState([]); // store list of T&Cs
+    const [tncLoading, setTncLoading] = useState(false);
 
     useEffect(() => {
         if (formData.image && imgRef.current) {
@@ -87,6 +90,30 @@ const CreateActivityPage = () => {
         }
     }, [formData.mapLocation]);
 
+    useEffect(() => {
+        // fetch T&C list
+        const fetchTncs = async () => {
+            try {
+                setTncLoading(true);
+                const res = await axiosClient.get("/admin/tnc");
+                if (Array.isArray(res.data)) {
+                    setTncOptions(res.data);
+                } else if (Array.isArray(res.data?.data)) {
+                    // handle possible wrapped structure
+                    setTncOptions(res.data.data);
+                } else if (Array.isArray(res.data?.tncs)) {
+                    // new shape from API
+                    setTncOptions(res.data.tncs);
+                }
+            } catch (e) {
+                // silent fail, optional field
+            } finally {
+                setTncLoading(false);
+            }
+        };
+        fetchTncs();
+    }, []);
+
     const isValidYear = (dateStr) => {
         if (!dateStr) return true;
         const year = dateStr.split("-")[0];
@@ -106,6 +133,7 @@ const CreateActivityPage = () => {
             "status",
             "startDateTime",
             "endDateTime",
+            "tncId", // now required
         ];
         const errors = {};
         requiredFields.forEach((field) => {
@@ -236,6 +264,7 @@ const CreateActivityPage = () => {
                 caloriesPerHour,
                 image: formData.image,
                 mapUrl: formData.mapUrl,
+                tncId: formData.tncId || "", // include selected T&C id
             };
             const formDataToSend = new FormData();
             Object.entries(payload).forEach(([key, value]) => {
@@ -630,6 +659,36 @@ const CreateActivityPage = () => {
                                         {fieldErrors.status && (
                                             <span className="text-error text-base">
                                                 {fieldErrors.status}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* T&C Selection */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Terms & Conditions
+                                        </label>
+                                        <select
+                                            className="select select-bordered select-lg w-full bg-white text-black"
+                                            name="tncId"
+                                            value={formData.tncId}
+                                            onChange={handleFormChange}
+                                            disabled={tncLoading}
+                                            required
+                                        >
+                                            <option value="">
+                                                {tncLoading
+                                                    ? "Loading..."
+                                                    : "Select T&C"}
+                                            </option>
+                                            {tncOptions.map((t) => (
+                                                <option key={t.id} value={t.id}>
+                                                    {t.title}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {fieldErrors.tncId && (
+                                            <span className="text-error text-base">
+                                                {fieldErrors.tncId}
                                             </span>
                                         )}
                                     </div>
