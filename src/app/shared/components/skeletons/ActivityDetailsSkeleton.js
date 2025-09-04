@@ -6,7 +6,6 @@ export default function ActivityDetailsSkeleton() {
       <div className="activityDetailsHero">
         <div className="activityDetailsBackBtn skeleton" style={{width: 80, height: 32}} />
         <div className="activityDetailsImage skeleton" style={{borderRadius: 0}} />
-        {/* <span className="activityDetailsFeaturedBadge skeleton skeleton-badge" style={{width: 100, height: 28}} /> */}
       </div>
       <div className="activityDetailsContent">
         <main className="activityDetailsMain">
@@ -24,6 +23,8 @@ export default function ActivityDetailsSkeleton() {
               </div>
             ))}
           </div>
+          {/* Google Maps skeleton */}
+          <div className="skeleton" style={{width: '100%', height: 320, borderRadius: 12, margin: '32px 0'}} />
         </main>
         <aside className="activityDetailsSidebar">
           <div className="activityDetailsSidebarRow">
@@ -49,8 +50,14 @@ export default function ActivityDetailsSkeleton() {
             <span className="activityDetailsAvatarMore skeleton" style={{width: 32, height: 32, borderRadius: '50%'}} />
           </div>
           <div className="activityDetailsSidebarActions">
-            <div className="skeleton" style={{width: 120, height: 38, marginRight: 12}} />
-            <div className="skeleton" style={{width: 90, height: 38}} />
+            {/* TNC Checkbox skeleton */}
+            <div className="skeleton" style={{width: 220, height: 22, marginBottom: 12}} />
+            {/* Invite Partners button skeleton */}
+            <div className="skeleton" style={{width: 160, height: 38, marginBottom: 12, borderRadius: 6}} />
+            {/* Leave/Join button skeleton */}
+            <div className="skeleton" style={{width: 160, height: 38, marginRight: 12}} />
+            {/* Share button skeleton */}
+            <div className="skeleton" style={{width: 160, height: 38}} />
           </div>
         </aside>
       </div>

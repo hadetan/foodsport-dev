@@ -13,6 +13,7 @@ import Featured from './Featured';
 import api from '@/utils/axios/api';
 import ShareDialog from '@/app/shared/components/ShareDialog';
 import toast from '@/utils/Toast';
+import InvitePartnersDialog from './InvitePartnersDialog';
 
 const ActivityDetails = ({
 	activity,
@@ -24,9 +25,9 @@ const ActivityDetails = ({
 }) => {
 	const topRef = useRef(null);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState(null);
 	const [showShare, setShowShare] = useState(false);
   const [tncChecked, setTncChecked] = useState(false);
+	const [showInviteDialog, setShowInviteDialog] = useState(false);
 
 	useEffect(() => {
 		if (topRef.current) {
@@ -297,6 +298,19 @@ const ActivityDetails = ({
 								</label>
 							</div>
 						)}
+ 						<button
+ 							className='invitePartner'
+ 							onClick={() => setShowInviteDialog(true)}
+ 						>
+   						INVITE PARTNERS
+ 						</button>
+ 						{showInviteDialog && (
+ 							<InvitePartnersDialog
+ 								activityId={activity.id}
+ 								open={showInviteDialog}
+ 								onClose={() => setShowInviteDialog(false)}
+ 							/>
+ 						)}
 						{user?.joinedActivityIds?.includes(activity.id) ? (
 							<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading}>
 								{loading ? 'LEAVING' : 'LEAVE'}
