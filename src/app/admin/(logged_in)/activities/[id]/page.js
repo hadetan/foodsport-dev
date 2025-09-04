@@ -13,6 +13,38 @@ import {
 import Tabs from "../../components/Tabs";
 import ActivityDetailsStep from "../../components/descriptionBox";
 
+// Helper to extract 'q' param (location) from stored mapUrl
+function extractMapLocationFromUrl(raw) {
+    if (!raw) return "";
+    try {
+        const urlObj = new URL(raw);
+        const q = urlObj.searchParams.get("q");
+        return q ? decodeURIComponent(q.replace(/\+/g, " ")) : "";
+    } catch {
+        return "";
+    }
+}
+
+// Build embed map URL from a plain location string
+function buildEmbedMapUrl(loc) {
+    return loc
+        ? `https://www.google.com/maps?q=${encodeURIComponent(
+              loc + ", Hong Kong"
+          )}&output=embed&z=14`
+        : "";
+}
+
+// New helper: format ISO/string date to value acceptable by <input type="datetime-local" />
+function formatForInput(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
+        d.getDate()
+    )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export default function EditActivityPage() {
     const [form, setForm] = useState(null);
     const [errors, setErrors] = useState({});
@@ -36,6 +68,8 @@ export default function EditActivityPage() {
     } = useAdminActivities();
     const [activity, setActivity] = useState(undefined);
     const [activeTab, setActiveTab] = useState("details");
+    const [tncOptions, setTncOptions] = useState([]); // T&C list
+    const [tncLoading, setTncLoading] = useState(false);
     useEffect(() => {
         if (!activities || !activityId) return;
         const found =
@@ -68,14 +102,19 @@ export default function EditActivityPage() {
             title: activity.title || "",
             description: activity.description || "",
             activityType: formattedActivityType,
-            date: activity.startDate ? activity.startDate.slice(0, 10) : "",
+            // Use startTime / endTime if present (more precise) otherwise fall back
+            startDateTime: formatForInput(
+                activity.startTime || activity.startDate
+            ),
+            endDateTime: formatForInput(activity.endTime || activity.endDate),
             location: activity.location || "",
-            mapLocation: "",
+            mapLocation: extractMapLocationFromUrl(activity.mapUrl) || "",
             capacity: activity.participantLimit || "",
             status: activity.status || "active",
             totalCaloriesBurnt: activity.totalCaloriesBurnt || "",
             caloriesPerHourMin,
             caloriesPerHourMax,
+            tncId: activity.tncId || activity.tnc?.id || "", // new field
         });
         setAudit({
             createdBy: activity.organizerName || "Unknown",
@@ -88,7 +127,7 @@ export default function EditActivityPage() {
     }, [activity]);
 
     useEffect(() => {
-        if (form && form.mapLocation) {
+        if (form?.mapLocation) {
             const encodedLocation = encodeURIComponent(
                 form.mapLocation + ", Hong Kong"
             );
@@ -100,7 +139,29 @@ export default function EditActivityPage() {
                 "https://www.google.com/maps?q=Hong+Kong&output=embed&z=12"
             );
         }
-    }, [form && form.mapLocation]);
+    }, [form?.mapLocation]);
+
+    useEffect(() => {
+        // fetch available T&Cs once
+        const fetchTncs = async () => {
+            try {
+                setTncLoading(true);
+                const { data } = await axios.get("/api/admin/tnc");
+                if (Array.isArray(data)) {
+                    setTncOptions(data);
+                } else if (Array.isArray(data?.data)) {
+                    setTncOptions(data.data);
+                } else if (Array.isArray(data?.tncs)) {
+                    setTncOptions(data.tncs);
+                }
+            } catch (e) {
+                // ignore silently
+            } finally {
+                setTncLoading(false);
+            }
+        };
+        fetchTncs();
+    }, []);
 
     if (activity === undefined || actLoading) {
         return <FullPageLoader />;
@@ -124,20 +185,28 @@ export default function EditActivityPage() {
         if (!form.description) errs.description = "Summary is required.";
         if (!form.activityType)
             errs.activityType = "Activity type is required.";
-        if (!form.date) errs.datetime = "Date is required.";
+        if (!form.startDateTime)
+            errs.startDateTime = "Start date and time are required.";
         else {
-            const dt = new Date(form.date);
-            if (dt < new Date()) errs.datetime = "Date must be in the future.";
+            const dt = new Date(form.startDateTime);
+            if (dt < new Date())
+                errs.startDateTime =
+                    "Start date and time must be in the future.";
+        }
+        if (!form.endDateTime)
+            errs.endDateTime = "End date and time are required.";
+        else {
+            const startDt = new Date(form.startDateTime);
+            const endDt = new Date(form.endDateTime);
+            if (endDt <= startDt)
+                errs.endDateTime =
+                    "End date and time must be after start date and time.";
         }
         if (!form.location) errs.location = "Location is required.";
         const cap = parseInt(form.capacity, 10);
         if (!cap || cap < 1 || cap > 1000)
             errs.capacity = "Capacity must be 1-1000.";
-        const points = parseFloat(form.totalCaloriesBurnt);
-        if (isNaN(points) || points <= 0)
-            errs.totalCaloriesBurnt =
-                "Total calories burnt must be a positive number.";
-        // Calories per hour min/max validation (string, not number)
+
         const min = form.caloriesPerHourMin?.trim();
         const max = form.caloriesPerHourMax?.trim();
         if (!min || !max) {
@@ -188,19 +257,42 @@ export default function EditActivityPage() {
                 if (
                     key === "time" ||
                     key === "caloriesPerHourMin" ||
-                    key === "caloriesPerHourMax"
+                    key === "caloriesPerHourMax" ||
+                    key === "mapLocation" ||
+                    key === "startDateTime" ||
+                    key === "endDateTime"
                 )
                     return;
-                // No conversion needed, use formatted value directly
                 if (value !== "" && value !== null && value !== undefined) {
                     formData.append(key, value);
                 }
             });
-            // Join min-max for caloriesPerHour
+
+            // Map startDateTime / endDateTime to backend expected fields
+            if (form.startDateTime) {
+                const start = new Date(form.startDateTime);
+                if (!isNaN(start.getTime())) {
+                    const iso = start.toISOString();
+                    formData.append("startDate", iso);
+                    formData.append("startTime", iso);
+                }
+            }
+            if (form.endDateTime) {
+                const end = new Date(form.endDateTime);
+                if (!isNaN(end.getTime())) {
+                    const iso = end.toISOString();
+                    formData.append("endDate", iso);
+                    formData.append("endTime", iso);
+                }
+            }
+
+            // Derived fields
             formData.append(
                 "caloriesPerHour",
                 `${form.caloriesPerHourMin}-${form.caloriesPerHourMax}`
             );
+            formData.append("mapUrl", buildEmbedMapUrl(form.mapLocation));
+
             if (imageFile && imageFile.url === undefined) {
                 formData.append("image", imageFile);
             }
@@ -218,18 +310,17 @@ export default function EditActivityPage() {
                 }
             );
             if (setActivities && data) {
-                console.log("trying to set acts");
                 setActivities((prev) =>
                     prev.map((act) =>
                         String(act.id) === String(data.id)
-                            ? { ...act, ...data }
+                            ? { ...act, ...data, mapUrl: data.mapUrl }
                             : act
                     )
                 );
             }
 
             setSuccess("Activity updated successfully!");
-            router.push("/admin/activities");
+            setActiveTab("description"); // Switch to description tab after save
         } catch (e) {
             let msg = "Failed to update activity.";
             if (typeof e === "string") {
@@ -479,19 +570,38 @@ export default function EditActivityPage() {
                                     {/* Start Date & Time */}
                                     <div className="form-control w-full">
                                         <label className="label text-lg font-semibold mb-2 text-black">
-                                            Start Date
+                                            Start Date & Time
                                         </label>
                                         <input
-                                            type="date"
+                                            type="datetime-local"
                                             className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="date"
-                                            value={form.date}
+                                            name="startDateTime"
+                                            value={form.startDateTime}
                                             onChange={handleInput}
                                             required
                                         />
-                                        {errors.datetime && (
+                                        {errors.startDateTime && (
                                             <span className="text-error text-base">
-                                                {errors.datetime}
+                                                {errors.startDateTime}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* End Date & Time */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            End Date & Time
+                                        </label>
+                                        <input
+                                            type="datetime-local"
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="endDateTime"
+                                            value={form.endDateTime}
+                                            onChange={handleInput}
+                                            required
+                                        />
+                                        {errors.endDateTime && (
+                                            <span className="text-error text-base">
+                                                {errors.endDateTime}
                                             </span>
                                         )}
                                     </div>
@@ -595,7 +705,6 @@ export default function EditActivityPage() {
                                             onChange={handleInput}
                                             min={0.01}
                                             step="any"
-                                            required
                                             placeholder="Enter total calories burnt"
                                         />
                                         {errors.totalCaloriesBurnt && (
@@ -604,6 +713,7 @@ export default function EditActivityPage() {
                                             </span>
                                         )}
                                     </div>
+
                                     {/* Status */}
                                     <div className="form-control w-full">
                                         <label className="label text-lg font-semibold mb-2 text-black">
@@ -628,6 +738,30 @@ export default function EditActivityPage() {
                                             ))}
                                         </select>
                                     </div>
+                                    {/* Terms & Conditions */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Terms & Conditions
+                                        </label>
+                                        <select
+                                            className="select select-bordered select-lg w-full bg-white text-black"
+                                            name="tncId"
+                                            value={form.tncId || ""}
+                                            onChange={handleInput}
+                                            disabled={tncLoading}
+                                        >
+                                            <option value="">
+                                                {tncLoading
+                                                    ? "Loading..."
+                                                    : "Select T&C"}
+                                            </option>
+                                            {tncOptions.map((t) => (
+                                                <option key={t.id} value={t.id}>
+                                                    {t.title}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                                 {/* Search Map - full width */}
                                 <div className="md:col-span-2">
@@ -636,7 +770,7 @@ export default function EditActivityPage() {
                                             className="input input-bordered input-lg w-full bg-white text-black"
                                             name="mapLocation"
                                             onChange={handleInput}
-                                            required
+                                            value={form.mapLocation}
                                             placeholder="Search In Map"
                                         />
                                         {errors.mapLocation && (
