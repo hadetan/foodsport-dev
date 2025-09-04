@@ -152,6 +152,15 @@ export default function AdminLoggedInLayout({ children }) {
                                                         "/admin/register"
                                                     }
                                                 />
+                                                 <SidebarItem
+                                                    href="/admin/terms&conditions"
+                                                    icon={<UserPlus />}
+                                                    label="Terms & Conditions"
+                                                    isSelected={
+                                                        pathname ===
+                                                        "/admin/terms&conditions"
+                                                    }
+                                                />
                                             </ul>
                                         </div>
                                     </aside>
