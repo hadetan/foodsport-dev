@@ -12,8 +12,6 @@ export async function POST(request) {
 	const { error, user: User } = await requireUser(supabase, NextResponse, request);
 	if (error) return error;
 
-	const { NEXT_PUBLIC_BASE_URL, NODE_ENV } = process.env
-
 	try {
 		const body = await request.json();
 		const validation = validateRequiredFields(body, ['activityId']);
@@ -121,35 +119,49 @@ export async function POST(request) {
 				throw new Error('Internal error: ticket or userActivity not created');
 			}
 
+			const templateId = 191;
+			const params = {
+				name: `${user.firstname} ${user.lastname}`,
+				code: ticket.ticketCode,
+				title: activity.title,
+			};
+			let emailRes;
+			try {
+				emailRes = await serverApi.post(
+					`/admin/email/template_email`,
+					{
+						to: user.email,
+						templateId,
+						params,
+					},
+					{
+						headers: {
+							'x-internal-api': process.env.INTERNAL_API_SECRET,
+						},
+					}
+				);
+			} catch (err) {
+				throw new Error('Failed to send ticket email');
+			}
+			if (!emailRes.data || !emailRes.data.success) {
+				throw new Error('Failed to send ticket email');
+			}
+
+			await tx.ticket.update({
+				where: { id: ticket.id },
+				data: { ticketSent: true },
+			});
+
 			return { ticket, userActivity };
 		});
 
-		const templateId = 191;
-		const params = {
-			name: `${user.firstname} ${user.lastname}`,
-			code: result.ticket.ticketCode,
-			title: activity.title,
-		};
-
-		const url = NODE_ENV === 'production' ? NEXT_PUBLIC_BASE_URL : '';
-		const emailRes = await serverApi.post(
-			`/admin/email/template_email`,
-			{
-				to: user.email,
-				templateId,
-				params,
-			},
-			{
-				headers: {
-					'x-internal-api': process.env.INTERNAL_API_SECRET,
-				},
-			}
-		);
-		if (!emailRes.data || !emailRes.data.success) {
-			throw new Error('Failed to send ticket email');
+		if (!result || result.error || !result.userActivity) {
+			const details = result && result.error ? result.error : 'Failed to create ticket or send email';
+			return Response.json(
+				{ error: 'Failed to join activity', details },
+				{ status: 500 }
+			);
 		}
-
-		await updateById('ticket', result.ticket.id, { ticketSent: true });
 
 		const updatedCount = await getCount('userActivity', {
 			activityId: body.activityId,
