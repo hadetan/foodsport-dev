@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import axios from "axios";
+// Removed axios import (no longer needed)
 
 const TiptapEditor = dynamic(
     () => import("@/app/shared/components/TiptapEditor"),
@@ -54,29 +54,13 @@ function TncModal({ open, onClose, onSave, initial, loading }) {
                 </div>
                 <button
                     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    onClick={async () => {
+                    onClick={() => {
                         if (!title.trim() || !description.trim()) {
                             alert("Title and description are required.");
                             return;
                         }
-                        try {
-                            const res = await axios.post("/api/admin/tnc", {
-                                title,
-                                description,
-                            });
-                            if (res.status !== 201) {
-                                alert(
-                                    res.data?.error || "Failed to create TNC"
-                                );
-                                return;
-                            }
-                            onClose();
-                        } catch (e) {
-                            alert(
-                                e?.response?.data?.error ||
-                                    "Failed to create TNC"
-                            );
-                        }
+                        // Delegate save (parent decides POST vs PATCH)
+                        onSave({ title, description });
                     }}
                     disabled={loading}
                 >
@@ -143,10 +127,12 @@ export default function TermsAndConditionsPage() {
         setLoading(true);
         setError("");
         try {
-            const method = editTnc ? "PATCH" : "POST";
-            const url = editTnc
+            const isEdit = !!editTnc;
+            const method = isEdit ? "PATCH" : "POST";
+            const url = isEdit
                 ? `/api/admin/tnc?id=${encodeURIComponent(editTnc.id)}`
                 : "/api/admin/tnc";
+
             const res = await fetch(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
@@ -158,9 +144,54 @@ export default function TermsAndConditionsPage() {
                 setLoading(false);
                 return;
             }
+
+            // Try to extract saved TNC object from response
+            const saved =
+                data?.tnc ||
+                data?.item ||
+                data?.data ||
+                (isEdit ? { ...editTnc, title, description } : null);
+
+            if (isEdit) {
+                setTncs((prev) =>
+                    prev.map((t) =>
+                        t.id === editTnc.id
+                            ? {
+                                  ...t,
+                                  ...saved,
+                                  title: saved?.title ?? title,
+                                  description:
+                                      saved?.description ?? description,
+                                  updatedBy: saved?.updatedBy ?? t.updatedBy,
+                              }
+                            : t
+                    )
+                );
+            } else if (saved) {
+                setTncs((prev) => [
+                    {
+                        ...saved,
+                        title: saved?.title ?? title,
+                        description: saved?.description ?? description,
+                    },
+                    ...prev,
+                ]);
+            } else {
+                // Fallback (no object returned) - minimal optimistic add
+                setTncs((prev) => [
+                    {
+                        id: crypto.randomUUID(),
+                        title,
+                        description,
+                        createdBy: "—",
+                        updatedBy: "—",
+                    },
+                    ...prev,
+                ]);
+            }
+
             setModalOpen(false);
             setEditTnc(null);
-            fetchTncs();
         } catch (e) {
             setError("Failed to save");
         }
@@ -172,7 +203,7 @@ export default function TermsAndConditionsPage() {
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold">Terms & Conditions</h1>
                 <button
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
                     onClick={() => {
                         setModalOpen(true);
                         setEditTnc(null);
@@ -182,45 +213,71 @@ export default function TermsAndConditionsPage() {
                 </button>
             </div>
             {error && <div className="text-red-600 mb-4">{error}</div>}
-            <div className="bg-white rounded shadow">
-                <table className="w-full">
+            <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 overflow-hidden">
+                <table className="w-full border-collapse">
                     <thead>
-                        <tr className="bg-gray-100 text-left">
-                            <th className="p-3">Title</th>
-                            <th className="p-3">Created By</th>
-                            <th className="p-3">Updated By</th>
-                            <th className="p-3">Created At</th>
-                            <th className="p-3"></th>
+                        <tr className="bg-gray-50">
+                            <th className="p-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600 w-[40%]">
+                                Title
+                            </th>
+                            <th className="p-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+                                Created By
+                            </th>
+                            <th className="p-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
+                                Updated By
+                            </th>
+                            <th className="p-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-600">
+                                Actions
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         {tncs.map((tnc) => (
                             <tr
                                 key={tnc.id}
-                                className="border-b hover:bg-gray-50"
+                                className="group cursor-pointer border-b last:border-b-0 even:bg-gray-50 hover:bg-indigo-50/70 transition-colors"
+                                onClick={(e) => {
+                                    if (e.target.closest("button")) return;
+                                    setSelectedTnc(tnc);
+                                    setReadModalOpen(true);
+                                }}
                             >
-                                <td
-                                    className="p-3 cursor-pointer text-blue-700 underline"
-                                    onClick={() => {
-                                        setSelectedTnc(tnc);
-                                        setReadModalOpen(true);
-                                    }}
-                                >
-                                    {tnc.title}
-                                </td>
-                                <td className="p-3">{tnc.createdBy || "-"}</td>
-                                <td className="p-3">{tnc.updatedBy || "-"}</td>
                                 <td className="p-3">
-                                    {new Date(tnc.createdAt).toLocaleString()}
+                                    <span className="text-sm font-medium text-black  transition-colors">
+                                        {tnc.title}
+                                    </span>
+                                </td>
+                                <td className="p-3">
+                                    <span className="inline-flex items-center rounded-full bg-gray-100 group-hover:bg-white group-hover:shadow px-2 py-0.5 text-[11px] font-medium text-gray-700 ring-1 ring-gray-200">
+                                        {tnc.createdBy || "-"}
+                                    </span>
+                                </td>
+                                <td className="p-3">
+                                    <span className="inline-flex items-center rounded-full bg-gray-100 group-hover:bg-white group-hover:shadow px-2 py-0.5 text-[11px] font-medium text-gray-700 ring-1 ring-gray-200">
+                                        {tnc.updatedBy || "-"}
+                                    </span>
                                 </td>
                                 <td className="p-3 text-right">
                                     <button
-                                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                                        className="inline-flex items-center gap-1 rounded-md bg-amber-500/90 hover:bg-amber-500 text-white text-xs font-medium px-3 py-1.5 shadow-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50"
                                         onClick={() => {
                                             setEditTnc(tnc);
                                             setModalOpen(true);
                                         }}
+                                        aria-label={`Edit ${tnc.title}`}
                                     >
+                                        <svg
+                                            className="w-3.5 h-3.5"
+                                            viewBox="0 0 20 20"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        >
+                                            <path d="M3 14.5V17h2.5L15.3 7.2l-2.5-2.5L3 14.5z" />
+                                            <path d="M12.8 4.7l2.5 2.5L17 5.5l-2.5-2.5-1.7 1.7z" />
+                                        </svg>
                                         Edit
                                     </button>
                                 </td>
@@ -229,8 +286,8 @@ export default function TermsAndConditionsPage() {
                         {tncs.length === 0 && !loading && (
                             <tr>
                                 <td
-                                    colSpan={5}
-                                    className="p-4 text-center text-gray-500"
+                                    colSpan={4}
+                                    className="p-6 text-center text-sm text-gray-500"
                                 >
                                     No TNCs found.
                                 </td>
@@ -238,7 +295,11 @@ export default function TermsAndConditionsPage() {
                         )}
                     </tbody>
                 </table>
-                {loading && <div className="p-4 text-center">Loading...</div>}
+                {loading && (
+                    <div className="p-4 text-center text-sm text-gray-600">
+                        Loading...
+                    </div>
+                )}
             </div>
             <TncModal
                 open={modalOpen}
