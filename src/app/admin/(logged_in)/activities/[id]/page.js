@@ -34,6 +34,17 @@ function buildEmbedMapUrl(loc) {
         : "";
 }
 
+// New helper: format ISO/string date to value acceptable by <input type="datetime-local" />
+function formatForInput(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
+        d.getDate()
+    )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export default function EditActivityPage() {
     const [form, setForm] = useState(null);
     const [errors, setErrors] = useState({});
@@ -89,10 +100,11 @@ export default function EditActivityPage() {
             title: activity.title || "",
             description: activity.description || "",
             activityType: formattedActivityType,
-            startDateTime: activity.startDate
-                ? activity.startDate.slice(0, 16)
-                : "",
-            endDateTime: activity.endDate ? activity.endDate.slice(0, 16) : "",
+            // Use startTime / endTime if present (more precise) otherwise fall back
+            startDateTime: formatForInput(
+                activity.startTime || activity.startDate
+            ),
+            endDateTime: formatForInput(activity.endTime || activity.endDate),
             location: activity.location || "",
             mapLocation: extractMapLocationFromUrl(activity.mapUrl) || "",
             capacity: activity.participantLimit || "",
@@ -169,11 +181,7 @@ export default function EditActivityPage() {
         const cap = parseInt(form.capacity, 10);
         if (!cap || cap < 1 || cap > 1000)
             errs.capacity = "Capacity must be 1-1000.";
-        const points = parseFloat(form.totalCaloriesBurnt);
-        if (isNaN(points) || points <= 0)
-            errs.totalCaloriesBurnt =
-                "Total calories burnt must be a positive number.";
-        // Calories per hour min/max validation (string, not number)
+
         const min = form.caloriesPerHourMin?.trim();
         const max = form.caloriesPerHourMax?.trim();
         if (!min || !max) {
@@ -225,13 +233,33 @@ export default function EditActivityPage() {
                     key === "time" ||
                     key === "caloriesPerHourMin" ||
                     key === "caloriesPerHourMax" ||
-                    key === "mapLocation" // we will send derived mapUrl instead
+                    key === "mapLocation" ||
+                    key === "startDateTime" ||
+                    key === "endDateTime"
                 )
                     return;
                 if (value !== "" && value !== null && value !== undefined) {
                     formData.append(key, value);
                 }
             });
+
+            // Map startDateTime / endDateTime to backend expected fields
+            if (form.startDateTime) {
+                const start = new Date(form.startDateTime);
+                if (!isNaN(start.getTime())) {
+                    const iso = start.toISOString();
+                    formData.append("startDate", iso);
+                    formData.append("startTime", iso);
+                }
+            }
+            if (form.endDateTime) {
+                const end = new Date(form.endDateTime);
+                if (!isNaN(end.getTime())) {
+                    const iso = end.toISOString();
+                    formData.append("endDate", iso);
+                    formData.append("endTime", iso);
+                }
+            }
 
             // Derived fields
             formData.append(
@@ -267,7 +295,7 @@ export default function EditActivityPage() {
             }
 
             setSuccess("Activity updated successfully!");
-            router.push("/admin/activities");
+            setActiveTab("description"); // Switch to description tab after save
         } catch (e) {
             let msg = "Failed to update activity.";
             if (typeof e === "string") {
