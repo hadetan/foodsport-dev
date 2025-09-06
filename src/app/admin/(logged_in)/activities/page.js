@@ -185,13 +185,11 @@ function ActivityManagementPageContent() {
     const tableHeading = [
         "Activity",
         "Type",
-        "Start Date",
-        "End Date",
-        "Start Time",
-        "End Time",
+        "Date & Time",
         "Location",
         "Capacity",
         "Status",
+        "Created At", // <-- Added column heading
         "Actions",
     ];
 
@@ -208,19 +206,22 @@ function ActivityManagementPageContent() {
             {" "}
             <h2 className="text-2xl font-bold">Activities</h2>
             <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
-                <div className="flex justify-between mb-6">
-                    <button
-                        className="btn btn-primary"
-                        onClick={() =>
-                            router.push("/admin/activities/createActivity")
-                        }
-                    >
-                        Create Activity
-                    </button>
+                {/* Responsive Filters + Create Button inline */}
+                <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-6 gap-2">
+                    <div className="flex-1">
+                        <FilterBar setFilters={setFilters} filters={filters} />
+                    </div>
+                    <div className="mt-2 md:mt-0 md:ml-4 flex-shrink-0">
+                        <button
+                            className="btn btn-primary"
+                            onClick={() =>
+                                router.push("/admin/activities/createActivity")
+                            }
+                        >
+                            Create Activity
+                        </button>
+                    </div>
                 </div>
-
-                {/* Responsive Filters */}
-                <FilterBar setFilters={setFilters} filters={filters} />
                 {/* Activities Table */}
                 <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
                     {tableLoading ? (
