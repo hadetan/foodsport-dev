@@ -27,7 +27,7 @@ const ActivityDetails = ({
 	const topRef = useRef(null);
 	const [loading, setLoading] = useState(false);
 	const [showShare, setShowShare] = useState(false);
-  const [tncChecked, setTncChecked] = useState(false);
+  	const [tncChecked, setTncChecked] = useState(false);
 	const [showInviteDialog, setShowInviteDialog] = useState(false);
 
 	useEffect(() => {
