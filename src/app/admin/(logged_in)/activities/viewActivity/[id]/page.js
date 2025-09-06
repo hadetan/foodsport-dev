@@ -192,7 +192,7 @@ const ActivityDetailPage = () => {
                             ];
                             const activityHeader = activityFields
                                 .map((field) => `"${field}"`)
-                                .concat(['"duration"', '"calories"']) // add empty columns
+                                // removed "duration" and "calories" from activity header
                                 .join(",");
                             const activityRow = activityFields
                                 .map((field) =>
@@ -204,36 +204,70 @@ const ActivityDetailPage = () => {
                                           )}"`
                                         : ""
                                 )
-                                .concat(["", ""]) // empty duration and calories
+                                // removed "duration" and "calories" from activity row
                                 .join(",");
 
+                            // Precompute duration (hours) and calories for reuse in user rows
+                            const computeDurationHours = () => {
+                                try {
+                                    if (
+                                        activity.startTime &&
+                                        activity.endTime
+                                    ) {
+                                        const s = new Date(activity.startTime);
+                                        const e = new Date(activity.endTime);
+                                        if (!isNaN(s) && !isNaN(e)) {
+                                            const diffHrs =
+                                                (e - s) / (1000 * 60 * 60);
+                                            return Math.max(0, diffHrs);
+                                        }
+                                    }
+                                } catch (_) {}
+                                return null;
+                            };
+                            const durationHours = computeDurationHours();
+                            const durationDisplay =
+                                durationHours !== null
+                                    ? durationHours.toFixed(2)
+                                    : "";
+                            const caloriesDisplay =
+                                durationHours !== null &&
+                                activity.caloriesPerHour
+                                    ? String(
+                                          Math.round(
+                                              durationHours *
+                                                  Number(
+                                                      activity.caloriesPerHour
+                                                  )
+                                          )
+                                      )
+                                    : "";
+
                             // Participating users fields to export
-                            const userFields = [
-                                "firstname",
-                                "lastname",
-                                "email",
-                                "joinedDate",
-                                "height",
-                                "weight",
-                                "dob",
-                                "gender",
-                            ];
-                            const userHeader = userFields
-                                .map((field) => `"${field}"`)
-                                .join(",");
+                            // ensure "duration" and "calories" are beside "registered"
+                            const userHeader = `"firstname","lastname","email","joinedDate","height","weight","dob","gender","registered","duration","calories"`;
+                            const escapeCsv = (v) =>
+                                v !== undefined && v !== null
+                                    ? `"${String(v).replace(/"/g, '""')}"`
+                                    : "";
                             const userRows =
                                 participatingUsers &&
                                 participatingUsers.length > 0
-                                    ? participatingUsers.map((user) =>
-                                          userFields
-                                              .map((key) =>
-                                                  user[key] !== undefined &&
-                                                  user[key] !== null
-                                                      ? `"${String(
-                                                            user[key]
-                                                        ).replace(/"/g, '""')}"`
-                                                      : ""
-                                              )
+                                    ? participatingUsers.map((u) =>
+                                          [
+                                              u.firstname,
+                                              u.lastname,
+                                              u.email,
+                                              u.joinedDate,
+                                              u.height,
+                                              u.weight,
+                                              u.dob,
+                                              u.gender,
+                                              "Yes", // registered
+                                              durationDisplay, // duration beside registered
+                                              caloriesDisplay, // calories beside duration
+                                          ]
+                                              .map(escapeCsv)
                                               .join(",")
                                       )
                                     : [];

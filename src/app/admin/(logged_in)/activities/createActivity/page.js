@@ -111,7 +111,7 @@ const CreateActivityPage = () => {
     };
     useEffect(() => {
         // fetch T&C list
-      
+
         fetchTncs();
     }, []);
 
@@ -347,7 +347,7 @@ const CreateActivityPage = () => {
                                             id="activity-image-upload"
                                             type="file"
                                             className="absolute inset-0 opacity-0 cursor-pointer"
-                                            accept="image/*"
+                                            accept="image/jpeg,image/png,image/webp"
                                             onChange={handleImageUpload}
                                             disabled={!!formData.image}
                                             style={{ zIndex: 2 }}
@@ -362,7 +362,7 @@ const CreateActivityPage = () => {
                                                     </span>
                                                 </span>
                                                 <span className="text-xs text-gray-400 mt-1">
-                                                    JPG, PNG
+                                                    JPG, PNG, WEBP
                                                 </span>
                                             </div>
                                         )}
