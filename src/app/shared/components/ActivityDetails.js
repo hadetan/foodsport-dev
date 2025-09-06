@@ -14,6 +14,7 @@ import api from '@/utils/axios/api';
 import ShareDialog from '@/app/shared/components/ShareDialog';
 import toast from '@/utils/Toast';
 import InvitePartnersDialog from './InvitePartnersDialog';
+import ActivitySummary from './ActivitySummary';
 
 const ActivityDetails = ({
 	activity,
@@ -143,7 +144,7 @@ const ActivityDetails = ({
 					<div className='activityDetailsMainDesc'>
 						{activity.description}
 					</div>
-					<div>
+					<div className="activityDetailsDetailsSection">
 						<h2 className='activityDetailsDetailsTitle'>
 							Activity Details
 						</h2>
@@ -207,7 +208,10 @@ const ActivityDetails = ({
 							</div>
 						</div>
 					</div>
-					{activity.mapUrl ?
+					{activity.summary && (
+						<ActivitySummary summary={activity.summary} />
+					)}
+					{activity.mapUrl ? 
 						/^https:\/\/(www\.)?google\.(com|co\.[a-z]{2})\/maps/.test(activity.mapUrl) && (
 							<div style={{ width: '100%', margin: '32px 0' }}>
 								<iframe
