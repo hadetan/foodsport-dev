@@ -7,7 +7,6 @@
 }
 
 .recent-activities-table-wrapper {
-	/* width: 100%; */
     min-height: fit-content;
 	max-height: 600px;
 	height: 600px;
@@ -74,4 +73,18 @@
 	padding: 32px 0;
 	color: #888;
 	font-size: 16px;
+}
+
+.recent-activities-invite-btn {
+	border: 1px solid #ffd700;
+	padding: 5px 10px;
+	border-radius: 10px;
+	cursor: pointer;
+	transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.recent-activities-invite-btn:hover {
+	border: 1px solid transparent;
+	background-color: #ffd700;
+	color: #fff;
 }

@@ -69,12 +69,13 @@ export async function POST(request) {
 				},
 			});
 
-			try {
-                const templateId = 192;
+			// ONCE SUCCESSFULLY CREATED THEIR TEMP PROFILE, SEND THEM EMAIL FOR JOINING THE APP TO CONTINUE PARTICIPATING IN THE ACTIVITIES.
+			/* try {
+                const templateId = 191;
                 await serverApi.post('/admin/email/template_email', { to: email, templateId, params: { name: `${firstname} ${lastname}`, title: '' } }, { headers: { 'x-internal-api': process.env.INTERNAL_API_SECRET } });
             } catch (e) {
                 console.log('Error while sending email from verifyInvitedTicket api: ', e);
-            }
+            } */
 
             return { tempUser, userActivity };
 		});

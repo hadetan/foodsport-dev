@@ -13,7 +13,6 @@ import Featured from './Featured';
 import api from '@/utils/axios/api';
 import ShareDialog from '@/app/shared/components/ShareDialog';
 import toast from '@/utils/Toast';
-import InvitePartnersDialog from './InvitePartnersDialog';
 import ActivitySummary from './ActivitySummary';
 
 const ActivityDetails = ({
@@ -110,8 +109,6 @@ const ActivityDetails = ({
 			setLoading(false);
 		}
 	}
-
-	// if (error) toast.warning(error);
 
 	return (
 		<div className='activityDetailsPage' ref={topRef}>
@@ -302,19 +299,7 @@ const ActivityDetails = ({
 								</label>
 							</div>
 						)}
- 						<button
- 							className='invitePartner'
- 							onClick={() => setShowInviteDialog(true)}
- 						>
-   						INVITE PARTNERS
- 						</button>
- 						{showInviteDialog && (
- 							<InvitePartnersDialog
- 								activityId={activity.id}
- 								open={showInviteDialog}
- 								onClose={() => setShowInviteDialog(false)}
- 							/>
- 						)}
+
 						{user?.joinedActivityIds?.includes(activity.id) ? (
 							<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading}>
 								{loading ? 'LEAVING' : 'LEAVE'}
