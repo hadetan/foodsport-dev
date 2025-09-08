@@ -23,6 +23,8 @@ enum ActivityLevel {
 enum ActivityStatus {
   active
   draft
+  cancelled
+  closed
 }
 
 enum ActivityType {
@@ -173,6 +175,7 @@ model Activity {
   userActivities       UserActivity[]
   calorieSubmissions   CalorieSubmission[]
   tnc                  Tnc?          @relation(fields: [tncId], references: [id])
+  invitedUsers         InvitedUser[]
 
   @@map("activities")
 }
@@ -201,13 +204,32 @@ model TempUser {
   height              Decimal? @db.Decimal(5, 2)
   totalCaloriesBurned Int      @default(0) @map("total_calories_burned")
   createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+  updatedAt           DateTime @default(now()) @map("updated_at")
 
   // Relations
   userActivities      UserActivity[]
   tickets             Ticket[]
+  invitedUsers        InvitedUser[]
 
   @@map("temp_users")
+}
+
+model InvitedUser {
+  id          String   @id @default(uuid())
+  email       String
+  activityId  String   @map("activity_id")
+  inviterId   String?  @map("inviter_id")
+  tempUserId  String?  @map("temp_user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  tempUser    TempUser? @relation(fields: [tempUserId], references: [id])
+  tickets     Ticket[]
+  activity    Activity? @relation(fields: [activityId], references: [id])
+
+  @@unique([email, activityId])
+  @@map("invited_users")
 }
 
 model Ticket {
@@ -216,6 +238,7 @@ model Ticket {
   activityId   String    @map("activity_id")
   userId       String?   @map("user_id")
   tempUserId   String?   @map("temp_user_id")
+  invitedUserId String?  @map("invited_user_id")
   status       TicketStatus @default(active)
   ticketSent   Boolean   @default(false) @map("ticket_sent")
   ticketUsed   Boolean   @default(false) @map("ticket_used")
@@ -223,12 +246,13 @@ model Ticket {
   usedAt       DateTime? @map("used_at")
   revoked      Boolean   @default(false)
   createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  updatedAt    DateTime  @default(now()) @map("updated_at")
 
   // Relations
   activity     Activity  @relation(fields: [activityId], references: [id])
   user         User?     @relation(fields: [userId], references: [id])
   tempUser     TempUser? @relation(fields: [tempUserId], references: [id])
+  invitedUser  InvitedUser? @relation(fields: [invitedUserId], references: [id])
   userActivity UserActivity[]
 
   @@map("tickets")
@@ -268,7 +292,7 @@ model CalorieSubmission {
   pointsEarned      Int                @default(0) @map("points_earned")
   submissionDate    DateTime           @map("submission_date")
   createdAt         DateTime           @default(now()) @map("created_at")
-  updatedAt         DateTime           @updatedAt @map("updated_at")
+  updatedAt         DateTime           @default(now()) @map("updated_at")
 
   // Relations
   user              User               @relation(fields: [userId], references: [id])
@@ -289,7 +313,7 @@ model Charity {
   isActive        Boolean  @default(true) @map("is_active") // Prisma can't do generated columns, handle in app
   featured        Boolean  @default(false)
   createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  updatedAt       DateTime @default(now()) @map("updated_at")
 
   // Relations
   calorieDonations CalorieDonation[]
