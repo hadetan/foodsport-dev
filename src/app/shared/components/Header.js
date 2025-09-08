@@ -5,7 +5,7 @@ import styles from "@/app/shared/css/Header.module.css";
 import Link from "next/link";
 import { useAuth } from "@/app/shared/contexts/authContext";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { BsCart2 } from "react-icons/bs";
 import Search from "./Search";
 import Avatar from "./avatar";
@@ -21,10 +21,7 @@ export default function Header() {
     const pathname = usePathname();
     const [hoveredIdx, setHoveredIdx] = useState(null);
     const { activities } = useActivities();
-    const sortedActivities = useMemo(
-        () => sortActivities(activities || [], true),
-        [activities]
-    );
+    const sortedActivities = sortActivities(activities || [], true);
 
     //#region This fixed the hydration error of mismatched authToken. The authToken is populated only after the mounting, so we wait to be mounted first before using the authToken.
     useEffect(() => {
