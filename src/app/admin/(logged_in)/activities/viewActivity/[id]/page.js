@@ -102,6 +102,10 @@ const ActivityDetailPage = () => {
         return new Date(dateString).toLocaleTimeString("en-US", options);
     };
 
+    // Simple check for cancelled or closed status
+    const canImportExport =
+        activity?.status === "cancelled" || activity?.status === "closed";
+
     return (
         <div className="w-full min-h-screen bg-white">
             {/* Heading and Navigation Buttons */}
@@ -204,15 +208,20 @@ const ActivityDetailPage = () => {
                                         </span>
                                         {activity.status && (
                                             <span
-                                                className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold
-                                            ${
-                                                activity.status === "active"
-                                                    ? "bg-green-600 text-white"
-                                                    : activity.status ===
-                                                      "inactive"
-                                                    ? "bg-gray-400 text-white"
-                                                    : "bg-yellow-500 text-white"
-                                            }`}
+                                                className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                                                    activity.status === "active"
+                                                        ? "bg-green-600 text-white"
+                                                        : activity.status ===
+                                                          "inactive"
+                                                        ? "bg-gray-400 text-white"
+                                                        : activity.status ===
+                                                          "cancelled"
+                                                        ? "bg-red-600 text-white"
+                                                        : activity.status ===
+                                                          "completed"
+                                                        ? "bg-gray-600 text-white"
+                                                        : "bg-yellow-500 text-white"
+                                                }`}
                                             >
                                                 {activity.status}
                                             </span>
@@ -337,121 +346,145 @@ const ActivityDetailPage = () => {
                     )}
                     {activeTab === "users" && (
                         <div>
-                            {/* Import/Export buttons only in Users tab */}
+                            {/* Import/Export buttons only when status is cancelled or closed */}
                             <div className="flex items-center justify-end gap-2 mb-6">
-                                <button
-                                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
-                                    onClick={() => {
-                                        /* handle import */
-                                    }}
-                                    title="Import"
-                                >
-                                    <Upload className="w-5 h-5 mr-2" />
-                                    Import
-                                </button>
-                                <button
-                                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
-                                    onClick={() => {
-                                        // Export only activity id and title, then users details
-                                        if (!activity) {
-                                            toast.error(
-                                                "No activity data to export"
-                                            );
-                                            return;
-                                        }
+                                {canImportExport && (
+                                    <>
+                                        <button
+                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
+                                            onClick={() => {
+                                                /* handle import */
+                                            }}
+                                            title="Import"
+                                        >
+                                            <Upload className="w-5 h-5 mr-2" />
+                                            Import
+                                        </button>
+                                        <button
+                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
+                                            onClick={() => {
+                                                // Export only activity id and title, then users details
+                                                if (!activity) {
+                                                    toast.error(
+                                                        "No activity data to export"
+                                                    );
+                                                    return;
+                                                }
 
-                                        // Only id and title for activity
-                                        const activityHeader = `"id","title"`;
-                                        const activityRow = [
-                                            activity.id
-                                                ? `"${String(
-                                                      activity.id
-                                                  ).replace(/"/g, '""')}"`
-                                                : "",
-                                            activity.title
-                                                ? `"${String(
-                                                      activity.title
-                                                  ).replace(/"/g, '""')}"`
-                                                : "",
-                                        ].join(",");
+                                                // Only id and title for activity
+                                                const activityHeader = `"id","title"`;
+                                                const activityRow = [
+                                                    activity.id
+                                                        ? `"${String(
+                                                              activity.id
+                                                          ).replace(
+                                                              /"/g,
+                                                              '""'
+                                                          )}"`
+                                                        : "",
+                                                    activity.title
+                                                        ? `"${String(
+                                                              activity.title
+                                                          ).replace(
+                                                              /"/g,
+                                                              '""'
+                                                          )}"`
+                                                        : "",
+                                                ].join(",");
 
-                                        // User fields + duration and calories
-                                        const userFields = [
-                                            "firstname",
-                                            "lastname",
-                                            "email",
-                                            "joinedDate",
-                                            "height",
-                                            "weight",
-                                            "dob",
-                                            "gender",
-                                            "duration",
-                                            "calories",
-                                        ];
-                                        const userHeader = userFields
-                                            .map((field) => `"${field}"`)
-                                            .join(",");
-                                        const userRows =
-                                            participatingUsers &&
-                                            participatingUsers.length > 0
-                                                ? participatingUsers.map(
-                                                      (user) =>
-                                                          userFields
-                                                              .map((key) =>
-                                                                  user[key] !==
-                                                                      undefined &&
-                                                                  user[key] !==
-                                                                      null
-                                                                      ? `"${String(
-                                                                            user[
-                                                                                key
-                                                                            ]
-                                                                        ).replace(
-                                                                            /"/g,
-                                                                            '""'
-                                                                        )}"`
-                                                                      : ""
-                                                              )
-                                                              .join(",")
-                                                  )
-                                                : [];
+                                                // User fields + duration and calories
+                                                const userFields = [
+                                                    "firstname",
+                                                    "lastname",
+                                                    "email",
+                                                    "joinedDate",
+                                                    "height",
+                                                    "weight",
+                                                    "dob",
+                                                    "gender",
+                                                    "duration",
+                                                    "calories",
+                                                ];
+                                                const userHeader = userFields
+                                                    .map(
+                                                        (field) => `"${field}"`
+                                                    )
+                                                    .join(",");
+                                                const userRows =
+                                                    participatingUsers &&
+                                                    participatingUsers.length >
+                                                        0
+                                                        ? participatingUsers.map(
+                                                              (user) =>
+                                                                  userFields
+                                                                      .map(
+                                                                          (
+                                                                              key
+                                                                          ) =>
+                                                                              user[
+                                                                                  key
+                                                                              ] !==
+                                                                                  undefined &&
+                                                                              user[
+                                                                                  key
+                                                                              ] !==
+                                                                                  null
+                                                                                  ? `"${String(
+                                                                                        user[
+                                                                                            key
+                                                                                        ]
+                                                                                    ).replace(
+                                                                                        /"/g,
+                                                                                        '""'
+                                                                                    )}"`
+                                                                                  : ""
+                                                                      )
+                                                                      .join(",")
+                                                          )
+                                                        : [];
 
-                                        let usersSection = "";
-                                        if (userRows.length > 0) {
-                                            usersSection =
-                                                "\r\n\r\nParticipating Users\r\n" +
-                                                userHeader +
-                                                "\r\n" +
-                                                userRows.join("\r\n");
-                                        }
+                                                let usersSection = "";
+                                                if (userRows.length > 0) {
+                                                    usersSection =
+                                                        "\r\n\r\nParticipating Users\r\n" +
+                                                        userHeader +
+                                                        "\r\n" +
+                                                        userRows.join("\r\n");
+                                                }
 
-                                        const csvContent =
-                                            activityHeader +
-                                            "\r\n" +
-                                            activityRow +
-                                            usersSection;
+                                                const csvContent =
+                                                    activityHeader +
+                                                    "\r\n" +
+                                                    activityRow +
+                                                    usersSection;
 
-                                        const blob = new Blob([csvContent], {
-                                            type: "text/csv;charset=utf-8;",
-                                        });
-                                        const url = URL.createObjectURL(blob);
-                                        const link =
-                                            document.createElement("a");
-                                        link.href = url;
-                                        link.setAttribute(
-                                            "download",
-                                            `activity_${activityId}_users.csv`
-                                        );
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                        URL.revokeObjectURL(url);
-                                    }}
-                                    title="Export Users"
-                                >
-                                    <Download className="w-5 h-5 mr-2" />
-                                    Export Users
-                                </button>
+                                                const blob = new Blob(
+                                                    [csvContent],
+                                                    {
+                                                        type: "text/csv;charset=utf-8;",
+                                                    }
+                                                );
+                                                const url =
+                                                    URL.createObjectURL(blob);
+                                                const link =
+                                                    document.createElement("a");
+                                                link.href = url;
+                                                link.setAttribute(
+                                                    "download",
+                                                    `activity_${activityId}_users.csv`
+                                                );
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                                URL.revokeObjectURL(url);
+                                            }}
+                                            title="Export Users"
+                                        >
+                                            <Download className="w-5 h-5 mr-2" />
+                                            Export Users
+                                        </button>
+                                    </>
+                                )}
                                 <button
                                     className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors"
                                     onClick={() =>
