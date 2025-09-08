@@ -62,7 +62,6 @@ export async function POST(request) {
 		const invited = await prisma.invitedUser.findUnique({ where: { id: ticket.invitedUserId } });
 		return NextResponse.json({
 			status: 'invited_needs_info',
-			inviterUserId: invited?.id || ticket.invitedUserId,
 			email: invited?.email || null,
 			ticketCode: ticket.ticketCode,
 		});

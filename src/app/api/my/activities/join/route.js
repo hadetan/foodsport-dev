@@ -147,10 +147,14 @@ export async function POST(request) {
 				throw new Error('Failed to send ticket email');
 			}
 
-			await tx.ticket.update({
-				where: { id: ticket.id },
-				data: { ticketSent: true },
-			});
+			try {
+				await tx.ticket.update({
+					where: { id: ticket.id },
+					data: { ticketSent: true },
+				});
+			} catch (error) {
+				console.log("THIS IS BULLSHIT ERROR", error);
+			}
 
 			return { ticket, userActivity };
 		});

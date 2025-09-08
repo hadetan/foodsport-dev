@@ -1,4 +1,4 @@
-import { executeTransaction, getById } from '@/lib/prisma/db-utils';
+import { executeTransaction, getById, updateById } from '@/lib/prisma/db-utils';
 import { requireUser } from '@/lib/prisma/require-user';
 import { validateRequiredFields } from '@/utils/validation';
 import { NextResponse } from 'next/server';
@@ -40,9 +40,9 @@ export async function POST(request) {
                 return Response.json({ error: `Invalid email provided: ${emailRaw}` }, { status: 400 });
             }
 
-            await executeTransaction(async (tx) => {
+            const invited = await executeTransaction(async (tx) => {
                 const joinedCount = await tx.userActivity.count({ where: { activityId: body.activityId } });
-                if (joinedCount >= activity.participantLimit) {
+                if (typeof activity.participantLimit === 'number' && joinedCount >= activity.participantLimit) {
                     throw new Error('Activity is full');
                 }
 
@@ -121,32 +121,43 @@ export async function POST(request) {
                     });
                 }
 
-                const templateId = 191;
-                const params = {
-                    name: existingTempUser ? `${existingTempUser.firstname} ${existingTempUser.lastname}` : email,
-                    code: ticket.ticketCode,
-                    title: activity.title,
-                };
-
-                const emailRes = await serverApi.post(
-                    `/admin/email/template_email`,
-                    {
-                        to: email,
-                        templateId,
-                        params,
-                    },
-                    {
-                        headers: {
-                            'x-internal-api': process.env.INTERNAL_API_SECRET,
-                        },
-                    }
-                );
-                if (!emailRes.data || !emailRes.data.success) {
-                    throw new Error('Failed to send ticket email');
-                }
-
-                await tx.ticket.update({ where: { id: ticket.id }, data: { ticketSent: true } });
+                return { existingTempUser, ticket };
             });
+
+            if (!invited || invited.error || !invited.ticket) {
+                const details = invited && invited.error ? invited.error : 'Failed to create ticket';
+                return Response.json({ error: 'Failed to invite partners', details }, { status: 500 });
+            }
+
+            const templateId = 191;
+            const params = {
+                name: invited.existingTempUser ? `${invited.existingTempUser.firstname} ${invited.existingTempUser.lastname}` : email,
+                code: invited.ticket.ticketCode,
+                title: activity.title,
+            };
+            const emailRes = await serverApi.post(
+                `/admin/email/template_email`,
+                {
+                    to: email,
+                    templateId,
+                    params,
+                },
+                {
+                    headers: {
+                        'x-internal-api': process.env.INTERNAL_API_SECRET,
+                    },
+                }
+            );
+
+            if (!emailRes?.data || !emailRes.data.success) {
+                return Response.json({ error: 'Failed to send ticket email', details: emailRes?.data || 'email api error' }, { status: 500 });
+            }
+
+            try {
+                await updateById('ticket', invited.ticket.id, { ticketSent: true });
+            } catch (err) {
+                console.error('Failed to mark ticket as sent:', err);
+            }
         }
 
         return Response.json({ message: 'Partners invited successfully. Tickets sent.' });

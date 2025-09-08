@@ -23,6 +23,15 @@ export async function POST(req) {
 		);
 	}
 
+	try {
+		const existingAdmin = await prisma.adminUser.findUnique({ where: { email } });
+		if (existingAdmin) {
+			return NextResponse.json({ error: 'Email already exists.' }, { status: 400 });
+		}
+	} catch (checkError) {
+		console.error('Failed to check existing admin:', checkError);
+	}
+
 	const { data: signUpData, error: signUpError } =
 		await supabase.auth.admin.createUser({
 			email,
@@ -50,6 +59,25 @@ export async function POST(req) {
 			},
 		});
 	} catch (prismaError) {
+		// If Prisma reports a unique constraint error, attempt to clean up the Supabase user we just created
+		if (prismaError && prismaError.code === 'P2002') {
+			try {
+				await supabase.auth.admin.deleteUser(signUpData.user.id);
+			} catch (cleanupError) {
+				console.error('Failed to delete Supabase user after Prisma unique error:', cleanupError);
+			}
+			return NextResponse.json(
+				{ error: 'Email already exists.' },
+				{ status: 400 }
+			);
+		}
+
+		// For other errors attempt cleanup as well, then return 500
+		try {
+			await supabase.auth.admin.deleteUser(signUpData.user.id);
+		} catch (cleanupError) {
+			console.error('Failed to delete Supabase user after Prisma error:', cleanupError);
+		}
 		return NextResponse.json(
 			{ error: 'Failed to create admin record.' },
 			{ status: 500 }
