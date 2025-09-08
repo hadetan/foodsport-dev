@@ -104,27 +104,32 @@ const ActivityDetailPage = () => {
 
     return (
         <div className="w-full min-h-screen bg-white">
-            {/* Navigation Buttons */}
+            {/* Heading and Navigation Buttons */}
             <div className="container mx-auto px-4 pt-6 flex justify-between items-center">
-                <button
-                    className="flex items-center bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors mb-4"
-                    onClick={() => router.push("/admin/activities")}
-                >
-                    <svg
-                        className="w-5 h-5 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        viewBox="0 0 24 24"
+                <div className="flex items-center gap-4">
+                    <button
+                        className="flex items-center bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors mb-4"
+                        onClick={() => router.push("/admin/activities")}
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15 19l-7-7 7-7"
-                        />
-                    </svg>
-                    Back
-                </button>
+                        <svg
+                            className="w-5 h-5 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
+                        Back
+                    </button>
+                    <h2 className="text-xl font-bold text-gray-800 mb-2 mx-10">
+                        VIEW ACTIVITY
+                    </h2>
+                </div>
                 <div></div>
                 <button
                     className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors mb-4"
@@ -147,120 +152,6 @@ const ActivityDetailPage = () => {
                     </svg>
                     Edit Activity
                 </button>
-                {/* Actions: Import/Export (left) a*/}
-                <div className="flex items-center justify-between gap-2 mb-6">
-                    <div className="flex items-center gap-2">
-                        <button
-                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
-                            onClick={() => {
-                                /* handle import */
-                            }}
-                            title="Import"
-                        >
-                            <Upload className="w-5 h-5 mr-2" />
-                            Import
-                        </button>
-                        <button
-                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
-                            onClick={() => {
-                                // Export only activity id and title, then users details
-                                if (!activity) {
-                                    toast.error("No activity data to export");
-                                    return;
-                                }
-
-                                // Only id and title for activity
-                                const activityHeader = `"id","title"`;
-                                const activityRow = [
-                                    activity.id
-                                        ? `"${String(activity.id).replace(
-                                              /"/g,
-                                              '""'
-                                          )}"`
-                                        : "",
-                                    activity.title
-                                        ? `"${String(activity.title).replace(
-                                              /"/g,
-                                              '""'
-                                          )}"`
-                                        : "",
-                                ].join(",");
-
-                                // User fields + duration and calories
-                                const userFields = [
-                                    "firstname",
-                                    "lastname",
-                                    "email",
-                                    "joinedDate",
-                                    "height",
-                                    "weight",
-                                    "dob",
-                                    "gender",
-                                    "duration",
-                                    "calories",
-                                ];
-                                const userHeader = userFields
-                                    .map((field) => `"${field}"`)
-                                    .join(",");
-                                const userRows =
-                                    participatingUsers &&
-                                    participatingUsers.length > 0
-                                        ? participatingUsers.map((user) =>
-                                              userFields
-                                                  .map((key) =>
-                                                      user[key] !== undefined &&
-                                                      user[key] !== null
-                                                          ? `"${String(
-                                                                user[key]
-                                                            ).replace(
-                                                                /"/g,
-                                                                '""'
-                                                            )}"`
-                                                          : ""
-                                                  )
-                                                  .join(",")
-                                          )
-                                        : [];
-
-                                let usersSection = "";
-                                if (userRows.length > 0) {
-                                    usersSection =
-                                        "\r\n\r\nParticipating Users\r\n" +
-                                        userHeader +
-                                        "\r\n" +
-                                        userRows.join("\r\n");
-                                }
-
-                                const csvContent =
-                                    activityHeader +
-                                    "\r\n" +
-                                    activityRow +
-                                    usersSection;
-
-                                const blob = new Blob([csvContent], {
-                                    type: "text/csv;charset=utf-8;",
-                                });
-                                const url = URL.createObjectURL(blob);
-                                const link = document.createElement("a");
-                                link.href = url;
-                                link.setAttribute(
-                                    "download",
-                                    `activity_${activityId}_users.csv`
-                                );
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                                URL.revokeObjectURL(url);
-                            }}
-                            title="Export Users"
-                        >
-                            <Download className="w-5 h-5 mr-2" />
-                            Export Users
-                        </button>
-                    </div>
-
-                    {/* Navigate to dedicated Verify Tickets page */}
-                </div>
             </div>
 
             {/* Tabs - just below navigation */}
@@ -467,6 +358,122 @@ const ActivityDetailPage = () => {
                     )}
                     {activeTab === "users" && (
                         <div>
+                            {/* Import/Export buttons only in Users tab */}
+                            <div className="flex items-center justify-end gap-2 mb-6">
+                                <button
+                                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
+                                    onClick={() => {
+                                        /* handle import */
+                                    }}
+                                    title="Import"
+                                >
+                                    <Upload className="w-5 h-5 mr-2" />
+                                    Import
+                                </button>
+                                <button
+                                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
+                                    onClick={() => {
+                                        // Export only activity id and title, then users details
+                                        if (!activity) {
+                                            toast.error(
+                                                "No activity data to export"
+                                            );
+                                            return;
+                                        }
+
+                                        // Only id and title for activity
+                                        const activityHeader = `"id","title"`;
+                                        const activityRow = [
+                                            activity.id
+                                                ? `"${String(
+                                                      activity.id
+                                                  ).replace(/"/g, '""')}"`
+                                                : "",
+                                            activity.title
+                                                ? `"${String(
+                                                      activity.title
+                                                  ).replace(/"/g, '""')}"`
+                                                : "",
+                                        ].join(",");
+
+                                        // User fields + duration and calories
+                                        const userFields = [
+                                            "firstname",
+                                            "lastname",
+                                            "email",
+                                            "joinedDate",
+                                            "height",
+                                            "weight",
+                                            "dob",
+                                            "gender",
+                                            "duration",
+                                            "calories",
+                                        ];
+                                        const userHeader = userFields
+                                            .map((field) => `"${field}"`)
+                                            .join(",");
+                                        const userRows =
+                                            participatingUsers &&
+                                            participatingUsers.length > 0
+                                                ? participatingUsers.map(
+                                                      (user) =>
+                                                          userFields
+                                                              .map((key) =>
+                                                                  user[key] !==
+                                                                      undefined &&
+                                                                  user[key] !==
+                                                                      null
+                                                                      ? `"${String(
+                                                                            user[
+                                                                                key
+                                                                            ]
+                                                                        ).replace(
+                                                                            /"/g,
+                                                                            '""'
+                                                                        )}"`
+                                                                      : ""
+                                                              )
+                                                              .join(",")
+                                                  )
+                                                : [];
+
+                                        let usersSection = "";
+                                        if (userRows.length > 0) {
+                                            usersSection =
+                                                "\r\n\r\nParticipating Users\r\n" +
+                                                userHeader +
+                                                "\r\n" +
+                                                userRows.join("\r\n");
+                                        }
+
+                                        const csvContent =
+                                            activityHeader +
+                                            "\r\n" +
+                                            activityRow +
+                                            usersSection;
+
+                                        const blob = new Blob([csvContent], {
+                                            type: "text/csv;charset=utf-8;",
+                                        });
+                                        const url = URL.createObjectURL(blob);
+                                        const link =
+                                            document.createElement("a");
+                                        link.href = url;
+                                        link.setAttribute(
+                                            "download",
+                                            `activity_${activityId}_users.csv`
+                                        );
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                        URL.revokeObjectURL(url);
+                                    }}
+                                    title="Export Users"
+                                >
+                                    <Download className="w-5 h-5 mr-2" />
+                                    Export Users
+                                </button>
+                            </div>
                             {/* Participating Users Table */}
                             <div className="bg-white rounded-lg shadow-md overflow-hidden">
                                 <div className="px-6 py-4 border-b border-gray-200">
