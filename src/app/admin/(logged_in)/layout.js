@@ -8,6 +8,7 @@ import {
     Share2,
     Mail,
     UserPlus,
+    ReceiptText,
 } from "lucide-react";
 import { UsersProvider } from "@/app/shared/contexts/usersContext";
 import { DashboardProvider } from "@/app/shared/contexts/DashboardContext";
@@ -18,10 +19,10 @@ import { useEffect } from "react";
 export default function AdminLoggedInLayout({ children }) {
     const pathname = usePathname();
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('admin_auth_token');
+        if (typeof window !== "undefined") {
+            const token = localStorage.getItem("admin_auth_token");
             if (!token) {
-                window.location.href = '/admin/login';
+                window.location.href = "/admin/login";
             }
         }
     }, []);
@@ -152,9 +153,9 @@ export default function AdminLoggedInLayout({ children }) {
                                                         "/admin/register"
                                                     }
                                                 />
-                                                 <SidebarItem
+                                                <SidebarItem
                                                     href="/admin/terms&conditions"
-                                                    icon={<UserPlus />}
+                                                    icon={<ReceiptText />}
                                                     label="Terms & Conditions"
                                                     isSelected={
                                                         pathname ===

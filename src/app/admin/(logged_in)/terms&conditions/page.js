@@ -1,15 +1,31 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
-// Removed axios import (no longer needed)
+import TiptapEditor from "@/app/shared/components/TiptapEditor";
+import { X } from "lucide-react"; // add lucide X icon
+import axios from "axios";
 
-const TiptapEditor = dynamic(
-    () => import("@/app/shared/components/TiptapEditor"),
-    {
-        ssr: false,
-    }
-);
+// Local fallback FullPageLoader (overlay spinner)
+function FullPageLoader() {
+    return (
+        <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-[1px] flex items-center justify-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        </div>
+    );
+}
+
+// Reusable close button using lucide-react X icon
+function CloseIconButton({ onClick, className = "" }) {
+    return (
+        <button
+            className={`absolute top-2 right-2 text-gray-500 hover:text-gray-700 focus:outline-none ${className}`}
+            onClick={onClick}
+            aria-label="Close"
+        >
+            <X className="w-5 h-5" />
+        </button>
+    );
+}
 
 function TncModal({ open, onClose, onSave, initial, loading }) {
     const [title, setTitle] = useState(initial?.title || "");
@@ -27,12 +43,7 @@ function TncModal({ open, onClose, onSave, initial, loading }) {
                 className="bg-white rounded-lg p-6 w-full max-w-4xl shadow-lg relative flex flex-col"
                 style={{ maxHeight: "90vh" }}
             >
-                <button
-                    className="absolute top-2 right-2 text-gray-500"
-                    onClick={onClose}
-                >
-                    &times;
-                </button>
+                <CloseIconButton onClick={onClose} />
                 <h2 className="text-lg font-semibold mb-4">
                     {initial ? "Edit TNC" : "Create TNC"}
                 </h2>
@@ -76,12 +87,7 @@ function TncReadModal({ open, onClose, tnc }) {
     return (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
             <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg relative">
-                <button
-                    className="absolute top-2 right-2 text-gray-500"
-                    onClick={onClose}
-                >
-                    &times;
-                </button>
+                <CloseIconButton onClick={onClose} />
                 <h2 className="text-xl font-bold mb-2">{tnc.title}</h2>
                 <div className="text-xs text-gray-500 mb-2">
                     Created by: {tnc.createdBy || "N/A"} | Updated by:{" "}
@@ -109,12 +115,11 @@ export default function TermsAndConditionsPage() {
         setLoading(true);
         setError("");
         try {
-            const res = await fetch("/api/admin/tnc");
-            const data = await res.json();
-            if (res.ok) setTncs(data.tncs || []);
-            else setError(data.error || "Failed to fetch TNCs");
+            const res = await axios.get("/api/admin/tnc");
+            const data = res.data;
+            setTncs(data.tncs || []);
         } catch (e) {
-            setError("Failed to fetch TNCs");
+            setError(e?.response?.data?.error || "Failed to fetch TNCs");
         }
         setLoading(false);
     }
@@ -128,24 +133,18 @@ export default function TermsAndConditionsPage() {
         setError("");
         try {
             const isEdit = !!editTnc;
-            const method = isEdit ? "PATCH" : "POST";
+            const method = isEdit ? "patch" : "post";
             const url = isEdit
                 ? `/api/admin/tnc?id=${encodeURIComponent(editTnc.id)}`
                 : "/api/admin/tnc";
 
-            const res = await fetch(url, {
+            const res = await axios({
                 method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, description }),
+                url,
+                data: { title, description },
             });
-            const data = await res.json();
-            if (!res.ok) {
-                setError(data.error || "Failed to save");
-                setLoading(false);
-                return;
-            }
+            const data = res.data;
 
-            // Try to extract saved TNC object from response
             const saved =
                 data?.tnc ||
                 data?.item ||
@@ -177,7 +176,6 @@ export default function TermsAndConditionsPage() {
                     ...prev,
                 ]);
             } else {
-                // Fallback (no object returned) - minimal optimistic add
                 setTncs((prev) => [
                     {
                         id: crypto.randomUUID(),
@@ -193,7 +191,7 @@ export default function TermsAndConditionsPage() {
             setModalOpen(false);
             setEditTnc(null);
         } catch (e) {
-            setError("Failed to save");
+            setError(e?.response?.data?.error || "Failed to save");
         }
         setLoading(false);
     }
@@ -295,11 +293,6 @@ export default function TermsAndConditionsPage() {
                         )}
                     </tbody>
                 </table>
-                {loading && (
-                    <div className="p-4 text-center text-sm text-gray-600">
-                        Loading...
-                    </div>
-                )}
             </div>
             <TncModal
                 open={modalOpen}
@@ -320,6 +313,7 @@ export default function TermsAndConditionsPage() {
                 }}
                 tnc={selectedTnc}
             />
+            {loading && <FullPageLoader />}
         </div>
     );
 }
