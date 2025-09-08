@@ -21,7 +21,10 @@ export default function Header() {
     const pathname = usePathname();
     const [hoveredIdx, setHoveredIdx] = useState(null);
     const { activities } = useActivities();
-    const sortedActivities = useMemo(() => sortActivities(activities || [], true), [activities]);
+    const sortedActivities = useMemo(
+        () => sortActivities(activities || [], true),
+        [activities]
+    );
 
     //#region This fixed the hydration error of mismatched authToken. The authToken is populated only after the mounting, so we wait to be mounted first before using the authToken.
     useEffect(() => {
@@ -50,12 +53,53 @@ export default function Header() {
     ];
 
     const filteredNavLinks = navLinks.filter(Boolean);
-    const activeIdx = filteredNavLinks.findIndex((link) => {
-        if (!link.href) return false;
-        if (authToken && link.label === "HOME" && (pathname === "/my" || pathname === "/my/")) {
+
+    // Function to check if current path is a child of the nav link
+    const isParentPath = (navHref, currentPath) => {
+        if (!navHref || !currentPath) return false;
+
+        // For activities routes (both user and admin)
+        if (currentPath.includes("/activities")) {
+            return navHref.includes("/activities");
+        }
+
+        // For my pages
+        if (currentPath.startsWith("/my/") && navHref === "/my/") {
             return true;
         }
-        return pathname === link.href;
+
+        // Check if current path starts with nav href (for child pages)
+        if (currentPath.startsWith(navHref) && navHref !== "/") {
+            return true;
+        }
+
+        // For root path, only match exact or specific children
+        if (navHref === "/" || navHref === "/my/") {
+            return currentPath === navHref || currentPath === "/how";
+        }
+
+        return false;
+    };
+
+    const activeIdx = filteredNavLinks.findIndex((link) => {
+        if (!link.href) return false;
+
+        // Exact match check
+        if (pathname === link.href) {
+            return true;
+        }
+
+        // Special case for HOME
+        if (
+            authToken &&
+            link.label === "HOME" &&
+            (pathname === "/my" || pathname === "/my/")
+        ) {
+            return true;
+        }
+
+        // Parent path check
+        return isParentPath(link.href, pathname);
     });
 
     return (
