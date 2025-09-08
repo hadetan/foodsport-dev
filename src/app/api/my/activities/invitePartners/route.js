@@ -42,7 +42,7 @@ export async function POST(request) {
 
             const invited = await executeTransaction(async (tx) => {
                 const joinedCount = await tx.userActivity.count({ where: { activityId: body.activityId } });
-                if (typeof activity.participantLimit === 'number' && joinedCount >= activity.participantLimit) {
+                if (joinedCount >= activity.participantLimit) {
                     throw new Error('Activity is full');
                 }
 

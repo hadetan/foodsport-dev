@@ -153,7 +153,7 @@ export async function POST(request) {
 					data: { ticketSent: true },
 				});
 			} catch (error) {
-				console.log("THIS IS BULLSHIT ERROR", error);
+				console.log("Error while updating the ticket: ", error.message);
 			}
 
 			return { ticket, userActivity };
