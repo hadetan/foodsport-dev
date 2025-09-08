@@ -56,6 +56,122 @@ const ActivityDetailPage = () => {
         }
     };
 
+    const handleExportActivityData = () => {
+        // Export selected activity details and participating users as CSV
+        if (!activity) {
+            toast.error("No activity data to export");
+            return;
+        }
+
+        // Activity fields to export
+        const activityFields = [
+            "id",
+            "title",
+            "description",
+            "activityType",
+            "location",
+            "startDate",
+            "endDate",
+            "startTime",
+            "endTime",
+            "caloriesPerHour",
+        ];
+        const activityHeader = activityFields
+            .map((field) => `"${field}"`)
+            .join(",");
+        const activityRow = activityFields
+            .map((field) =>
+                activity[field] !== undefined && activity[field] !== null
+                    ? `"${String(activity[field]).replace(/"/g, '""')}"`
+                    : ""
+            )
+            .join(",");
+
+        // Precompute duration (hours) and calories for reuse in user rows
+        const computeDurationHours = () => {
+            try {
+                if (activity.startTime && activity.endTime) {
+                    const s = new Date(activity.startTime);
+                    const e = new Date(activity.endTime);
+                    if (!isNaN(s) && !isNaN(e)) {
+                        const diffHrs = (e - s) / (1000 * 60 * 60);
+                        return Math.max(0, diffHrs);
+                    }
+                }
+            } catch (_) {}
+            return null;
+        };
+        const durationHours = computeDurationHours();
+        const durationDisplay =
+            durationHours !== null ? durationHours.toFixed(2) : "";
+        const caloriesDisplay =
+            durationHours !== null && activity.caloriesPerHour
+                ? String(
+                      Math.round(
+                          durationHours * Number(activity.caloriesPerHour)
+                      )
+                  )
+                : "";
+
+        // Participating users fields to export
+        const userHeader = `"firstname","lastname","email","joinedDate","height","weight","dob","gender","registered","duration","calories"`;
+        const escapeCsv = (v) =>
+            v !== undefined && v !== null
+                ? `"${String(v).replace(/"/g, '""')}"`
+                : "";
+        const userRows =
+            participatingUsers && participatingUsers.length > 0
+                ? participatingUsers.map((u) =>
+                      [
+                          u.firstname,
+                          u.lastname,
+                          u.email,
+                          u.joinedDate,
+                          u.height,
+                          u.weight,
+                          u.dob,
+                          u.gender,
+                          "Yes", // registered
+                          durationDisplay, // duration beside registered
+                          caloriesDisplay, // calories beside duration
+                      ]
+                          .map(escapeCsv)
+                          .join(",")
+                  )
+                : [];
+
+        let usersSection = "";
+        if (userRows.length > 0) {
+            usersSection =
+                "\r\n\r\nParticipating Users\r\n" +
+                userHeader +
+                "\r\n" +
+                userRows.join("\r\n");
+        }
+
+        const csvContent =
+            "Activity Details\r\n" +
+            activityHeader +
+            "\r\n" +
+            activityRow +
+            usersSection;
+
+        const blob = new Blob([csvContent], {
+            type: "text/csv;charset=utf-8;",
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute(
+            "download",
+            `activity_${activityId}_details_and_users.csv`
+        );
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     // Filter users who have joined this activity
     useEffect(() => {
         if (users && users.length > 0 && activityId) {
@@ -170,139 +286,7 @@ const ActivityDetailPage = () => {
                     </button>
                     <button
                         className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors mb-4"
-                        onClick={() => {
-                            // Export selected activity details and participating users as CSV
-                            if (!activity) {
-                                toast.error("No activity data to export");
-                                return;
-                            }
-
-                            // Activity fields to export
-                            const activityFields = [
-                                "id",
-                                "title",
-                                "description",
-                                "activityType",
-                                "location",
-                                "startDate",
-                                "endDate",
-                                "startTime",
-                                "endTime",
-                                "caloriesPerHour",
-                            ];
-                            const activityHeader = activityFields
-                                .map((field) => `"${field}"`)
-                                // removed "duration" and "calories" from activity header
-                                .join(",");
-                            const activityRow = activityFields
-                                .map((field) =>
-                                    activity[field] !== undefined &&
-                                    activity[field] !== null
-                                        ? `"${String(activity[field]).replace(
-                                              /"/g,
-                                              '""'
-                                          )}"`
-                                        : ""
-                                )
-                                // removed "duration" and "calories" from activity row
-                                .join(",");
-
-                            // Precompute duration (hours) and calories for reuse in user rows
-                            const computeDurationHours = () => {
-                                try {
-                                    if (
-                                        activity.startTime &&
-                                        activity.endTime
-                                    ) {
-                                        const s = new Date(activity.startTime);
-                                        const e = new Date(activity.endTime);
-                                        if (!isNaN(s) && !isNaN(e)) {
-                                            const diffHrs =
-                                                (e - s) / (1000 * 60 * 60);
-                                            return Math.max(0, diffHrs);
-                                        }
-                                    }
-                                } catch (_) {}
-                                return null;
-                            };
-                            const durationHours = computeDurationHours();
-                            const durationDisplay =
-                                durationHours !== null
-                                    ? durationHours.toFixed(2)
-                                    : "";
-                            const caloriesDisplay =
-                                durationHours !== null &&
-                                activity.caloriesPerHour
-                                    ? String(
-                                          Math.round(
-                                              durationHours *
-                                                  Number(
-                                                      activity.caloriesPerHour
-                                                  )
-                                          )
-                                      )
-                                    : "";
-
-                            // Participating users fields to export
-                            // ensure "duration" and "calories" are beside "registered"
-                            const userHeader = `"firstname","lastname","email","joinedDate","height","weight","dob","gender","registered","duration","calories"`;
-                            const escapeCsv = (v) =>
-                                v !== undefined && v !== null
-                                    ? `"${String(v).replace(/"/g, '""')}"`
-                                    : "";
-                            const userRows =
-                                participatingUsers &&
-                                participatingUsers.length > 0
-                                    ? participatingUsers.map((u) =>
-                                          [
-                                              u.firstname,
-                                              u.lastname,
-                                              u.email,
-                                              u.joinedDate,
-                                              u.height,
-                                              u.weight,
-                                              u.dob,
-                                              u.gender,
-                                              "Yes", // registered
-                                              durationDisplay, // duration beside registered
-                                              caloriesDisplay, // calories beside duration
-                                          ]
-                                              .map(escapeCsv)
-                                              .join(",")
-                                      )
-                                    : [];
-
-                            let usersSection = "";
-                            if (userRows.length > 0) {
-                                usersSection =
-                                    "\r\n\r\nParticipating Users\r\n" +
-                                    userHeader +
-                                    "\r\n" +
-                                    userRows.join("\r\n");
-                            }
-
-                            const csvContent =
-                                "Activity Details\r\n" +
-                                activityHeader +
-                                "\r\n" +
-                                activityRow +
-                                usersSection;
-
-                            const blob = new Blob([csvContent], {
-                                type: "text/csv;charset=utf-8;",
-                            });
-                            const url = URL.createObjectURL(blob);
-                            const link = document.createElement("a");
-                            link.href = url;
-                            link.setAttribute(
-                                "download",
-                                `activity_${activityId}_details_and_users.csv`
-                            );
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            URL.revokeObjectURL(url);
-                        }}
+                        onClick={handleExportActivityData}
                         title="Export Activity Details & Users"
                     >
                         <Download className="w-5 h-5 mr-2" />
