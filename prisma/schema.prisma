@@ -23,7 +23,6 @@ enum ActivityLevel {
 enum ActivityStatus {
   active
   draft
-  
 }
 
 enum ActivityType {
