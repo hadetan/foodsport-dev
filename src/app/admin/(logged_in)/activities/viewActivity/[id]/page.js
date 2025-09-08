@@ -131,27 +131,6 @@ const ActivityDetailPage = () => {
                     </h2>
                 </div>
                 <div></div>
-                <button
-                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors mb-4"
-                    onClick={() =>
-                        router.push(`/admin/activities/${activity?.id}`)
-                    }
-                >
-                    <svg
-                        className="w-5 h-5 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                        />
-                    </svg>
-                    Edit Activity
-                </button>
             </div>
 
             {/* Tabs - just below navigation */}
@@ -472,6 +451,29 @@ const ActivityDetailPage = () => {
                                 >
                                     <Download className="w-5 h-5 mr-2" />
                                     Export Users
+                                </button>
+                                <button
+                                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors"
+                                    onClick={() =>
+                                        router.push(
+                                            `/admin/activities/${activity?.id}`
+                                        )
+                                    }
+                                >
+                                    <svg
+                                        className="w-5 h-5 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={2}
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                        />
+                                    </svg>
+                                    Edit Activity
                                 </button>
                             </div>
                             {/* Participating Users Table */}
