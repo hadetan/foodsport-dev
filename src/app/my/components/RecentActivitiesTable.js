@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useActivities } from '@/app/shared/contexts/ActivitiesContext';
 import { useUser } from '@/app/shared/contexts/userContext';
 import ActivityIcon from '@/app/shared/components/ActivityIcon';
+import InvitePartnersDialog from '@/app/shared/components/InvitePartnersDialog';
 import '@/app/my/css/RecentActivitiesTable.css'
 
 function formatDate(dateStr) {
@@ -24,8 +25,10 @@ function getDuration(start, end) {
 }
 
 export default function RecentActivitiesTable() {
-  const { activities, loading } = useActivities();
+  const { activities } = useActivities();
   const { user } = useUser();
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [selectedActivityId, setSelectedActivityId] = useState(null);
 
   const activitiesMap = React.useMemo(() => {
     const map = {};
@@ -49,15 +52,14 @@ export default function RecentActivitiesTable() {
               <th className="recent-activities-th">TIME</th>
               <th className="recent-activities-th">KCAL</th>
               <th className="recent-activities-th">FS POINTS</th>
+              <th className="recent-activities-th">INVITE</th>
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr><td colSpan={6} className="recent-activities-loading">Loading...</td></tr>
-            ) : joinedActivities.length === 0 ? (
-              <tr><td colSpan={6} className="recent-activities-empty">No activities found.</td></tr>
+            {joinedActivities.length === 0 ? (
+              <tr><td colSpan={7} className="recent-activities-empty">No activities found.</td></tr>
             ) : (
-              joinedActivities.map((act, idx) => (
+              joinedActivities.map((act) => (
                 <tr key={act.id} className="recent-activities-row">
                   <td className="recent-activities-td">
                     <span className="recent-activities-type-icon">
@@ -69,12 +71,21 @@ export default function RecentActivitiesTable() {
                   <td className="recent-activities-td">{getDuration(act.startTime, act.endTime)}</td>
                   <td className="recent-activities-td">{act.caloriesPerHour ? `${act.caloriesPerHour}kcal` : 'N/A'}</td>
                   <td className="recent-activities-td">{act.totalCaloriesBurnt ?? 'N/A'}</td>
+                  <td className="recent-activities-td">
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedActivityId(act.id); setInviteOpen(true); }}
+                      className="recent-activities-invite-btn"
+                    >Invite</button>
+                  </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+      {/* Invite dialog rendered once; it returns null when not open */}
+      <InvitePartnersDialog activityId={selectedActivityId} open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </div>
   );
 }

@@ -93,7 +93,6 @@ export async function DELETE(request) {
 			emailError = e;
 		}
 
-		// Transaction: cancel tickets and remove userActivity atomically
 		await prisma.$transaction([
 			prisma.ticket.updateMany({
 				where: {

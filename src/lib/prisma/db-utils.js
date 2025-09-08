@@ -116,12 +116,22 @@ export async function getCount(model, where) {
 
 /**
  * Execute a transaction
- * @param {Function[]} actions
+ * @param {Function|Function[]} actions - callback that receives `tx` or an array of operations
+ * @param {object} [options] - transaction options: { timeout: number (ms), maxWait: number (ms), isolationLevel }
  * @returns {Promise<any[]>}
  */
-export async function executeTransaction(actions) {
+export async function executeTransaction(actions, options = {}) {
 	try {
-		return await prisma.$transaction(actions);
+		const txOptions = {
+			timeout: typeof options.timeout === 'number' ? options.timeout : 120000,
+			maxWait: typeof options.maxWait === 'number' ? options.maxWait : 2000,
+			isolationLevel: options.isolationLevel,
+		};
+
+		// Remove undefined keys so Prisma doesn't receive unknown values
+		Object.keys(txOptions).forEach((k) => txOptions[k] === undefined && delete txOptions[k]);
+
+		return await prisma.$transaction(actions, txOptions);
 	} catch (error) {
 		return handlePrismaError(error);
 	}

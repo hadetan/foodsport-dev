@@ -147,13 +147,17 @@ export async function POST(request) {
 				throw new Error('Failed to send ticket email');
 			}
 
-			await tx.ticket.update({
-				where: { id: ticket.id },
-				data: { ticketSent: true },
-			});
+			try {
+				await tx.ticket.update({
+					where: { id: ticket.id },
+					data: { ticketSent: true },
+				});
+			} catch (error) {
+				console.log("Error while updating the ticket: ", error.message);
+			}
 
 			return { ticket, userActivity };
-		});
+		}, { isolationLevel: 'Serializable' });
 
 		if (!result || result.error || !result.userActivity) {
 			const details = result && result.error ? result.error : 'Failed to create ticket or send email';

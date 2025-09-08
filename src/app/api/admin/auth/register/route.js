@@ -23,6 +23,16 @@ export async function POST(req) {
 		);
 	}
 
+	try {
+		const existingAdmin = await prisma.adminUser.findUnique({ where: { email } });
+		if (existingAdmin) {
+			return NextResponse.json({ error: 'Email already exists.' }, { status: 400 });
+		}
+	} catch (checkError) {
+		console.error('Failed to check existing admin:', checkError);
+		return NextResponse.json({ error: 'Database error occurred.' }, { status: 500 });
+	}
+
 	const { data: signUpData, error: signUpError } =
 		await supabase.auth.admin.createUser({
 			email,
@@ -50,10 +60,7 @@ export async function POST(req) {
 			},
 		});
 	} catch (prismaError) {
-		return NextResponse.json(
-			{ error: 'Failed to create admin record.' },
-			{ status: 500 }
-		);
+		console.log('Failed to create admin: ', prismaError.message);
 	}
 
 	return NextResponse.json({
