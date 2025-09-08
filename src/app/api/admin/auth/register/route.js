@@ -30,6 +30,7 @@ export async function POST(req) {
 		}
 	} catch (checkError) {
 		console.error('Failed to check existing admin:', checkError);
+		return NextResponse.json({ error: 'Database error occurred.' }, { status: 500 });
 	}
 
 	const { data: signUpData, error: signUpError } =

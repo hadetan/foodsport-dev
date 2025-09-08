@@ -157,7 +157,7 @@ export async function POST(request) {
 			}
 
 			return { ticket, userActivity };
-		});
+		}, { isolationLevel: 'Serializable' });
 
 		if (!result || result.error || !result.userActivity) {
 			const details = result && result.error ? result.error : 'Failed to create ticket or send email';

@@ -122,7 +122,7 @@ export async function POST(request) {
                 }
 
                 return { existingTempUser, ticket };
-            });
+            }, { isolationLevel: 'Serializable' });
 
             if (!invited || invited.error || !invited.ticket) {
                 const details = invited && invited.error ? invited.error : 'Failed to create ticket';
