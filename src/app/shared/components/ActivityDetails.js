@@ -1,3 +1,4 @@
+import getActivityStatus from '@/utils/getActivityStatus';
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import '@/app/shared/css/ActivityDetails.css';
@@ -28,7 +29,26 @@ const ActivityDetails = ({
 	const topRef = useRef(null);
 	const [loading, setLoading] = useState(false);
 	const [showShare, setShowShare] = useState(false);
-  	const [tncChecked, setTncChecked] = useState(false);
+	const [tncChecked, setTncChecked] = useState(false);
+
+	const { status: activityStatus } = getActivityStatus(activity);
+	let hideJoin = false;
+	if (activityStatus === 'completed' || activityStatus === 'finished') {
+		hideJoin = true;
+	} else {
+		const end = new Date(activity.endDate);
+		if (activity.endTime) {
+			const t = new Date(activity.endTime);
+			if (!isNaN(t)) {
+				end.setHours(t.getHours(), t.getMinutes(), t.getSeconds() || 0, 0);
+			}
+		}
+		const now = new Date();
+		const msLeft = end - now;
+		if (msLeft <= 6 * 60 * 60 * 1000) {
+			hideJoin = true;
+		}
+	}
 
 	useEffect(() => {
 		if (topRef.current) {
@@ -276,6 +296,7 @@ const ActivityDetails = ({
 						)}
 					</div>
 					<div className='activityDetailsSidebarActions'>
+						{/* Disable join/share if completed or <6h left */}
 						{/* TNC Checkbox for joining */}
 						{!user?.joinedActivityIds?.includes(activity.id) && activity.tnc && (
 							<div className='activityDetailsTncCheckbox' style={{ marginBottom: '12px' }}>
@@ -285,6 +306,7 @@ const ActivityDetails = ({
 										checked={tncChecked}
 										onChange={e => setTncChecked(e.target.checked)}
 										style={{ marginRight: '8px', marginTop: '3px' }}
+										disabled={hideJoin}
 									/>
 									<span style={{ display: 'inline', wordBreak: 'break-word', whiteSpace: 'normal' }}>
 										I accept to the{' '}
@@ -302,20 +324,20 @@ const ActivityDetails = ({
 							</div>
 						)}
 
-						{user?.joinedActivityIds?.includes(activity.id) ? (
-							<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading}>
-								{loading ? 'LEAVING' : 'LEAVE'}
-							</button>
-						) : (
-							<button
-								className='activityDetailsBtn'
-								onClick={handleJoin}
-								disabled={loading}
-							>
-								{loading ? 'JOINING' : 'JOIN NOW'}
-							</button>
-						)}
-						<button className='activityDetailsShareBtn' onClick={() => setShowShare(true)}>
+									{user?.joinedActivityIds?.includes(activity.id) ? (
+										<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading || hideJoin}>
+											{loading ? 'LEAVING' : 'LEAVE'}
+										</button>
+									) : (
+										<button
+											className='activityDetailsBtn'
+											onClick={handleJoin}
+											disabled={loading || hideJoin}
+										>
+											{loading ? 'JOINING' : 'JOIN NOW'}
+										</button>
+									)}
+						<button className='activityDetailsShareBtn' onClick={() => setShowShare(true)} disabled={hideJoin}>
 							SHARE
 						</button>
 						{showShare && (
