@@ -13,7 +13,7 @@ import Featured from './Featured';
 import api from '@/utils/axios/api';
 import ShareDialog from '@/app/shared/components/ShareDialog';
 import toast from '@/utils/Toast';
-import InvitePartnersDialog from './InvitePartnersDialog';
+import ActivitySummary from './ActivitySummary';
 
 const ActivityDetails = ({
 	activity,
@@ -26,7 +26,7 @@ const ActivityDetails = ({
 	const topRef = useRef(null);
 	const [loading, setLoading] = useState(false);
 	const [showShare, setShowShare] = useState(false);
-  const [tncChecked, setTncChecked] = useState(false);
+  	const [tncChecked, setTncChecked] = useState(false);
 	const [showInviteDialog, setShowInviteDialog] = useState(false);
 
 	useEffect(() => {
@@ -110,8 +110,6 @@ const ActivityDetails = ({
 		}
 	}
 
-	// if (error) toast.warning(error);
-
 	return (
 		<div className='activityDetailsPage' ref={topRef}>
 			<div className='activityDetailsHero'>
@@ -143,7 +141,7 @@ const ActivityDetails = ({
 					<div className='activityDetailsMainDesc'>
 						{activity.description}
 					</div>
-					<div>
+					<div className="activityDetailsDetailsSection">
 						<h2 className='activityDetailsDetailsTitle'>
 							Activity Details
 						</h2>
@@ -207,7 +205,10 @@ const ActivityDetails = ({
 							</div>
 						</div>
 					</div>
-					{activity.mapUrl ?
+					{activity.summary && (
+						<ActivitySummary summary={activity.summary} />
+					)}
+					{activity.mapUrl ? 
 						/^https:\/\/(www\.)?google\.(com|co\.[a-z]{2})\/maps/.test(activity.mapUrl) && (
 							<div style={{ width: '100%', margin: '32px 0' }}>
 								<iframe
@@ -298,19 +299,7 @@ const ActivityDetails = ({
 								</label>
 							</div>
 						)}
- 						<button
- 							className='invitePartner'
- 							onClick={() => setShowInviteDialog(true)}
- 						>
-   						INVITE PARTNERS
- 						</button>
- 						{showInviteDialog && (
- 							<InvitePartnersDialog
- 								activityId={activity.id}
- 								open={showInviteDialog}
- 								onClose={() => setShowInviteDialog(false)}
- 							/>
- 						)}
+
 						{user?.joinedActivityIds?.includes(activity.id) ? (
 							<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading}>
 								{loading ? 'LEAVING' : 'LEAVE'}

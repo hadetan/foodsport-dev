@@ -5,11 +5,6 @@ import api from '@/utils/axios/api';
 
 const initialPartner = {
   email: '',
-  firstname: '',
-  lastname: '',
-  dateOfBirth: '',
-  weight: '',
-  height: '',
 };
 
 export default function InvitePartnersDialog({ activityId, open, onClose }) {
@@ -25,24 +20,18 @@ export default function InvitePartnersDialog({ activityId, open, onClose }) {
   }
 
   function isPartnerFilled(partner) {
-    return partner.email && partner.firstname && partner.lastname && partner.dateOfBirth && partner.weight && partner.height;
+    return partner.email;
   }
 
   function handleAddPartner() {
     if (!isPartnerFilled(partners[activeTab])) {
-      setError('Please fill all fields before adding another partner.');
-      const fields = ['email', 'firstname', 'lastname', 'dateOfBirth', 'weight', 'height'];
-      for (const field of fields) {
-        if (!partners[activeTab][field]) {
-          const el = document.getElementById(`invite-partner-${field}`);
-          if (el) el.focus();
-          break;
-        }
-      }
+      setError('Please fill the email before adding another partner.');
+      const el = document.getElementById(`invite-partner-email`);
+      if (el) el.focus();
       return;
     }
     setPartners(prev => [...prev, { ...initialPartner }]);
-    setActiveTab(partners.length); // Switch to new tab
+    setActiveTab(partners.length);
     setError('');
   }
 
@@ -58,14 +47,15 @@ export default function InvitePartnersDialog({ activityId, open, onClose }) {
     try {
       for (const p of partners) {
         if (!isPartnerFilled(p)) {
-          setError('Please fill all fields for each partner.');
+          setError('Please fill email for each partner.');
           setLoading(false);
           return;
         }
       }
+      const partnerEmails = partners.map(p => p.email.trim().toLowerCase());
       await api.post('/my/activities/invitePartners', {
         activityId,
-        partners,
+        partners: partnerEmails,
       });
       setLoading(false);
       onClose();
@@ -77,7 +67,7 @@ export default function InvitePartnersDialog({ activityId, open, onClose }) {
 
   function getTabLabel(idx) {
     if (idx === 0 && partners.length === 1) return null;
-    return `Tab ${idx + 1}`;
+    return `Partner ${idx + 1}`;
   }
 
   return (
@@ -124,7 +114,6 @@ export default function InvitePartnersDialog({ activityId, open, onClose }) {
                 onClick={() => setActiveTab(idx)}
               >
                 <span style={{
-                //   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   maxWidth: '120px',
                   display: 'inline-block',
@@ -153,30 +142,10 @@ export default function InvitePartnersDialog({ activityId, open, onClose }) {
         )}
         {error && <div className="invitePartnersDialogError">{error}</div>}
         <form className="invitePartnersDialogForm" onSubmit={e => e.preventDefault()}>
-          <div className="invitePartnersDialogFormGrid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 24px' }}>
-            <div>
-              <div className="invitePartnersDialogLabel">First Name</div>
-              <input id="invite-partner-firstname" className="invitePartnersDialogInput" type="text" value={partners[activeTab].firstname} onChange={e => handleChange(activeTab, 'firstname', e.target.value)} required />
-            </div>
-            <div>
-              <div className="invitePartnersDialogLabel">Last Name</div>
-              <input id="invite-partner-lastname" className="invitePartnersDialogInput" type="text" value={partners[activeTab].lastname} onChange={e => handleChange(activeTab, 'lastname', e.target.value)} required />
-            </div>
+          <div className="invitePartnersDialogFormGrid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '18px' }}>
             <div>
               <div className="invitePartnersDialogLabel">Email</div>
               <input id="invite-partner-email" className="invitePartnersDialogInput" type="email" value={partners[activeTab].email} onChange={e => handleChange(activeTab, 'email', e.target.value)} required />
-            </div>
-            <div>
-              <div className="invitePartnersDialogLabel">Date of Birth</div>
-              <input id="invite-partner-dateOfBirth" className="invitePartnersDialogInput" type="date" value={partners[activeTab].dateOfBirth} onChange={e => handleChange(activeTab, 'dateOfBirth', e.target.value)} required />
-            </div>
-            <div>
-              <div className="invitePartnersDialogLabel">Weight (kg)</div>
-              <input id="invite-partner-weight" className="invitePartnersDialogInput" type="number" min="1" max="999.99" step="0.01" value={partners[activeTab].weight} onChange={e => handleChange(activeTab, 'weight', e.target.value)} required />
-            </div>
-            <div>
-              <div className="invitePartnersDialogLabel">Height (cm)</div>
-              <input id="invite-partner-height" className="invitePartnersDialogInput" type="number" min="1" max="999.99" step="0.01" value={partners[activeTab].height} onChange={e => handleChange(activeTab, 'height', e.target.value)} required />
             </div>
           </div>
         </form>

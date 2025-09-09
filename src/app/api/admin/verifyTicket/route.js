@@ -58,18 +58,20 @@ export async function POST(request) {
 		);
 	}
 
-	const userActivity = await prisma.userActivity.findFirst({
-		where: {
-			userId: ticket.userId,
-			activityId: ticket.activityId,
-		},
-	});
-	if (!userActivity) {
-		return NextResponse.json(
-			{ error: 'User activity not found for this ticket.' },
-			{ status: 404 }
-		);
+	if (ticket.invitedUserId && !ticket.tempUserId && !ticket.userId) {
+		const invited = await prisma.invitedUser.findUnique({ where: { id: ticket.invitedUserId } });
+		return NextResponse.json({
+			status: 'invited_needs_info',
+			email: invited?.email || null,
+			ticketCode: ticket.ticketCode,
+		});
 	}
+
+	const participantWhere = ticket.userId
+		? { userId: ticket.userId, activityId: ticket.activityId }
+		: { tempUserId: ticket.tempUserId, activityId: ticket.activityId };
+
+	let userActivity = await prisma.userActivity.findFirst({ where: participantWhere });
 
 	if (!userActivity.ticketId || userActivity.ticketId !== ticket.id) {
 		return NextResponse.json(
@@ -78,17 +80,28 @@ export async function POST(request) {
 		);
 	}
 
-	await prisma.ticket.update({
-		where: { id: ticket.id },
-		data: { ticketUsed: true, status: 'used', usedAt: new Date() },
-	});
-	await prisma.userActivity.update({
-		where: { id: userActivity.id },
-		data: { wasPresent: true },
-	});
+	await prisma.$transaction([
+		prisma.ticket.update({ where: { id: ticket.id }, data: { ticketUsed: true, status: 'used', usedAt: new Date() } }),
+		prisma.userActivity.update({ where: { id: userActivity.id }, data: { wasPresent: true } }),
+	]);
 
-	return NextResponse.json({
-		message: 'Ticket verified and marked as present.',
-		userId: ticket.userId,
-	});
+	let user = null;
+	let tempUser = null;
+	if (ticket.userId) {
+		user = await prisma.user.findUnique({
+			where: { id: ticket.userId },
+			select: { id: true, email: true, firstname: true, lastname: true, profilePictureUrl: true }
+		});
+	} else if (ticket.tempUserId) {
+		tempUser = await prisma.tempUser.findUnique({
+			where: { id: ticket.tempUserId },
+			select: { id: true, email: true, firstname: true, lastname: true, dateOfBirth: true, weight: true, height: true }
+		});
+	}
+
+	const responseBody = { message: 'Ticket verified and marked as present.' };
+	if (user) responseBody.user = user;
+	if (tempUser) responseBody.tempUser = tempUser;
+
+	return NextResponse.json(responseBody);
 }

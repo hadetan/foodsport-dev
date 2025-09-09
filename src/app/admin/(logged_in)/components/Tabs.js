@@ -2,36 +2,34 @@
 
 export default function Tabs({ setTab, activeTab, activityId }) {
     return (
-        <div>
-            <div className="flex gap-2 mb-6">
-                <button
-                    className={`px-6 py-2 rounded-lg border-2 font-semibold transition
-                        ${
-                            activeTab === "details"
-                                ? "bg-primary text-white border-primary"
-                                : "bg-background text-primary border-primary"
-                        }
-                         hover:bg-secondary hover:text-white hover:border-primary-light
-                        `}
-                    type="button"
-                    onClick={() => setTab("details")}
+        <div className="w-full">
+            <div role="tablist" className="tabs tabs-border  gap-2 mb-6">
+                <a
+                    role="tab"
+                    href="#"
+                    className={`tab tab-lg rounded-lg font-semibold ${
+                        activeTab === "details" ? "tab-active" : ""
+                    }`}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        setTab("details");
+                    }}
                 >
                     Activity Details
-                </button>
-                <button
-                    className={`px-6 py-2 rounded-lg border-2 font-semibold transition
-                        ${
-                            activeTab === "description"
-                                ? "bg-primary text-white border-primary"
-                                : "bg-background text-primary border-primary"
-                        }
-                        hover:bg-secondary hover:text-white hover:border-primary-light
-                    `}
-                    type="button"
-                    onClick={() => setTab("description")}
+                </a>
+                <a
+                    role="tab"
+                    href="#"
+                    className={`tab tab-lg rounded-lg font-semibold ${
+                        activeTab === "description" ? "tab-active" : ""
+                    }`}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        setTab("description");
+                    }}
                 >
                     Description
-                </button>
+                </a>
             </div>
         </div>
     );

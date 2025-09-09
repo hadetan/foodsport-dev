@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pencil, Eye } from "lucide-react";
+import { Pencil, Eye,TicketCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import formatDate from "@/utils/formatDate";
 
@@ -12,6 +12,9 @@ const statusBadgeClass = {
 };
 const ActivityRow = ({ activity, onRowClick }) => {
     const router = useRouter();
+
+    // Helper to capitalize first letter
+    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
     const handleEdit = (e) => {
         e.stopPropagation(); // Prevent row click event
@@ -71,46 +74,41 @@ const ActivityRow = ({ activity, onRowClick }) => {
                 <td className="text-base align-middle">
                     {activity.activityType}
                 </td>
-                {/* Show start date */}
+                {/* Date & Time column */}
                 <td className="text-base align-middle text-center whitespace-nowrap">
-                    <div className="flex items-center justify-center h-full min-h-[64px]">
-                        {activity.startDate
-                            ? formatDate(activity.startDate)
-                            : ""}
-                    </div>
-                </td>
-                {/* Show end date */}
-                <td className="text-base align-middle text-center whitespace-nowrap">
-                    <div className="flex items-center justify-center h-full min-h-[64px]">
-                        {activity.endDate ? formatDate(activity.endDate) : ""}
-                    </div>
-                </td>
-                {/* Show start time */}
-                <td className="text-base align-middle text-center whitespace-nowrap">
-                    <div className="flex items-center justify-center h-full min-h-[64px]">
-                        {activity.startTime
-                            ? new Date(activity.startTime).toLocaleTimeString(
-                                  [],
-                                  {
+                    <div className="flex flex-col items-start justify-center h-full min-h-[64px]">
+                        <span>
+                            <span className="font-semibold">Start Date:</span>{" "}
+                            {activity.startDate
+                                ? formatDate(activity.startDate)
+                                : ""}
+                        </span>
+                        <span>
+                            <span className="font-semibold">End Date:</span>{" "}
+                            {activity.endDate
+                                ? formatDate(activity.endDate)
+                                : ""}
+                        </span>
+                        <span>
+                            <span className="font-semibold">Start Time:</span>{" "}
+                            {activity.startTime
+                                ? new Date(
+                                      activity.startTime
+                                  ).toLocaleTimeString([], {
                                       hour: "2-digit",
                                       minute: "2-digit",
-                                  }
-                              )
-                            : ""}
-                    </div>
-                </td>
-                {/* Show end time */}
-                <td className="text-base align-middle text-center whitespace-nowrap">
-                    <div className="flex items-center justify-center h-full min-h-[64px]">
-                        {activity.endTime
-                            ? new Date(activity.endTime).toLocaleTimeString(
-                                  [],
-                                  {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                  }
-                              )
-                            : ""}
+                                  })
+                                : ""}
+                        </span>
+                        <span>
+                            <span className="font-semibold">End Time:</span>{" "}
+                            {activity.endTime
+                                ? new Date(activity.endTime).toLocaleTimeString(
+                                      [],
+                                      { hour: "2-digit", minute: "2-digit" }
+                                  )
+                                : ""}
+                        </span>
                     </div>
                 </td>
                 <td className="text-base">{activity.location}</td>
@@ -133,14 +131,18 @@ const ActivityRow = ({ activity, onRowClick }) => {
                         ></progress>
                     </div>
                 </td>
-                <td>
+                <td className="text-base align-middle text-center whitespace-nowrap">
                     <div
                         className={`badge px-5 py-2 rounded-full font-bold text-base ${
                             statusBadgeClass[activity.status]
                         }`}
                     >
-                        {activity.status}
+                        {capitalize(activity.status)}
                     </div>
+                </td>
+                {/* Created At column */}
+                <td className="text-base align-middle text-center whitespace-nowrap">
+                    {activity.createdAt ? formatDate(activity.createdAt) : ""}
                 </td>
                 <td>
                     <div className="flex flex-row items-center justify-center gap-2">
@@ -158,10 +160,10 @@ const ActivityRow = ({ activity, onRowClick }) => {
                         >
                             <Pencil size={25} className="text-black-400" />
                         </button>
+                        <TicketCheck />
                     </div>
                 </td>
             </tr>
-             
         </>
     );
 };

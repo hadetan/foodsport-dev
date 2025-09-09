@@ -1,9 +1,8 @@
-import { executeTransaction, getById, getCount, updateById } from '@/lib/prisma/db-utils';
+import { executeTransaction, getById, getCount } from '@/lib/prisma/db-utils';
 import { requireUser } from '@/lib/prisma/require-user';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { validateRequiredFields } from '@/utils/validation';
 import { NextResponse } from 'next/server';
-import api from '@/utils/axios/api';
 import { generateUniqueTicketCode } from '@/utils/generateUniqueTicketCode';
 import serverApi from '@/utils/axios/serverApi';
 
@@ -18,7 +17,7 @@ export async function POST(request) {
 		const validation = validateRequiredFields(body, ['activityId']);
 		if (!validation.isValid) {
 			return Response.json(
-				{ error: 'Missing required fields', details: validation.error },
+			{ error: 'Missing required fields', details: validation.error },
 				{ status: 400 }
 			);
 		}
@@ -120,33 +119,53 @@ export async function POST(request) {
 				throw new Error('Internal error: ticket or userActivity not created');
 			}
 
-			return { ticket, userActivity };
-		});
-
-		const templateId = 191;
-		const params = {
-			name: `${user.firstname} ${user.lastname}`,
-			code: result.ticket.ticketCode,
-			title: activity.title,
-		};
-		const emailRes = await serverApi.post(
-			`/admin/email/template_email`,
-			{
-				to: user.email,
-				templateId,
-				params,
-			},
-			{
-				headers: {
-					'x-internal-api': process.env.INTERNAL_API_SECRET,
-				},
+			const templateId = 191;
+			const params = {
+				name: `${user.firstname} ${user.lastname}`,
+				code: ticket.ticketCode,
+				title: activity.title,
+			};
+			let emailRes;
+			try {
+				emailRes = await serverApi.post(
+					`/admin/email/template_email`,
+					{
+						to: user.email,
+						templateId,
+						params,
+					},
+					{
+						headers: {
+							'x-internal-api': process.env.INTERNAL_API_SECRET,
+						},
+					}
+				);
+			} catch (err) {
+				throw new Error('Failed to send ticket email');
 			}
-		);
-		if (!emailRes.data || !emailRes.data.success) {
-			throw new Error('Failed to send ticket email');
-		}
+			if (!emailRes.data || !emailRes.data.success) {
+				throw new Error('Failed to send ticket email');
+			}
 
-		await updateById('ticket', result.ticket.id, { ticketSent: true });
+			try {
+				await tx.ticket.update({
+					where: { id: ticket.id },
+					data: { ticketSent: true },
+				});
+			} catch (error) {
+				console.log("Error while updating the ticket: ", error.message);
+			}
+
+			return { ticket, userActivity };
+		}, { isolationLevel: 'Serializable' });
+
+		if (!result || result.error || !result.userActivity) {
+			const details = result && result.error ? result.error : 'Failed to create ticket or send email';
+			return Response.json(
+				{ error: 'Failed to join activity', details },
+				{ status: 500 }
+			);
+		}
 
 		const updatedCount = await getCount('userActivity', {
 			activityId: body.activityId,

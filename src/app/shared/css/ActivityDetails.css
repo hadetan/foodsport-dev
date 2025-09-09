@@ -1,4 +1,3 @@
-
 .activityDetailsEmptyState {
   width: 100%;
   min-height: 420px;
@@ -355,4 +354,10 @@
 
 .invitePartner:active {
   transform: translateY(0);
+}
+
+.activityDetailsDetailsSection {
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #dadada; /* accent color to match Share button */
 }
