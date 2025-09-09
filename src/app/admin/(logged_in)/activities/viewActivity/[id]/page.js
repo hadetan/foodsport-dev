@@ -9,7 +9,6 @@ import FullPageLoader from "../../../components/FullPageLoader";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import { Download, Upload } from "lucide-react";
 import { toast } from "@/utils/Toast";
-import axios from "axios";
 
 const ActivityDetailPage = () => {
     const [activity, setActivity] = useState(null);
@@ -23,154 +22,7 @@ const ActivityDetailPage = () => {
     const { activities, loading: activitiesLoading } = useActivities();
     const activityId = params?.id;
 
-    const [showVerifyDropdown, setShowVerifyDropdown] = useState(false);
-    const [ticketCode, setTicketCode] = useState("");
-    const [verifying, setVerifying] = useState(false);
-    const [verifyError, setVerifyError] = useState(null);
-    const [verifySuccess, setVerifySuccess] = useState(null);
-
-    const handleVerify = async () => {
-        setVerifying(true);
-        setVerifyError(null);
-        setVerifySuccess(null);
-        try {
-            const res = await axios.post("/api/admin/verifyTicket", {
-                activityId,
-                ticketCode: ticketCode.trim(),
-            });
-            const data = res.data;
-            setVerifySuccess(data.message || "Ticket verified successfully!");
-            setTicketCode("");
-        } catch (error) {
-            if (
-                error.response &&
-                error.response.data &&
-                error.response.data.error
-            ) {
-                setVerifyError(error.response.data.error);
-            } else {
-                setVerifyError("An error occurred while verifying the ticket.");
-            }
-        } finally {
-            setVerifying(false);
-        }
-    };
-
-    const handleExportActivityData = () => {
-        // Export selected activity details and participating users as CSV
-        if (!activity) {
-            toast.error("No activity data to export");
-            return;
-        }
-
-        // Activity fields to export
-        const activityFields = [
-            "id",
-            "title",
-            "description",
-            "activityType",
-            "location",
-            "startDate",
-            "endDate",
-            "startTime",
-            "endTime",
-            "caloriesPerHour",
-        ];
-        const activityHeader = activityFields
-            .map((field) => `"${field}"`)
-            .join(",");
-        const activityRow = activityFields
-            .map((field) =>
-                activity[field] !== undefined && activity[field] !== null
-                    ? `"${String(activity[field]).replace(/"/g, '""')}"`
-                    : ""
-            )
-            .join(",");
-
-        // Precompute duration (hours) and calories for reuse in user rows
-        const computeDurationHours = () => {
-            try {
-                if (activity.startTime && activity.endTime) {
-                    const s = new Date(activity.startTime);
-                    const e = new Date(activity.endTime);
-                    if (!isNaN(s) && !isNaN(e)) {
-                        const diffHrs = (e - s) / (1000 * 60 * 60);
-                        return Math.max(0, diffHrs);
-                    }
-                }
-            } catch (_) {}
-            return null;
-        };
-        const durationHours = computeDurationHours();
-        const durationDisplay =
-            durationHours !== null ? durationHours.toFixed(2) : "";
-        const caloriesDisplay =
-            durationHours !== null && activity.caloriesPerHour
-                ? String(
-                      Math.round(
-                          durationHours * Number(activity.caloriesPerHour)
-                      )
-                  )
-                : "";
-
-        // Participating users fields to export
-        const userHeader = `"firstname","lastname","email","joinedDate","height","weight","dob","gender","registered","duration","calories"`;
-        const escapeCsv = (v) =>
-            v !== undefined && v !== null
-                ? `"${String(v).replace(/"/g, '""')}"`
-                : "";
-        const userRows =
-            participatingUsers && participatingUsers.length > 0
-                ? participatingUsers.map((u) =>
-                      [
-                          u.firstname,
-                          u.lastname,
-                          u.email,
-                          u.joinedDate,
-                          u.height,
-                          u.weight,
-                          u.dob,
-                          u.gender,
-                          "Yes", // registered
-                          durationDisplay, // duration beside registered
-                          caloriesDisplay, // calories beside duration
-                      ]
-                          .map(escapeCsv)
-                          .join(",")
-                  )
-                : [];
-
-        let usersSection = "";
-        if (userRows.length > 0) {
-            usersSection =
-                "\r\n\r\nParticipating Users\r\n" +
-                userHeader +
-                "\r\n" +
-                userRows.join("\r\n");
-        }
-
-        const csvContent =
-            "Activity Details\r\n" +
-            activityHeader +
-            "\r\n" +
-            activityRow +
-            usersSection;
-
-        const blob = new Blob([csvContent], {
-            type: "text/csv;charset=utf-8;",
-        });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute(
-            "download",
-            `activity_${activityId}_details_and_users.csv`
-        );
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
+    const [activeTab, setActiveTab] = useState("details"); // "details" or "users"
 
     // Filter users who have joined this activity
     useEffect(() => {
@@ -250,353 +102,606 @@ const ActivityDetailPage = () => {
         return new Date(dateString).toLocaleTimeString("en-US", options);
     };
 
+    // Simple check for cancelled or closed status
+    const canImportExport =
+        activity?.status === "cancelled" || activity?.status === "closed";
+
     return (
         <div className="w-full min-h-screen bg-white">
-            {/* Navigation Buttons */}
+            {/* Heading and Navigation Buttons */}
             <div className="container mx-auto px-4 pt-6 flex justify-between items-center">
-                <button
-                    className="flex items-center bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors mb-4"
-                    onClick={() => router.push("/admin/activities")}
-                >
-                    <svg
-                        className="w-5 h-5 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15 19l-7-7 7-7"
-                        />
-                    </svg>
-                    Back
-                </button>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
                     <button
-                        className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors mb-4"
-                        onClick={() => {
-                            /* handle import */
-                        }}
-                        title="Import"
+                        className="flex items-center bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors mb-4"
+                        onClick={() => router.push("/admin/activities")}
                     >
-                        <Upload className="w-5 h-5 mr-2" />
-                        Import
+                        <svg
+                            className="w-5 h-5 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
+                        Back
                     </button>
-                    <button
-                        className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors mb-4"
-                        onClick={handleExportActivityData}
-                        title="Export Activity Details & Users"
-                    >
-                        <Download className="w-5 h-5 mr-2" />
-                        Export Activity
-                    </button>
+                    <h2 className="text-xl font-bold text-gray-800 mb-2 mx-10">
+                        VIEW ACTIVITY
+                    </h2>
                 </div>
-                <button
-                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors mb-4"
-                    onClick={() =>
-                        router.push(`/admin/activities/${activity?.id}`)
-                    }
-                >
-                    <svg
-                        className="w-5 h-5 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                        />
-                    </svg>
-                    Edit Activity
-                </button>
+                <div></div>
             </div>
 
-            {/* Verify Tickets Dropdown Card */}
-            <div className="container mx-auto px-4 pt-4">
-                <div className="max-w-xl mx-auto mb-8">
-                    <div className="bg-white rounded-lg shadow border border-gray-200">
-                        <button
-                            className="w-full flex justify-between items-center px-6 py-4 focus:outline-none"
-                            onClick={() =>
-                                setShowVerifyDropdown((prev) => !prev)
-                            }
-                            aria-expanded={showVerifyDropdown}
-                        >
-                            <div>
-                                <span className="text-lg font-semibold text-gray-800">
-                                    Verify tickets
-                                </span>
-                                <div className="text-xs text-gray-400 mt-1">
-                                    Click to expand
-                                </div>
-                            </div>
-                            <svg
-                                className={`w-5 h-5 ml-2 transition-transform duration-200 ${
-                                    showVerifyDropdown ? "rotate-180" : ""
-                                }`}
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M19 9l-7 7-7-7"
-                                />
-                            </svg>
-                        </button>
-                        {showVerifyDropdown && (
-                            <div className="px-6 pb-6 pt-2">
-                                {verifyError && (
-                                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4 text-sm">
-                                        {verifyError}
-                                    </div>
-                                )}
-                                <div className="flex flex-col sm:flex-row items-end gap-2">
-                                    <input
-                                        type="text"
-                                        className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                                        placeholder="Enter ticket code"
-                                        value={ticketCode}
-                                        onChange={(e) =>
-                                            setTicketCode(e.target.value)
-                                        }
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter")
-                                                handleVerify();
-                                        }}
-                                    />
-                                    <button
-                                        className="ml-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded shadow disabled:opacity-60"
-                                        onClick={handleVerify}
-                                        disabled={verifying}
-                                    >
-                                        {verifying ? "Verifying..." : "Verify"}
-                                    </button>
-                                </div>
-                                {verifySuccess && (
-                                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded mt-4 text-sm">
-                                        {verifySuccess}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+            {/* Tabs - just below navigation */}
+            <div className="container mx-auto px-4 mt-4 mb-8">
+                <div
+                    role="tablist"
+                    className="tabs tabs-border border-b border-blue-200"
+                >
+                    <a
+                        role="tab"
+                        className={`tab ${
+                            activeTab === "details"
+                                ? "tab-active text-blue-600"
+                                : "text-gray-500 hover:text-blue-600"
+                        }`}
+                        onClick={() => setActiveTab("details")}
+                    >
+                        Activity Details
+                    </a>
+                    <a
+                        role="tab"
+                        className={`tab ${
+                            activeTab === "users"
+                                ? "tab-active text-blue-600"
+                                : "text-gray-500 hover:text-blue-600"
+                        }`}
+                        onClick={() => setActiveTab("users")}
+                    >
+                        Users Joined
+                    </a>
                 </div>
             </div>
 
             {/* Header Section with Image and Activity Details Side by Side */}
-            <div className="container mx-auto px-4 py-8 ">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 ">
-                    {/* Cover Image - Takes 2/3 of the width on large screens */}
-                    <div className="lg:col-span-2 border-2">
-                        <div
-                            className="relative w-full"
-                            style={{ aspectRatio: "16/9" }}
-                        >
-                            {activity.imageUrl ? (
-                                <Image
-                                    src={activity.imageUrl}
-                                    alt={activity.title}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-                                    className="object-cover rounded-lg"
-                                    priority
-                                />
-                            ) : (
-                                <div className="absolute inset-0 w-full h-full bg-gray-200 flex items-center justify-center">
-                                    <p className="text-gray-500">
-                                        No image available
-                                    </p>
-                                </div>
-                            )}
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                                {/* Title */}
-                                <h1 className="text-3xl md:text-4xl font-bold text-white">
-                                    {activity.title}
-                                </h1>
-                                {/* Date and status badge, styled like the card preview */}
-                                <div className="flex items-center mt-2">
-                                    <span className="text-white text-base mr-4">
-                                        {activity.startDate
-                                            ? formatDate(activity.startDate)
-                                            : "Date not specified"}
-                                    </span>
-                                    {activity.status && (
-                                        <span
-                                            className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold
-                                            ${
-                                                activity.status === "active"
-                                                    ? "bg-green-600 text-white"
-                                                    : activity.status ===
-                                                      "inactive"
-                                                    ? "bg-gray-400 text-white"
-                                                    : "bg-yellow-500 text-white"
-                                            }`}
-                                        >
-                                            {activity.status}
+            {activeTab === "details" && (
+                <div className="container mx-auto px-4 py-8 ">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 ">
+                        {/* Cover Image - Takes 2/3 of the width on large screens */}
+                        <div className="lg:col-span-2 border-2">
+                            <div
+                                className="relative w-full"
+                                style={{ aspectRatio: "16/9" }}
+                            >
+                                {activity.imageUrl ? (
+                                    <Image
+                                        src={activity.imageUrl}
+                                        alt={activity.title}
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                                        className="object-cover rounded-lg"
+                                        priority
+                                    />
+                                ) : (
+                                    <div className="absolute inset-0 w-full h-full bg-gray-200 flex items-center justify-center">
+                                        <p className="text-gray-500">
+                                            No image available
+                                        </p>
+                                    </div>
+                                )}
+                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                                    {/* Title */}
+                                    <h1 className="text-3xl md:text-4xl font-bold text-white">
+                                        {activity.title}
+                                    </h1>
+                                    {/* Date and status badge, styled like the card preview */}
+                                    <div className="flex items-center mt-2">
+                                        <span className="text-white text-base mr-4">
+                                            {activity.startDate
+                                                ? formatDate(activity.startDate)
+                                                : "Date not specified"}
                                         </span>
-                                    )}
+                                        {activity.status && (
+                                            <span
+                                                className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                                                    activity.status === "active"
+                                                        ? "bg-green-600 text-white"
+                                                        : activity.status ===
+                                                          "inactive"
+                                                        ? "bg-gray-400 text-white"
+                                                        : activity.status ===
+                                                          "cancelled"
+                                                        ? "bg-red-600 text-white"
+                                                        : activity.status ===
+                                                          "completed"
+                                                        ? "bg-gray-600 text-white"
+                                                        : "bg-yellow-500 text-white"
+                                                }`}
+                                            >
+                                                {activity.status}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Activity Details - Takes 1/3 of the width on large screens */}
-                    <div>
-                        <div className="bg-white rounded-lg shadow-md p-6 h-full">
-                            <h2 className="text-xl font-bold mb-4 text-gray-800">
-                                Activity Details
-                            </h2>
-                            <div className="space-y-3">
-                                <div>
-                                    <p className="text-sm text-gray-500">
-                                        Type
-                                    </p>
-                                    <p className="font-medium text-gray-800">
-                                        {activity.activityType}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">
-                                        Location
-                                    </p>
-                                    <p className="font-medium text-gray-800">
-                                        {activity.location}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">
-                                        Start Date
-                                    </p>
-                                    <p className="font-medium text-gray-800">
-                                        {formatDate(activity.startDate)}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">
-                                        End Date
-                                    </p>
-                                    <p className="font-medium text-gray-800">
-                                        {formatDate(activity.endDate)}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">
-                                        Start Time
-                                    </p>
-                                    <p className="font-medium text-gray-800">
-                                        {formatTime(activity.startTime)}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">
-                                        End Time
-                                    </p>
-                                    <p className="font-medium text-gray-800">
-                                        {formatTime(activity.endTime)}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">
-                                        Participant Limit
-                                    </p>
-                                    <p className="font-medium text-gray-800">
-                                        {activity.participantLimit ??
-                                            "Not specified"}
-                                    </p>
-                                </div>
-                                <div></div>
-                                <div>
-                                    <p className="text-sm text-gray-500">
-                                        Calories Per Hour
-                                    </p>
-                                    <p className="font-medium text-gray-800">
-                                        {activity.caloriesPerHour ??
-                                            "Not specified"}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">
-                                        Featured
-                                    </p>
-                                    <p className="font-medium text-gray-800">
-                                        {activity.isFeatured ? "Yes" : "No"}
-                                    </p>
+                        {/* Activity Details - Takes 1/3 of the width on large screens */}
+                        <div>
+                            <div className="bg-white rounded-lg shadow-md p-6 h-full">
+                                <h2 className="text-xl font-bold mb-4 text-gray-800">
+                                    Activity Details
+                                </h2>
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-sm text-gray-500">
+                                            Type
+                                        </p>
+                                        <p className="font-medium text-gray-800">
+                                            {activity.activityType}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">
+                                            Location
+                                        </p>
+                                        <p className="font-medium text-gray-800">
+                                            {activity.location}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">
+                                            Start Date
+                                        </p>
+                                        <p className="font-medium text-gray-800">
+                                            {formatDate(activity.startDate)}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">
+                                            End Date
+                                        </p>
+                                        <p className="font-medium text-gray-800">
+                                            {formatDate(activity.endDate)}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">
+                                            Start Time
+                                        </p>
+                                        <p className="font-medium text-gray-800">
+                                            {formatTime(activity.startTime)}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">
+                                            End Time
+                                        </p>
+                                        <p className="font-medium text-gray-800">
+                                            {formatTime(activity.endTime)}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">
+                                            Participant Limit
+                                        </p>
+                                        <p className="font-medium text-gray-800">
+                                            {activity.participantLimit ??
+                                                "Not specified"}
+                                        </p>
+                                    </div>
+                                    <div></div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">
+                                            Calories Per Hour
+                                        </p>
+                                        <p className="font-medium text-gray-800">
+                                            {activity.caloriesPerHour ??
+                                                "Not specified"}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">
+                                            Featured
+                                        </p>
+                                        <p className="font-medium text-gray-800">
+                                            {activity.isFeatured ? "Yes" : "No"}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            )}
 
-                {/* Main Content */}
+            {/* Tab Panels */}
+            <div className="container mx-auto px-4">
                 <div className="w-full">
-                    {/* Description */}
-                    <div className="bg-white rounded-lg shadow-md p-6 mb-8 w-full">
-                        <h2 className="text-2xl font-bold mb-4 text-gray-800">
-                            Description
-                        </h2>
-                        <div className="prose max-w-none">
-                            {activity.description ? (
-                                <p className="text-gray-700 whitespace-pre-line">
-                                    {activity.description}
-                                </p>
-                            ) : (
-                                <p className="text-gray-500 italic">
-                                    No description provided
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                    {/* Participating Users */}
-                    <div className="bg-white rounded-lg shadow-md p-6 mb-8 w-full">
-                        <h2 className="text-2xl font-bold mb-4 text-gray-800">
-                            Participating Users - {participatingUsers.length}
-                        </h2>
-                        {participatingUsers && participatingUsers.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {participatingUsers.map((user, index) => {
-                                    let firstName = "";
-                                    let lastName = "";
-                                    if (user.firstname && user.lastname) {
-                                        firstName = user.firstname;
-                                        lastName = user.lastname;
-                                    }
-                                    return (
-                                        <div
-                                            key={index}
-                                            className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
-                                        >
-                                            <Avatar
-                                                srcAvatar={user.avatar}
-                                                firstName={firstName}
-                                                lastName={lastName}
-                                                size="12"
-                                            />
-                                            <div>
-                                                <p className="font-medium text-gray-800">
-                                                    {`${firstName} ${lastName}`}
-                                                </p>
-                                                <p className="text-sm text-gray-500">
-                                                    {user.email}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                    {activeTab === "details" && (
+                        <div>
+                            {/* Description */}
+                            <div className="bg-white rounded-lg shadow-md p-6 mb-8 w-full">
+                                <h2 className="text-2xl font-bold mb-4 text-gray-800">
+                                    Description
+                                </h2>
+                                <div className="prose max-w-none">
+                                    {activity.description ? (
+                                        <p className="text-gray-700 whitespace-pre-line">
+                                            {activity.description}
+                                        </p>
+                                    ) : (
+                                        <p className="text-gray-500 italic">
+                                            No description provided
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                        ) : (
-                            <p className="text-gray-500 italic">
-                                No users have joined this activity yet
-                            </p>
-                        )}
-                    </div>
+                        </div>
+                    )}
+                    {activeTab === "users" && (
+                        <div>
+                            {/* Import/Export buttons only when status is cancelled or closed */}
+                            <div className="flex items-center justify-end gap-2 mb-6">
+                                {canImportExport && (
+                                    <>
+                                        <button
+                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
+                                            onClick={() => {
+                                                /* handle import */
+                                            }}
+                                            title="Import"
+                                        >
+                                            <Upload className="w-5 h-5 mr-2" />
+                                            Import
+                                        </button>
+                                        <button
+                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
+                                            onClick={() => {
+                                                // Export only activity id and title, then users details
+                                                if (!activity) {
+                                                    toast.error(
+                                                        "No activity data to export"
+                                                    );
+                                                    return;
+                                                }
+
+                                                // Only id and title for activity
+                                                const activityHeader = `"id","title"`;
+                                                const activityRow = [
+                                                    activity.id
+                                                        ? `"${String(
+                                                              activity.id
+                                                          ).replace(
+                                                              /"/g,
+                                                              '""'
+                                                          )}"`
+                                                        : "",
+                                                    activity.title
+                                                        ? `"${String(
+                                                              activity.title
+                                                          ).replace(
+                                                              /"/g,
+                                                              '""'
+                                                          )}"`
+                                                        : "",
+                                                ].join(",");
+
+                                                // User fields + duration and calories
+                                                const userFields = [
+                                                    "firstname",
+                                                    "lastname",
+                                                    "email",
+                                                    "joinedDate",
+                                                    "height",
+                                                    "weight",
+                                                    "dob",
+                                                    "gender",
+                                                    "duration",
+                                                    "calories",
+                                                ];
+                                                const userHeader = userFields
+                                                    .map(
+                                                        (field) => `"${field}"`
+                                                    )
+                                                    .join(",");
+                                                const userRows =
+                                                    participatingUsers &&
+                                                    participatingUsers.length >
+                                                        0
+                                                        ? participatingUsers.map(
+                                                              (user) =>
+                                                                  userFields
+                                                                      .map(
+                                                                          (
+                                                                              key
+                                                                          ) =>
+                                                                              user[
+                                                                                  key
+                                                                              ] !==
+                                                                                  undefined &&
+                                                                              user[
+                                                                                  key
+                                                                              ] !==
+                                                                                  null
+                                                                                  ? `"${String(
+                                                                                        user[
+                                                                                            key
+                                                                                        ]
+                                                                                    ).replace(
+                                                                                        /"/g,
+                                                                                        '""'
+                                                                                    )}"`
+                                                                                  : ""
+                                                                      )
+                                                                      .join(",")
+                                                          )
+                                                        : [];
+
+                                                let usersSection = "";
+                                                if (userRows.length > 0) {
+                                                    usersSection =
+                                                        "\r\n\r\nParticipating Users\r\n" +
+                                                        userHeader +
+                                                        "\r\n" +
+                                                        userRows.join("\r\n");
+                                                }
+
+                                                const csvContent =
+                                                    activityHeader +
+                                                    "\r\n" +
+                                                    activityRow +
+                                                    usersSection;
+
+                                                const blob = new Blob(
+                                                    [csvContent],
+                                                    {
+                                                        type: "text/csv;charset=utf-8;",
+                                                    }
+                                                );
+                                                const url =
+                                                    URL.createObjectURL(blob);
+                                                const link =
+                                                    document.createElement("a");
+                                                link.href = url;
+                                                link.setAttribute(
+                                                    "download",
+                                                    `activity_${activityId}_users.csv`
+                                                );
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                                URL.revokeObjectURL(url);
+                                            }}
+                                            title="Export Users"
+                                        >
+                                            <Download className="w-5 h-5 mr-2" />
+                                            Export Users
+                                        </button>
+                                    </>
+                                )}
+                                <button
+                                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors"
+                                    onClick={() =>
+                                        router.push(
+                                            `/admin/activities/${activity?.id}`
+                                        )
+                                    }
+                                >
+                                    <svg
+                                        className="w-5 h-5 mr-2"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={2}
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                        />
+                                    </svg>
+                                    Edit Activity
+                                </button>
+                            </div>
+                            {/* Participating Users Table */}
+                            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                                <div className="px-6 py-4 border-b border-gray-200">
+                                    <h2 className="text-xl font-bold text-gray-800">
+                                        Participating Users (
+                                        {participatingUsers.length})
+                                    </h2>
+                                </div>
+
+                                {participatingUsers.length === 0 ? (
+                                    <div className="px-6 py-8 text-center">
+                                        <p className="text-gray-500 text-lg">
+                                            No users have joined this activity
+                                            yet.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="overflow-x-auto">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        User
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Email
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Gender
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Height/Weight
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Joined Date
+                                                    </th>
+                                                    {/* New columns for richer details */}
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Status
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Activities
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Donations
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Badges
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {participatingUsers.map(
+                                                    (user) => (
+                                                        <tr
+                                                            key={user.id}
+                                                            className="hover:bg-gray-50"
+                                                        >
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="flex items-center">
+                                                                    <div className="flex-shrink-0 h-10 w-10">
+                                                                        <Avatar
+                                                                            // Support both prop styles used in codebase
+                                                                            src={
+                                                                                user.profilePicture ||
+                                                                                user.profilePictureUrl ||
+                                                                                null
+                                                                            }
+                                                                            srcAvatar={
+                                                                                user.profilePicture ||
+                                                                                user.profilePictureUrl ||
+                                                                                null
+                                                                            }
+                                                                            firstName={
+                                                                                user.firstname ||
+                                                                                ""
+                                                                            }
+                                                                            lastName={
+                                                                                user.lastname ||
+                                                                                ""
+                                                                            }
+                                                                            alt={`${
+                                                                                user.firstname ||
+                                                                                "User"
+                                                                            } ${
+                                                                                user.lastname ||
+                                                                                ""
+                                                                            }`}
+                                                                            size="40"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="ml-4">
+                                                                        <div className="text-sm font-medium text-gray-900">
+                                                                            {(user.firstname ||
+                                                                                "") +
+                                                                                (user.lastname
+                                                                                    ? ` ${user.lastname}`
+                                                                                    : user.firstname
+                                                                                    ? ""
+                                                                                    : "N/A")}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="text-sm text-gray-900">
+                                                                    {user.email ||
+                                                                        "N/A"}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="text-sm text-gray-900">
+                                                                    {user.gender ||
+                                                                        "Not specified"}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="text-sm text-gray-900">
+                                                                    {user.height
+                                                                        ? `${user.height} CM`
+                                                                        : "N/A"}{" "}
+                                                                    /{" "}
+                                                                    {user.weight
+                                                                        ? `${user.weight} KG`
+                                                                        : "N/A"}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="text-sm text-gray-900">
+                                                                    {(() => {
+                                                                        const dt =
+                                                                            user.joinedDate ||
+                                                                            user.joinDate ||
+                                                                            user.createdAt;
+                                                                        return dt
+                                                                            ? formatDate(
+                                                                                  dt
+                                                                              )
+                                                                            : "Not specified";
+                                                                    })()}
+                                                                </div>
+                                                            </td>
+                                                            {/* Status */}
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <span
+                                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                                        user.isActive
+                                                                            ? "bg-green-100 text-green-800"
+                                                                            : "bg-red-100 text-red-800"
+                                                                    }`}
+                                                                >
+                                                                    {user.isActive
+                                                                        ? "Active"
+                                                                        : "Blocked"}
+                                                                </span>
+                                                            </td>
+                                                            {/* Stats */}
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="text-sm text-gray-900">
+                                                                    {user.stats
+                                                                        ?.totalActivities ??
+                                                                        user.totalActivities ??
+                                                                        0}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="text-sm text-gray-900">
+                                                                    {user.stats
+                                                                        ?.totalDonations ??
+                                                                        user.totalDonations ??
+                                                                        0}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="text-sm text-gray-900">
+                                                                    {user.stats
+                                                                        ?.badgeCount ??
+                                                                        user.badgeCount ??
+                                                                        0}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Removed participating users list to match the image */}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -18,10 +18,10 @@ import { useEffect } from "react";
 export default function AdminLoggedInLayout({ children }) {
     const pathname = usePathname();
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('admin_auth_token');
+        if (typeof window !== "undefined") {
+            const token = localStorage.getItem("admin_auth_token");
             if (!token) {
-                window.location.href = '/admin/login';
+                window.location.href = "/admin/login";
             }
         }
     }, []);
@@ -103,54 +103,37 @@ export default function AdminLoggedInLayout({ children }) {
                                                     href="/admin"
                                                     icon={<CircleGauge />}
                                                     label="Dashboard"
-                                                    isSelected={
-                                                        pathname === "/admin"
-                                                    }
+                                                    pathname={pathname}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/users"
                                                     icon={<Users />}
                                                     label="All Users"
-                                                    isSelected={
-                                                        pathname ===
-                                                        "/admin/users"
-                                                    }
+                                                    pathname={pathname}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/activities"
                                                     icon={<Calendar1 />}
                                                     label="All Activities"
-                                                    isSelected={
-                                                        pathname ===
-                                                        "/admin/activities"
-                                                    }
+                                                    pathname={pathname}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/social"
                                                     icon={<Share2 />}
                                                     label="Social Media Images"
-                                                    isSelected={
-                                                        pathname ===
-                                                        "/admin/social"
-                                                    }
+                                                    pathname={pathname}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/email"
                                                     icon={<Mail />}
                                                     label="Send Emails"
-                                                    isSelected={
-                                                        pathname ===
-                                                        "/admin/email"
-                                                    }
+                                                    pathname={pathname}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/register"
                                                     icon={<UserPlus />}
                                                     label="Create New Admin"
-                                                    isSelected={
-                                                        pathname ===
-                                                        "/admin/register"
-                                                    }
+                                                    pathname={pathname}
                                                 />
                                             </ul>
                                         </div>

@@ -18,7 +18,7 @@ export const DISTRICTS = [
     "Tuen_Mun",
     "Yuen_Long",
 ];
-const ACTIVITY_STATUSES = ["active", "draft"];
+const ACTIVITY_STATUSES = ["active", "draft","cancelled","closed"];
 export default ACTIVITY_STATUSES;
 export const ACTIVITY_TYPES = [
     "running",
