@@ -59,6 +59,7 @@ export default function ActivityItem({
 	const initialTimer = startDateTime ? calculateTimer(startDateTime, new Date()) : { within24h: false };
 	const [timerInfo, setTimerInfo] = useState(initialTimer);
 	const lastUpdateRef = useRef(Date.now());
+	const isCancelledOrClosed = activity.status === 'cancelled' || activity.status === 'closed';
 
 	useEffect(() => {
 		if (!startDateTime) return;
@@ -94,7 +95,7 @@ export default function ActivityItem({
 					/>
 				)}
 
-				{timerInfo.within24h && !timerInfo.finished && (
+				{!isCancelledOrClosed && timerInfo.within24h && !timerInfo.finished && (
 					<div className={styles.imageBadge}>
 						<span className={styles.badgeNumber}>{timerInfo.formatted}</span>
 						<span className={styles.badgeLabel}>to start</span>

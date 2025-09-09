@@ -1,5 +1,9 @@
-// Returns { status: 'upcoming' | 'ongoing' | 'finished', daysLeft: number }
+// Returns { status: 'upcoming' | 'ongoing' | 'completed', daysLeft: number }
 export default function getActivityStatus(activity) {
+  if (activity && (activity.status === 'cancelled' || activity.status === 'closed')) {
+    return { status: 'completed', daysLeft: 0 };
+  }
+
   const now = new Date();
   const start = new Date(activity.startDate);
   if (activity.startTime) {

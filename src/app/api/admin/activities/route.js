@@ -60,6 +60,7 @@ export async function GET(req) {
 				status: true,
 				participantLimit: true,
 				organizerId: true,
+				organizationName: true,
 				imageUrl: true,
 				caloriesPerHour: true,
 				isFeatured: true,
@@ -149,8 +150,8 @@ export async function GET(req) {
 				status: a.status,
 				participantLimit: a.participantLimit,
 				participantCount: participantCountMap[a.id] || 0,
-				organizerId: a.organizerId,
 				organizerName: a.organizerId ? organizerNameMap[a.organizerId] : undefined,
+				organizationName: a.organizationName,
 				imageUrl: a.imageUrl,
 				caloriesPerHour: a.caloriesPerHour,
 				isFeatured: a.isFeatured,
@@ -191,7 +192,7 @@ export async function GET(req) {
 export async function POST(req) {
 	try {
 		const supabase = await createServerClient();
-		const { error } = await requireAdmin(supabase, NextResponse);
+		const { error, user } = await requireAdmin(supabase, NextResponse);
 		if (error) return error;
 
 		const contentType = req.headers.get('content-type') || '';
@@ -301,7 +302,7 @@ export async function POST(req) {
 			'endTime',
 			'status',
 			'participantLimit',
-			'organizerId',
+			'organizationName',
 			'caloriesPerHour',
 			'isFeatured',
 			'imageUrl',
@@ -320,6 +321,13 @@ export async function POST(req) {
 			}
 		}
 		activityData.imageUrl = imageUrl;
+
+		if (user && user.internal !== true && user.email) {
+			const adminRows = await getMany('adminUser', { email: user.email }, { id: true });
+			if (adminRows && adminRows.length > 0) {
+				activityData.organizerId = adminRows[0].id;
+			}
+		}
 
 		if (activityData.participantLimit) {
 			activityData.participantLimit = Number(activityData.participantLimit);
@@ -398,7 +406,7 @@ export async function POST(req) {
 export async function PATCH(req) {
     try {
         const supabase = await createServerClient();
-        const { error } = await requireAdmin(supabase, NextResponse);
+        const { error, user } = await requireAdmin(supabase, NextResponse);
         if (error) return error;
 
         const url = new URL(req.url);
@@ -431,7 +439,7 @@ export async function PATCH(req) {
 			'endTime',
 			'status',
 			'participantLimit',
-			'organizerId',
+			'organizationName',
 			'caloriesPerHour',
 			'isFeatured',
 			'totalCaloriesBurnt',
@@ -449,6 +457,13 @@ export async function PATCH(req) {
                 }
             }
         }
+
+		if (user && user.internal !== true && user.email) {
+			const adminRows = await getMany('adminUser', { email: user.email }, { id: true });
+			if (adminRows && adminRows.length > 0) {
+				updates.organizerId = adminRows[0].id;
+			}
+		}
 
         if (updates.participantLimit) {
             updates.participantLimit = Number(updates.participantLimit);

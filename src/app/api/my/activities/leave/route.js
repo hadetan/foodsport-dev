@@ -39,11 +39,13 @@ export async function DELETE(request) {
 			);
 		}
 
-		if (activity.status !== 'active') {
+		const isCancelledOrClosed = activity.status === 'cancelled' || activity.status === 'closed';
+		if (isCancelledOrClosed) {
+			let reason = 'Activity is not active';
+			if (activity.status === 'cancelled') reason = 'Activity is cancelled';
+			if (activity.status === 'closed') reason = 'Activity is closed';
 			return Response.json(
-				{
-					error: 'Activity is not active',
-				},
+				{ error: reason },
 				{ status: 400 }
 			);
 		}
@@ -67,6 +69,13 @@ export async function DELETE(request) {
 				{
 					error: 'User has not joined this activity',
 				},
+				{ status: 400 }
+			);
+		}
+
+		if (userActivity.wasPresent === true) {
+			return Response.json(
+				{ error: 'Cannot leave activity after being marked present.' },
 				{ status: 400 }
 			);
 		}

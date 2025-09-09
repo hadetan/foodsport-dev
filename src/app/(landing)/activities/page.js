@@ -18,13 +18,15 @@ export default function ActivitiesPage() {
 
     const mergedUpcomingOngoing = (filteredActivities || []).filter(a => {
         const { status } = getActivityStatus(a);
-        return status === 'upcoming' || status === 'ongoing';
+        const isCancelledOrClosed = a.status === 'cancelled' || a.status === 'closed';
+        return (status === 'upcoming' || status === 'ongoing') && a.status === 'active' && !isCancelledOrClosed;
     });
     const sortedUpcomingOngoing = sortFeaturedAndSoonest(mergedUpcomingOngoing);
 
     const finished = (filteredActivities || []).filter(a => {
         const { status } = getActivityStatus(a);
-        return status === 'finished' || status === 'completed';
+        const isCancelledOrClosed = a.status === 'cancelled' || a.status === 'closed';
+        return status === 'completed' || isCancelledOrClosed;
     });
     finished.sort((a, b) => {
         const aEnd = new Date(a.endDate);

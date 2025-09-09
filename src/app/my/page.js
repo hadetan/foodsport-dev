@@ -20,7 +20,7 @@ export default function Home() {
 	const filtered = activities
 		.filter(a => {
 			const { status } = getActivityStatus(a);
-			return status === 'upcoming' || status === 'ongoing';
+			return (status === 'upcoming' || status === 'ongoing') && a.status === 'active';
 		});
 	const sorted = sortFeaturedAndSoonest(filtered);
 

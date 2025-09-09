@@ -33,7 +33,13 @@ const ActivityDetails = ({
 
 	const { status: activityStatus } = getActivityStatus(activity);
 	let hideJoin = false;
-	if (activityStatus === 'completed' || activityStatus === 'finished') {
+	let wasPresent = false;
+	const isCancelledOrClosed = activity.status === 'cancelled' || activity.status === 'closed';
+	if (user && Array.isArray(user.userActivities) && activity.id) {
+		const ua = user.userActivities.find(ua => ua.activityId === activity.id);
+		if (ua && ua.wasPresent) wasPresent = true;
+	}
+	if (activityStatus === 'completed' || activityStatus === 'finished' || wasPresent || isCancelledOrClosed) {
 		hideJoin = true;
 	} else {
 		const end = new Date(activity.endDate);
@@ -324,19 +330,19 @@ const ActivityDetails = ({
 							</div>
 						)}
 
-									{user?.joinedActivityIds?.includes(activity.id) ? (
-										<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading || hideJoin}>
-											{loading ? 'LEAVING' : 'LEAVE'}
-										</button>
-									) : (
-										<button
-											className='activityDetailsBtn'
-											onClick={handleJoin}
-											disabled={loading || hideJoin}
-										>
-											{loading ? 'JOINING' : 'JOIN NOW'}
-										</button>
-									)}
+												{user?.joinedActivityIds?.includes(activity.id) ? (
+													<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading || hideJoin || wasPresent}>
+														{loading ? 'LEAVING' : 'LEAVE'}
+													</button>
+												) : (
+													<button
+														className='activityDetailsBtn'
+														onClick={handleJoin}
+														disabled={loading || hideJoin}
+													>
+														{loading ? 'JOINING' : 'JOIN NOW'}
+													</button>
+												)}
 						<button className='activityDetailsShareBtn' onClick={() => setShowShare(true)} disabled={hideJoin}>
 							SHARE
 						</button>

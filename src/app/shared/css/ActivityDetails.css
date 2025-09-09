@@ -250,6 +250,15 @@
 .activityDetailsShareBtn:hover {
   background: #d3be00;
 }
+.activityDetailsShareBtn:disabled {
+  background: #dbc500;
+  color: #747474;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.activityDetailsShareBtn:hover:disabled {
+  background: #bba800;
+}
 .activityDetailsBtn {
   width: 100%;
   background: #2bbfb0;
@@ -272,7 +281,7 @@
   cursor: not-allowed;
   background: #45bbaf;
   box-shadow: none;
-  opacity: 0.8;
+  /* opacity: 0.8; */
 }
 
 .activityDetailsBtn:hover:disabled {

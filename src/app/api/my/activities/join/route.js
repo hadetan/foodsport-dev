@@ -52,9 +52,12 @@ export async function POST(request) {
 			);
 		}
 
-		if (activity.status !== 'active') {
+		if (activity.status !== 'active' || activity.status === 'cancelled' || activity.status === 'closed') {
+			let reason = 'Activity is not active';
+			if (activity.status === 'cancelled') reason = 'Activity is cancelled';
+			if (activity.status === 'closed') reason = 'Activity is closed';
 			return Response.json(
-				{ error: 'Activity is not active' },
+				{ error: reason },
 				{ status: 400 }
 			);
 		}
