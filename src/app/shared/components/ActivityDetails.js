@@ -1,3 +1,4 @@
+import getActivityStatus from '@/utils/getActivityStatus';
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import '@/app/shared/css/ActivityDetails.css';
@@ -5,8 +6,7 @@ import Image from 'next/image';
 import Avatar from '@/app/shared/components/avatar';
 import ActivityIcon from '@/app/shared/components/ActivityIcon';
 import { FaBurn, FaCalendar, FaClock, FaTrophy } from 'react-icons/fa';
-import { HiMiniUserGroup } from 'react-icons/hi2';
-import { IoLocationSharp, IoPersonSharp } from 'react-icons/io5';
+import { IoPersonSharp } from 'react-icons/io5';
 import formatDate from '@/utils/formatDate';
 import { IoIosArrowBack } from 'react-icons/io';
 import Featured from './Featured';
@@ -14,6 +14,9 @@ import api from '@/utils/axios/api';
 import ShareDialog from '@/app/shared/components/ShareDialog';
 import toast from '@/utils/Toast';
 import ActivitySummary from './ActivitySummary';
+import { FaLocationDot } from 'react-icons/fa6';
+import calculateSeats from '@/utils/calculateSeats';
+import { MdEventSeat } from 'react-icons/md';
 
 const ActivityDetails = ({
 	activity,
@@ -26,14 +29,40 @@ const ActivityDetails = ({
 	const topRef = useRef(null);
 	const [loading, setLoading] = useState(false);
 	const [showShare, setShowShare] = useState(false);
-  	const [tncChecked, setTncChecked] = useState(false);
-	const [showInviteDialog, setShowInviteDialog] = useState(false);
+	const [tncChecked, setTncChecked] = useState(false);
+
+	const { status: activityStatus } = getActivityStatus(activity);
+	let hideJoin = false;
+	let wasPresent = false;
+	const isCancelledOrClosed = activity.status === 'cancelled' || activity.status === 'closed';
+	if (user && Array.isArray(user.userActivities) && activity.id) {
+		const ua = user.userActivities.find(ua => ua.activityId === activity.id);
+		if (ua && ua.wasPresent) wasPresent = true;
+	}
+	if (activityStatus === 'completed' || activityStatus === 'finished' || wasPresent || isCancelledOrClosed) {
+		hideJoin = true;
+	} else {
+		const end = new Date(activity.endDate);
+		if (activity.endTime) {
+			const t = new Date(activity.endTime);
+			if (!isNaN(t)) {
+				end.setHours(t.getHours(), t.getMinutes(), t.getSeconds() || 0, 0);
+			}
+		}
+		const now = new Date();
+		const msLeft = end - now;
+		if (msLeft <= 6 * 60 * 60 * 1000) {
+			hideJoin = true;
+		}
+	}
 
 	useEffect(() => {
 		if (topRef.current) {
 			topRef.current.scrollIntoView({ behavior: 'smooth' });
 		}
 	}, []);
+
+	const { seatsLeft } = calculateSeats(activity);
 
 	async function handleJoin() {
 		if (!tncChecked) {
@@ -230,7 +259,7 @@ const ActivityDetails = ({
 				</main>
 				<aside className='activityDetailsSidebar'>
 					<div className='activityDetailsSidebarRow'>
-						<FaCalendar className='logo logo-faded' />
+						<FaCalendar className='logo logo-faded' size={22} />
 						<span>{`${formatDate(
 							activity.startDate
 						)} - ${formatDate(activity.endDate)}`}</span>
@@ -241,17 +270,16 @@ const ActivityDetails = ({
 					</div>
 					<div className='activityDetailsSidebarRow'>
 						<span>
-							<IoLocationSharp className='logo logo-faded' />
+							<FaLocationDot className='logo logo-faded' />
 						</span>
 						<span>{activity.location}</span>
 					</div>
 					<div className='activityDetailsSidebarRow'>
 						<span>
-							<HiMiniUserGroup className='logo logo-faded' />
+							<MdEventSeat className='logo logo-faded' size={28} />
 						</span>
 						<span>
-							{activity.participantCount} /{' '}
-							{activity.participantLimit} participants
+							{seatsLeft} {seatsLeft === 1 ? 'Seat Left' : 'Seats Left'}
 						</span>
 					</div>
 					{/* Avatars */}
@@ -274,6 +302,7 @@ const ActivityDetails = ({
 						)}
 					</div>
 					<div className='activityDetailsSidebarActions'>
+						{/* Disable join/share if completed or <6h left */}
 						{/* TNC Checkbox for joining */}
 						{!user?.joinedActivityIds?.includes(activity.id) && activity.tnc && (
 							<div className='activityDetailsTncCheckbox' style={{ marginBottom: '12px' }}>
@@ -283,6 +312,7 @@ const ActivityDetails = ({
 										checked={tncChecked}
 										onChange={e => setTncChecked(e.target.checked)}
 										style={{ marginRight: '8px', marginTop: '3px' }}
+										disabled={hideJoin}
 									/>
 									<span style={{ display: 'inline', wordBreak: 'break-word', whiteSpace: 'normal' }}>
 										I accept to the{' '}
@@ -300,20 +330,20 @@ const ActivityDetails = ({
 							</div>
 						)}
 
-						{user?.joinedActivityIds?.includes(activity.id) ? (
-							<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading}>
-								{loading ? 'LEAVING' : 'LEAVE'}
-							</button>
-						) : (
-							<button
-								className='activityDetailsBtn'
-								onClick={handleJoin}
-								disabled={loading}
-							>
-								{loading ? 'JOINING' : 'JOIN NOW'}
-							</button>
-						)}
-						<button className='activityDetailsShareBtn' onClick={() => setShowShare(true)}>
+												{user?.joinedActivityIds?.includes(activity.id) ? (
+													<button className='activityDetailsBtn' onClick={handleLeave} disabled={loading || hideJoin || wasPresent}>
+														{loading ? 'LEAVING' : 'LEAVE'}
+													</button>
+												) : (
+													<button
+														className='activityDetailsBtn'
+														onClick={handleJoin}
+														disabled={loading || hideJoin}
+													>
+														{loading ? 'JOINING' : 'JOIN NOW'}
+													</button>
+												)}
+						<button className='activityDetailsShareBtn' onClick={() => setShowShare(true)} disabled={hideJoin}>
 							SHARE
 						</button>
 						{showShare && (

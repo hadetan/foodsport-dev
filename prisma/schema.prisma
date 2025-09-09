@@ -160,6 +160,7 @@ model Activity {
   status               ActivityStatus @default(draft)
   participantLimit     Int?          @map("participant_limit")
   organizerId          String?       @map("organizer_id") // Get organizer name from the id
+  organizationName     String?       @map("organization_name")
   imageUrl             String?       @map("image_url")
   mapUrl               String?       @map("map_url")
   totalCaloriesBurnt   Int           @default(0) @map("total_calories_burnt")

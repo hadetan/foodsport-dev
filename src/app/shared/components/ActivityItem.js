@@ -1,22 +1,22 @@
 'use client';
 
 import styles from '@/app/shared/css/item.module.css';
-import ParticipantCircle from './ParticipantCircle';
 import Image from 'next/image';
 import Button from '@/app/shared/components/Button';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/app/shared/contexts/authContext';
-import api from '@/utils/axios/api';
-import { useState } from 'react';
-import { toast } from '@/utils/Toast';
-import ActivityIcon from '@/app/shared/components/ActivityIcon';
-import { FaCalendar, FaClock, FaMinusCircle, FaPlusCircle, FaShare } from 'react-icons/fa';
-import ShareDialog from '@/app/shared/components/ShareDialog';
-import Featured from './Featured';
+import { FaCalendar, FaClock } from 'react-icons/fa';
 import formatDate from '@/utils/formatDate';
-import { IoLocationSharp } from 'react-icons/io5';
+import ActivityIcon from './ActivityIcon';
+import { RiSunFoggyFill } from 'react-icons/ri';
+import { MdEventSeat } from 'react-icons/md';
+import getActivityStatus from '@/utils/getActivityStatus';
+import calculateSeats from '@/utils/calculateSeats';
+import { FaLocationDot } from 'react-icons/fa6';
+import calculateTimer from '@/utils/calculateTimer';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import { useAuth } from '../contexts/authContext';
 
-function formatDateTime(activity) {
+function formatTime(activity) {
 	const formattedStartTime = new Date(activity.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 	const formattedEndTime = new Date(activity.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -29,15 +29,11 @@ function formatDateTime(activity) {
 export default function ActivityItem({
 	activity,
 	user,
-	setUser,
-	setActivities,
 }) {
 	const router = useRouter();
 	const { authToken } = useAuth();
-	const [loading, setLoading] = useState(false);
-	const [showShare, setShowShare] = useState(false);
 
-	const { formattedStartTime, formattedEndTime } = formatDateTime(activity);
+	const { formattedStartTime, formattedEndTime } = formatTime(activity);
 	const redirectUrl = user
 		? `/my/activities/${activity.id}`
 		: `/activities/${activity.id}`;
@@ -47,61 +43,46 @@ export default function ActivityItem({
 			? activity.description.slice(0, 90) + '...'
 			: activity.description;
 
-	const statusClass = `${styles.statusBadge} ${
-		styles[`status-${activity.status}`]
-	}`;
+	const { status: activityStatus, daysLeft } = getActivityStatus(activity);
+	const { seatsLeft } = calculateSeats(activity);
 
-	async function handleJoin() {
-		if (!setUser || !setActivities) return router.push('/auth/login');
-		if (activity.status !== 'active') {
-			toast.warning('Cannot join activity that is not active.');
-			return;
+	const startDateTime = useMemo(() => {
+		if (!activity.startDate) return null;
+		const date = new Date(activity.startDate);
+		if (activity.startTime) {
+			const t = new Date(activity.startTime);
+			if (!isNaN(t)) {
+				date.setHours(t.getHours(), t.getMinutes(), t.getSeconds() || 0, 0);
+			}
 		}
-		if (!user.weight || !user.height) {
-			toast.error('You must fill height and weight to join activities.');
-			// Fallback to current path or default if asPath is undefined
-			const returnTo = typeof window !== 'undefined' && window.location.pathname ? window.location.pathname : '/my/activities';
-			return router.push(`/my/profile?editProfile=1&returnTo=${encodeURIComponent(returnTo)}`);
-		}
-		try {
-			setLoading(true);
-			const res = await api.post('/my/activities/join', {
-				activityId: activity.id,
-			});
-			setUser((prevUser) => ({
-				...prevUser,
-				joinedActivityIds: [
-					...(prevUser.joinedActivityIds || []),
-					res.data?.userActivity?.activityId,
-				],
-			}));
-			setActivities((prevActivities) =>
-				prevActivities.map((act) =>
-					act.id === activity.id
-						? { ...act, participantCount: res.data?.participantCount }
-						: act
-				)
-			);
-			toast.success('Successfully joined the activity.');
-		} catch (error) {
-			const status = error?.response?.status;
-			const serverMsg = error?.response?.data?.error;
-			if (status === 401 && serverMsg?.includes('Token')) {
-				await api.delete('/auth/logout');
-				router.push('/auth/login');
-			} else if (status === 400 && serverMsg?.includes('Activity is not')) {
-				toast.warning('Cannot join activity that is not active.');
-			} else if (serverMsg) {
-				toast.error(serverMsg);
-				if (serverMsg.toLowerCase().includes('height') || serverMsg.toLowerCase().includes('weight')) {
-					const returnTo = typeof window !== 'undefined' && window.location.pathname ? window.location.pathname : '/my/activities';
-					router.push(`/my/profile?editProfile=1&returnTo=${encodeURIComponent(returnTo)}`);
+		return date;
+	}, [activity.startDate, activity.startTime]);
+
+	const initialTimer = startDateTime ? calculateTimer(startDateTime, new Date()) : { within24h: false };
+	const [timerInfo, setTimerInfo] = useState(initialTimer);
+	const lastUpdateRef = useRef(Date.now());
+	const isCancelledOrClosed = activity.status === 'cancelled' || activity.status === 'closed';
+
+	useEffect(() => {
+		if (!startDateTime) return;
+		if (!timerInfo.within24h || timerInfo.finished) return;
+
+		const interval = setInterval(() => {
+			const now = new Date();
+			const info = calculateTimer(startDateTime, now);
+
+			if (info.hours === 0 && info.minutes === 0) {
+				setTimerInfo(info);
+			} else {
+				const last = lastUpdateRef.current;
+				if (now - last >= 60000 || timerInfo.formatted !== info.formatted) {
+					lastUpdateRef.current = now.getTime();
+					setTimerInfo(info);
 				}
 			}
-		} finally {
-			setLoading(false);
-		}
-	}
+		}, 1000);
+		return () => clearInterval(interval);
+	}, [startDateTime, timerInfo.within24h, timerInfo.finished]);
 
 	function handleActTypeSearch(actType) {
 		authToken ?
@@ -110,48 +91,8 @@ export default function ActivityItem({
 			router.push(`/activities?type=${encodeURIComponent(actType)}`);
 	}
 
-
-	async function handleLeave() {
-		if (!setUser || !setActivities) return;
-		try {
-			setLoading(true);
-			const res = await api.delete('/my/activities/leave', {
-				data: { activityId: activity.id },
-			});
-			setUser((prevUser) => {
-				const prevIds = Array.isArray(prevUser.joinedActivityIds)
-					? prevUser.joinedActivityIds
-					: [];
-				const removeId = activity.id;
-				return {
-					...prevUser,
-					joinedActivityIds: prevIds.filter((id) => id !== removeId),
-				};
-			});
-			setActivities((prevActivities) =>
-				prevActivities.map((act) =>
-					act.id === activity.id
-						? { ...act, participantCount: res.data?.participantCount }
-						: act
-				)
-			);
-			   toast.info('You have left the activity.');
-			} catch (error) {
-				const status = error?.response?.status;
-				if (status === 401 && error.response?.data?.error?.includes('Token')) {
-				await api.delete('/auth/logout');
-				router.push('/auth/login');
-				} else {
-				   	toast.error('Something went wrong while attempting to leave the activity.');
-				}
-		} finally {
-			setLoading(false);
-		}
-	}
-
 	return (
 		<div className={styles.card}>
-			{activity.isFeatured && <Featured position='top' />}
 			<div className={styles.imageWrapper}>
 				{activity.imageUrl && (
 					<Image
@@ -159,133 +100,76 @@ export default function ActivityItem({
 						alt={activity.activityType}
 						fill
 						className={styles.cardImage}
-						onClick={() => {
-							router.push(redirectUrl);
-						}}
+						onClick={() => router.push(redirectUrl)}
 					/>
 				)}
-				<div className={styles.overlayText}>
-					<em>{activity.activityType}</em>
-				</div>
+
+				{!isCancelledOrClosed && timerInfo.within24h && !timerInfo.finished && (
+					<div className={styles.imageBadge}>
+						<span className={styles.badgeNumber}>{timerInfo.formatted}</span>
+						<span className={styles.badgeLabel}>to start</span>
+					</div>
+				)}
 			</div>
 			<div className={styles.content}>
 				<div className={styles.cardTitleRow}>
 					<h3
 						className={styles.cardTitleText}
-						onClick={() => {
-							router.push(redirectUrl);
-						}}
+						onClick={() => router.push(redirectUrl)}
 					>
 						{activity.title}
 					</h3>
 					<div className={styles.badges}>
-						<span className={statusClass} title={activity.status}>
-							{activity.status.charAt(0).toUpperCase() +
-								activity.status.slice(1)}
-						</span>
 						<Button className={styles.filterBtn} title='Filter' onClick={() => handleActTypeSearch(activity.activityType)}>
 							<ActivityIcon type={activity.activityType} />
 						</Button>
 					</div>
 				</div>
-				<div
-					className={styles.cardSubtitle}
-					title={activity.description}
-				>
-					{choppedDesc}
-				</div>
-				<div className={styles.detailsRow}>
-					<span className={styles.icon}>
-						<FaCalendar />
-					</span>
-					<span>
-						{`${formatDate(activity.startDate)} - 
-						${formatDate(activity.endDate)}`}
-					</span>
-				</div>
-				<div className={styles.detailsRow}>
-					<span className={styles.icon}>
-						<FaClock />
-					</span>
-					<span>
-						{formattedStartTime} - {formattedEndTime}
-					</span>
-				</div>
-				<div className={styles.detailsRow}>
-					<span className={styles.icon}>
-						<IoLocationSharp />
-					</span>
-					<span>{activity.location}</span>
+				<div className={styles.cardSubtitle} title={activity.description}>{choppedDesc}</div>
+
+				<div className={styles.metaContainer}>
+					<div className={styles.metaLeft}>
+						<div className={styles.detailsRow}>
+							<span className={styles.icon}><FaCalendar size={19} /></span>
+							<span>{`${formatDate(activity.startDate)} - ${formatDate(activity.endDate)}`}</span>
+						</div>
+						<div className={styles.detailsRow}>
+							<span className={styles.icon}><FaClock size={20} /></span>
+							<span>{formattedStartTime} - {formattedEndTime}</span>
+						</div>
+						<div className={styles.detailsRow}>
+							<span className={styles.icon}><FaLocationDot size={20} /></span>
+							<span>{activity.location}</span>
+						</div>
+					</div>
+					<div className={styles.metaRight}>
+						{activityStatus === 'upcoming' && daysLeft !== null && (
+							<div className={styles.rightRow}>
+								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
+								<span>{daysLeft} {daysLeft === 1 ? 'Day to go' : 'Days to go'}</span>
+							</div>
+						)}
+						{activityStatus === 'ongoing' && (
+							<div className={styles.rightRow}>
+								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
+								<span>Ongoing</span>
+							</div>
+						)}
+						{activityStatus === 'completed' && (
+							<div className={styles.rightRow}>
+								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
+								<span>Expired</span>
+							</div>
+						)}
+						{seatsLeft !== null && (
+							<div className={styles.rightRow}>
+								<span className={styles.icon}><MdEventSeat size={23}/></span>
+								<span>{seatsLeft} {seatsLeft === 1 ? 'Seat Left' : 'Seats Left'}</span>
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
-			<div className={styles.cardActions}>
-				<Button
-					className={styles.actionBtn}
-					title={`${activity.participantCount} Participant`}
-				>
-					<ParticipantCircle
-						participantCount={activity.participantCount}
-						participantLimit={activity.participantLimit}
-						size={20}
-					/>
-					STATUS
-				</Button>
-				<Button
-					className={styles.actionBtn}
-					onClick={() => setShowShare(true)}
-				>
-					<span className={styles.actionIcon}>
-						<FaShare />
-					</span>
-					SHARE
-				</Button>
-				{user && setUser && setActivities ? (
-					user?.joinedActivityIds?.includes(activity.id) ? (
-						<Button
-							className={`${styles.actionBtn}`}
-							onClick={handleLeave}
-							disabled={loading}
-						>
-							<span className={styles.actionIcon}>
-								<FaMinusCircle />
-							</span>
-							{loading ? 'LEAVING' : 'LEAVE'}
-						</Button>
-					) : (
-						<Button
-							className={`${styles.actionBtn}`}
-							onClick={handleJoin}
-							disabled={loading}
-						>
-							<span className={styles.actionIcon}>
-								<FaPlusCircle />
-							</span>
-							{loading ? 'JOINING' : 'JOIN NOW'}
-						</Button>
-					)
-				) : (
-					<Button
-						className={`${styles.actionBtn}`}
-						onClick={() => router.push('/auth/login')}
-					>
-						<span className={styles.actionIcon}>
-							<FaPlusCircle />
-						</span>
-						{'JOIN NOW'}
-					</Button>
-				)}
-			</div>
-			{showShare && (
-				<ShareDialog
-					url={
-						typeof window !== 'undefined'
-							? window.location.origin +
-							  `/my/activities/${activity.id}`
-							: `/activities/${activity.id}`
-					}
-					onClose={() => setShowShare(false)}
-				/>
-			)}
 		</div>
 	);
 }

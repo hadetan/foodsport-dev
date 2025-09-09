@@ -58,7 +58,6 @@ export async function GET(req) {
 				endDate: true,
 				startTime: true,
 				endTime: true,
-				status: true,
 				participantLimit: true,
 				organizerId: true,
 				imageUrl: true,
@@ -66,6 +65,8 @@ export async function GET(req) {
 				isFeatured: true,
 				mapUrl: true,
 				tncId: true,
+				status: true,
+				organizationName: true,
 			},
 			options
 		);
@@ -116,12 +117,13 @@ export async function GET(req) {
 			status: a.status,
 			participantLimit: a.participantLimit,
 			participantCount: participantCountMap[a.id] || 0,
-			organizerName: a.organizerId ? organizerNameMap[a.organizerId] : undefined,
 			imageUrl: a.imageUrl,
 			caloriesPerHour: a.caloriesPerHour,
 			isFeatured: a.isFeatured,
 			mapUrl: a.mapUrl,
 			tnc: a.tncId ? tncMap[a.tncId] || null : null,
+			status: a.status,
+			organizationName: a.organizationName,
 		}));
 
 		const responseData = {

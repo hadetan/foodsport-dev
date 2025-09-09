@@ -1,6 +1,7 @@
 import Header from '@/app/shared/components/Header';
 import Footer from '@/app/shared/components/footer';
 import { UserProvider } from '../shared/contexts/userContext';
+import '@/app/shared/css/public.css';
 
 export default async function LandingLayout({ children }) {
 	return (

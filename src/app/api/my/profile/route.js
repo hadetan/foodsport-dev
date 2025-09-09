@@ -13,7 +13,7 @@ export async function GET() {
     const User = await prisma.user.findUnique({
       where: { id: user.id },
       include: {
-        userActivities: { select: { activityId: true } },
+        userActivities: { select: { activityId: true, wasPresent: true } },
         calorieSubmissions: true,
         calorieDonations: true,
         userBadges: true,

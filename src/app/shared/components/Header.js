@@ -12,7 +12,6 @@ import Avatar from "./avatar";
 import AvatarSkeleton from "./skeletons/AvatarSkeleton";
 import { useUser } from "@/app/shared/contexts/userContext";
 import { useActivities } from "../contexts/ActivitiesContext";
-import sortActivities from "@/utils/sortActivities";
 
 export default function Header() {
     const { authToken } = useAuth();
@@ -21,7 +20,6 @@ export default function Header() {
     const pathname = usePathname();
     const [hoveredIdx, setHoveredIdx] = useState(null);
     const { activities } = useActivities();
-    const sortedActivities = sortActivities(activities || [], true);
 
     //#region This fixed the hydration error of mismatched authToken. The authToken is populated only after the mounting, so we wait to be mounted first before using the authToken.
     useEffect(() => {
@@ -104,7 +102,7 @@ export default function Header() {
             {/* Grey Top Bar */}
             <div className={styles.greyTopBar}>
                 <div className={styles.topBarRight}>
-                    <Search sortedActivities={sortedActivities} />
+                    <Search sortedActivities={activities} />
                     <span className={`${styles.icon} ${styles.borderLeft}`}>
                         <BsCart2 />
                     </span>
