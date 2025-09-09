@@ -1,0 +1,15 @@
+/* Section styling for activities page */
+.activitySection {
+    margin-bottom: 40px;
+}
+
+.activitySectionHeading {
+    margin: 0 50px;
+	font-size: 1.4rem;
+	font-weight: 600;
+	margin-bottom: 18px;
+	border-bottom: 2px solid #dadada;
+	padding-bottom: 6px;
+	letter-spacing: 0.5px;
+    text-align: center;
+}

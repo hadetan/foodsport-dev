@@ -148,7 +148,7 @@ export default function ActivityItem({
 						{activityStatus === 'completed' && (
 							<div className={styles.rightRow}>
 								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
-								<span>Completed</span>
+								<span>Expired</span>
 							</div>
 						)}
 						{seatsLeft !== null && (
