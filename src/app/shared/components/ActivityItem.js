@@ -9,11 +9,11 @@ import formatDate from '@/utils/formatDate';
 import ActivityIcon from './ActivityIcon';
 import { RiSunFoggyFill } from 'react-icons/ri';
 import { MdEventSeat } from 'react-icons/md';
-import calculateDays from '@/utils/calculateDays';
+import getActivityStatus from '@/utils/getActivityStatus';
 import calculateSeats from '@/utils/calculateSeats';
 import { FaLocationDot } from 'react-icons/fa6';
 import calculateTimer from '@/utils/calculateTimer';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 
 function formatTime(activity) {
 	const formattedStartTime = new Date(activity.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -41,35 +41,45 @@ export default function ActivityItem({
 			? activity.description.slice(0, 90) + '...'
 			: activity.description;
 
-	const { daysLeft } = calculateDays(activity);
+	const { status: activityStatus, daysLeft } = getActivityStatus(activity);
 	const { seatsLeft } = calculateSeats(activity);
 
-	let startDateTime = null;
-	if (activity.startDate) {
-		startDateTime = new Date(activity.startDate);
+	const startDateTime = useMemo(() => {
+		if (!activity.startDate) return null;
+		const date = new Date(activity.startDate);
 		if (activity.startTime) {
 			const t = new Date(activity.startTime);
 			if (!isNaN(t)) {
-				startDateTime.setHours(t.getHours(), t.getMinutes(), t.getSeconds() || 0, 0);
+				date.setHours(t.getHours(), t.getMinutes(), t.getSeconds() || 0, 0);
 			}
 		}
-	}
+		return date;
+	}, [activity.startDate, activity.startTime]);
 
 	const initialTimer = startDateTime ? calculateTimer(startDateTime, new Date()) : { within24h: false };
 	const [timerInfo, setTimerInfo] = useState(initialTimer);
+	const lastUpdateRef = useRef(Date.now());
 
 	useEffect(() => {
 		if (!startDateTime) return;
 		if (!timerInfo.within24h || timerInfo.finished) return;
 
-		const tick = (timerInfo.hours === 0 && timerInfo.minutes === 0) ? 1000 : 60000;
-		const id = setInterval(() => {
-			const info = calculateTimer(startDateTime, new Date());
-			setTimerInfo(info);
-		}, tick);
+		const interval = setInterval(() => {
+			const now = new Date();
+			const info = calculateTimer(startDateTime, now);
 
-		return () => clearInterval(id);
-	}, [startDateTime, timerInfo.within24h, timerInfo.finished, timerInfo.hours, timerInfo.minutes]);
+			if (info.hours === 0 && info.minutes === 0) {
+				setTimerInfo(info);
+			} else {
+				const last = lastUpdateRef.current;
+				if (now - last >= 60000 || timerInfo.formatted !== info.formatted) {
+					lastUpdateRef.current = now.getTime();
+					setTimerInfo(info);
+				}
+			}
+		}, 1000);
+		return () => clearInterval(interval);
+	}, [startDateTime, timerInfo.within24h, timerInfo.finished]);
 
 	return (
 		<div className={styles.card}>
@@ -123,10 +133,22 @@ export default function ActivityItem({
 						</div>
 					</div>
 					<div className={styles.metaRight}>
-						{daysLeft !== null && (
+						{activityStatus === 'upcoming' && daysLeft !== null && (
 							<div className={styles.rightRow}>
 								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
-								<span>{daysLeft} {daysLeft === 1 || daysLeft === 0 ? 'Day to go' : 'Days to go'}</span>
+								<span>{daysLeft} {daysLeft === 1 ? 'Day to go' : 'Days to go'}</span>
+							</div>
+						)}
+						{activityStatus === 'ongoing' && (
+							<div className={styles.rightRow}>
+								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
+								<span>Ongoing</span>
+							</div>
+						)}
+						{activityStatus === 'completed' && (
+							<div className={styles.rightRow}>
+								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
+								<span>Completed</span>
 							</div>
 						)}
 						{seatsLeft !== null && (
