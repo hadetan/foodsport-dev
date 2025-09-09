@@ -58,7 +58,6 @@ export async function GET(req) {
 				endDate: true,
 				startTime: true,
 				endTime: true,
-				status: true,
 				participantLimit: true,
 				organizerId: true,
 				imageUrl: true,

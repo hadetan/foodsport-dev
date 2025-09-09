@@ -5,8 +5,7 @@ import Image from 'next/image';
 import Avatar from '@/app/shared/components/avatar';
 import ActivityIcon from '@/app/shared/components/ActivityIcon';
 import { FaBurn, FaCalendar, FaClock, FaTrophy } from 'react-icons/fa';
-import { HiMiniUserGroup } from 'react-icons/hi2';
-import { IoLocationSharp, IoPersonSharp } from 'react-icons/io5';
+import { IoPersonSharp } from 'react-icons/io5';
 import formatDate from '@/utils/formatDate';
 import { IoIosArrowBack } from 'react-icons/io';
 import Featured from './Featured';
@@ -14,6 +13,9 @@ import api from '@/utils/axios/api';
 import ShareDialog from '@/app/shared/components/ShareDialog';
 import toast from '@/utils/Toast';
 import ActivitySummary from './ActivitySummary';
+import { FaLocationDot } from 'react-icons/fa6';
+import calculateSeats from '@/utils/calculateSeats';
+import { MdEventSeat } from 'react-icons/md';
 
 const ActivityDetails = ({
 	activity,
@@ -27,13 +29,14 @@ const ActivityDetails = ({
 	const [loading, setLoading] = useState(false);
 	const [showShare, setShowShare] = useState(false);
   	const [tncChecked, setTncChecked] = useState(false);
-	const [showInviteDialog, setShowInviteDialog] = useState(false);
 
 	useEffect(() => {
 		if (topRef.current) {
 			topRef.current.scrollIntoView({ behavior: 'smooth' });
 		}
 	}, []);
+
+	const { seatsLeft } = calculateSeats(activity);
 
 	async function handleJoin() {
 		if (!tncChecked) {
@@ -230,7 +233,7 @@ const ActivityDetails = ({
 				</main>
 				<aside className='activityDetailsSidebar'>
 					<div className='activityDetailsSidebarRow'>
-						<FaCalendar className='logo logo-faded' />
+						<FaCalendar className='logo logo-faded' size={22} />
 						<span>{`${formatDate(
 							activity.startDate
 						)} - ${formatDate(activity.endDate)}`}</span>
@@ -241,17 +244,16 @@ const ActivityDetails = ({
 					</div>
 					<div className='activityDetailsSidebarRow'>
 						<span>
-							<IoLocationSharp className='logo logo-faded' />
+							<FaLocationDot className='logo logo-faded' />
 						</span>
 						<span>{activity.location}</span>
 					</div>
 					<div className='activityDetailsSidebarRow'>
 						<span>
-							<HiMiniUserGroup className='logo logo-faded' />
+							<MdEventSeat className='logo logo-faded' size={28} />
 						</span>
 						<span>
-							{activity.participantCount} /{' '}
-							{activity.participantLimit} participants
+							{seatsLeft} {seatsLeft === 1 ? 'Seat Left' : 'Seats Left'}
 						</span>
 					</div>
 					{/* Avatars */}

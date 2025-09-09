@@ -10,11 +10,12 @@ import ActivityItemSkeleton from "../shared/components/skeletons/ActivityItemSke
 import sortActivities from "@/utils/sortActivities";
 import Button from "../shared/components/Button";
 import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 
 export default function Home() {
     const { activities } = useActivities();
     const router = useRouter();
-    const sortedActivities = sortActivities(activities || []);
+    const sortedActivities = useMemo(() => sortActivities(activities || [], true), [activities]);
 
     return (
         <>
