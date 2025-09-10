@@ -49,7 +49,7 @@ export default function ConfirmDialog({
         <div className={styles.header}>
           <h3>{title}</h3>
         </div>
-        <div className={styles.body} dangerouslySetInnerHTML={{ __html: message }} />
+        <div className={styles.body}>{message}</div>
         <div className={styles.actions}>
           <button
             className={styles.cancel}

@@ -39,12 +39,10 @@ export default function UserProfileCard() {
     try {
       setLoggingOut(true);
       const { data } = await api.delete('/auth/logout');
-      if (data.data.success) {
+      if (data.success) {
         try { localStorage.removeItem('auth_token'); } catch (e) {}
-        router.push('/');
+        window.location.href = '/';
       }
-    } catch (e) {
-      router.push('/');
     } finally {
       setLoggingOut(false);
     }
@@ -64,7 +62,6 @@ export default function UserProfileCard() {
           </button>
         ))}
 
-        {/* Logout button placed below Edit Profile */}
         <button
           className={`profile-card-menu-item logout`}
           onClick={() => setShowConfirm(true)}
