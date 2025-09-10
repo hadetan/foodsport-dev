@@ -45,6 +45,47 @@ export default function Header() {
             label: "HOW DOES IT WORK",
             href: "/how",
         },
+        // Moved buttons from grey navbar to navLinks
+        {
+            label: <Search sortedActivities={activities} />,
+            href: null,
+            isButton: true,
+        },
+        {
+            label: (
+                <span className={styles.icon}>
+                    <BsCart2 />
+                </span>
+            ),
+            href: null,
+            isButton: true,
+        },
+        {
+            label: authToken ? (
+                loading ? (
+                    <AvatarSkeleton isNav={true} />
+                ) : (
+                    <Avatar
+                        srcAvatar={user.profilePictureUrl || undefined}
+                        firstName={user.firstname}
+                        lastName={user.lastname}
+                        isNav={true}
+                        pointer={true}
+                    />
+                )
+            ) : (
+                <Link href="/auth/login" className={styles.login}>
+                    LOGIN / REGISTER
+                </Link>
+            ),
+            href: null,
+            isButton: true,
+        },
+        {
+            label: <span className={styles.langSwitch}>繁 / EN</span>,
+            href: null,
+            isButton: true,
+        },
     ];
 
     const filteredNavLinks = navLinks.filter(Boolean);
@@ -99,39 +140,8 @@ export default function Header() {
 
     return (
         <header className={styles.headerWrapper}>
-            {/* Grey Top Bar */}
-            <div className={styles.greyTopBar}>
-                <div className={styles.topBarRight}>
-                    <Search sortedActivities={activities} />
-                    <span className={`${styles.icon} ${styles.borderLeft}`}>
-                        <BsCart2 />
-                    </span>
-                    {authToken ? (
-                        loading ? (
-                            <AvatarSkeleton isNav={true} />
-                        ) : (
-                            <Avatar
-                                srcAvatar={user.profilePictureUrl || undefined}
-                                firstName={user.firstname}
-                                lastName={user.lastname}
-                                isNav={true}
-                                pointer={true}
-                            />
-                        )
-                    ) : (
-                        <Link href="/auth/login" className={styles.login}>
-                            LOGIN / REGISTER
-                        </Link>
-                    )}
-
-                    {/* Language Switch */}
-                    <span
-                        className={`${styles.langSwitch} ${styles.borderLeft}`}
-                    >
-                        繁 / EN
-                    </span>
-                </div>
-            </div>
+            {/* Grey Top Bar - now empty */}
+            <div className={styles.greyTopBar}></div>
             {/* White Nav Bar with Centered Logo */}
             <div className={styles.whiteNavBar}>
                 <div className={styles.topBarLeft}>
@@ -146,35 +156,69 @@ export default function Header() {
                         priority
                     />
                 </div>
+                <div className={styles.topBarRight}>
+                    {/* Render right-side buttons */}
+                    {filteredNavLinks
+                        .filter((link) => link.isButton)
+                        .map((link, idx) => (
+                            <span
+                                key={idx}
+                                className={styles.navButtonRight}
+                                style={{
+                                    cursor: "pointer",
+                                    marginLeft: "24px",
+                                }}
+                            >
+                                {link.href ? (
+                                    <Link
+                                        href={link.href}
+                                        style={{
+                                            textDecoration: "none",
+                                            color: "inherit",
+                                        }}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ) : (
+                                    link.label
+                                )}
+                            </span>
+                        ))}
+                </div>
             </div>
             <nav className={styles.navBar}>
                 <ul className={styles.navList}>
-                    {filteredNavLinks.map((link, idx) => (
-                        <li
-                            key={link.label}
-                            className={[
-                                idx === activeIdx ? styles.active : "",
-                                idx === hoveredIdx ? styles.navHover : "",
-                            ].join(" ")}
-                            onMouseEnter={() => setHoveredIdx(idx)}
-                            onMouseLeave={() => setHoveredIdx(null)}
-                            style={{ cursor: "pointer" }}
-                        >
-                            {link.href ? (
-                                <Link
-                                    href={link.href}
-                                    style={{
-                                        textDecoration: "none",
-                                        color: "inherit",
-                                    }}
-                                >
-                                    {link.label}
-                                </Link>
-                            ) : (
-                                link.label
-                            )}
-                        </li>
-                    ))}
+                    {/* Render nav links on the left only */}
+                    {filteredNavLinks
+                        .filter((link) => !link.isButton)
+                        .map((link, idx) => (
+                            <li
+                                key={idx}
+                                className={[
+                                    idx === activeIdx ? styles.active : "",
+                                    idx === hoveredIdx ? styles.navHover : "",
+                                ].join(" ")}
+                                onMouseEnter={() => setHoveredIdx(idx)}
+                                onMouseLeave={() => setHoveredIdx(null)}
+                                style={{
+                                    cursor: link.href ? "pointer" : "default",
+                                }}
+                            >
+                                {link.href ? (
+                                    <Link
+                                        href={link.href}
+                                        style={{
+                                            textDecoration: "none",
+                                            color: "inherit",
+                                        }}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ) : (
+                                    link.label
+                                )}
+                            </li>
+                        ))}
                 </ul>
             </nav>
         </header>
