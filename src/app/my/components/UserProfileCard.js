@@ -19,7 +19,19 @@ export default function UserProfileCard() {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const menuKey = searchParams.keys().next().value || 'allActivities';
+  // Prefer editProfile if present anywhere in the query string; otherwise fall back to first key
+  let menuKey = 'allActivities';
+  try {
+    if (searchParams && typeof searchParams.has === 'function' && searchParams.has('editProfile')) {
+      menuKey = 'editProfile';
+    } else {
+      const first = searchParams.keys().next().value;
+      if (first) menuKey = first;
+    }
+  } catch (e) {
+    // fallback
+    menuKey = 'allActivities';
+  }
 
   const contentRef = useRef(null);
 

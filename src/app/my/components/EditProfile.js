@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { FaInfoCircle } from 'react-icons/fa';
 import { toast } from '@/utils/Toast';
@@ -44,6 +44,45 @@ export default function EditProfile() {
 	const [fileType, setFileType] = useState('');
 	const imgRef = useRef(null);
 	const fileRef = useRef(null);
+	const [linking, setLinking] = useState(false);
+
+	useEffect(() => {
+		if (!searchParams?.has || !searchParams.has('editProfile')) {
+			return;
+		}
+
+		const code = searchParams.get('code');
+		const isValidCode = typeof code === 'string' && /^[0-9a-fA-F-]{8,}$/.test(code);
+		if (!isValidCode) {
+			try {
+				const url = new URL(window.location.href);
+				url.search = 'editProfile=1';
+				window.history.replaceState({}, '', url.toString());
+			} catch (e) {}
+			return;
+		}
+
+		(async () => {
+			try {
+				toast.info('Please wait, linking your account to google...');
+				const { data } = await api.put('/auth/link-to-google');
+				if (data?.ok && data?.linked) {
+					toast.success('Google account linked.');
+					setUser((prev) => ({ ...prev, googleId: prev?.id }));
+					try {
+						const url = new URL(window.location.href);
+						url.search = 'editProfile=1';
+						window.history.replaceState({}, '', url.toString());
+					} catch (e) {}
+				} else if (data?.reason === 'google_id_conflict') {
+					toast.error('This Google account is already linked to another user.');
+				}
+			} catch (_) {
+				// ignore; not a hard failure for profile page
+			}
+		})();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [searchParams]);
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -156,7 +195,6 @@ export default function EditProfile() {
 			});
 			setInitialValues(form);
 			toast.info('Profile has been updated successfully.');
-			// Redirect to returnTo if present
 			const returnTo = searchParams.get('returnTo');
 			if (returnTo) {
 				setTimeout(() => router.push(returnTo), 500);
@@ -167,6 +205,40 @@ export default function EditProfile() {
 			toast.error('Something went wrong, please try again');
 		}
 		setSaving(false);
+	};
+
+	const handleLinkGoogle = async () => {
+		try {
+			setLinking(true);
+			const current = typeof window !== 'undefined' ? window.location.href : undefined;
+			let redirectTo = current;
+			try {
+				const url = new URL(current);
+				url.searchParams.set('editProfile', '1');
+				redirectTo = url.toString();
+			} catch (e) {}
+			const { data } = await api.post('/auth/link-to-google', { redirectTo });
+			if (data?.ok && data?.url) {
+				toast.info('Redirecting to Google…');
+				window.location.href = data.url;
+				return;
+			}
+			if (data?.reason === 'link_identity_not_supported') {
+				toast.error('Linking is not supported in this environment.');
+			} else if (data?.reason === 'link_identity_failed') {
+				if (data?.details && data.details.toLowerCase().includes('manual')) {
+					toast.error('Manual linking is disabled in Supabase. Enable it in the dashboard.');
+				} else {
+					toast.error('Failed to start linking. Please try again.');
+				}
+			} else {
+				toast.error('Unable to start linking.');
+			}
+		} catch (e) {
+			toast.error('Unable to start linking.');
+		} finally {
+			setLinking(false);
+		}
 	};
 
 	return (
@@ -394,6 +466,16 @@ export default function EditProfile() {
 					placeholder='Date of Birth'
 					className='edit-profile-fullwidth'
 				/>
+				<div className='edit-profile-link-google-container'>
+					<button
+						type='button'
+						onClick={handleLinkGoogle}
+						disabled={linking || !!user.googleId}
+						className='edit-profile-link-google-btn'
+					>
+						{user.googleId ? 'Google linked' : linking ? 'Starting…' : 'Link Google'}
+					</button>
+				</div>
 				<div className='edit-profile-district-bio-row'>
 					<div>
 						<select

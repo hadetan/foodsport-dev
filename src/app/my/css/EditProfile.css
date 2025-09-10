@@ -1,4 +1,3 @@
-/* District and Bio Row Styles */
 .edit-profile-district-bio-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -311,6 +310,35 @@
 .edit-profile-save-btn:disabled {
   background: #e5e7eb;
   color: #aaa;
+  cursor: not-allowed;
+}
+
+/* Link Google button */
+.edit-profile-link-google-container {
+  margin: 8px 0 12px 0;
+  grid-column: span 2;
+  width: 100%;
+}
+.edit-profile-link-google-btn {
+  width: 100%;
+  padding: 14px 0;
+  background: #ffffff;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 600;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.edit-profile-link-google-btn:hover:not(:disabled) {
+  background: #f7f7f7;
+}
+.edit-profile-link-google-btn:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
   cursor: not-allowed;
 }
 
