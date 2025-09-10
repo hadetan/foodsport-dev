@@ -73,9 +73,15 @@ const ActivityDetails = ({
 			toast.warning('Cannot join activity that is not active.');
 			return;
 		}
-		if (!user.weight || !user.height) {
-			toast.warning('You must fill height and weight to join activities.');
-			return window.location.href = `/my/profile?editProfile=1&returnTo=${encodeURIComponent(window.location.pathname)}`;
+		if (user) {
+			if (!user.weight || !user.height) {
+				toast.warning('You must fill height and weight to join activities.');
+				return window.location.href = `/my/profile?editProfile=1&returnTo=${encodeURIComponent(window.location.pathname)}`;
+			}
+		}
+
+		if (!user) {
+			return window.location.href = '/auth/login';
 		}
 		try {
 			setLoading(true);
