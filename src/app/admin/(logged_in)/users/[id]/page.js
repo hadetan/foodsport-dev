@@ -379,8 +379,8 @@ const UserDetailPage = () => {
                             No activities joined.
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="table table-zebra-zebra">
+                        <div className="overflow-x-auto ">
+                            <table className="table table-zebra-zebra mb-4">
                                 <thead className="bg-base-200">
                                     <tr>
                                         <th className="text-xs font-semibold uppercase text-base-content/60">
@@ -401,109 +401,68 @@ const UserDetailPage = () => {
                                         <th className="text-xs font-semibold uppercase text-base-content/60">
                                             Calories Donated
                                         </th>
-                                        <th className="text-xs font-semibold uppercase text-base-content/60">
-                                            Checked In At
-                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {activities
-                                        .slice()
-                                        .sort((a, b) => {
-                                            const ja =
-                                                new Date(
-                                                    a.joinDate ||
-                                                        a.joinedAt ||
-                                                        a.createdAt ||
-                                                        a.activity?.joinedAt ||
-                                                        0
-                                                ).getTime() || 0;
-                                            const jb =
-                                                new Date(
-                                                    b.joinDate ||
-                                                        b.joinedAt ||
-                                                        b.createdAt ||
-                                                        b.activity?.joinedAt ||
-                                                        0
-                                                ).getTime() || 0;
-                                            return jb - ja;
-                                        })
-                                        .map((a) => {
-                                            const activityName =
-                                                a.title ?? a.name ?? "Unknown";
-                                            const activityType =
-                                                a.activityType ?? a.type ?? "—";
-                                            const location = a.location ?? "—";
-                                            const joinedAtRaw =
-                                                a.createdAt ?? null;
-                                            const checkedInAtRaw =
-                                                a.checkedInAt ?? null;
-                                            const wasPresent =
-                                                a.wasPresent ?? false;
-                                            const calories =
-                                                a.caloriesDonated ?? 0;
+                                    {activities.slice().map((a, index) => {
+                                        const activityName =
+                                            a.title ?? a.name ?? "Unknown";
+                                        const activityType =
+                                            a.activityType ?? a.type ?? "—";
+                                        const location = a.location ?? "—";
+                                        const joinedAtRaw = a.createdAt ?? null;
+                                        const wasPresent =
+                                            a.wasPresent ?? false;
+                                        const calories = a.caloriesDonated ?? 0;
 
-                                            return (
-                                                <tr key={a.id || activityName}>
-                                                    <td className="text-sm text-base-content">
-                                                        {activityName}
-                                                    </td>
-                                                    <td className="text-sm text-base-content/80">
-                                                        {activityType}
-                                                    </td>
-                                                    <td className="text-sm text-base-content/80">
-                                                        {location}
-                                                    </td>
-                                                    <td className="text-sm text-base-content/80">
-                                                        {joinedAtRaw ? (
-                                                            formatDate(
-                                                                String(
-                                                                    joinedAtRaw
-                                                                ).split("T")[0]
-                                                            )
-                                                        ) : (
-                                                            <span className="italic text-base-content/50">
-                                                                —
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        <span
-                                                            className={`px-2 py-0.5 rounded-full text-xs ${
-                                                                wasPresent
-                                                                    ? "bg-green-100 text-green-700"
-                                                                    : "bg-red-100 text-red-700"
-                                                            }`}
-                                                        >
-                                                            {wasPresent
-                                                                ? "Yes"
-                                                                : "No"}
+                                        return (
+                                            <tr
+                                                key={`${
+                                                    a.id || "unknown"
+                                                }-${activityName}-${index}`}
+                                                className="py-3"
+                                            >
+                                                <td className="text-sm text-base-content">
+                                                    {activityName}
+                                                </td>
+                                                <td className="text-sm text-base-content/80">
+                                                    {activityType}
+                                                </td>
+                                                <td className="text-sm text-base-content/80">
+                                                    {location}
+                                                </td>
+                                                <td className="text-sm text-base-content/80">
+                                                    {joinedAtRaw ? (
+                                                        formatDate(
+                                                            String(
+                                                                joinedAtRaw
+                                                            ).split("T")[0]
+                                                        )
+                                                    ) : (
+                                                        <span className="italic text-base-content/50">
+                                                            —
                                                         </span>
-                                                    </td>
-                                                    <td className="text-sm text-base-content/80">
-                                                        {typeof calories ===
-                                                        "number"
-                                                            ? calories
-                                                            : String(
-                                                                  calories || 0
-                                                              )}
-                                                    </td>
-                                                    <td className="text-sm text-base-content/80">
-                                                        {checkedInAtRaw ? (
-                                                            formatDate(
-                                                                String(
-                                                                    checkedInAtRaw
-                                                                ).split("T")[0]
-                                                            )
-                                                        ) : (
-                                                            <span className="italic text-base-content/50">
-                                                                —
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        className={`px-2 py-0.5 rounded-full text-xs ${
+                                                            wasPresent
+                                                                ? "bg-green-100 text-green-700"
+                                                                : "bg-red-100 text-red-700"
+                                                        }`}
+                                                    >
+                                                        {wasPresent
+                                                            ? "Yes"
+                                                            : "No"}
+                                                    </span>
+                                                </td>
+                                                <td className="text-sm text-base-content/80">
+                                                {calories || 0}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -513,6 +472,8 @@ const UserDetailPage = () => {
         </div>
     );
 };
+
+// Helper function to get the join date for an activity
 
 // Detail row component for cleaner markup
 function Detail({ label, value }) {
