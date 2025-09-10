@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useUsers } from "@/app/shared/contexts/usersContext";
@@ -9,6 +9,7 @@ import FullPageLoader from "../../../components/FullPageLoader";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import { Download, Upload } from "lucide-react";
 import { toast } from "@/utils/Toast";
+import axios from "axios"; // add axios
 
 const ActivityDetailPage = () => {
     const [activity, setActivity] = useState(null);
@@ -23,6 +24,8 @@ const ActivityDetailPage = () => {
     const activityId = params?.id;
 
     const [activeTab, setActiveTab] = useState("details"); // "details" or "users"
+    const fileInputRef = useRef(null);
+    const [importing, setImporting] = useState(false);
 
     // Filter users who have joined this activity
     useEffect(() => {
@@ -59,6 +62,231 @@ const ActivityDetailPage = () => {
             setLoading(false);
         }
     }, [activityId, activities, activitiesLoading]);
+
+    // Split CSV line with a given delimiter while respecting quotes and escaped quotes
+    const splitCsvLine = (line, delimiter = ",") => {
+        const out = [];
+        let cur = "";
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') {
+                if (inQuotes && line[i + 1] === '"') {
+                    cur += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (ch === delimiter && !inQuotes) {
+                out.push(cur);
+                cur = "";
+            } else {
+                cur += ch;
+            }
+        }
+        out.push(cur);
+        return out;
+    };
+
+    const normalizeCell = (val) => {
+        if (val == null) return "";
+        let s = String(val).trim();
+        if (s.startsWith('"') && s.endsWith('"')) s = s.slice(1, -1);
+        return s.trim();
+    };
+
+    const parseNumberLoose = (val) => {
+        if (val == null) return NaN;
+        const cleaned = String(val).replace(/[^0-9.\-]/g, "");
+        if (!cleaned) return NaN;
+        const n = Number(cleaned);
+        return Number.isFinite(n) ? n : NaN;
+    };
+
+    // Parse CSV text with no strict validations (accept any CSV)
+    const parseUsersFromCsv = (text) => {
+        const lines = text
+            .replace(/^\uFEFF/, "")
+            .replace(/\r\n/g, "\n")
+            .replace(/\r/g, "\n")
+            .split("\n");
+
+        // Detect delimiter by sampling first non-empty lines
+        const tryDelims = [",", ";", "\t"];
+        const candidates = lines.filter((l) => l && l.trim()).slice(0, 10);
+        let delimiter = ",";
+        let bestScore = -1;
+        for (const d of tryDelims) {
+            const score = candidates.reduce(
+                (acc, l) => acc + (l.includes(d) ? 1 : 0),
+                0
+            );
+            if (score > bestScore) {
+                bestScore = score;
+                delimiter = d;
+            }
+        }
+
+        // Find start index: prefer the line after a "Participating Users" marker, else first line with delimiter
+        const sectionIdx = lines.findIndex((raw) => {
+            if (!raw) return false;
+            const s = String(raw).trim();
+            const unq =
+                s.startsWith('"') && s.endsWith('"') ? s.slice(1, -1) : s;
+            return /participating users/i.test(unq);
+        });
+
+        let headerIdx = -1;
+        if (sectionIdx !== -1) {
+            for (let i = sectionIdx + 1; i < lines.length; i++) {
+                const raw = lines[i];
+                if (!raw || !raw.trim()) continue;
+                if (raw.includes(delimiter)) {
+                    headerIdx = i;
+                    break;
+                }
+            }
+        }
+        if (headerIdx === -1) {
+            headerIdx = lines.findIndex(
+                (raw) => raw && raw.trim() && raw.includes(delimiter)
+            );
+        }
+        if (headerIdx === -1) {
+            // No delimiter found anywhere; treat each non-empty line as a single-column row
+            const users = lines
+                .filter((l) => l && l.trim())
+                .map((l) => ({
+                    email: l.trim(), // best effort
+                    calories: 0,
+                }));
+            return { users, skipped: [] };
+        }
+
+        // Helper to normalize header keys for matching
+        const normKey = (s) =>
+            String(s || "")
+                .toLowerCase()
+                .replace(/\s+/g, "")
+                .replace(/[_-]+/g, "");
+
+        // Treat first non-empty row as header if it looks like text; else use positional mapping
+        const headerColsRaw = splitCsvLine(lines[headerIdx], delimiter).map(
+            normalizeCell
+        );
+        const headerNorm = headerColsRaw.map(normKey);
+
+        // Map indices using common synonyms; fallback to positional 0/1/2
+        const emailKeys = ["email", "useremail", "e-mail"]; // normalized keys
+        const calKeys = [
+            "totalcaloriesburned",
+            "calories",
+            "kcal",
+            "caloriesburned",
+            "verifiedcalories",
+            "submittedcalories",
+            "totalcalories",
+        ];
+        const durKeys = [
+            "totalduration",
+            "duration",
+            "minutes",
+            "activityduration",
+            "timespent",
+        ];
+
+        const findIdx = (keys, fallback) => {
+            const idx = keys
+                .map((k) => headerNorm.indexOf(k))
+                .find((i) => i >= 0);
+            return idx >= 0 ? idx : fallback;
+        };
+
+        const idxEmail = findIdx(emailKeys, 0);
+        const idxCalories = findIdx(calKeys, 1);
+        const idxDuration = findIdx(durKeys, 2);
+
+        const users = [];
+        for (let i = headerIdx + 1; i < lines.length; i++) {
+            const raw = lines[i];
+            if (!raw || !raw.trim()) continue;
+            if (!raw.includes(delimiter)) continue;
+
+            const cols = splitCsvLine(raw, delimiter).map(normalizeCell);
+
+            const emailRaw = cols[idxEmail] ?? "";
+            const caloriesRaw = cols[idxCalories] ?? "";
+            const durationRaw = cols[idxDuration];
+
+            let calories = parseNumberLoose(caloriesRaw);
+            if (!Number.isFinite(calories)) calories = 0;
+
+            let duration;
+            const d = parseNumberLoose(durationRaw);
+            if (Number.isFinite(d)) duration = d; // optional
+
+            users.push({
+                email: emailRaw,
+                calories, // normalize to API expected key
+                ...(duration !== undefined ? { duration } : {}),
+            });
+        }
+
+        // If no data rows after header, but header had content, still return empty users (API accepts empty array)
+        return { users, skipped: [] };
+    };
+
+    const handleImportClick = () => fileInputRef.current?.click();
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = ""; // allow re-selecting the same file next time
+        if (!file) return;
+
+        if (!activityId) {
+            toast.error("Missing activity id");
+            return;
+        }
+
+        setImporting(true);
+        try {
+            const text = await file.text();
+            const { users, skipped } = parseUsersFromCsv(text);
+
+            // Removed strict validation; always attempt API call
+            const payloadUsers = users.map((u) => ({
+                email: String(u.email ?? ""),
+                calories: Number.isFinite(u.calories) ? Number(u.calories) : 0,
+                ...(Number.isFinite(u.duration)
+                    ? { duration: Number(u.duration) }
+                    : {}),
+            }));
+
+            const res = await axios.post(
+                "/api/admin/users/rewardCalories",
+                { activityId, users: payloadUsers },
+                { withCredentials: true }
+            );
+            const data = res?.data || {};
+
+            const results = Array.isArray(data?.results) ? data.results : [];
+            const successCount = results.filter((r) => r.success).length;
+            const failCount = results.length - successCount;
+            const skippedCount = skipped.length;
+            const totalProcessed = results.length;
+
+            toast.success(
+                `Import complete. Rewarded ${successCount}/${totalProcessed}. Skipped ${
+                    failCount + skippedCount
+                }.`
+            );
+        } catch (err) {
+            const msg = err?.response?.data?.error || "Import failed";
+            toast.error(msg);
+        } finally {
+            setImporting(false);
+        }
+    };
 
     if (loading) {
         return <FullPageLoader />;
@@ -351,97 +579,185 @@ const ActivityDetailPage = () => {
                                 {canImportExport && (
                                     <>
                                         <button
-                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
-                                            onClick={() => {
-                                                /* handle import */
-                                            }}
+                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors disabled:opacity-60"
+                                            onClick={handleImportClick}
+                                            disabled={importing}
                                             title="Import"
                                         >
                                             <Upload className="w-5 h-5 mr-2" />
-                                            Import
+                                            {importing
+                                                ? "Importing..."
+                                                : "Import"}
                                         </button>
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept=".csv,text/csv"
+                                            className="hidden"
+                                            onChange={handleFileChange}
+                                        />
                                         <button
                                             className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
                                             onClick={() => {
-                                                // Export only activity id and title, then users details
+                                                // Export activity info and user details, merging per-activity joined data
                                                 if (!activity) {
                                                     toast.error(
                                                         "No activity data to export"
                                                     );
                                                     return;
                                                 }
+                                                if (
+                                                    !participatingUsers ||
+                                                    participatingUsers.length ===
+                                                        0
+                                                ) {
+                                                    toast.error(
+                                                        "No participating users to export"
+                                                    );
+                                                    return;
+                                                }
+
+                                                const escapeCsv = (value) => {
+                                                    if (
+                                                        value === null ||
+                                                        value === undefined
+                                                    )
+                                                        return '""';
+                                                    const s = String(value);
+                                                    return `"${s.replace(
+                                                        /"/g,
+                                                        '""'
+                                                    )}"`;
+                                                };
+
+                                                const matchId = (val) => {
+                                                    if (!val) return false;
+                                                    const id =
+                                                        activityId?.toString();
+                                                    // support primitive id, object with id/activityId, or nested activity.id
+                                                    return (
+                                                        val === activityId ||
+                                                        val?.toString?.() ===
+                                                            id ||
+                                                        val?.id?.toString?.() ===
+                                                            id ||
+                                                        val?.activityId?.toString?.() ===
+                                                            id ||
+                                                        val?.activity?.id?.toString?.() ===
+                                                            id
+                                                    );
+                                                };
+
+                                                const findActivityJoin = (
+                                                    user
+                                                ) => {
+                                                    const arr = Array.isArray(
+                                                        user?.joinedActivities
+                                                    )
+                                                        ? user.joinedActivities
+                                                        : [];
+                                                    return (
+                                                        arr.find(matchId) || {}
+                                                    );
+                                                };
+
+                                                // Columns we will export (aligned with DB naming)
+                                                const headers = [
+                                                    "firstname",
+                                                    "lastname",
+                                                    "email",
+                                                    "Registered",
+                                                    "gender",
+                                                    "height",
+                                                    "weight",
+                                                    "dob",
+                                                    "joinedDate",
+                                                    "totalDuration",
+                                                    "totalCaloriesBurned",
+                                                ];
+                                                const userHeader = headers
+                                                    .map((h) => `"${h}"`)
+                                                    .join(",");
+
+                                                const userRows =
+                                                    participatingUsers.map(
+                                                        (user) => {
+                                                            const join =
+                                                                findActivityJoin(
+                                                                    user
+                                                                );
+
+                                                            const values = [
+                                                                user?.firstname ??
+                                                                    user?.firstName ??
+                                                                    "",
+                                                                user?.lastname ??
+                                                                    user?.lastName ??
+                                                                    "",
+                                                                user?.email ??
+                                                                    user?.user_email ??
+                                                                    user?.user
+                                                                        ?.email ??
+                                                                    "",
+                                                                // Registered (Yes/No based on isRegistered)
+                                                                user?.isRegistered
+                                                                    ? "Yes"
+                                                                    : "No",
+                                                                user?.gender ??
+                                                                    user?.sex ??
+                                                                    "",
+                                                                user?.height ??
+                                                                    user
+                                                                        ?.profile
+                                                                        ?.height ??
+                                                                    "",
+                                                                user?.weight ??
+                                                                    user
+                                                                        ?.profile
+                                                                        ?.weight ??
+                                                                    "",
+                                                                user?.dob ??
+                                                                    user?.dateOfBirth ??
+                                                                    user
+                                                                        ?.profile
+                                                                        ?.dob ??
+                                                                    "",
+                                                                join?.joinedDate ??
+                                                                    join?.joinDate ??
+                                                                    join?.createdAt ??
+                                                                    user?.joinedDate ??
+                                                                    user?.joinDate ??
+                                                                    user?.createdAt ??
+                                                                    "",
+                                                                // totalDuration
+                                                                join?.totalDuration ??
+                                                                    join?.duration ??
+                                                                    join?.activityDuration ??
+                                                                    join?.minutes ??
+                                                                    join?.timeSpent ??
+                                                                    "",
+                                                                // totalCaloriesBurned
+                                                                join?.totalCaloriesBurned ??
+                                                                    join?.calories ??
+                                                                    join?.totalCalories ??
+                                                                    join?.kcal ??
+                                                                    "",
+                                                            ];
+
+                                                            return values
+                                                                .map(escapeCsv)
+                                                                .join(",");
+                                                        }
+                                                    );
 
                                                 // Only id and title for activity
                                                 const activityHeader = `"id","title"`;
                                                 const activityRow = [
-                                                    activity.id
-                                                        ? `"${String(
-                                                              activity.id
-                                                          ).replace(
-                                                              /"/g,
-                                                              '""'
-                                                          )}"`
-                                                        : "",
-                                                    activity.title
-                                                        ? `"${String(
-                                                              activity.title
-                                                          ).replace(
-                                                              /"/g,
-                                                              '""'
-                                                          )}"`
-                                                        : "",
-                                                ].join(",");
-
-                                                // User fields + duration and calories
-                                                const userFields = [
-                                                    "firstname",
-                                                    "lastname",
-                                                    "email",
-                                                    "joinedDate",
-                                                    "height",
-                                                    "weight",
-                                                    "dob",
-                                                    "gender",
-                                                    "duration",
-                                                    "calories",
-                                                ];
-                                                const userHeader = userFields
-                                                    .map(
-                                                        (field) => `"${field}"`
-                                                    )
+                                                    activity?.id ?? "",
+                                                    activity?.title ?? "",
+                                                ]
+                                                    .map(escapeCsv)
                                                     .join(",");
-                                                const userRows =
-                                                    participatingUsers &&
-                                                    participatingUsers.length >
-                                                        0
-                                                        ? participatingUsers.map(
-                                                              (user) =>
-                                                                  userFields
-                                                                      .map(
-                                                                          (
-                                                                              key
-                                                                          ) =>
-                                                                              user[
-                                                                                  key
-                                                                              ] !==
-                                                                                  undefined &&
-                                                                              user[
-                                                                                  key
-                                                                              ] !==
-                                                                                  null
-                                                                                  ? `"${String(
-                                                                                        user[
-                                                                                            key
-                                                                                        ]
-                                                                                    ).replace(
-                                                                                        /"/g,
-                                                                                        '""'
-                                                                                    )}"`
-                                                                                  : ""
-                                                                      )
-                                                                      .join(",")
-                                                          )
-                                                        : [];
 
                                                 let usersSection = "";
                                                 if (userRows.length > 0) {
@@ -458,8 +774,9 @@ const ActivityDetailPage = () => {
                                                     activityRow +
                                                     usersSection;
 
+                                                // Add BOM for Excel compatibility
                                                 const blob = new Blob(
-                                                    [csvContent],
+                                                    ["\uFEFF" + csvContent],
                                                     {
                                                         type: "text/csv;charset=utf-8;",
                                                     }
