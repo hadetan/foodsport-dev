@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import RecentActivitiesTable from './RecentActivitiesTable';
-import { FaCalendarAlt, FaMedal, FaUser } from 'react-icons/fa';
+import { FaCalendarAlt, FaDoorOpen, FaMedal, FaUser } from 'react-icons/fa';
 import '@/app/my/css/UserProfileCard.css'
 import EditProfile from './EditProfile';
 import AllBadges from './AllBadges';
@@ -19,7 +19,6 @@ export default function UserProfileCard() {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  // Prefer editProfile if present anywhere in the query string; otherwise fall back to first key
   let menuKey = 'allActivities';
   try {
     if (searchParams && typeof searchParams.has === 'function' && searchParams.has('editProfile')) {
@@ -39,7 +38,6 @@ export default function UserProfileCard() {
     if (typeof window !== 'undefined' && menuKey === 'editProfile' && contentRef.current) {
       contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    // Only run on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -78,11 +76,8 @@ export default function UserProfileCard() {
           className={`profile-card-menu-item logout`}
           onClick={() => setShowConfirm(true)}
           disabled={loggingOut}
-          style={{ color: '#dc2626', borderColor: 'transparent' }}
-          onMouseEnter={(e) => e.currentTarget.style.color = '#b91c1c'}
-          onMouseLeave={(e) => e.currentTarget.style.color = '#dc2626'}
         >
-          <span className="profile-card-menu-icon"><FaUser className="mr-2" style={{ color: '#dc2626' }} /></span>
+          <span className="profile-card-menu-icon"><FaDoorOpen className="mr-2 logout-icon" /></span>
           <span className="profile-card-menu-label">{loggingOut ? 'Logging out...' : 'Logout'}</span>
         </button>
       </div>
