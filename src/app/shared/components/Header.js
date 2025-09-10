@@ -134,9 +134,6 @@ export default function Header() {
             </div>
             {/* White Nav Bar with Centered Logo */}
             <div className={styles.whiteNavBar}>
-                <div className={styles.topBarLeft}>
-                    <span className={styles.menuIcon}>&#9776;</span>
-                </div>
                 <div className={styles.logoContainer}>
                     <Image
                         src="/logo.png"

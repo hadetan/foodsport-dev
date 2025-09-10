@@ -1,215 +1,233 @@
 .card {
-	background: #fff;
-	border-radius: 12px;
-	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-	overflow: hidden;
-	width: 100%;
-	max-width: 550px;
-	margin: 0 auto 32px auto;
-	display: flex;
-	flex-direction: column;
-	transition: box-shadow 0.2s;
-	position: relative;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 550px;
+    margin: 0 auto 32px auto;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s;
+    position: relative;
+    margin-bottom: 1rem;
 }
 
 .card:hover {
-	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.16);
 }
 
 .imageWrapper {
-	position: relative;
-	width: 100%;
-	height: 40%;
-	aspect-ratio: 16/9;
-	overflow: hidden;
-	background: #eee;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+    position: relative;
+    width: 100%;
+    height: 40%;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    background: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .cardImage {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	border-radius: 0;
-	cursor: pointer;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+    cursor: pointer;
 }
 
 .content {
-	padding: 18px 20px 0 20px;
-	flex: 1;
-	display: flex;
-	flex-direction: column;
+    padding: 18px 20px 0 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 .cardTitle {
-	font-size: 1.25rem;
-	font-weight: 700;
-	color: #222;
-	margin-bottom: 10px;
-	padding-bottom: 10px;
-	border-bottom: 1px solid #dadada;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dadada;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 .cardTitle h3 {
-	cursor: pointer;
+    cursor: pointer;
 }
 .cardTitle h3:hover {
-	color: teal;
+    color: teal;
 }
 .cardTitleRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #222;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #dadada;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dadada;
 }
 .cardTitleText {
-  cursor: pointer;
-  flex: 1;
-  min-width: 0;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
 }
 .cardTitleText:hover {
-  color: teal;
+    color: teal;
 }
 .cardSubtitle {
-	font-size: 0.95rem;
-	color: #888;
-	margin-bottom: 6px;
-	line-height: 1.3;
-	word-break: break-word;
+    font-size: 0.95rem;
+    color: #888;
+    margin-bottom: 6px;
+    line-height: 1.3;
+    word-break: break-word;
 }
 .filterBtn {
-	background: none;
-	border: none;
-	cursor: pointer;
-	padding: 5px;
-	border-radius: 10px;
-	background-color: #ffe23b;
-	margin-left: 8px;
-	outline: none;
-	display: block;
-	transition: background-color 0.2s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 10px;
+    background-color: #ffe23b;
+    margin-left: 8px;
+    outline: none;
+    display: block;
+    transition: background-color 0.2s;
+    align-self: flex-start;
 }
 
 .filterBtn:hover {
-	background-color: #ecd136;
+    background-color: #ecd136;
 }
 
 .filterBtn img {
-	width: 28px;
-	height: 28px;
-	max-width: none;
-	object-fit: contain;
-	display: block;
+    width: 28px;
+    height: 28px;
+    max-width: none;
+    object-fit: contain;
+    display: block;
 }
 .detailsRow {
-	display: flex;
-	align-items: center;
-	margin-top: 20px;
-	gap: 8px;
-	font-size: 0.98rem;
-	color: #555;
-	margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    gap: 8px;
+    font-size: 0.98rem;
+    color: #555;
+    margin-bottom: 2px;
 }
 .icon {
-	font-size: 1.1rem;
-	margin-right: 2px;
+    font-size: 1.1rem;
+    margin-right: 2px;
 }
 
 .metaContainer {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-around;
-	gap: 16px;
-	margin-top: 12px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    gap: 16px;
+    margin-top: 12px;
 }
 
 .metaLeft {
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .metaRight {
-	width: 140px;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	justify-content: flex-start;
+    width: 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: flex-start;
 }
 
 .rightRow {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 0.98rem;
-	color: #555;
-	margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.98rem;
+    color: #555;
+    margin-top: 20px;
 }
 
 .imageBadge {
-	position: absolute;
-	top: 16px;
-	right: 16px;
-	background: #22222280;
-	border-radius: 12px;
-	padding: 8px 14px 6px 14px;
-	text-align: center;
-	box-shadow: 0 6px 18px rgba(16,24,40,0.10);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	min-width: 64px;
-	z-index: 2;
-	backdrop-filter: blur(16px); /* stronger blur for more frost */
-	-webkit-backdrop-filter: blur(16px);
-	border: 1.5px solid rgba(255,255,255,0.25); /* subtle border for glassy edge */
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #22222280;
+    border-radius: 12px;
+    padding: 8px 14px 6px 14px;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    z-index: 2;
+    backdrop-filter: blur(16px); /* stronger blur for more frost */
+    -webkit-backdrop-filter: blur(16px);
+    border: 1.5px solid rgba(255, 255, 255, 0.25); /* subtle border for glassy edge */
 }
 
 .badgeNumber {
-	font-size: 1.35rem;
-	color: #fff;
-	letter-spacing: 0.5px;
-	font-family: monospace;
+    font-size: 1.35rem;
+    color: #fff;
+    letter-spacing: 0.5px;
+    font-family: monospace;
 }
 
 .badgeLabel {
-	font-size: 0.72rem;
-	color: #fff;
-	text-transform: uppercase;
-	letter-spacing: 0.8px;
+    font-size: 0.72rem;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
 }
 
 @media (max-width: 420px) {
-	.metaContainer {
-		flex-direction: column;
-		gap: 10px;
-	}
-	.metaRight {
-		width: 100%;
-		flex-direction: row;
-		justify-content: flex-start;
-		gap: 8px;
-		align-items: center;
-	}
-	.rightRow {
-		flex: 1;
-		min-width: 0;
-	}
-	.imageBadge {
-		top: 10px;
-		right: 10px;
-		min-width: 54px;
-		padding: 6px 10px 4px 10px;
-	}
+    .metaContainer {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .metaRight {
+        width: 100%;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 8px;
+        align-items: center;
+    }
+    .rightRow {
+        flex: 1;
+        min-width: 0;
+    }
+    .imageBadge {
+        top: 10px;
+        right: 10px;
+        min-width: 54px;
+        padding: 6px 10px 4px 10px;
+    }
 }
+
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        margin-bottom: 2rem;
+    }
+	
+}
+@media (max-width: 1000px) {
+    .card {
+        margin-bottom: 2rem;
+    }}
