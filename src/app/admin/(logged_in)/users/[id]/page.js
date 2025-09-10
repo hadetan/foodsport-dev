@@ -235,7 +235,7 @@ const UserDetailPage = () => {
                             }
                         />
                         <Detail
-                            label="Joined At"
+                            label="Registered At"
                             value={
                                 user.createdAt ? (
                                     formatDate(user.createdAt.split("T")[0])
