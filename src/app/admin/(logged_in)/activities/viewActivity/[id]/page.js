@@ -7,7 +7,7 @@ import { useUsers } from "@/app/shared/contexts/usersContext";
 import Avatar from "@/app/shared/components/avatar";
 import FullPageLoader from "../../../components/FullPageLoader";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
-import { Download, Upload } from "lucide-react";
+import { Download, Upload, Pencil } from "lucide-react";
 import { toast } from "@/utils/Toast";
 import axios from "axios"; // add axios
 
@@ -362,7 +362,18 @@ const ActivityDetailPage = () => {
                         VIEW ACTIVITY
                     </h2>
                 </div>
-                <div></div>
+                {/* Show Edit Activity button only in details tab, top right */}
+                {activeTab === "details" && (
+                    <button
+                        className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors"
+                        onClick={() =>
+                            router.push(`/admin/activities/${activity?.id}`)
+                        }
+                    >
+                        <Pencil className="w-5 h-5 mr-2" />
+                        Edit Activity
+                    </button>
+                )}
             </div>
 
             {/* Tabs - just below navigation */}
@@ -802,29 +813,6 @@ const ActivityDetailPage = () => {
                                         </button>
                                     </>
                                 )}
-                                <button
-                                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors"
-                                    onClick={() =>
-                                        router.push(
-                                            `/admin/activities/${activity?.id}`
-                                        )
-                                    }
-                                >
-                                    <svg
-                                        className="w-5 h-5 mr-2"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                        />
-                                    </svg>
-                                    Edit Activity
-                                </button>
                             </div>
                             {/* Participating Users Table */}
                             <div className="bg-white rounded-lg shadow-md overflow-hidden">
