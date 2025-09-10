@@ -18,6 +18,7 @@ import {
 
 export default function Footer() {
     const [galleryImages, setGalleryImages] = useState([]);
+    const [hoveredIndex, setHoveredIndex] = useState(null);
 
     useEffect(() => {
         fetchImages();
@@ -36,7 +37,7 @@ export default function Footer() {
                 url: "/social",
             });
             if (Array.isArray(data.data.images)) {
-                setGalleryImages(data.data.images.map((img) => img.imageUrl));
+                setGalleryImages(data.data.images);
             } else {
                 setGalleryImages([]);
             }
@@ -44,8 +45,6 @@ export default function Footer() {
             setGalleryImages([]);
         }
     }
-
-    // Function to be called after posting an image in admin panel social
 
     return (
         <footer className={styles.footer}>
@@ -62,26 +61,54 @@ export default function Footer() {
                                 flexWrap: "wrap",
                             }}
                         >
-                            {galleryImages.map((src, index) => (
-                                <div
+                            {galleryImages.map((img, index) => (
+                                <a
                                     key={index}
-                                    className="galleryItem"
+                                    href={img.socialMediaUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     style={{
                                         width: "200px",
                                         height: "200px",
                                         overflow: "hidden",
+                                        position: "relative",
+                                        display: "block",
+                                        cursor: "pointer",
                                     }}
+                                    onMouseEnter={() => setHoveredIndex(index)}
+                                    onMouseLeave={() => setHoveredIndex(null)}
                                 >
                                     <img
-                                        src={src}
+                                        src={img.imageUrl}
                                         alt={`Activity ${index + 1}`}
                                         style={{
                                             width: "100%",
                                             height: "100%",
                                             objectFit: "cover",
+                                            display: "block",
                                         }}
                                     />
-                                </div>
+                                    {hoveredIndex === index && (
+                                        <div
+                                            style={{
+                                                position: "absolute",
+                                                top: 0,
+                                                left: 0,
+                                                width: "100%",
+                                                height: "100%",
+                                                background: "rgba(0,0,0,0.5)",
+                                                color: "#fff",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                fontSize: "1.2rem",
+                                                fontWeight: "bold",
+                                            }}
+                                        >
+                                            View Image
+                                        </div>
+                                    )}
+                                </a>
                             ))}
                         </div>
                     </div>
@@ -165,7 +192,8 @@ export default function Footer() {
                         <div className={styles.contactItem}>
                             <MapPin size={16} />
                             <span>
-                            Room A, 20/F, Infotech Centre, 21 Hung To Road, Kwun Tong, Kowloon, Hong Kong
+                                Room A, 20/F, Infotech Centre, 21 Hung To Road,
+                                Kwun Tong, Kowloon, Hong Kong
                             </span>
                         </div>
                     </div>
