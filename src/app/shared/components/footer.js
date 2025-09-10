@@ -105,7 +105,7 @@ export default function Footer() {
                                                 fontWeight: "bold",
                                             }}
                                         >
-                                            View Image
+                                            View In Social Media
                                         </div>
                                     )}
                                 </a>
