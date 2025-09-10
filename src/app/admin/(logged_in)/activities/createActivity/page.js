@@ -31,6 +31,7 @@ const CreateActivityPage = () => {
         status: "draft",
         mapUrl: "",
         tncId: "", // newly added field for selected T&C
+        isFeatured: false, // new field for featured checkbox
     });
     const { setActivities } = useAdminActivities();
     const [error, setError] = useState("");
@@ -179,7 +180,7 @@ const CreateActivityPage = () => {
     };
 
     const handleFormChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
         // Restrict year for datetime-local fields
         if (
             (name === "startDateTime" || name === "endDateTime") &&
@@ -198,7 +199,7 @@ const CreateActivityPage = () => {
         setError("");
         setFormData((prev) => ({
             ...prev,
-            [name]: value,
+            [name]: type === "checkbox" ? checked : value,
         }));
     };
 
@@ -266,6 +267,7 @@ const CreateActivityPage = () => {
                 image: formData.image,
                 mapUrl: formData.mapUrl,
                 tncId: formData.tncId || "", // include selected T&C id
+                isFeatured: !!formData.isFeatured, // send as boolean
             };
             const formDataToSend = new FormData();
             Object.entries(payload).forEach(([key, value]) => {
@@ -530,6 +532,19 @@ const CreateActivityPage = () => {
                                                 {fieldErrors.startDateTime}
                                             </span>
                                         )}
+                                    </div>
+                                    {/* Should be featured? checkbox */}
+                                    <div className="form-control w-full">
+                                        <label className="cursor-pointer label text-lg font-semibold mb-2 text-black flex items-center gap-2">
+                                            <span>Should be featured?</span>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox checkbox-primary"
+                                                name="isFeatured"
+                                                checked={!!formData.isFeatured}
+                                                onChange={handleFormChange}
+                                            />
+                                        </label>
                                     </div>
                                 </div>
                                 {/* Right column */}
