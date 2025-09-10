@@ -178,7 +178,6 @@ export default function TermsAndConditionsPage() {
             } else {
                 setTncs((prev) => [
                     {
-                        id: crypto.randomUUID(),
                         title,
                         description,
                         createdBy: "—",
