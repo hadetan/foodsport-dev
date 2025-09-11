@@ -68,7 +68,7 @@ export async function requireUser(_ ,NextResponse) {
 		if (!dbUser || dbUser.isActive === false) {
 			return {
 				error: NextResponse.json(
-					{ error: 'Forbidden: Users only' },
+					{ error: 'user_forbidden' },
 					{ status: 403 }
 				),
 			};
