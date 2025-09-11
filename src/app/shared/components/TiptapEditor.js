@@ -258,9 +258,9 @@ export default function TiptapEditor({ value, onChange }) {
             }
 
             const schemeMatch = trimmed.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):/);
-            const forbidden = ['javascript', 'data', 'vbscript'];
-            if (schemeMatch && forbidden.includes(schemeMatch[1].toLowerCase())) {
-                window.alert('Invalid URL scheme. Please use http(s) or a safe URL.');
+            const allowedSchemes = ['http', 'https', 'mailto', 'tel'];
+            if (schemeMatch && !allowedSchemes.includes(schemeMatch[1].toLowerCase())) {
+                window.alert('Invalid URL scheme. Please use http(s), mailto, or tel.');
                 return;
             }
 
