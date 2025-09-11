@@ -136,19 +136,35 @@ export default function TiptapEditor({ value, onChange }) {
             handleKeyDown(_, event) {
                 try {
                     if (event.key === 'Tab') {
-                        const inList = editor;
-                        if (!inList) {
-                            return false;
+                        if (!editor) return false;
+
+                        const { state } = editor;
+                        const { $from } = state.selection;
+                        let listDepth = 0;
+                        for (let d = $from.depth; d > 0; d--) {
+                            const node = $from.node(d);
+                            if (!node) continue;
+                            const name = node.type && node.type.name;
+                            if (name === 'bulletList' || name === 'orderedList') listDepth++;
                         }
+
+                        if (listDepth === 0) return false;
+
                         event.preventDefault();
+
+                        const MAX_DEPTH = 4;
+
                         if (event.shiftKey) {
                             editor.chain().focus().liftListItem('listItem').run();
                             return true;
                         } else {
+                            if (listDepth >= MAX_DEPTH) {
+                                return true;
+                            }
                             editor.chain().focus().sinkListItem('listItem').run();
                             return true;
                         }
-                     }
+                    }
                  } catch (err) {
                      console.error('handleKeyDown error', err);
                  }

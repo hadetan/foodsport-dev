@@ -77,30 +77,6 @@
     list-style-type: decimal;
     margin-left: 1.25rem;
 }
-.tiptap-editor ol ol ol ol ol {
-    list-style-type: lower-alpha;
-    margin-left: 1.25rem;
-}
-.tiptap-editor ol ol ol ol ol ol {
-    list-style-type: lower-roman;
-    margin-left: 1.25rem;
-}
-.tiptap-editor ol ol ol ol ol ol ol {
-    list-style-type: decimal;
-    margin-left: 1.25rem;
-}
-.tiptap-editor ol ol ol ol ol ol ol ol {
-    list-style-type: lower-alpha;
-    margin-left: 1.25rem;
-}
-.tiptap-editor ol ol ol ol ol ol ol ol ol {
-    list-style-type: lower-roman;
-    margin-left: 1.25rem;
-}
-.tiptap-editor ol ol ol ol ol ol ol ol ol ol {
-    list-style-type: decimal;
-    margin-left: 1.25rem;
-}
 
 /* Ensure nested lists keep proper spacing */
 .tiptap-editor ul, .tiptap-editor ol {
