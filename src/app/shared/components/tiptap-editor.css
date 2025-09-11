@@ -36,84 +36,69 @@
     margin: 1rem 0;
 }
 
-/* Nested list styles: change bullet/number types per depth and adjust indentation */
+/* Nested list styles: use CSS custom properties and limit nesting to 4 levels */
 .tiptap-editor ul {
-    list-style-type: disc; /* level 1 */
+    --list-style-type: disc;
+    --list-indent: 0;
+    list-style-type: var(--list-style-type);
+    margin-left: var(--list-indent);
 }
 .tiptap-editor ul ul {
-    list-style-type: circle; /* level 2 */
-    margin-left: 1.25rem; /* extra indent for nested */
+    --list-style-type: circle;
+    --list-indent: 1.25rem;
+    list-style-type: var(--list-style-type);
+    margin-left: var(--list-indent);
 }
 .tiptap-editor ul ul ul {
-    list-style-type: square; /* level 3 */
-    margin-left: 1.25rem;
+    --list-style-type: square;
+    --list-indent: 2.5rem;
+    list-style-type: var(--list-style-type);
+    margin-left: var(--list-indent);
 }
 .tiptap-editor ul ul ul ul {
-    list-style-type: disc; /* level 4 */
-    margin-left: 1.25rem;
+    --list-style-type: disc;
+    --list-indent: 3.75rem;
+    list-style-type: var(--list-style-type);
+    margin-left: var(--list-indent);
 }
-.tiptap-editor ul ul ul ul ul {
-    list-style-type: circle; /* level 5 */
-    margin-left: 1.25rem;
-}
-.tiptap-editor ul ul ul ul ul ul {
-    list-style-type: square; /* level 6 */
-    margin-left: 1.25rem;
-}
-.tiptap-editor ul ul ul ul ul ul ul {
-    list-style-type: disc; /* level 7 */
-    margin-left: 1.25rem;
-}
-.tiptap-editor ul ul ul ul ul ul ul ul {
-    list-style-type: circle; /* level 8 */
-    margin-left: 1.25rem;
-}
-.tiptap-editor ul ul ul ul ul ul ul ul ul {
-    list-style-type: square; /* level 9 */
-    margin-left: 1.25rem;
-}
-.tiptap-editor ul ul ul ul ul ul ul ul ul ul {
-    list-style-type: disc; /* level 10 */
-    margin-left: 1.25rem;
-}
-
+/* Consolidated ordered list nesting styles */
 .tiptap-editor ol {
-    list-style-type: decimal; /* level 1 */
+    list-style-type: decimal;
 }
 .tiptap-editor ol ol {
-    list-style-type: lower-alpha; /* level 2 */
+    list-style-type: lower-alpha;
     margin-left: 1.25rem;
 }
 .tiptap-editor ol ol ol {
-    list-style-type: lower-roman; /* level 3 */
+    list-style-type: lower-roman;
     margin-left: 1.25rem;
 }
 .tiptap-editor ol ol ol ol {
-    list-style-type: decimal; /* level 4 */
+    list-style-type: decimal;
     margin-left: 1.25rem;
 }
 .tiptap-editor ol ol ol ol ol {
-    list-style-type: lower-alpha; /* level 5 */
+    list-style-type: lower-alpha;
     margin-left: 1.25rem;
 }
 .tiptap-editor ol ol ol ol ol ol {
-    list-style-type: lower-roman; /* level 6 */
+    list-style-type: lower-roman;
     margin-left: 1.25rem;
 }
 .tiptap-editor ol ol ol ol ol ol ol {
-    list-style-type: decimal; /* level 7 */
+    list-style-type: decimal;
     margin-left: 1.25rem;
 }
 .tiptap-editor ol ol ol ol ol ol ol ol {
-    list-style-type: lower-alpha; /* level 8 */
+    list-style-type: lower-alpha;
     margin-left: 1.25rem;
 }
 .tiptap-editor ol ol ol ol ol ol ol ol ol {
-    list-style-type: lower-roman; /* level 9 */
+    list-style-type: lower-roman;
     margin-left: 1.25rem;
 }
 .tiptap-editor ol ol ol ol ol ol ol ol ol ol {
-    list-style-type: decimal; /* level 10 */
+    list-style-type: decimal;
     margin-left: 1.25rem;
 }
 

@@ -133,10 +133,10 @@ export default function TiptapEditor({ value, onChange }) {
                 spellCheck: "true",
                 dir: "ltr",
             },
-            handleKeyDown(view, event) {
+            handleKeyDown(_, event) {
                 try {
                     if (event.key === 'Tab') {
-                        const inList = editor && (editor.isActive('listItem') || editor.isActive('bulletList') || editor.isActive('orderedList'));
+                        const inList = editor;
                         if (!inList) {
                             return false;
                         }
@@ -226,6 +226,52 @@ export default function TiptapEditor({ value, onChange }) {
         return (
             <div className="bg-base-100 rounded-lg min-h-[320px] animate-pulse" />
         );
+    
+    const handleLink = () => {
+        try {
+            const current = editor.isActive('link') ? editor.getAttributes('link') || {} : {};
+            const currentHref = current.href || '';
+            const url = window.prompt('Enter URL (leave empty to remove)', currentHref);
+            if (url === null) return;
+            const trimmed = url.trim();
+            if (trimmed === '') {
+                if (editor.isActive('link')) {
+                    editor.chain().focus().unsetLink().run();
+                }
+                return;
+            }
+
+            const schemeMatch = trimmed.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):/);
+            const forbidden = ['javascript', 'data', 'vbscript'];
+            if (schemeMatch && forbidden.includes(schemeMatch[1].toLowerCase())) {
+                window.alert('Invalid URL scheme. Please use http(s) or a safe URL.');
+                return;
+            }
+
+            let finalUrl = trimmed;
+            if (!/^([a-zA-Z][a-zA-Z0-9+.-]*):/.test(finalUrl)) {
+                finalUrl = 'https://' + finalUrl;
+            }
+
+            const openInNewTab = window.confirm('Open link in new tab? (OK = yes, Cancel = no)');
+            const attrs = { href: finalUrl };
+            if (openInNewTab) {
+                attrs.target = '_blank';
+                attrs.rel = 'noopener noreferrer';
+            } else {
+                attrs.target = undefined;
+                attrs.rel = undefined;
+            }
+
+            if (editor.isActive('link')) {
+                editor.chain().focus().extendMarkRange('link').setLink(attrs).run();
+            } else {
+                editor.chain().focus().setLink(attrs).run();
+            }
+        } catch (err) {
+            console.error('Link command failed', err);
+        }
+    }
 
     return (
         <div className="w-full max-w-full h-full">
@@ -407,39 +453,16 @@ export default function TiptapEditor({ value, onChange }) {
                     <FaMinus />
                 </button>
                 <button
-                    onClick={() => {
-                        try {
-                            if (editor.isActive("link")) {
-                                const current = editor.getAttributes('link') || {};
-                                const currentHref = current.href || '';
-                                const url = window.prompt('Enter URL (leave empty to remove)', currentHref);
-                                if (url === null) return;
-                                const trimmed = url.trim();
-                                if (trimmed === '') {
-                                    editor.chain().focus().unsetLink().run();
-                                } else {
-                                    editor.chain().focus().extendMarkRange('link').setLink({ href: trimmed, target: '_blank', rel: 'noopener noreferrer' }).run();
-                                }
-                            } else {
-                                const url = window.prompt('Enter URL', 'https://');
-                                if (!url) return;
-                                const trimmed = url.trim();
-                                if (trimmed === '') return;
-                                editor.chain().focus().setLink({ href: trimmed, target: '_blank', rel: 'noopener noreferrer' }).run();
-                            }
-                        } catch (err) {
-                            console.error('Link command failed', err);
-                        }
-                    }}
-                    className={`p-2 rounded hover:bg-base-300 ${
-                        editor.isActive("link")
-                            ? "bg-base-300 text-yellow-400"
-                            : "text-base-content"
-                    }`}
-                    title="Link"
-                >
-                    <FaLink />
-                </button>
+                    onClick={handleLink}
+                     className={`p-2 rounded hover:bg-base-300 ${
+                         editor.isActive("link")
+                             ? "bg-base-300 text-yellow-400"
+                             : "text-base-content"
+                     }`}
+                     title="Link"
+                 >
+                     <FaLink />
+                 </button>
                 <button
                     onClick={() =>
                         fileInputRef.current && fileInputRef.current.click()
