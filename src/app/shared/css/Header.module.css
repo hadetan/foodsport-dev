@@ -29,7 +29,19 @@
     min-height: 100px;
 }
 .whiteNavBar * {
-    color: #333 !important; /* Ensure all text in white nav bar is dark */
+    color: #333 !important;
+    whiteNavBar h1,
+    .whiteNavBar h2,
+    .whiteNavBar h3,
+    .whiteNavBar h4,
+    .whiteNavBar h5,
+    .whiteNavBar h6,
+    .whiteNavBar p,
+    .whiteNavBar span,
+    .whiteNavBar a,
+    .whiteNavBar button {
+        color: #333; /* Ensure all text in white nav bar is dark */
+    }
 }
 
 .headerWrapper {

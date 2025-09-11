@@ -117,14 +117,14 @@ export default function Header() {
         return false;
     };
 
-    const activeIdx = filteredNavLinks.findIndex((link) => {
-        if (!link.href) return false;
+    const navLinksLeft = filteredNavLinks.filter((link) => !link.isButton);
 
+    const activeIdx = navLinksLeft.findIndex((link) => {
+        if (!link.href) return false;
         // Exact match check
         if (pathname === link.href) {
             return true;
         }
-
         // Special case for HOME
         if (
             authToken &&
@@ -133,7 +133,6 @@ export default function Header() {
         ) {
             return true;
         }
-
         // Parent path check
         return isParentPath(link.href, pathname);
     });
@@ -162,7 +161,7 @@ export default function Header() {
                         .filter((link) => link.isButton)
                         .map((link, idx) => (
                             <span
-                                key={idx}
+                                key={`${link.label}-${idx}`}
                                 className={styles.navButtonRight}
                                 style={{
                                     cursor: "pointer",
@@ -188,37 +187,34 @@ export default function Header() {
             </div>
             <nav className={styles.navBar}>
                 <ul className={styles.navList}>
-                    {/* Render nav links on the left only */}
-                    {filteredNavLinks
-                        .filter((link) => !link.isButton)
-                        .map((link, idx) => (
-                            <li
-                                key={idx}
-                                className={[
-                                    idx === activeIdx ? styles.active : "",
-                                    idx === hoveredIdx ? styles.navHover : "",
-                                ].join(" ")}
-                                onMouseEnter={() => setHoveredIdx(idx)}
-                                onMouseLeave={() => setHoveredIdx(null)}
-                                style={{
-                                    cursor: link.href ? "pointer" : "default",
-                                }}
-                            >
-                                {link.href ? (
-                                    <Link
-                                        href={link.href}
-                                        style={{
-                                            textDecoration: "none",
-                                            color: "inherit",
-                                        }}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                ) : (
-                                    link.label
-                                )}
-                            </li>
-                        ))}
+                    {navLinksLeft.map((link, idx) => (
+                        <li
+                            key={`${link.label}-${idx}`}
+                            className={[
+                                idx === activeIdx ? styles.active : "",
+                                idx === hoveredIdx ? styles.navHover : "",
+                            ].join(" ")}
+                            onMouseEnter={() => setHoveredIdx(idx)}
+                            onMouseLeave={() => setHoveredIdx(null)}
+                            style={{
+                                cursor: link.href ? "pointer" : "default",
+                            }}
+                        >
+                            {link.href ? (
+                                <Link
+                                    href={link.href}
+                                    style={{
+                                        textDecoration: "none",
+                                        color: "inherit",
+                                    }}
+                                >
+                                    {link.label}
+                                </Link>
+                            ) : (
+                                link.label
+                            )}
+                        </li>
+                    ))}
                 </ul>
             </nav>
         </header>
