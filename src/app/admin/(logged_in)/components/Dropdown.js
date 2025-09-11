@@ -9,6 +9,10 @@ const Dropdown = ({ items, name, selectedValue, onSelect, searchable }) => {
     );
     const dropdownRef = useRef(null);
 
+    useEffect(() => {
+        setInternalSelected(selectedValue || "");
+    }, [selectedValue]);
+
     const handleToggle = () => {
         setIsOpen((prev) => !prev);
     };
