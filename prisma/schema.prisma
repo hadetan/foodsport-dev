@@ -166,8 +166,11 @@ model AdminUser {
 model Activity {
   id                   String        @id @default(uuid())
   title                String
+  titleZh              String?       @map("title_zh")
   description          String?
+  descriptionZh        String?       @map("description_zh")
   summary              String?       @db.Text
+  summaryZh            String?       @db.Text @map("summary_zh")
   activityType         ActivityType  @map("activity_type")
   location             String
   startDate            DateTime      @map("start_date")
@@ -239,7 +242,7 @@ model InvitedUser {
   inviterId   String?  @map("inviter_id")
   tempUserId  String?  @map("temp_user_id")
   createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
 
   // Relations
   tempUser    TempUser? @relation(fields: [tempUserId], references: [id])
