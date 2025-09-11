@@ -241,6 +241,15 @@ export default function EditProfile() {
 		}
 	};
 
+	const avatarUrl = (() => {
+		const src = user.profilePictureUrl;
+        if (!src) return null;
+        if (src.includes('googleusercontent') || /^https?:\/\//i.test(src)) {
+            return src;
+        }
+        return `${process.env.NEXT_PUBLIC_SUPABASE_URL}${src}`;
+    })();
+
 	return (
 		<form className='edit-profile-form' onSubmit={handleSave}>
 			<div className='edit-profile-avatar-section'>
@@ -255,8 +264,7 @@ export default function EditProfile() {
 						) : user.profilePictureUrl ? (
 							<img
 								src={
-									process.env.NEXT_PUBLIC_SUPABASE_URL +
-									user.profilePictureUrl
+									avatarUrl
 								}
 								alt='Profile'
 								className='edit-profile-avatar'
