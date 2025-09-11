@@ -1,0 +1,31 @@
+import { Geist, Geist_Mono } from 'next/font/google';
+import LoadingBarRootClient from '@/app/LoadingBarRootClient';
+import '@/app/globals.css';
+
+const geistSans = Geist({
+	variable: '--font-geist-sans',
+	subsets: ['latin'],
+});
+
+const geistMono = Geist_Mono({
+	variable: '--font-geist-mono',
+	subsets: ['latin'],
+});
+
+export const metadata = {
+	title: 'Food-Sport',
+	description:
+		'A gamified activity tracking app where you can take participant in events with many others!',
+};
+export default async function LocaleRootLayout({ children }) {
+	return (
+		<html lang='en' data-theme='light'>
+			<body
+				className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col`}
+				data-theme='light'
+			>
+				<LoadingBarRootClient>{children}</LoadingBarRootClient>
+			</body>
+		</html>
+	);
+}

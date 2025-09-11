@@ -6,11 +6,12 @@ import ActivityItem from "@/app/shared/components/ActivityItem";
 import getActivityStatus from "@/utils/getActivityStatus";
 import sortFeaturedAndSoonest from "@/utils/sortFeaturedAndSoonest";
 import Hero from "@/app/shared/components/Hero";
-import ComingSoon from "@/app/(landing)/Components/ComingSoon";
+import ComingSoon from "@/app/[locale]/(landing)/Components/ComingSoon";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
-import ActivityItemSkeleton from "../shared/components/skeletons/ActivityItemSkeleton";
-import Button from "../shared/components/Button";
+import ActivityItemSkeleton from "@/app/shared/components/skeletons/ActivityItemSkeleton";
+import Button from "@/app/shared/components/Button";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function Home() {
     const { activities } = useActivities();
@@ -21,6 +22,8 @@ export default function Home() {
         return (status === 'upcoming' || status === 'ongoing') && a.status === 'active';
     });
     const sorted = sortFeaturedAndSoonest(filtered);
+
+    const t = useTranslations('HomePage');
 
     return (
         <>
