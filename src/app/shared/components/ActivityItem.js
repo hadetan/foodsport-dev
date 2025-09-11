@@ -173,12 +173,7 @@ export default function ActivityItem({ activity, user }) {
                 <div className={styles.metaContainer}>
                     <div className={styles.metaLeft}>
                         <div className={styles.detailsRow}>
-                            <Tooltip
-                                content={`The activity starts at ${formatDate(
-                                    activity.startDate
-                                )} and ends on ${formatDate(activity.endDate)}`}
-                                position="top"
-                            >
+                            <Tooltip content={tooltipText} position="top">
                                 <span className={styles.icon}>
                                     <FaCalendar size={19} />
                                 </span>
