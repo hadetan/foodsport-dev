@@ -24,7 +24,7 @@ const Avatar = ({ srcAvatar, firstName, lastName, isNav=false, pointer=false, si
         if (srcAvatar.includes('googleusercontent') || /^https?:\/\//i.test(srcAvatar)) {
             return srcAvatar;
         }
-        return `${process.env.NEXT_PUBLIC_SUPABASE_URL}${src}`;
+        return `${process.env.NEXT_PUBLIC_SUPABASE_URL}${srcAvatar}`;
     })();
 
     return (

@@ -113,7 +113,7 @@ export async function GET(request) {
 
 	try {
 		const url = new URL(request.url);
-		const activityId = url.searchParams.get('activityId') || url.searchParams.get('activity_id');
+		const activityId = url.searchParams.get('activityId');
 		if (!activityId) {
 			return NextResponse.json({ error: 'Missing activityId' }, { status: 400 });
 		}
