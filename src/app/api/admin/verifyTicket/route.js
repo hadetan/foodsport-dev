@@ -105,3 +105,40 @@ export async function POST(request) {
 
 	return NextResponse.json(responseBody);
 }
+
+export async function GET(request) {
+	const supabase = await createServerClient();
+	const { error } = await requireAdmin(supabase, NextResponse);
+	if (error) return error;
+
+	try {
+		const url = new URL(request.url);
+		const activityId = url.searchParams.get('activityId') || url.searchParams.get('activity_id');
+		if (!activityId) {
+			return NextResponse.json({ error: 'Missing activityId' }, { status: 400 });
+		}
+
+		const attendees = await prisma.userActivity.findMany({
+			where: { activityId, wasPresent: true },
+			include: {
+				user: { select: { id: true, email: true, firstname: true, lastname: true, profilePictureUrl: true } },
+				tempUser: { select: { id: true, email: true, firstname: true, lastname: true, dateOfBirth: true } },
+				ticket: { select: { ticketCode: true } },
+			},
+			orderBy: { joinedAt: 'asc' },
+		});
+
+		const result = attendees.map((a) => ({
+			userActivityId: a.id,
+			ticketCode: a.ticket?.ticketCode || null,
+			wasPresent: a.wasPresent,
+			joinedAt: a.joinedAt,
+			participant: a.user ? { type: 'user', ...a.user } : a.tempUser ? { type: 'tempUser', ...a.tempUser } : null,
+		}));
+
+		return NextResponse.json({ attendees: result });
+	} catch (err) {
+		return NextResponse.json({ error: 'Failed to fetch verified attendees', details: err.message }, { status: 500 });
+	}
+}
+
