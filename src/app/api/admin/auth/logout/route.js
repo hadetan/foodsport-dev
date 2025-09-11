@@ -11,12 +11,20 @@ export async function DELETE(_) {
 		await supabase.auth.signOut();
 		const all = typeof cookieStore.getAll === 'function' ? cookieStore.getAll() : [];
 		for (const c of all) {
-			if (c?.name?.startsWith && c.name.startsWith('sb')) {
-				cookieStore.delete?.(c.name) || cookieStore.set(c.name, '', { path: '/', maxAge: 0 });
+			if (c?.name?.startsWith?.('sb')) {
+				cookieStore.delete?.(c.name) ||
+					cookieStore.set(c.name, '', {
+						path: c.path || '/',
+						domain: c.domain,
+						maxAge: 0,
+					});
 			}
 		}
 		return NextResponse.json({ message: 'Logged out successfully.' });
 	} catch (err) {
-		return NextResponse.json({ error: 'Logout failed.', details: err.message }, { status: 500 });
+		return NextResponse.json(
+			{ error: 'Logout failed.', details: err.message },
+			{ status: 500 }
+		);
 	}
 }
