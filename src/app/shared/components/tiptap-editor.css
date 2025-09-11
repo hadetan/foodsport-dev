@@ -35,15 +35,98 @@
     padding-left: 2rem;
     margin: 1rem 0;
 }
+
+/* Nested list styles: change bullet/number types per depth and adjust indentation */
+.tiptap-editor ul {
+    list-style-type: disc; /* level 1 */
+}
+.tiptap-editor ul ul {
+    list-style-type: circle; /* level 2 */
+    margin-left: 1.25rem; /* extra indent for nested */
+}
+.tiptap-editor ul ul ul {
+    list-style-type: square; /* level 3 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ul ul ul ul {
+    list-style-type: disc; /* level 4 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ul ul ul ul ul {
+    list-style-type: circle; /* level 5 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ul ul ul ul ul ul {
+    list-style-type: square; /* level 6 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ul ul ul ul ul ul ul {
+    list-style-type: disc; /* level 7 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ul ul ul ul ul ul ul ul {
+    list-style-type: circle; /* level 8 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ul ul ul ul ul ul ul ul ul {
+    list-style-type: square; /* level 9 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ul ul ul ul ul ul ul ul ul ul {
+    list-style-type: disc; /* level 10 */
+    margin-left: 1.25rem;
+}
+
+.tiptap-editor ol {
+    list-style-type: decimal; /* level 1 */
+}
+.tiptap-editor ol ol {
+    list-style-type: lower-alpha; /* level 2 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ol ol ol {
+    list-style-type: lower-roman; /* level 3 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ol ol ol ol {
+    list-style-type: decimal; /* level 4 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ol ol ol ol ol {
+    list-style-type: lower-alpha; /* level 5 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ol ol ol ol ol ol {
+    list-style-type: lower-roman; /* level 6 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ol ol ol ol ol ol ol {
+    list-style-type: decimal; /* level 7 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ol ol ol ol ol ol ol ol {
+    list-style-type: lower-alpha; /* level 8 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ol ol ol ol ol ol ol ol ol {
+    list-style-type: lower-roman; /* level 9 */
+    margin-left: 1.25rem;
+}
+.tiptap-editor ol ol ol ol ol ol ol ol ol ol {
+    list-style-type: decimal; /* level 10 */
+    margin-left: 1.25rem;
+}
+
+/* Ensure nested lists keep proper spacing */
+.tiptap-editor ul, .tiptap-editor ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
 .tiptap-editor hr {
     border: none;
     border-top: 1px solid #333;
     margin: 2rem 0;
-}
-.tiptap-editor img {
-    max-width: 100%;
-    border-radius: 0.5rem;
-    margin: 1rem 0;
 }
 .tiptap-editor a {
     color: #2563eb; /* Tailwind blue-600 */
@@ -53,4 +136,53 @@
 .tiptap-editor .is-active {
     background: #a21caf;
     color: #fff;
+}
+
+/* Image grid layouts: default (1), 2 columns and 3 columns */
+.tiptap-editor .image-grid {
+    width: 100%;
+    margin: 1rem 0;
+}
+
+/* Default: behaves like normal block flow (images stacked or inline as inserted) */
+.tiptap-editor .image-grid.image-grid-1 {
+    display: block;
+}
+
+/* Two columns equally distributed */
+.tiptap-editor .image-grid.image-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    align-items: start;
+}
+
+/* Three columns equally distributed */
+.tiptap-editor .image-grid.image-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    align-items: start;
+}
+
+/* Ensure images inside grid are square and cropped */
+.tiptap-editor .image-grid img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+    border-radius: 0.5rem;
+}
+
+/* Fallback for browsers that don't support aspect-ratio */
+.tiptap-editor .image-grid img::before {
+    content: none;
+}
+
+/* Make sure images in non-grid also look good */
+.tiptap-editor img {
+    max-width: 100%;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    object-fit: contain;
 }

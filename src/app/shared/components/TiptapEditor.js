@@ -28,14 +28,60 @@ import {
 import { IoMdUndo, IoMdRedo } from "react-icons/io";
 import { useEffect, useState, useCallback, useRef } from "react";
 
+import { Node, mergeAttributes } from '@tiptap/core';
+
 const FONT_FAMILIES = [
-    { label: "Default", value: "" },
+    { label: "Default Font", value: "" },
     { label: "Arial", value: "Arial, Helvetica, sans-serif" },
     { label: "Times New Roman", value: "'Times New Roman', Times, serif" },
     { label: "Georgia", value: "Georgia, serif" },
     { label: "Courier New", value: "'Courier New', Courier, monospace" },
     { label: "Verdana", value: "Verdana, Geneva, sans-serif" },
 ];
+
+const ImageGrid = Node.create({
+    name: 'imageGrid',
+    group: 'block',
+    content: 'image+',
+    selectable: true,
+    draggable: false,
+    addAttributes() {
+        return {
+            cols: {
+                default: 1,
+            },
+        };
+    },
+    parseHTML() {
+        return [
+            {
+                tag: 'div.image-grid',
+            },
+        ];
+    },
+    renderHTML({ HTMLAttributes }) {
+        const cols = HTMLAttributes.cols || 1;
+        return [
+            'div',
+            mergeAttributes({ class: `image-grid image-grid-${cols}`, 'data-cols': cols }, HTMLAttributes),
+            0,
+        ];
+    },
+    addCommands() {
+        return {
+            setImageGrid:
+                attrs =>
+                ({ commands }) => {
+                    return commands.wrapIn(this.name, attrs);
+                },
+            unsetImageGrid:
+                () =>
+                ({ commands }) => {
+                    return commands.lift(this.name);
+                },
+        };
+    },
+});
 
 export default function TiptapEditor({ value, onChange }) {
     const editor = useEditor({
@@ -54,6 +100,7 @@ export default function TiptapEditor({ value, onChange }) {
             Underline,
             Link,
             Image,
+            ImageGrid,
             BulletList.configure({
                 HTMLAttributes: {
                     class: "list-disc pl-6",
@@ -86,12 +133,32 @@ export default function TiptapEditor({ value, onChange }) {
                 spellCheck: "true",
                 dir: "ltr",
             },
+            handleKeyDown(view, event) {
+                try {
+                    if (event.key === 'Tab') {
+                        const inList = editor && (editor.isActive('listItem') || editor.isActive('bulletList') || editor.isActive('orderedList'));
+                        if (!inList) {
+                            return false;
+                        }
+                        event.preventDefault();
+                        if (event.shiftKey) {
+                            editor.chain().focus().liftListItem('listItem').run();
+                            return true;
+                        } else {
+                            editor.chain().focus().sinkListItem('listItem').run();
+                            return true;
+                        }
+                     }
+                 } catch (err) {
+                     console.error('handleKeyDown error', err);
+                 }
+                 return false;
+             },
         },
     });
 
     const fileInputRef = useRef(null);
 
-    // Handle local image selection and insert as data URL
     const handleImageSelect = (event) => {
         const file = event.target.files && event.target.files[0];
         if (!file) return;
@@ -103,7 +170,6 @@ export default function TiptapEditor({ value, onChange }) {
             }
         };
         reader.readAsDataURL(file);
-        // Reset input so same file can be selected again
         event.target.value = "";
     };
 
@@ -133,6 +199,8 @@ export default function TiptapEditor({ value, onChange }) {
             alignJustify: editor.isActive({ textAlign: "justify" }),
             currentFontFamily:
                 editor.getAttributes("textStyle")?.fontFamily || "",
+            isImageGrid: editor.isActive('imageGrid'),
+            currentImageGridCols: editor.getAttributes('imageGrid')?.cols || 1,
         };
     }, [editor]);
 
@@ -227,6 +295,33 @@ export default function TiptapEditor({ value, onChange }) {
                         ))}
                     </select>
                 </div>
+                {/* Layout / Image Grid Dropdown */}
+                <div className="relative">
+                    <select
+                        className="p-2 rounded bg-base-100 text-base-content border border-base-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 appearance-none"
+                        value={toolbarState.currentImageGridCols || 1}
+                        onChange={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            if (val === 1) {
+                                if (editor.isActive('imageGrid')) {
+                                    editor.chain().focus().unsetImageGrid().run();
+                                }
+                            } else {
+                                if (editor.isActive('imageGrid')) {
+                                    editor.chain().focus().updateAttributes('imageGrid', { cols: val }).run();
+                                } else {
+                                    editor.chain().focus().setImageGrid({ cols: val }).run();
+                                }
+                            }
+                        }}
+                        title="Layout / Image Grid"
+                        style={{ minWidth: 120 }}
+                    >
+                        <option value={1}>Default Layout</option>
+                        <option value={2}>Grid 2</option>
+                        <option value={3}>Grid 3</option>
+                    </select>
+                </div>
                 <button
                     onClick={() => editor.chain().focus().toggleBold().run()}
                     disabled={!toolbarState.canBold}
@@ -313,11 +408,27 @@ export default function TiptapEditor({ value, onChange }) {
                 </button>
                 <button
                     onClick={() => {
-                        // Toggle link on selection: if already a link, remove; else, add with default href
-                        if (editor.isActive("link")) {
-                            editor.chain().focus().unsetLink().run();
-                        } else {
-                            editor.chain().focus().setLink({ href: "#" }).run();
+                        try {
+                            if (editor.isActive("link")) {
+                                const current = editor.getAttributes('link') || {};
+                                const currentHref = current.href || '';
+                                const url = window.prompt('Enter URL (leave empty to remove)', currentHref);
+                                if (url === null) return;
+                                const trimmed = url.trim();
+                                if (trimmed === '') {
+                                    editor.chain().focus().unsetLink().run();
+                                } else {
+                                    editor.chain().focus().extendMarkRange('link').setLink({ href: trimmed, target: '_blank', rel: 'noopener noreferrer' }).run();
+                                }
+                            } else {
+                                const url = window.prompt('Enter URL', 'https://');
+                                if (!url) return;
+                                const trimmed = url.trim();
+                                if (trimmed === '') return;
+                                editor.chain().focus().setLink({ href: trimmed, target: '_blank', rel: 'noopener noreferrer' }).run();
+                            }
+                        } catch (err) {
+                            console.error('Link command failed', err);
                         }
                     }}
                     className={`p-2 rounded hover:bg-base-300 ${
