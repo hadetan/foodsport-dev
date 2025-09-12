@@ -367,7 +367,7 @@ export default function EditActivityPage() {
                     activeTab={activeTab}
                     activityId={activityId}
                 />
-                {activeTab === "details" ? (
+                {activeTab === "details" && (
                     <>
                         <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-black">
                             Edit Activity
@@ -869,8 +869,6 @@ export default function EditActivityPage() {
                             </div>
                         )}
                     </>
-                ) : (
-                    <ActivityDetailsStep activityId={activityId} />
                 )}
             </div>
         </div>

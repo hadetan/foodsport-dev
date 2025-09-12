@@ -18,9 +18,9 @@ const CreateActivityPage = () => {
     const router = useRouter();
     const [formData, setFormData] = useState({
         title: "",
-        chineseTitle: "", // new field
+        titleZh: "", // new field
         activityType: "", // will store the formatted value
-        description: "",
+        descriptionZh: "",
         chineseSummary: "", // new field
         startDateTime: "",
         endDateTime: "",
@@ -127,9 +127,9 @@ const CreateActivityPage = () => {
     const validateFields = () => {
         const requiredFields = [
             "title",
-            "chineseTitle", // new required field
+            "titleZh", // new required field
             "activityType",
-            "description",
+            "descriptionZh",
             "chineseSummary", // new required field
             "location",
             "capacity",
@@ -258,6 +258,7 @@ const CreateActivityPage = () => {
                     : "";
             const payload = {
                 title: formData.title,
+                titleZh: formData.titleZh,
                 activityType: formData.activityType, // already formatted
                 location: formData.location,
                 startDate: startISO,
@@ -265,6 +266,7 @@ const CreateActivityPage = () => {
                 startTime: startISO,
                 endTime: endISO,
                 description: formData.description,
+                descriptionZh: formData.descriptionZh,
                 status: formData.status,
                 participantLimit: Number(formData.capacity),
                 caloriesPerHour,
@@ -323,9 +325,9 @@ const CreateActivityPage = () => {
             </div>
             <div className="w-full bg-white  overflow-y-auto mb-2">
                 {/* Tabs */}
-                <Tabs setTab={setTab} activeTab={tab} />
+                <Tabs setTab={setTab} activeTab={tab} activityId={activityId} />
 
-                {tab === "details" ? (
+                {tab === "details" && (
                     <>
                         <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-black">
                             Create Activity
@@ -452,22 +454,22 @@ const CreateActivityPage = () => {
                                     )}
                                 </div>
 
-                                {/* Chinese Title (separated to control spacing) */}
+                                {/* Chinese Title (titleZh) */}
                                 <div className="form-control w-full col-span-1">
                                     <label className="label text-lg font-semibold mb-1 text-black">
                                         Chinese Title
                                     </label>
                                     <input
                                         className="input input-bordered input-lg w-full bg-white text-black mb-0"
-                                        name="chineseTitle"
-                                        value={formData.chineseTitle}
+                                        name="titleZh"
+                                        value={formData.titleZh}
                                         onChange={handleFormChange}
                                         maxLength={100}
                                         required
                                     />
-                                    {fieldErrors.chineseTitle && (
+                                    {fieldErrors.titleZh && (
                                         <span className="text-error text-base">
-                                            {fieldErrors.chineseTitle}
+                                            {fieldErrors.titleZh}
                                         </span>
                                     )}
                                 </div>
@@ -510,7 +512,7 @@ const CreateActivityPage = () => {
                                     )}
                                 </div>
 
-                                {/* Summary */}
+                                {/* Summary (description) */}
                                 <div className="form-control w-full col-span-1 xl:col-span-1">
                                     <label className="label text-lg font-semibold mb-2 text-black">
                                         Summary
@@ -538,22 +540,25 @@ const CreateActivityPage = () => {
                                             {fieldErrors.description}
                                         </span>
                                     )}
-                                    {/* Chinese Summary */}
+                                </div>
+
+                                {/* Chinese Summary (chineseSummary) */}
+                                <div className="form-control w-full col-span-1 xl:col-span-1">
                                     <label className="label text-lg font-semibold mb-2 text-black">
                                         Chinese Summary
                                     </label>
                                     <textarea
                                         className="textarea textarea-bordered textarea-lg w-full bg-white text-black resize-none min-h-[92px]"
-                                        name="chineseSummary"
-                                        value={formData.chineseSummary}
+                                        name="descriptionZh"
+                                        value={formData.descriptionZh}
                                         onChange={handleFormChange}
                                         required
                                         rows={3}
                                         placeholder="Enter Chinese summary"
                                     />
-                                    {fieldErrors.chineseSummary && (
+                                    {fieldErrors.descriptionZh && (
                                         <span className="text-error text-base">
-                                            {fieldErrors.chineseSummary}
+                                            {fieldErrors.descriptionZh}
                                         </span>
                                     )}
                                 </div>
@@ -811,8 +816,6 @@ const CreateActivityPage = () => {
                             </div>
                         </form>
                     </>
-                ) : (
-                    <ActivityDetailsStep activityId={activityId} />
                 )}
             </div>
         </div>

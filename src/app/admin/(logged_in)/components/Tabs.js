@@ -46,6 +46,9 @@ export default function Tabs({ setTab, activeTab, activityId }) {
                     Chinese Description
                 </a>
             </div>
+            {activeTab === "description" && (
+                <ActivityDetailsStep activityId={activityId} isChinese={false} />
+            )}
             {activeTab === "chinese" && (
                 <ActivityDetailsStep activityId={activityId} isChinese={true} />
             )}

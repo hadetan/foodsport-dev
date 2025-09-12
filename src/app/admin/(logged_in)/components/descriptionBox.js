@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import axiosClient from "@/utils/axios/api"; // import your axios client
 
 const ActivityDetailsStep = ({ activityId, isChinese }) => {
     const router = useRouter();
-    const params = useParams();
     const [details, setDetails] = useState("");
     const [showPreview, setShowPreview] = useState(false);
 
@@ -16,7 +15,8 @@ const ActivityDetailsStep = ({ activityId, isChinese }) => {
             // Send description as JSON
             await axiosClient.patch(
                 `/admin/activities/summary?id=${activityId}`,
-                { summary: details },
+                isChinese ? { summaryZh: details } : { summary: details },
+
                 {
                     headers: { "Content-Type": "application/json" },
                 }
@@ -30,42 +30,7 @@ const ActivityDetailsStep = ({ activityId, isChinese }) => {
         }
     };
 
-    const validate = () => {
-        const errs = {};
-        if (!form.title || form.title.length < 5 || form.title.length > 100)
-            errs.title = "Title must be 5-100 characters.";
-
-        if (!form.activityType)
-            errs.activityType = "Activity type is required.";
-        if (!form.date) errs.datetime = "Date is required.";
-        else {
-            const dt = new Date(form.date);
-            if (dt < new Date()) errs.datetime = "Date must be in the future.";
-        }
-        if (!form.location) errs.location = "Location is required.";
-        const cap = parseInt(form.capacity, 10);
-        if (!cap || cap < 1 || cap > 1000)
-            errs.capacity = "Capacity must be 1-1000.";
-        const points = parseFloat(form.totalCaloriesBurnt);
-        if (isNaN(points) || points <= 0)
-            errs.totalCaloriesBurnt =
-                "Total calories burnt must be a positive number.";
-        const calories = parseFloat(form.caloriesPerHour);
-        if (isNaN(calories) || calories <= 0)
-            errs.caloriesPerHour =
-                "Calories per hour must be a positive number.";
-        if (imageFile === null) errs.images = "An image is required.";
-        if (
-            imageFile &&
-            imageFile.type &&
-            !["image/jpeg", "image/png"].includes(imageFile.type)
-        )
-            errs.image = "Only JPG/PNG allowed.";
-        if (imageFile && imageFile.size && imageFile.size > 5 * 1024 * 1024)
-            errs.image = "Max size 5MB.";
-        setErrors(errs);
-        return Object.keys(errs).length === 0;
-    };
+    console.log(isChinese)
 
     return (
         <div className="min-h-screen w-full text-base">
@@ -73,7 +38,7 @@ const ActivityDetailsStep = ({ activityId, isChinese }) => {
                 <h1 className="text-4xl font-bold text-center flex-1 tracking-tight">
                     {isChinese
                         ? " Add Chinese Description"
-                        : "Add Detailed Description"}
+                        : "Add English Description"}
                 </h1>
                 <div className="flex gap-2">
                     <button
