@@ -1,13 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import axiosClient from "@/utils/axios/api"; // import your axios client
 
-const ActivityDetailsStep = ({ activityId, isChinese }) => {
+const ActivityDetailsStep = ({
+    activityId,
+    isChinese,
+    setTab,
+    summary,
+    summaryZh,
+}) => {
     const router = useRouter();
-    const [details, setDetails] = useState("");
+    const [details, setDetails] = useState(
+        isChinese ? summaryZh || "" : summary || ""
+    );
+    // Populate later when props arrive (avoid overwriting user edits)
+    useEffect(() => {
+        if (!details) {
+            if (isChinese && summaryZh) setDetails(summaryZh);
+            if (!isChinese && summary) setDetails(summary);
+        }
+    }, [summary, summaryZh, isChinese, details]);
     const [showPreview, setShowPreview] = useState(false);
 
     const handleSave = async () => {
@@ -21,7 +36,8 @@ const ActivityDetailsStep = ({ activityId, isChinese }) => {
                     headers: { "Content-Type": "application/json" },
                 }
             );
-            router.push("/admin/activities");
+            isChinese && router.push("/admin/activities");
+            !isChinese && setTab("chinese");
         } catch (err) {
             alert(
                 "Error saving activity: " +
@@ -30,7 +46,7 @@ const ActivityDetailsStep = ({ activityId, isChinese }) => {
         }
     };
 
-    console.log(isChinese)
+    console.log(isChinese);
 
     return (
         <div className="min-h-screen w-full text-base">
