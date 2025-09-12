@@ -15,6 +15,7 @@ import { FaLocationDot } from 'react-icons/fa6';
 import calculateTimer from '@/utils/calculateTimer';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/authContext';
+import { useTranslations } from 'next-intl';
 
 function formatTime(activity) {
 	const formattedStartTime = new Date(activity.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -32,6 +33,7 @@ export default function ActivityItem({
 }) {
 	const router = useRouter();
 	const { authToken } = useAuth();
+	const t = useTranslations('HomePage');
 
 	const { formattedStartTime, formattedEndTime } = formatTime(activity);
 	const redirectUrl = user
@@ -90,6 +92,7 @@ export default function ActivityItem({
 			:
 			router.push(`/activities?type=${encodeURIComponent(actType)}`);
 	}
+
 
 	return (
 		<div className={styles.card}>
