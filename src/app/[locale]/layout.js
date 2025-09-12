@@ -1,30 +1,34 @@
-import { Geist, Geist_Mono } from 'next/font/google';
-import LoadingBarRootClient from '@/app/LoadingBarRootClient';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import '@/app/globals.css';
+import LoadingBarRootClient from '@/app/LoadingBarRootClient';
+import { locales } from '@@/src/i18n/request';
 
-const geistSans = Geist({
-	variable: '--font-geist-sans',
-	subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-	variable: '--font-geist-mono',
-	subsets: ['latin'],
-});
+export function generateStaticParams() {
+	return locales.map((locale) => ({ locale }));
+}
 
 export const metadata = {
 	title: 'Food-Sport',
 	description:
 		'A gamified activity tracking app where you can take participant in events with many others!',
 };
-export default async function LocaleRootLayout({ children }) {
+
+export default async function LocaleRootLayout({ children, params }) {
+	const awaitedParams = await params;
+	const locale = awaitedParams.locale;
+	setRequestLocale(locale);
+	const messages = await getMessages();
 	return (
-		<html lang='en' data-theme='light'>
-			<body
-				className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col`}
-				data-theme='light'
-			>
-				<LoadingBarRootClient>{children}</LoadingBarRootClient>
+		<html lang={locale} data-theme='light'>
+			<body className='min-h-screen flex flex-col' data-theme='light'>
+				<NextIntlClientProvider
+					locale={locale}
+					messages={messages}
+					timeZone='Asia/Hong_Kong'
+				>
+					<LoadingBarRootClient>{children}</LoadingBarRootClient>
+				</NextIntlClientProvider>
 			</body>
 		</html>
 	);

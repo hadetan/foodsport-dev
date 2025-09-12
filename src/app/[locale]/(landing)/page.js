@@ -11,7 +11,7 @@ import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import ActivityItemSkeleton from "@/app/shared/components/skeletons/ActivityItemSkeleton";
 import Button from "@/app/shared/components/Button";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 export default function Home() {
     const { activities } = useActivities();
@@ -23,7 +23,8 @@ export default function Home() {
     });
     const sorted = sortFeaturedAndSoonest(filtered);
 
-    const t = useTranslations('HomePage');
+    const t = useTranslations();
+    const locale = useLocale();
 
     return (
         <>
@@ -44,12 +45,12 @@ export default function Home() {
                         ))}
             </div>
             <div className={styles.exploreCont}>
-				<Button
-					className={styles.explore}
-					onClick={() => router.push('/activities')}
-				>
-					EXPLORE MORE ACTIVITIES
-				</Button>
+                <Button
+                    className={styles.explore}
+                    onClick={() => router.push(`/${locale}/activities`)}
+                >
+                    {t('Landing.exploreMoreActivities')}
+                </Button>
             </div>
             <ComingSoon />
         </>

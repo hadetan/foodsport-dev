@@ -1,42 +1,83 @@
 import { NextResponse } from 'next/server';
+import { defaultLocale, LOCALE_COOKIE, locales } from '@@/src/i18n/config';
 
-export function middleware(request) {
-  // Find any cookie starting with 'sb' (Supabase session cookie)
-  let token = null;
-  for (const [name, value] of request.cookies) {
-    if (name.startsWith('sb')) {
-      token = value;
-      break;
+function isBypassed(pathname) {
+  return pathname.startsWith('/admin') || pathname.startsWith('/api');
+}
+
+function detectPreferredLocale(request) {
+  const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value;
+  if (cookieLocale && locales.includes(cookieLocale)) return cookieLocale;
+  const header = request.headers.get('accept-language');
+  if (header) {
+    const ranked = header.split(',').map(part => {
+      const [lang, qPart] = part.trim().split(';');
+      const q = qPart ? parseFloat(qPart.split('=')[1]) : 1;
+      return { lang: lang.toLowerCase(), q };
+    }).sort((a, b) => b.q - a.q);
+    for (const { lang } of ranked) {
+      if (lang.startsWith('zh')) return 'zh-HK';
+      if (lang === 'en' || lang.startsWith('en-')) return 'en';
     }
   }
-  const url = request.nextUrl;
+  return defaultLocale;
+}
 
-  // If not logged in and visiting /my/activities/:id, redirect to /activities/:id
-  if (!token && url.pathname.startsWith('/my/activities/')) {
-    const newPath = url.pathname.replace(/^\/my/, '');
-    return NextResponse.redirect(new URL(newPath + url.search, request.url));
+export function middleware(request) {
+  const url = request.nextUrl;
+  const { pathname } = url;
+
+  if (isBypassed(pathname)) {
+    return NextResponse.next();
   }
 
-  // If logged in and visiting /activities/:id, redirect to /my/activities/:id
-  if (token && url.pathname.startsWith('/activities/')) {
-    const newPath = '/my' + url.pathname;
-    return NextResponse.redirect(new URL(newPath + url.search, request.url));
+  let token = null;
+  for (const [name, value] of request.cookies) {
+    if (name.startsWith('sb')) { token = value; break; }
+  }
+
+  const segments = pathname.split('/').filter(Boolean);
+  const hasLocale = segments.length > 0 && locales.includes(segments[0]);
+  let currentLocale = hasLocale ? segments[0] : null;
+
+  if (!hasLocale) {
+    currentLocale = detectPreferredLocale(request);
+    const newPathname = `/${currentLocale}${pathname === '/' ? '' : pathname}`;
+    const redirectUrl = new URL(newPathname + url.search, request.url);
+    const res = NextResponse.redirect(redirectUrl);
+    res.cookies.set(LOCALE_COOKIE, currentLocale, { path: '/', maxAge: 60 * 60 * 24 * 365 });
+    return res;
+  }
+
+  const response = NextResponse.next();
+  response.cookies.set(LOCALE_COOKIE, currentLocale, { path: '/', maxAge: 60 * 60 * 24 * 365 });
+
+  const localePrefix = `/${currentLocale}`;
+  const remainderPath = '/' + segments.slice(1).join('/');
+
+  if (!token && remainderPath.startsWith('/my/activities/')) {
+    const target = remainderPath.replace(/^\/my/, '');
+    return NextResponse.redirect(new URL(`${localePrefix}${target}${url.search}`, request.url));
+  }
+
+  if (token && remainderPath.startsWith('/activities/')) {
+    const target = '/my' + remainderPath;
+    return NextResponse.redirect(new URL(`${localePrefix}${target}${url.search}`, request.url));
   }
 
   if (token) {
-    // If logged in and visiting landing page, redirect to /my
-    if (url.pathname === '/') {
-      return NextResponse.redirect(new URL('/my', request.url));
+    if (pathname === `${localePrefix}/` || pathname === localePrefix) {
+      return NextResponse.redirect(new URL(`${localePrefix}/my`, request.url));
     }
   } else {
-    // If not logged in and visiting /my (but not /my/activities), redirect to /auth/login
-    if (url.pathname.startsWith('/my') && !url.pathname.startsWith('/my/activities/')) {
-      return NextResponse.redirect(new URL('/auth/login', request.url));
+    if (remainderPath.startsWith('/my') && !remainderPath.startsWith('/my/activities/')) {
+      return NextResponse.redirect(new URL(`${localePrefix}/auth/login`, request.url));
     }
   }
-  return NextResponse.next();
+
+  return response;
 }
 
 export const config = {
-  matcher: ['/', '/my/:path*', '/activities/:path*', '/admin/:path*'],
+  matcher: ['/((?!_next|favicon.ico|robots.txt|admin).*)'],
 };

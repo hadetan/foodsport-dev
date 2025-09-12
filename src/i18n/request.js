@@ -1,11 +1,12 @@
-import {getRequestConfig} from 'next-intl/server';
- 
-export default getRequestConfig(async () => {
-  // Static for now, we'll change this later
-  const locale = 'en';
- 
+import { getRequestConfig } from 'next-intl/server';
+import { locales, defaultLocale, isLocale } from '@@/src/i18n/config';
+
+export default getRequestConfig(async ({ locale }) => {
+  const target = isLocale(locale) ? locale : defaultLocale;
   return {
-    locale,
-    messages: (await import(`./messages/${locale}.json`)).default
+    locale: target,
+    messages: (await import(`./messages/${target}.json`)).default
   };
 });
+
+export { locales };

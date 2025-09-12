@@ -1,10 +1,5 @@
-import LoadingBarRootClient from './LoadingBarRootClient';
-import { NextIntlClientProvider } from 'next-intl';
+import LoadingBarRootClient from '@/app/LoadingBarRootClient';
 
-export default async function RootLayout({ children }) {
-	return (
-		<NextIntlClientProvider>
-			<LoadingBarRootClient>{children}</LoadingBarRootClient>
-		</NextIntlClientProvider>
-	);
+export default function RootLayout({ children }) {
+	return <LoadingBarRootClient>{children}</LoadingBarRootClient>;
 }
