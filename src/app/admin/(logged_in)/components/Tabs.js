@@ -1,5 +1,7 @@
 "use client";
 
+import ActivityDetailsStep from "./descriptionBox";
+
 export default function Tabs({ setTab, activeTab, activityId }) {
     return (
         <div className="w-full">
@@ -30,7 +32,23 @@ export default function Tabs({ setTab, activeTab, activityId }) {
                 >
                     Description
                 </a>
+                <a
+                    role="tab"
+                    href="#"
+                    className={`tab tab-lg rounded-lg font-semibold ${
+                        activeTab === "chinese" ? "tab-active" : ""
+                    }`}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        setTab("chinese");
+                    }}
+                >
+                    Chinese Description
+                </a>
             </div>
+            {activeTab === "chinese" && (
+                <ActivityDetailsStep activityId={activityId} isChinese={true} />
+            )}
         </div>
     );
 }
