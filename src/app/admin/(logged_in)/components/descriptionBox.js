@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import axiosClient from "@/utils/axios/api"; // import your axios client
 
-const ActivityDetailsStep = ({ activityId }) => {
+const ActivityDetailsStep = ({ activityId, isChinese }) => {
     const router = useRouter();
     const params = useParams();
     const [details, setDetails] = useState("");
@@ -70,9 +70,10 @@ const ActivityDetailsStep = ({ activityId }) => {
     return (
         <div className="min-h-screen w-full text-base">
             <div className="flex items-center justify-between mb-10 px-0 md:px-8 pt-8">
-                
                 <h1 className="text-4xl font-bold text-center flex-1 tracking-tight">
-                    Add Detailed Description
+                    {isChinese
+                        ? " Add Chinese Description"
+                        : "Add Detailed Description"}
                 </h1>
                 <div className="flex gap-2">
                     <button
@@ -90,9 +91,7 @@ const ActivityDetailsStep = ({ activityId }) => {
                     </button>
                 </div>
             </div>
-            <label className="block mb-4 mt-2 ml-2 text-xl font-semibold text-neutral-800">
-                Detailed Description
-            </label>
+
             <TiptapEditor value={details} onChange={setDetails} />
             {showPreview && (
                 <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">

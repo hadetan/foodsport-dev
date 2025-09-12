@@ -1,5 +1,7 @@
 "use client";
 
+import ActivityDetailsStep from "./descriptionBox";
+
 export default function Tabs({ setTab, activeTab, activityId }) {
     return (
         <div className="w-full">
@@ -45,13 +47,7 @@ export default function Tabs({ setTab, activeTab, activityId }) {
                 </a>
             </div>
             {activeTab === "chinese" && (
-                <div className="w-full">
-                    <h2 className="text-2xl font-bold mb-4">
-                        Chinese Description
-                    </h2>
-                    {/* TipTap editor component goes here */}
-                    {/* <TipTapEditor /> */}
-                </div>
+                <ActivityDetailsStep activityId={activityId} isChinese={true} />
             )}
         </div>
     );
