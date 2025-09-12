@@ -30,7 +30,29 @@ export default function Tabs({ setTab, activeTab, activityId }) {
                 >
                     Description
                 </a>
+                <a
+                    role="tab"
+                    href="#"
+                    className={`tab tab-lg rounded-lg font-semibold ${
+                        activeTab === "chinese" ? "tab-active" : ""
+                    }`}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        setTab("chinese");
+                    }}
+                >
+                    Chinese Description
+                </a>
             </div>
+            {activeTab === "chinese" && (
+                <div className="w-full">
+                    <h2 className="text-2xl font-bold mb-4">
+                        Chinese Description
+                    </h2>
+                    {/* TipTap editor component goes here */}
+                    {/* <TipTapEditor /> */}
+                </div>
+            )}
         </div>
     );
 }
