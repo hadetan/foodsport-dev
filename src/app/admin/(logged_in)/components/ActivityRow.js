@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pencil, Eye,TicketCheck } from "lucide-react";
+import { Pencil, Eye, TicketCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import formatDate from "@/utils/formatDate";
 
@@ -24,6 +24,11 @@ const ActivityRow = ({ activity, onRowClick }) => {
     const handleViewDetails = (e) => {
         e.stopPropagation(); // Prevent row click event
         router.push(`/admin/activities/viewActivity/${activity.id}`);
+    };
+
+    const handleVerifyTicket = (e) => {
+        e.stopPropagation();
+        router.push(`/admin/activities/verifyTicket?activityId=${activity.id}`);
     };
 
     const handleRowClick = () => {
@@ -160,7 +165,15 @@ const ActivityRow = ({ activity, onRowClick }) => {
                         >
                             <Pencil size={25} className="text-black-400" />
                         </button>
-                        <TicketCheck />
+                        <button
+                            className="btn btn-sm btn-ghost btn-square cursor-pointer"
+                            onClick={handleVerifyTicket}
+                            title="Verify Ticket"
+                            type="button"
+                            tabIndex={0}
+                        >
+                            <TicketCheck />
+                        </button>
                     </div>
                 </td>
             </tr>
