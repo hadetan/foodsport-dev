@@ -16,7 +16,7 @@ import calculateTimer from '@/utils/calculateTimer';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/authContext';
 import { useTranslations, useLocale } from 'next-intl';
-import { pickLocalized } from '@@/src/i18n/config';
+import { pickLocalized } from '@/i18n/config';
 
 function formatTime(activity) {
 	const formattedStartTime = new Date(activity.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

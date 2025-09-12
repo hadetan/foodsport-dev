@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { defaultLocale, LOCALE_COOKIE, locales } from '@@/src/i18n/config';
+import { LOCALE_COOKIE, locales, defaultLocale } from '@/i18n/config';
 
 function isBypassed(pathname) {
   if (pathname.startsWith('/admin') || pathname.startsWith('/api')) return true;
@@ -9,7 +9,9 @@ function isBypassed(pathname) {
 
 function detectPreferredLocale(request) {
   const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value;
-  if (cookieLocale && locales.includes(cookieLocale)) return cookieLocale;
+  if (cookieLocale && locales.some(l => l.toLowerCase() === cookieLocale.toLowerCase())) {
+    return locales.find(l => l.toLowerCase() === cookieLocale.toLowerCase());
+  }
   const header = request.headers.get('accept-language');
   if (header) {
     const ranked = header.split(',').map(part => {
@@ -29,6 +31,14 @@ export function middleware(request) {
   const url = request.nextUrl;
   const { pathname } = url;
 
+  // If someone manually adds a locale prefix before an admin route, redirect to locale-less /admin.
+  const localeAdminMatch = pathname.match(/^\/(en|zh-HK)\/(admin(?:\/.*)?)/);
+  if (localeAdminMatch) {
+    const adminRemainder = '/' + localeAdminMatch[2];
+    const redirectUrl = new URL(adminRemainder + url.search, request.url);
+    return NextResponse.redirect(redirectUrl);
+  }
+
   if (isBypassed(pathname)) {
     return NextResponse.next();
   }
@@ -46,8 +56,9 @@ export function middleware(request) {
   }
 
   const segments = pathname.split('/').filter(Boolean);
-  const hasLocale = segments.length > 0 && locales.includes(segments[0]);
-  let currentLocale = hasLocale ? segments[0] : null;
+  const seg0 = segments[0];
+  const hasLocale = segments.length > 0 && seg0 && locales.some(l => l.toLowerCase() === seg0.toLowerCase());
+  let currentLocale = hasLocale ? (locales.find(l => l.toLowerCase() === seg0.toLowerCase()) || defaultLocale) : null;
 
   if (!hasLocale) {
     currentLocale = detectPreferredLocale(request);

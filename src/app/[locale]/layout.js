@@ -2,7 +2,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import '@/app/globals.css';
 import LoadingBarRootClient from '@/app/LoadingBarRootClient';
-import { locales } from '@@/src/i18n/request';
+import { locales } from '@/i18n/request';
+import LocaleAlternateLinks from '@/app/[locale]/LocaleAlternateLinks';
 
 export function generateStaticParams() {
 	return locales.map((locale) => ({ locale }));
@@ -19,6 +20,7 @@ export default async function LocaleRootLayout({ children, params }) {
 	const locale = awaitedParams.locale;
 	setRequestLocale(locale);
 	const messages = await getMessages();
+
 	return (
 		<html lang={locale} data-theme='light'>
 			<body className='min-h-screen flex flex-col' data-theme='light'>
@@ -27,6 +29,7 @@ export default async function LocaleRootLayout({ children, params }) {
 					messages={messages}
 					timeZone='Asia/Hong_Kong'
 				>
+					<LocaleAlternateLinks />
 					<LoadingBarRootClient>{children}</LoadingBarRootClient>
 				</NextIntlClientProvider>
 			</body>
