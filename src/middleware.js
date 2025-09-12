@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 import { defaultLocale, LOCALE_COOKIE, locales } from '@@/src/i18n/config';
 
 function isBypassed(pathname) {
-  return pathname.startsWith('/admin') || pathname.startsWith('/api');
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api')) return true;
+  if (pathname.startsWith('/_next')) return true;
+  return false;
 }
 
 function detectPreferredLocale(request) {
@@ -29,6 +31,13 @@ export function middleware(request) {
 
   if (isBypassed(pathname)) {
     return NextResponse.next();
+  }
+
+  const staticAssetMatch = pathname.match(/^\/(en|zh-HK)\/(.+\.(?:png|jpe?g|gif|svg|webp|ico))$/i);
+  if (staticAssetMatch) {
+    const file = staticAssetMatch[2];
+    const rewriteUrl = new URL('/' + file, request.url);
+    return NextResponse.rewrite(rewriteUrl);
   }
 
   let token = null;
