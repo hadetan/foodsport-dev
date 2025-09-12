@@ -1,7 +1,7 @@
 {
   "ActivityItem": {
     "toStart": "開始倒數",
-    "daysToGo": "{count, plural, one {# Day to go} other {# Days to go}}",
+    "daysToGo": "{count, plural, one {尚餘 # 日} other {尚餘 # 日}}",
     "ongoing": "進行中",
     "expired": "已結束",
     "seatsLeft": "{count, plural, one {尚餘 # 個名額} other {尚餘 # 個名額}}"

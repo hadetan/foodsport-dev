@@ -7,7 +7,7 @@ export default function AdminLoginLayout({ children }) {
 	return (
 		<html>
 			<body>
-				<div className='min-h-screen bg-base-100'>{children}</div>;
+				<div className='min-h-screen bg-base-100'>{children}</div>
 			</body>
 		</html>
 	)
