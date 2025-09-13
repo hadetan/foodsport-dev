@@ -1,10 +1,48 @@
 {
+  "RegisterPage": {
+    "title": "Register",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "dateOfBirth": "Date of Birth",
+    "email": "Email",
+    "password": "Password",
+    "register": "Register",
+    "registering": "Registering...",
+    "continueWithGoogle": "Continue with Google",
+    "alreadyHaveAccount": "Already have an account?",
+    "login": "Login",
+    "emailExistsToast": "Account with this email already exists. Please login and link Google in settings."
+  },
+  "OnboardPage": {
+    "title": "Onboarding",
+    "loading": "Loading…",
+    "failedToLoad": "Failed to load.",
+    "dateOfBirth": "Date of Birth",
+    "weight": "Weight (kg)",
+    "height": "Height (cm)",
+    "district": "District",
+    "selectDistrict": "Select a district (optional)",
+    "finish": "Finish",
+    "failedToComplete": "Failed to complete onboarding."
+  },
+  "LoginPage": {
+    "title": "Login",
+    "email": "Email",
+    "password": "Password",
+    "loggingIn": "Logging in...",
+    "login": "Login",
+    "continueWithGoogle": "Continue with Google",
+    "dontHaveAccount": "Don't have an account?",
+    "register": "Register",
+    "emailExistsToast": "Account with this email already exists. Please login and link Google from your profile.",
+    "genericError": "Something went wrong. Please try again."
+  },
+  "Landing": {"exploreMoreActivities": "EXPLORE MORE ACTIVITIES"},
   "ActivityItem": {
     "toStart": "to start",
     "daysToGo": "{count, plural, one {# Day to go} other {# Days to go}}",
     "ongoing": "Ongoing",
     "expired": "Expired",
     "seatsLeft": "{count, plural, one {# Seat Left} other {# Seats Left}}"
-  },
-  "Landing": {"exploreMoreActivities": "EXPLORE MORE ACTIVITIES"}
+  }
 }

@@ -8,6 +8,7 @@ import { useAuth } from '@/app/shared/contexts/authContext';
 import { getSupabaseClient } from '@/lib/supabase';
 import toast from '@/utils/Toast';
 import api from '@/utils/axios/api';
+import { useTranslations, useLocale } from 'next-intl';
 
 export default function LoginPage() {
   const supabase = getSupabaseClient();
@@ -19,6 +20,8 @@ export default function LoginPage() {
   const { login, authToken } = useAuth();
   const subOnce = useRef(false);
   const handledOnce = useRef(false);
+  const t = useTranslations();
+  const locale = useLocale();
 
   useEffect(() => {
     if (typeof window !== "undefined" && authToken) {
@@ -30,14 +33,13 @@ export default function LoginPage() {
   useEffect(() => {
     if (subOnce.current) return;
     subOnce.current = true;
-    const { data: subscription } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (_, session) => {
       if (!session?.access_token) return;
       await handleSession(session);
     });
     return () => subscription?.subscription?.unsubscribe?.();
   }, [supabase]);
 
-  // Handle recovered session on mount (in case redirect fires before subscription)
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getSession();
@@ -56,7 +58,7 @@ export default function LoginPage() {
       const res = await api.post('/auth/pre-profile');
       const data = res.data || {};
       if (data.reason === 'email_exists') {
-        toast.info('Account with this email already exists. Please login and link Google from your profile.');
+        toast.info(t('LoginPage.emailExistsToast'));
         try { localStorage.removeItem('auth_token'); } catch {}
         try { await api.delete('/auth/logout'); } catch {}
         try {
@@ -65,15 +67,15 @@ export default function LoginPage() {
             new Promise((resolve) => setTimeout(resolve, 750)),
           ]);
         } catch {}
-        router.replace('/auth/login');
+        router.replace(`/${locale}/auth/login`);
         return;
       }
       if (data.created || (data.existing && data.userExists)) {
-        window.location.href = '/my';
+        window.location.href = `/${locale}/my`;
         return;
       }
       if (data.preProfile) {
-        window.location.href = '/auth/onboard';
+        window.location.href = `/${locale}/auth/onboard`;
         return;
       }
     } catch (e) {
@@ -88,9 +90,9 @@ export default function LoginPage() {
     setError("");
     try {
       await login({ email, password });
-      router.replace("/my");
+      router.replace(`/${locale}/my`);
     } catch (err) {
-      setError(`Something went wrong. Please try again. ${err.message}`);
+      setError(`${t('LoginPage.genericError')} ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -99,7 +101,7 @@ export default function LoginPage() {
   const onGoogle = async () => {
     setLoading(true);
     try {
-  const redirectTo = `${window.location.origin}/auth/login`;
+  const redirectTo = `${window.location.origin}/${locale}/auth/login`;
   await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
     } catch (e) {
       console.error(e);
@@ -110,11 +112,11 @@ export default function LoginPage() {
 return (
     <div className="">
       <div className="w-full max-w-md p-6 bg-base-100 rounded">
-        <h1 className="text-2xl font-semibold mb-4 text-center">Login</h1>
+  <h1 className="text-2xl font-semibold mb-4 text-center">{t('LoginPage.title')}</h1>
         {error && <ErrorAlert message={error} onClose={() => setError("")} />}
         <form className="space-y-6" onSubmit={handleLogin}>
           <div>
-              <label className="block mb-1 font-medium text-black">Email</label>
+              <label className="block mb-1 font-medium text-black">{t('LoginPage.email')}</label>
               <input
                   type="email"
                   className="input input-bordered w-full"
@@ -124,7 +126,7 @@ return (
               />
           </div>
           <div>
-              <label className="block mb-1 font-medium text-black">Password</label>
+              <label className="block mb-1 font-medium text-black">{t('LoginPage.password')}</label>
               <input
                   type="password"
                   className="input input-bordered w-full text-black"
@@ -138,16 +140,16 @@ return (
               className="submit-button w-full"
               disabled={loading}
           >
-              {loading ? "Logging in..." : "Login"}
+              {loading ? t('LoginPage.loggingIn') : t('LoginPage.login')}
           </button>
         </form>
         <button onClick={onGoogle} disabled={loading} className="btn btn-outline w-full mt-4">
-          Continue with Google
+          {t('LoginPage.continueWithGoogle')}
         </button>
         <div className="mt-4 text-sm text-center">
-          Don't have an account?{" "}
-          <Link href="/auth/register" className="link">
-            Register
+          {t('LoginPage.dontHaveAccount')}{" "}
+          <Link href={`/${locale}/auth/register`} className="link">
+            {t('LoginPage.register')}
           </Link>
         </div>
       </div>

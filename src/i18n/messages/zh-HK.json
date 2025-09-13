@@ -1,10 +1,48 @@
 {
+  "RegisterPage": {
+    "title": "註冊",
+    "firstName": "名",
+    "lastName": "姓",
+    "dateOfBirth": "出生日期",
+    "email": "電郵",
+    "password": "密碼",
+    "register": "註冊",
+    "registering": "註冊中...",
+    "continueWithGoogle": "使用 Google 繼續",
+    "alreadyHaveAccount": "已經有帳戶？",
+    "login": "登入",
+    "emailExistsToast": "此電郵已註冊。請登入並在設定中綁定 Google。"
+  },
+  "OnboardPage": {
+    "title": "新手設定",
+    "loading": "載入中…",
+    "failedToLoad": "載入失敗。",
+    "dateOfBirth": "出生日期",
+    "weight": "體重（公斤）",
+    "height": "身高（厘米）",
+    "district": "地區",
+    "selectDistrict": "選擇地區（可選）",
+    "finish": "完成",
+    "failedToComplete": "完成新手設定失敗。"
+  },
+  "LoginPage": {
+    "title": "登入",
+    "email": "電郵",
+    "password": "密碼",
+    "loggingIn": "登入中...",
+    "login": "登入",
+    "continueWithGoogle": "使用 Google 繼續",
+    "dontHaveAccount": "沒有帳戶？",
+    "register": "註冊",
+    "emailExistsToast": "此電郵已註冊。請登入並在個人檔案中綁定 Google。",
+    "genericError": "發生錯誤。請再試一次。"
+  },
+  "Landing": {"exploreMoreActivities": "查看更多活動"},
   "ActivityItem": {
     "toStart": "開始倒數",
     "daysToGo": "{count, plural, one {尚餘 # 日} other {尚餘 # 日}}",
     "ongoing": "進行中",
     "expired": "已結束",
     "seatsLeft": "{count, plural, one {尚餘 # 個名額} other {尚餘 # 個名額}}"
-  },
-  "Landing": {"exploreMoreActivities": "查看更多活動"}
+  }
 }
