@@ -46,8 +46,6 @@ const ActivityDetailsStep = ({
         }
     };
 
-    console.log(isChinese);
-
     return (
         <div className="min-h-screen w-full text-base">
             <div className="flex items-center justify-between mb-10 px-0 md:px-8 pt-8">
