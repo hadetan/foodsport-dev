@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { LOCALE_COOKIE, locales, defaultLocale } from '@/i18n/config';
-import LOCALE_PATTERN from '@/utils/localePattern';
+import { LOCALE_PATTERN } from '@/utils/localePattern';
 
 function isBypassed(pathname) {
 	if (pathname.startsWith('/admin') || pathname.startsWith('/api'))
