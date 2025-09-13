@@ -17,6 +17,9 @@ export async function generateMetadata({ params }) {
 		title: 'Food-Sport',
 		description: 'A gamified activity tracking app where you can take participant in events with many others!',
         ...alternates,
+		icons: {
+            icon: "/running.svg",
+        },
     };
 }
 
