@@ -2,7 +2,13 @@
 
 import ActivityDetailsStep from "./descriptionBox";
 
-export default function Tabs({ setTab, activeTab, activityId }) {
+export default function Tabs({
+    setTab,
+    activeTab,
+    activityId,
+    summary,
+    summaryZh,
+}) {
     return (
         <div className="w-full">
             <div role="tablist" className="tabs tabs-border  gap-2 mb-6">
@@ -46,8 +52,23 @@ export default function Tabs({ setTab, activeTab, activityId }) {
                     Chinese Description
                 </a>
             </div>
+            {activeTab === "description" && (
+                <ActivityDetailsStep
+                    activityId={activityId}
+                    isChinese={false}
+                    setTab={setTab}
+                    summary={summary}
+                    summaryZh={summaryZh}
+                />
+            )}
             {activeTab === "chinese" && (
-                <ActivityDetailsStep activityId={activityId} isChinese={true} />
+                <ActivityDetailsStep
+                    activityId={activityId}
+                    isChinese={true}
+                    setTab={setTab}
+                    summary={summary}
+                    summaryZh={summaryZh}
+                />
             )}
         </div>
     );

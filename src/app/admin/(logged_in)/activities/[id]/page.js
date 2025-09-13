@@ -7,13 +7,10 @@ import FullPageLoader from "../../components/FullPageLoader";
 import { Pencil } from "lucide-react";
 import statusOptions from "@/app/constants/constants";
 import {
-    ACTIVITY_TYPES,
     ACTIVITY_TYPES_FORMATTED,
 } from "@/app/constants/constants";
 import Tabs from "../../components/Tabs";
-import ActivityDetailsStep from "../../components/descriptionBox";
 
-// Helper to extract 'q' param (location) from stored mapUrl
 function extractMapLocationFromUrl(raw) {
     if (!raw) return "";
     try {
@@ -25,7 +22,6 @@ function extractMapLocationFromUrl(raw) {
     }
 }
 
-// Build embed map URL from a plain location string
 function buildEmbedMapUrl(loc) {
     return loc
         ? `https://www.google.com/maps?q=${encodeURIComponent(
@@ -34,7 +30,6 @@ function buildEmbedMapUrl(loc) {
         : "";
 }
 
-// New helper: format ISO/string date to value acceptable by <input type="datetime-local" />
 function formatForInput(iso) {
     if (!iso) return "";
     const d = new Date(iso);
@@ -68,7 +63,7 @@ export default function EditActivityPage() {
     } = useAdminActivities();
     const [activity, setActivity] = useState(undefined);
     const [activeTab, setActiveTab] = useState("details");
-    const [tncOptions, setTncOptions] = useState([]); // T&C list
+    const [tncOptions, setTncOptions] = useState([]);
     const [tncLoading, setTncLoading] = useState(false);
     useEffect(() => {
         if (!activities || !activityId) return;
@@ -79,13 +74,10 @@ export default function EditActivityPage() {
 
     useEffect(() => {
         if (!activity) return;
-        // Find the formatted value for the activityType
         let formattedActivityType = "";
         if (activity.activityType) {
-            // activity.activityType is already formatted (e.g., Water_Sport)
             formattedActivityType = activity.activityType;
         }
-        // Parse caloriesPerHour as min-max
         let caloriesPerHourMin = "";
         let caloriesPerHourMax = "";
         if (
@@ -100,9 +92,12 @@ export default function EditActivityPage() {
         }
         setForm({
             title: activity.title || "",
+            titleZh: activity.titleZh || "",
             description: activity.description || "",
+            descriptionZh: activity.descriptionZh || "",
+            summary: activity.summary,
+            summaryZh: activity.summaryZh,
             activityType: formattedActivityType,
-            // Use startTime / endTime if present (more precise) otherwise fall back
             startDateTime: formatForInput(
                 activity.startTime || activity.startDate
             ),
@@ -114,8 +109,8 @@ export default function EditActivityPage() {
             totalCaloriesBurnt: activity.totalCaloriesBurnt || "",
             caloriesPerHourMin,
             caloriesPerHourMax,
-            tncId: activity.tncId || activity.tnc?.id || "", // new field
-            isFeatured: !!activity.isFeatured, // add featured flag
+            tncId: activity.tncId,
+            isFeatured: !!activity.isFeatured,
         });
         setAudit({
             createdBy: activity.organizerName || "Unknown",
@@ -143,7 +138,6 @@ export default function EditActivityPage() {
     }, [form?.mapLocation]);
 
     useEffect(() => {
-        // fetch available T&Cs once
         const fetchTncs = async () => {
             try {
                 setTncLoading(true);
@@ -156,7 +150,6 @@ export default function EditActivityPage() {
                     setTncOptions(data.tncs);
                 }
             } catch (e) {
-                // ignore silently
             } finally {
                 setTncLoading(false);
             }
@@ -182,7 +175,6 @@ export default function EditActivityPage() {
     const validate = () => {
         const errs = {};
         if (!form.title) errs.title = "Title is required.";
-        // description validation
         if (!form.description) errs.description = "Summary is required.";
         if (!form.activityType)
             errs.activityType = "Activity type is required.";
@@ -272,7 +264,6 @@ export default function EditActivityPage() {
                 }
             });
 
-            // Map startDateTime / endDateTime to backend expected fields
             if (form.startDateTime) {
                 const start = new Date(form.startDateTime);
                 if (!isNaN(start.getTime())) {
@@ -290,19 +281,22 @@ export default function EditActivityPage() {
                 }
             }
 
-            // Derived fields
             formData.append(
                 "caloriesPerHour",
                 `${form.caloriesPerHourMin}-${form.caloriesPerHourMax}`
             );
             formData.append("mapUrl", buildEmbedMapUrl(form.mapLocation));
-            formData.append("isFeatured", !!form.isFeatured); // send as boolean
+            formData.append("isFeatured", !!form.isFeatured);
+
+            if (form.description) {
+                formData.append("summary", form.description);
+            }
+            if (form.descriptionZh) {
+                formData.append("summaryZh", form.descriptionZh);
+            }
 
             if (imageFile && imageFile.url === undefined) {
                 formData.append("image", imageFile);
-            }
-            if (activity.organizerId) {
-                formData.append("organizerId", activity.organizerId);
             }
 
             const { data } = await axios.patch(
@@ -325,7 +319,7 @@ export default function EditActivityPage() {
             }
 
             setSuccess("Activity updated successfully!");
-            setActiveTab("description"); // Switch to description tab after save
+            setActiveTab("description");
         } catch (e) {
             let msg = "Failed to update activity.";
             if (typeof e === "string") {
@@ -366,8 +360,10 @@ export default function EditActivityPage() {
                     setTab={setActiveTab}
                     activeTab={activeTab}
                     activityId={activityId}
+                    summary={form.summary}
+                    summaryZh={form.summaryZh}
                 />
-                {activeTab === "details" ? (
+                {activeTab === "details" && (
                     <>
                         <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-black">
                             Edit Activity
@@ -517,6 +513,20 @@ export default function EditActivityPage() {
                                             </span>
                                         )}
                                     </div>
+                                    {/* Chinese Title */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Chinese Title
+                                        </label>
+                                        <input
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="titleZh"
+                                            value={form.titleZh}
+                                            onChange={handleInput}
+                                            maxLength={100}
+                                            placeholder="输入中文标题"
+                                        />
+                                    </div>
                                     {/* Activity Type */}
                                     <div className="form-control w-full">
                                         <label className="label text-lg font-semibold mb-2 text-black">
@@ -571,6 +581,20 @@ export default function EditActivityPage() {
                                                 {errors.description}
                                             </span>
                                         )}
+                                    </div>
+                                    {/* Chinese Summary */}
+                                    <div className="form-control w-full">
+                                        <label className="label text-lg font-semibold mb-2 text-black">
+                                            Chinese Summary
+                                        </label>
+                                        <textarea
+                                            className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
+                                            name="descriptionZh"
+                                            value={form.descriptionZh}
+                                            onChange={handleInput}
+                                            rows={3}
+                                            placeholder="输入中文简介"
+                                        />
                                     </div>
                                     {/* Start Date & Time */}
                                     <div className="form-control w-full">
@@ -869,8 +893,6 @@ export default function EditActivityPage() {
                             </div>
                         )}
                     </>
-                ) : (
-                    <ActivityDetailsStep activityId={activityId} />
                 )}
             </div>
         </div>

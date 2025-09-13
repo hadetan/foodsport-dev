@@ -7,7 +7,6 @@ import axiosClient from "@/utils/axios/api";
 import ActivityStatus, { MAX_IMAGE_SIZE_MB } from "@/app/constants/constants";
 import { ImageUp, Pencil } from "lucide-react";
 import Tabs from "@/app/admin/(logged_in)/components/Tabs";
-import ActivityDetailsStep from "@/app/admin/(logged_in)/components/descriptionBox";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import {
     ACTIVITY_TYPES,
@@ -18,35 +17,35 @@ const CreateActivityPage = () => {
     const router = useRouter();
     const [formData, setFormData] = useState({
         title: "",
-        chineseTitle: "", // new field
-        activityType: "", // will store the formatted value
+        titleZh: "",
+        activityType: "",
         description: "",
-        chineseSummary: "", // new field
+        descriptionZh: "",
         startDateTime: "",
         endDateTime: "",
         location: "",
-        mapLocation: "", // renamed from location for map search
+        mapLocation: "",
         capacity: "",
         caloriesPerHourMin: "",
         caloriesPerHourMax: "",
         image: null,
         status: "draft",
         mapUrl: "",
-        tncId: "", // newly added field for selected T&C
-        isFeatured: false, // new field for featured checkbox
+        tncId: "",
+        isFeatured: false,
     });
     const { setActivities } = useAdminActivities();
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
     const [loading, setLoading] = useState(false);
-    const [imageAspect, setImageAspect] = useState(null); // {width, height}
+    const [imageAspect, setImageAspect] = useState(null);
     const imgRef = useRef(null);
     const [tab, setTab] = useState("details");
     const [activityId, setActivityId] = useState(null);
     const [mapUrl, setMapUrl] = useState(
         "https://www.google.com/maps?q=&output=embed"
     );
-    const [tncOptions, setTncOptions] = useState([]); // store list of T&Cs
+    const [tncOptions, setTncOptions] = useState([]);
     const [tncLoading, setTncLoading] = useState(false);
 
     useEffect(() => {
@@ -82,7 +81,6 @@ const CreateActivityPage = () => {
                 mapUrl: url,
             }));
         } else {
-            // Center on Hong Kong only
             const url =
                 "https://www.google.com/maps?q=Hong+Kong&output=embed&z=12";
             setMapUrl(url);
@@ -100,21 +98,16 @@ const CreateActivityPage = () => {
             if (Array.isArray(res.data)) {
                 setTncOptions(res.data);
             } else if (Array.isArray(res.data?.data)) {
-                // handle possible wrapped structure
                 setTncOptions(res.data.data);
             } else if (Array.isArray(res.data?.tncs)) {
-                // new shape from API
                 setTncOptions(res.data.tncs);
             }
         } catch (e) {
-            // silent fail, optional field
         } finally {
             setTncLoading(false);
         }
     };
     useEffect(() => {
-        // fetch T&C list
-
         fetchTncs();
     }, []);
 
@@ -127,10 +120,10 @@ const CreateActivityPage = () => {
     const validateFields = () => {
         const requiredFields = [
             "title",
-            "chineseTitle", // new required field
+            "titleZh",
             "activityType",
             "description",
-            "chineseSummary", // new required field
+            "descriptionZh",
             "location",
             "capacity",
             "caloriesPerHourMin",
@@ -139,7 +132,7 @@ const CreateActivityPage = () => {
             "status",
             "startDateTime",
             "endDateTime",
-            "tncId", // now required
+            "tncId",
         ];
         const errors = {};
         requiredFields.forEach((field) => {
@@ -151,7 +144,6 @@ const CreateActivityPage = () => {
                 errors[field] = "This field is required.";
             }
         });
-        // Validate that startDateTime is before endDateTime
         if (formData.startDateTime && formData.endDateTime) {
             const start = new Date(formData.startDateTime);
             const end = new Date(formData.endDateTime);
@@ -162,7 +154,6 @@ const CreateActivityPage = () => {
                     "End date/time cannot be before start date/time.";
             }
         }
-        // Validate calories min/max
         if (
             formData.caloriesPerHourMin &&
             formData.caloriesPerHourMax &&
@@ -185,7 +176,6 @@ const CreateActivityPage = () => {
 
     const handleFormChange = (e) => {
         const { name, value, type, checked } = e.target;
-        // Restrict year for datetime-local fields
         if (
             (name === "startDateTime" || name === "endDateTime") &&
             !isValidYear(value)
@@ -228,17 +218,6 @@ const CreateActivityPage = () => {
         }));
     };
 
-    const removeImage = () => {
-        setFormData((prev) => ({
-            ...prev,
-            image: null,
-        }));
-        setFieldErrors((prev) => ({
-            ...prev,
-            image: "This field is required.",
-        }));
-    };
-
     const handleCreateActivity = async () => {
         if (!validateFields()) {
             setError("Please fix the errors in the form.");
@@ -258,20 +237,22 @@ const CreateActivityPage = () => {
                     : "";
             const payload = {
                 title: formData.title,
-                activityType: formData.activityType, // already formatted
+                titleZh: formData.titleZh,
+                activityType: formData.activityType,
                 location: formData.location,
                 startDate: startISO,
                 endDate: endISO,
                 startTime: startISO,
                 endTime: endISO,
                 description: formData.description,
+                descriptionZh: formData.descriptionZh,
                 status: formData.status,
                 participantLimit: Number(formData.capacity),
                 caloriesPerHour,
                 image: formData.image,
                 mapUrl: formData.mapUrl,
-                tncId: formData.tncId || "", // include selected T&C id
-                isFeatured: !!formData.isFeatured, // send as boolean
+                tncId: formData.tncId || "",
+                isFeatured: !!formData.isFeatured,
             };
             const formDataToSend = new FormData();
             Object.entries(payload).forEach(([key, value]) => {
@@ -323,9 +304,9 @@ const CreateActivityPage = () => {
             </div>
             <div className="w-full bg-white  overflow-y-auto mb-2">
                 {/* Tabs */}
-                <Tabs setTab={setTab} activeTab={tab} />
+                <Tabs setTab={setTab} activeTab={tab} activityId={activityId} />
 
-                {tab === "details" ? (
+                {tab === "details" && (
                     <>
                         <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-black">
                             Create Activity
@@ -452,22 +433,22 @@ const CreateActivityPage = () => {
                                     )}
                                 </div>
 
-                                {/* Chinese Title (separated to control spacing) */}
+                                {/* Chinese Title (titleZh) */}
                                 <div className="form-control w-full col-span-1">
                                     <label className="label text-lg font-semibold mb-1 text-black">
                                         Chinese Title
                                     </label>
                                     <input
                                         className="input input-bordered input-lg w-full bg-white text-black mb-0"
-                                        name="chineseTitle"
-                                        value={formData.chineseTitle}
+                                        name="titleZh"
+                                        value={formData.titleZh}
                                         onChange={handleFormChange}
                                         maxLength={100}
                                         required
                                     />
-                                    {fieldErrors.chineseTitle && (
+                                    {fieldErrors.titleZh && (
                                         <span className="text-error text-base">
-                                            {fieldErrors.chineseTitle}
+                                            {fieldErrors.titleZh}
                                         </span>
                                     )}
                                 </div>
@@ -510,7 +491,7 @@ const CreateActivityPage = () => {
                                     )}
                                 </div>
 
-                                {/* Summary */}
+                                {/* Summary (description) */}
                                 <div className="form-control w-full col-span-1 xl:col-span-1">
                                     <label className="label text-lg font-semibold mb-2 text-black">
                                         Summary
@@ -538,22 +519,25 @@ const CreateActivityPage = () => {
                                             {fieldErrors.description}
                                         </span>
                                     )}
-                                    {/* Chinese Summary */}
+                                </div>
+
+                                {/* Chinese Summary (descriptionZh) */}
+                                <div className="form-control w-full col-span-1 xl:col-span-1">
                                     <label className="label text-lg font-semibold mb-2 text-black">
                                         Chinese Summary
                                     </label>
                                     <textarea
                                         className="textarea textarea-bordered textarea-lg w-full bg-white text-black resize-none min-h-[92px]"
-                                        name="chineseSummary"
-                                        value={formData.chineseSummary}
+                                        name="descriptionZh"
+                                        value={formData.descriptionZh}
                                         onChange={handleFormChange}
                                         required
                                         rows={3}
                                         placeholder="Enter Chinese summary"
                                     />
-                                    {fieldErrors.chineseSummary && (
+                                    {fieldErrors.descriptionZh && (
                                         <span className="text-error text-base">
-                                            {fieldErrors.chineseSummary}
+                                            {fieldErrors.descriptionZh}
                                         </span>
                                     )}
                                 </div>
@@ -756,6 +740,7 @@ const CreateActivityPage = () => {
                                         <input
                                             className="input input-bordered input-lg w-full bg-white text-black"
                                             name="mapLocation"
+                                            value={formData.mapLocation || ""}
                                             onChange={handleFormChange}
                                             required
                                             placeholder="Search In Map"
@@ -809,10 +794,10 @@ const CreateActivityPage = () => {
                                     Cancel
                                 </button>
                             </div>
+                            
                         </form>
+                        
                     </>
-                ) : (
-                    <ActivityDetailsStep activityId={activityId} />
                 )}
             </div>
         </div>
