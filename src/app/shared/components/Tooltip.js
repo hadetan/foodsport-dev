@@ -1,18 +1,15 @@
 import React, { useState, useRef, useEffect, useId } from "react";
 import "../css/Tooltip.css";
 
-/**
- * Tooltip usage:
- * <Tooltip content="Hello" position="top"> <button>Hover me</button> </Tooltip>
- */
+
 export default function Tooltip({
     content,
     children,
-    position = "top", // top | right | bottom | left
-    align = "center", // center | start | end (for left/right adjustments)
+    position = "top",
+    align = "center",
     disabled = false,
     className = "",
-    delay = 100,
+    delay = 50,
 }) {
     const [visible, setVisible] = useState(false);
     const [timer, setTimer] = useState(null);
@@ -32,7 +29,6 @@ export default function Tooltip({
         setVisible(false);
     };
 
-    // Clone child to add aria-describedby for accessibility
     let target = children;
     if (React.isValidElement(children)) {
         target = React.cloneElement(children, {

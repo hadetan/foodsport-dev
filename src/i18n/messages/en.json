@@ -1,48 +1,102 @@
 {
-  "RegisterPage": {
-    "title": "Register",
-    "firstName": "First Name",
-    "lastName": "Last Name",
-    "dateOfBirth": "Date of Birth",
-    "email": "Email",
-    "password": "Password",
-    "register": "Register",
-    "registering": "Registering...",
-    "continueWithGoogle": "Continue with Google",
-    "alreadyHaveAccount": "Already have an account?",
-    "login": "Login",
-    "emailExistsToast": "Account with this email already exists. Please login and link Google in settings."
-  },
-  "OnboardPage": {
-    "title": "Onboarding",
-    "loading": "Loading…",
-    "failedToLoad": "Failed to load.",
-    "dateOfBirth": "Date of Birth",
-    "weight": "Weight (kg)",
-    "height": "Height (cm)",
-    "district": "District",
-    "selectDistrict": "Select a district (optional)",
-    "finish": "Finish",
-    "failedToComplete": "Failed to complete onboarding."
-  },
-  "LoginPage": {
-    "title": "Login",
-    "email": "Email",
-    "password": "Password",
-    "loggingIn": "Logging in...",
-    "login": "Login",
-    "continueWithGoogle": "Continue with Google",
-    "dontHaveAccount": "Don't have an account?",
-    "register": "Register",
-    "emailExistsToast": "Account with this email already exists. Please login and link Google from your profile.",
-    "genericError": "Something went wrong. Please try again."
-  },
-  "Landing": {"exploreMoreActivities": "EXPLORE MORE ACTIVITIES"},
-  "ActivityItem": {
-    "toStart": "to start",
-    "daysToGo": "{count, plural, one {# Day to go} other {# Days to go}}",
-    "ongoing": "Ongoing",
-    "expired": "Expired",
-    "seatsLeft": "{count, plural, one {# Seat Left} other {# Seats Left}}"
-  }
+	"RegisterPage": {
+		"title": "Register",
+		"firstName": "First Name",
+		"lastName": "Last Name",
+		"dateOfBirth": "Date of Birth",
+		"email": "Email",
+		"password": "Password",
+		"register": "Register",
+		"registering": "Registering...",
+		"continueWithGoogle": "Continue with Google",
+		"alreadyHaveAccount": "Already have an account?",
+		"login": "Login",
+		"emailExistsToast": "Account with this email already exists. Please login and link Google in settings."
+	},
+	"OnboardPage": {
+		"title": "Onboarding",
+		"loading": "Loading…",
+		"failedToLoad": "Failed to load.",
+		"dateOfBirth": "Date of Birth",
+		"weight": "Weight (kg)",
+		"height": "Height (cm)",
+		"district": "District",
+		"selectDistrict": "Select a district (optional)",
+		"finish": "Finish",
+		"failedToComplete": "Failed to complete onboarding."
+	},
+	"LoginPage": {
+		"title": "Login",
+		"email": "Email",
+		"password": "Password",
+		"loggingIn": "Logging in...",
+		"login": "Login",
+		"continueWithGoogle": "Continue with Google",
+		"dontHaveAccount": "Don't have an account?",
+		"register": "Register",
+		"emailExistsToast": "Account with this email already exists. Please login and link Google from your profile.",
+		"genericError": "Something went wrong. Please try again."
+	},
+	"Header": {
+		"home": "HOME",
+		"joinActivities": "JOIN ACTIVITIES",
+		"redeemRewards": "REDEEM REWARDS",
+		"howDoesItWork": "HOW DOES IT WORK",
+		"loginRegister": "LOGIN / REGISTER"
+	},
+	"Search": {
+		"placeholder": "Search activities..."
+	},
+	"Activity": {
+        "Landing": { "exploreMoreActivities": "EXPLORE MORE ACTIVITIES" },
+		"ActivitySection": { "title": "ACTIVITIES" },
+		"ActivityItem": {
+			"toStart": "to start",
+			"daysToGo": "{count, plural, one {# Day to go} other {# Days to go}}",
+			"ongoing": "Ongoing",
+			"expired": "Expired",
+			"seatsLeft": "{count, plural, one {# Seat Left} other {# Seats Left}}",
+			"startEndFull": "The activity starts at {startDate} {startTime} and ends on {endDate} {endTime}"
+		},
+		"ActivityTypes": {
+			"Running": "Running",
+			"Hiking": "Hiking",
+			"Water_Sport": "Water Sport",
+			"Volunteering": "Volunteering",
+			"Racket_Sport": "Racket Sport",
+			"Yoga": "Yoga",
+			"Dance": "Dance",
+			"Fitness": "Fitness",
+			"Cycling": "Cycling",
+			"Mindfulness": "Mindfulness",
+			"Team_Sport": "Team Sport",
+			"Virtual": "Virtual",
+			"Multi_Sports": "Multi Sports",
+			"other": "Other"
+		}
+	},
+	"ComingSoon": {
+		"trustedBy": "Trusted by top brands",
+		"popularRewards": "Popular rewards",
+		"rewards": {
+			"smartwatch": {
+				"title": "SMARTWATCH",
+				"description": "Garmin Forerunner 965 Smart Watch"
+			},
+			"nike_gift_card": {
+				"title": "Nike",
+				"description": "Nike Gift Card"
+			},
+			"apple_airpods_3": {
+				"title": "Apple",
+				"description": "AirPods (3rd generation)"
+			}
+		},
+		"RewardCards": {
+			"saveAria": "Save reward",
+			"share": "Share",
+			"redeem": "Redeem Now",
+			"imageAlt": "Reward image"
+		}
+	}
 }

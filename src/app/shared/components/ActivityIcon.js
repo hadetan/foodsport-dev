@@ -1,13 +1,16 @@
+"use client";
+
 import React from 'react';
 import { FaBezierCurve, FaBrain, FaHiking, FaMendeley, FaRunning } from 'react-icons/fa';
 import { GrYoga } from "react-icons/gr";
 import { IoIosFitness } from "react-icons/io";
 import { BiCycling } from "react-icons/bi";
 import { FaPersonSwimming, FaUserGroup } from "react-icons/fa6";
-import { RiBoxingFill, RiTeamFill } from "react-icons/ri";
+import { RiTeamFill } from "react-icons/ri";
 import { HiQuestionMarkCircle } from "react-icons/hi2";
 import { GiBodyBalance, GiTennisRacket } from "react-icons/gi";
-import { ACTIVITY_TYPES, ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
+import { ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
+import { useTranslations } from 'next-intl';
 
 const iconMap = {
   "Running": { Component: FaRunning },
@@ -26,9 +29,11 @@ const iconMap = {
 };
 
 export default function ActivityIcon({ type, size = 24, className = '' }) {
+  const t = useTranslations();
   const iconConfig = iconMap[type] || { Component: HiQuestionMarkCircle };
   const { Component } = iconConfig;
   const idx = ACTIVITY_TYPES_FORMATTED.indexOf(type);
-  const title = idx !== -1 ? ACTIVITY_TYPES[idx] : "other";
+  const key = idx !== -1 ? ACTIVITY_TYPES_FORMATTED[idx] : "other";
+  const title = t(`Activity.ActivityTypes.${key}`) || t('Activity.ActivityTypes.other');
   return <Component size={size} className={className} title={title} />;
 }

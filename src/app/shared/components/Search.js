@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from 'next-intl';
 import { FaSearch } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import styles from "@/app/shared/css/Header.module.css";
@@ -13,6 +14,7 @@ export default function Search({ sortedActivities }) {
     const dropdownRef = useRef(null);
     const mouseDownOnOption = useRef(false);
     const router = useRouter();
+    const t = useTranslations();
 
     const filteredSearchResults = useMemo(() => {
         if (!searchValue.trim()) return [];
@@ -114,7 +116,7 @@ export default function Search({ sortedActivities }) {
                         value={searchValue}
                         onChange={handleInputChange}
                         onKeyDown={handleInputKeyDown}
-                        placeholder="Search activities..."
+                        placeholder={t('Search.placeholder')}
                         onFocus={() => searchValue && setShowDropdown(true)}
                         onBlur={e => {
                             // If a dropdown option is being clicked, don't close
@@ -154,7 +156,7 @@ export default function Search({ sortedActivities }) {
                             pointerEvents: showDropdown ? "auto" : "none",
                             maxHeight: showDropdown ? 320 : 0,
                             transition: "max-height 0.25s cubic-bezier(.4,2,.6,1)",
-                            overflow: "hidden",
+                            overflow: "auto",
                             position: "absolute",
                             top: "110%",
                             left: 0,

@@ -124,9 +124,12 @@ export default function ActivityItem({ activity, user }) {
 			router.push(`/${locale}/activities?type=${encodeURIComponent(actType)}`);
 	}
 
-    const tooltipText = `The activity starts at ${formatDate(
-        activity.startDate
-    )} and ends on ${formatDate(activity.endDate)}`;
+    const tooltipText = t('Activity.ActivityItem.startEndFull', {
+        startDate: formatDate(activity.startDate),
+        startTime: formattedStartTime,
+        endDate: formatDate(activity.endDate),
+        endTime: formattedEndTime,
+    });
 
     return (
         <div className={styles.card}>
@@ -144,7 +147,7 @@ export default function ActivityItem({ activity, user }) {
                 {!isCancelledOrClosed && timerInfo.within24h && !timerInfo.finished && (
 					<div className={styles.imageBadge}>
 						<span className={styles.badgeNumber}>{timerInfo.formatted}</span>
-						<span className={styles.badgeLabel}>{t('ActivityItem.toStart')}</span>
+						<span className={styles.badgeLabel}>{t('Activity.ActivityItem.toStart')}</span>
 					</div>
 				)}
             </div>
@@ -159,7 +162,6 @@ export default function ActivityItem({ activity, user }) {
                     <div className={styles.badges}>
                         <Button
                             className={styles.filterBtn}
-                            title="Filter"
                             onClick={() =>
                                 handleActTypeSearch(activity.activityType)
                             }
@@ -177,24 +179,26 @@ export default function ActivityItem({ activity, user }) {
 
                 <div className={styles.metaContainer}>
                     <div className={styles.metaLeft}>
-                        <div className={styles.detailsRow}>
-                            <Tooltip content={tooltipText} position="top">
+                        <Tooltip content={tooltipText} position="top" align='start'>
+                            <div>
+                                <div className={styles.detailsRow}>
                                 <span className={styles.icon}>
                                     <FaCalendar size={19} />
                                 </span>
-                            </Tooltip>
-                            <span>{`${formatDate(
-                                activity.startDate
-                            )} - ${formatDate(activity.endDate)}`}</span>
-                        </div>
-                        <div className={styles.detailsRow}>
-                            <span className={styles.icon}>
-                                <FaClock size={20} />
-                            </span>
-                            <span>
-                                {formattedStartTime} - {formattedEndTime}
-                            </span>
-                        </div>
+                                <span>{`${formatDate(
+                                    activity.startDate
+                                )} - ${formatDate(activity.endDate)}`}</span>
+                                </div>
+                                <div className={styles.detailsRow}>
+                                    <span className={styles.icon}>
+                                        <FaClock size={20} />
+                                    </span>
+                                    <span>
+                                        {formattedStartTime} - {formattedEndTime}
+                                    </span>
+                                </div>
+                            </div>
+                        </Tooltip>
                         <div className={styles.detailsRow}>
                             <span className={styles.icon}>
                                 <FaLocationDot size={20} />
@@ -206,25 +210,25 @@ export default function ActivityItem({ activity, user }) {
                         {activityStatus === 'upcoming' && daysLeft !== null && (
 							<div className={styles.rightRow}>
 								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
-								<span>{t('ActivityItem.daysToGo', { count: daysLeft })}</span>
+								<span>{t('Activity.ActivityItem.daysToGo', { count: daysLeft })}</span>
 							</div>
 						)}
 						{activityStatus === 'ongoing' && (
 							<div className={styles.rightRow}>
 								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
-								<span>{t('ActivityItem.ongoing')}</span>
+								<span>{t('Activity.ActivityItem.ongoing')}</span>
 							</div>
 						)}
 						{activityStatus === 'completed' && (
 							<div className={styles.rightRow}>
 								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
-								<span>{t('ActivityItem.expired')}</span>
+								<span>{t('Activity.ActivityItem.expired')}</span>
 							</div>
 						)}
                         {seatsLeft !== null && (
 							<div className={styles.rightRow}>
 								<span className={styles.icon}><MdEventSeat size={23}/></span>
-								<span>{t('ActivityItem.seatsLeft', { count: seatsLeft })}</span>
+								<span>{t('Activity.ActivityItem.seatsLeft', { count: seatsLeft })}</span>
 							</div>
 						)}
                     </div>
