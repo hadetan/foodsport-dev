@@ -6,6 +6,9 @@ function isBypassed(pathname) {
 	if (pathname.startsWith('/admin') || pathname.startsWith('/api'))
 		return true;
 	if (pathname.startsWith('/_next')) return true;
+	const staticExtRe = /\.(?:png|jpe?g|gif|svg|webp|ico|css|js|woff2?|ttf|eot)$/i;
+	if (staticExtRe.test(pathname)) return true;
+
 	return false;
 }
 
@@ -49,13 +52,6 @@ export function middleware(request) {
 
 	if (isBypassed(pathname)) {
 		return NextResponse.next();
-	}
-
-	const staticAssetMatch = pathname.match(new RegExp(`^\\/(${LOCALE_PATTERN})\\\/(.+\\.(?:png|jpe?g|gif|svg|webp|ico))$`, 'i'));
-	if (staticAssetMatch) {
-		const file = staticAssetMatch[2];
-		const rewriteUrl = new URL('/' + file, request.url);
-		return NextResponse.rewrite(rewriteUrl);
 	}
 
 	let token = null;
