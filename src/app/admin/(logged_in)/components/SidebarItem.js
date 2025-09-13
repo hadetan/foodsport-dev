@@ -1,4 +1,6 @@
 import Link from "next/link";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function SidebarItem({
     href,
@@ -6,7 +8,10 @@ export default function SidebarItem({
     label,
     isSelected,
     pathname,
+    isLogoutButton,
 }) {
+    const router = useRouter();
+
     // Check if current path is a child of this sidebar item
     const isParentActive = (itemHref, currentPath) => {
         if (!itemHref || !currentPath) return false;
@@ -31,6 +36,37 @@ export default function SidebarItem({
     };
 
     const isActive = isSelected || isParentActive(href, pathname);
+
+    const handleLogout = async () => {
+        try {
+            await axios.delete("/api/admin/auth/logout");
+            // Redirect to login page or home page after successful logout
+            router.push("/admin/login");
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
+
+    if (isLogoutButton) {
+        return (
+            <li>
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    className={`w-full text-left flex items-center px-4 py-2 rounded-lg transition-colors text-red-500
+     ${
+         isActive
+             ? "bg-primary text-primary-content"
+             : "text-base-content hover:bg-base-200"
+     }
+ `}
+                >
+                    {icon}
+                    {label}
+                </button>
+            </li>
+        );
+    }
 
     return (
         <li>

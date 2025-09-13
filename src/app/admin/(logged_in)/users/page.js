@@ -100,7 +100,11 @@ const UserManagementPage = () => {
                         onSelect={handleStatusChange}
                     />
 
-                    <Dropdown items={hongKongRegions} name="All Districts" />
+                    <Dropdown
+                        items={hongKongRegions}
+                        name="All Districts"
+                        searchable={true}
+                    />
                 </div>
             </div>
 

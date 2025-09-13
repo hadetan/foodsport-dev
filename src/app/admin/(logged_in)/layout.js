@@ -8,7 +8,7 @@ import {
     Share2,
     Mail,
     UserPlus,
-    ReceiptText,
+    LogOut,
 } from "lucide-react";
 import { UsersProvider } from "@/app/shared/contexts/usersContext";
 import { DashboardProvider } from "@/app/shared/contexts/DashboardContext";
@@ -145,12 +145,16 @@ export default function AdminLoggedInLayout({ children }) {
                                                         "/admin/terms&conditions"
                                                     }
                                                 />
+                                                <SidebarItem
+                                                    href="/admin/logout"
+                                                    icon={<LogOut />}
+                                                    label="Logout"
+                                                    pathname={pathname}
+                                                    isLogoutButton={true}
+                                                />
                                             </ul>
                                         </div>
                                     </aside>
-                                    {/* <div className="p-4">
-                    Logout
-                </div> */}
                                 </div>
                             </div>
                         </SocialMediaImageProvider>

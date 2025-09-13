@@ -326,20 +326,7 @@ const UserDetailPage = () => {
                             }
                         />
                         <Detail
-                            label="Total Calories Burnt"
-                            value={
-                                user.totalCaloriesBurnt === 0 ||
-                                user.totalCaloriesBurnt == null ? (
-                                    <span className="italic text-base-content/50">
-                                        No calories burnt
-                                    </span>
-                                ) : (
-                                    user.totalCaloriesBurnt
-                                )
-                            }
-                        />
-                        <Detail
-                            label="Joined At"
+                            label="Registered At"
                             value={
                                 user.createdAt ? (
                                     formatDate(user.createdAt.split("T")[0])
