@@ -11,6 +11,7 @@ import { HiQuestionMarkCircle } from "react-icons/hi2";
 import { GiBodyBalance, GiTennisRacket } from "react-icons/gi";
 import { ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
 import { useTranslations } from 'next-intl';
+import Tooltip from './Tooltip';
 
 const iconMap = {
   "Running": { Component: FaRunning },
@@ -35,5 +36,9 @@ export default function ActivityIcon({ type, size = 24, className = '' }) {
   const idx = ACTIVITY_TYPES_FORMATTED.indexOf(type);
   const key = idx !== -1 ? ACTIVITY_TYPES_FORMATTED[idx] : "other";
   const title = t(`Activity.ActivityTypes.${key}`) || t('Activity.ActivityTypes.other');
-  return <Component size={size} className={className} title={title} />;
+  return (
+  <Tooltip content={title}>
+      <Component size={size} className={className} />
+    </Tooltip>
+  )
 }

@@ -5,11 +5,10 @@ import "../css/Tooltip.css";
 export default function Tooltip({
     content,
     children,
-    position = "top",
-    align = "center",
     disabled = false,
     className = "",
     delay = 50,
+    width
 }) {
     const [visible, setVisible] = useState(false);
     const [timer, setTimer] = useState(null);
@@ -60,9 +59,8 @@ export default function Tooltip({
                 id={id}
                 role="tooltip"
                 data-visible={visible}
-                data-position={position}
-                data-align={align}
                 className="tooltip-content"
+                style={{width}}
             >
                 {content}
             </span>

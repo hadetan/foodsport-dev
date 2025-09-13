@@ -3,9 +3,10 @@
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import { useParams } from "next/navigation";
 import ActivityDetails from "@/app/shared/components/ActivityDetails";
-import ActivityDetailsSkeleton from "@/app/shared/components/skeletons/ActivityDetailsSkeleton"; // Import skeleton loader
+import ActivityDetailsSkeleton from "@/app/shared/components/skeletons/ActivityDetailsSkeleton";
 import { HiOutlineEmojiSad } from "react-icons/hi";
 import { IoIosArrowBack } from "react-icons/io";
+import { useTranslations } from "next-intl";
 
 function getActivity(activities, id) {
     return activities.find((activity) => activity.id === id);
@@ -34,6 +35,7 @@ function formatDateTime(startTime, endTime) {
 export default function ActivityDetailsPage() {
     const { activities, loading } = useActivities();
     const { id } = useParams();
+    const t = useTranslations("Activity.DetailsPage");
 
     if (loading || !activities || !activities.length) {
         return <ActivityDetailsSkeleton />;
@@ -48,21 +50,24 @@ export default function ActivityDetailsPage() {
                         <HiOutlineEmojiSad />
                     </div>
                     <div className='activityDetailsEmptyTitle'>
-                        No Activity Found
+                        {t("noActivityTitle")}
                     </div>
                     <div className='activityDetailsEmptyDesc'>
-                        We couldn&apos;t find the activity you&apos;re looking for.
-                        <br />
-                        Please check the link again.
+                        {t("noActivityDesc").split("\n").map((line, idx) => (
+                            <span key={idx}>
+                                {line}
+                                <br />
+                            </span>
+                        ))}
                     </div>
                     <button
                         className='activityDetailsEmptyBtn'
-                        onClick={() => window.history.back()}
+                        onClick={() => window.location.href = '/activities'}
                     >
                         <span className='back'>
                             <IoIosArrowBack />
                         </span>{' '}
-                        Go Back
+                        {t("back")}
                     </button>
                 </div>
             );

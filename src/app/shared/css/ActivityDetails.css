@@ -126,27 +126,8 @@
   position: relative;
   width: 100%;
   height: 460px;
-}
-/* Back button styles */
-.activityDetailsBackBtn {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  z-index: 2;
-  background: rgba(255,255,255,0.85);
-  color: #222;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transition: background 0.2s;
+  border-radius: 16px;
+  overflow: hidden;
 }
 .activityDetailsBackBtn:hover {
   background: #f0f0f0;
@@ -187,6 +168,7 @@
   border-left: 1px solid #dadada;
   position: sticky;
   top: 32px;
+  margin-top: 20px;
   max-height: calc(100vh - 32px);
 }
 .activityDetailsSidebarTitle {
@@ -300,8 +282,9 @@
 .activityDetailsMainTitle {
   font-weight: bolder;
   font-size: 48px;
-  margin-bottom: 16px;
+  margin-bottom: 2vh;
   color: #222;
+  border-bottom: 1px solid #dadada;
 }
 .activityDetailsMainDesc {
   color: #444;
@@ -309,6 +292,10 @@
   margin-bottom: 18px;
   border-bottom: 1px solid #dadada;
   padding-bottom: 10px;
+}
+
+.desc-section {
+  margin-top: 5vh;
 }
 
 /* Empty state */
@@ -323,7 +310,6 @@
   object-fit: cover;
   width: 100vw !important;
   height: 100% !important;
-  z-index: 1;
   filter: brightness(0.85) saturate(1.1);
 }
 

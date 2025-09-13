@@ -61,6 +61,7 @@
 			"startEndFull": "活動於 {startDate} {startTime} 開始，並於 {endDate} {endTime} 結束"
 		},
 		"ActivityTypes": {
+            "allTypes": "所有類型",
 			"Running": "跑步",
 			"Hiking": "行山",
 			"Water_Sport": "水上活動",
@@ -75,6 +76,36 @@
 			"Virtual": "虛擬",
 			"Multi_Sports": "多項運動",
 			"other": "其他"
+		},
+		"ActivitiesPage": {
+			"upcomingOngoing": "即將及進行中",
+			"finished": "已完結"
+		},
+		"DetailsPage": {
+			"noActivityTitle": "找不到活動",
+			"noActivityDesc": "我們找不到您尋找的活動。\n請再次檢查連結。",
+			"back": "返回",
+			"pageTitle": "活動詳情",
+			"detailsTitle": "活動詳情",
+			"activityTypeLabel": "活動類型",
+			"totalCaloriesLabel": "總消耗卡路里",
+			"caloriesPerHourLabel": "每小時消耗",
+			"organizerLabel": "主辦單位",
+			"unknown": "未知",
+			"seatsLeft_one": "尚餘 # 個名額",
+			"seatsLeft_other": "尚餘 # 個名額",
+			"acceptTnc": "我同意參與活動的<link>條款</link>",
+			"conditions": "條款",
+			"leaving": "離開中",
+			"leave": "離開",
+			"joining": "加入中",
+			"joinNow": "立即加入",
+			"share": "分享",
+			"mapError": "載入 Google 地圖時發生問題。",
+			"agreeTncWarning": "您必須先同意條款。",
+			"notActiveWarning": "無法加入非進行中活動。",
+			"fillProfileWarning": "您必須填寫身高和體重才可參與活動。",
+			"saveReward": "儲存獎賞"
 		}
 	},
 	"ComingSoon": {

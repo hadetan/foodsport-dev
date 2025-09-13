@@ -179,8 +179,8 @@ export default function ActivityItem({ activity, user }) {
 
                 <div className={styles.metaContainer}>
                     <div className={styles.metaLeft}>
-                        <Tooltip content={tooltipText} position="top" align='start'>
-                            <div>
+                        <Tooltip content={tooltipText} width={'16rem'}>
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
                                 <div className={styles.detailsRow}>
                                 <span className={styles.icon}>
                                     <FaCalendar size={19} />

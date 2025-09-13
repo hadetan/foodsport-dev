@@ -48,7 +48,7 @@
 		"placeholder": "Search activities..."
 	},
 	"Activity": {
-        "Landing": { "exploreMoreActivities": "EXPLORE MORE ACTIVITIES" },
+		"Landing": { "exploreMoreActivities": "EXPLORE MORE ACTIVITIES" },
 		"ActivitySection": { "title": "ACTIVITIES" },
 		"ActivityItem": {
 			"toStart": "to start",
@@ -59,6 +59,7 @@
 			"startEndFull": "The activity starts at {startDate} {startTime} and ends on {endDate} {endTime}"
 		},
 		"ActivityTypes": {
+			"allTypes": "All Types",
 			"Running": "Running",
 			"Hiking": "Hiking",
 			"Water_Sport": "Water Sport",
@@ -73,6 +74,36 @@
 			"Virtual": "Virtual",
 			"Multi_Sports": "Multi Sports",
 			"other": "Other"
+		},
+		"ActivitiesPage": {
+			"upcomingOngoing": "Upcoming & Ongoing",
+			"finished": "Finished"
+		},
+		"DetailsPage": {
+			"noActivityTitle": "No Activity Found",
+			"noActivityDesc": "We couldn't find the activity you're looking for.\nPlease check the link again.",
+			"back": "Back",
+			"pageTitle": "Activity Details",
+			"detailsTitle": "Activity Details",
+			"activityTypeLabel": "Activity Type",
+			"totalCaloriesLabel": "Total Calories Burnt",
+			"caloriesPerHourLabel": "Calories Burned",
+			"organizerLabel": "Organizer",
+			"unknown": "Unknown",
+			"seatsLeft_one": "# Seat Left",
+			"seatsLeft_other": "# Seats Left",
+			"acceptTnc": "I accept the <link>conditions</link> for participating on the event",
+			"conditions": "conditions",
+			"leaving": "LEAVING",
+			"leave": "LEAVE",
+			"joining": "JOINING",
+			"joinNow": "JOIN NOW",
+			"share": "SHARE",
+			"mapError": "Something went wrong while loading the google map.",
+			"agreeTncWarning": "You must agree to the Conditions first.",
+			"notActiveWarning": "Cannot join activity that is not active.",
+			"fillProfileWarning": "You must fill height and weight to join activities.",
+			"saveReward": "Save reward"
 		}
 	},
 	"ComingSoon": {
