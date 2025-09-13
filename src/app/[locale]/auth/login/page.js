@@ -1,6 +1,6 @@
 "use client";
-import '@/app/auth/css/loginAndRegister.css'
-import { useEffect, useRef, useState } from "react";
+import '@/app/[locale]/auth/css/loginAndRegister.css'
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import Link from 'next/link';
@@ -9,26 +9,24 @@ import { getSupabaseClient } from '@/lib/supabase';
 import toast from '@/utils/Toast';
 import api from '@/utils/axios/api';
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const supabase = getSupabaseClient();
   const [email, setEmail] = useState("");
-  const [firstname, setFirstname] = useState("");
-  const [lastname, setLastname] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const { signup, authToken } = useAuth();
+  const { login, authToken } = useAuth();
   const subOnce = useRef(false);
   const handledOnce = useRef(false);
 
   useEffect(() => {
-      if (typeof window !== "undefined" && authToken) {
-        router.replace("/my");
-      }
-    }, [router]);
+    if (typeof window !== "undefined" && authToken) {
+      router.replace("/my");
+    }
+  }, [router]);
 
+  // Subscribe once to auth changes to sync server cookie and run pre-profile
   useEffect(() => {
     if (subOnce.current) return;
     subOnce.current = true;
@@ -39,6 +37,7 @@ export default function RegisterPage() {
     return () => subscription?.subscription?.unsubscribe?.();
   }, [supabase]);
 
+  // Handle recovered session on mount (in case redirect fires before subscription)
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getSession();
@@ -57,7 +56,7 @@ export default function RegisterPage() {
       const res = await api.post('/auth/pre-profile');
       const data = res.data || {};
       if (data.reason === 'email_exists') {
-        toast.info('Account with this email already exists. Please login and link Google in settings.');
+        toast.info('Account with this email already exists. Please login and link Google from your profile.');
         try { localStorage.removeItem('auth_token'); } catch {}
         try { await api.delete('/auth/logout'); } catch {}
         try {
@@ -83,15 +82,15 @@ export default function RegisterPage() {
     }
   };
 
-  async function handleRegister(e) {
+  async function handleLogin(e) {
     e.preventDefault();
     setLoading(true);
     setError("");
     try {
-      await signup({ email, password, firstname, lastname, dateOfBirth })
-      router.push("/my");
+      await login({ email, password });
+      router.replace("/my");
     } catch (err) {
-      setError(err.message);
+      setError(`Something went wrong. Please try again. ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -100,85 +99,58 @@ export default function RegisterPage() {
   const onGoogle = async () => {
     setLoading(true);
     try {
-      const redirectTo = `${window.location.origin}/auth/register`;
-      await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+  const redirectTo = `${window.location.origin}/auth/login`;
+  await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
     } catch (e) {
       console.error(e);
       setLoading(false);
     }
   };
 
-  return (
+return (
     <div className="">
       <div className="w-full max-w-md p-6 bg-base-100 rounded">
-        <h1 className="text-2xl font-semibold mb-4 text-center">Register</h1>
-        <form className="space-y-6" onSubmit={handleRegister}>
-          {error && <ErrorAlert message={error} onClose={() => setError("")} />}
+        <h1 className="text-2xl font-semibold mb-4 text-center">Login</h1>
+        {error && <ErrorAlert message={error} onClose={() => setError("")} />}
+        <form className="space-y-6" onSubmit={handleLogin}>
           <div>
-            <label className="block mb-1 font-medium text-black">First Name</label>
-            <input
-              type="text"
-              className="input input-bordered w-full"
-              value={firstname}
-              onChange={e => setFirstname(e.target.value)}
-              required
-            />
+              <label className="block mb-1 font-medium text-black">Email</label>
+              <input
+                  type="email"
+                  className="input input-bordered w-full"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+              />
           </div>
           <div>
-            <label className="block mb-1 font-medium text-black">Last Name</label>
-            <input
-              type="text"
-              className="input input-bordered w-full"
-              value={lastname}
-              onChange={e => setLastname(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium text-black">Date of Birth</label>
-            <input
-              type="date"
-              className="input input-bordered w-full"
-              value={dateOfBirth}
-              onChange={e => setDateOfBirth(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium text-black">Email</label>
-            <input
-              type="email"
-              className="input input-bordered w-full"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium text-black">Password</label>
-            <input
-              type="password"
-              className="input input-bordered w-full text-black"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-            />
+              <label className="block mb-1 font-medium text-black">Password</label>
+              <input
+                  type="password"
+                  className="input input-bordered w-full text-black"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+              />
           </div>
           <button
-            type="submit"
-            className="submit-button w-full text-black"
-            disabled={loading}
+              type="submit"
+              className="submit-button w-full"
+              disabled={loading}
           >
-            {loading ? "Registering..." : "Register"}
+              {loading ? "Logging in..." : "Login"}
           </button>
         </form>
         <button onClick={onGoogle} disabled={loading} className="btn btn-outline w-full mt-4">
           Continue with Google
         </button>
         <div className="mt-4 text-sm text-center">
-          Already have an account? <Link href="/auth/login" className="link">Login</Link>
+          Don't have an account?{" "}
+          <Link href="/auth/register" className="link">
+            Register
+          </Link>
         </div>
       </div>
     </div>
-  );
+);
 }

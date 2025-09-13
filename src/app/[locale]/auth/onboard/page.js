@@ -30,17 +30,17 @@ export default function OnboardPage() {
     setError('');
     try {
       const payload = { ...form };
-      const res = await api.post('/auth/complete-onboarding', payload);
+      await api.post('/auth/complete-onboarding', payload);
       window.location.href = '/my';
     } catch (e) {
       setError(e?.response?.data?.error || 'Failed to complete onboarding.');
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading…</div>;
+  if (loading) return <div className="">Loading…</div>;
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="">
       <div className="w-full max-w-md p-6 bg-base-100 rounded">
         <h1 className="text-2xl font-semibold mb-4">Onboarding</h1>
         {error && <div className="alert alert-error mb-4">{error}</div>}

@@ -88,6 +88,17 @@
     width: 100%;
     padding: 18px 0 10px 0;
 }
+/* Prevent the absolutely positioned logo container from blocking clicks
+   on interactive elements (like the login link) sitting underneath it. */
+.logoContainer {
+    pointer-events: none;
+}
+
+/* Allow the actual logo image to receive pointer events if it needs to be clickable. */
+.logoContainer img {
+    pointer-events: auto;
+}
+
 
 .rightIcons {
     flex: 2;
@@ -95,6 +106,10 @@
     align-items: center;
     justify-content: flex-end;
     gap: 18px;
+}
+/* Ensure the right-side controls are stacked above the logo visually. */
+.topBarRight {
+    z-index: 2;
 }
 
 .icon {

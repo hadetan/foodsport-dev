@@ -45,7 +45,6 @@ export default function Header() {
             label: "HOW DOES IT WORK",
             href: "/how",
         },
-        // Moved buttons from grey navbar to navLinks
         {
             label: <Search sortedActivities={activities} />,
             href: null,
@@ -90,26 +89,21 @@ export default function Header() {
 
     const filteredNavLinks = navLinks.filter(Boolean);
 
-    // Function to check if current path is a child of the nav link
     const isParentPath = (navHref, currentPath) => {
         if (!navHref || !currentPath) return false;
 
-        // For activities routes (both user and admin)
         if (currentPath.includes("/activities")) {
             return navHref.includes("/activities");
         }
 
-        // For my pages
         if (currentPath.startsWith("/my/") && navHref === "/my/") {
             return true;
         }
 
-        // Check if current path starts with nav href (for child pages)
         if (currentPath.startsWith(navHref) && navHref !== "/") {
             return true;
         }
 
-        // For root path, only match exact or specific children
         if (navHref === "/" || navHref === "/my/") {
             return currentPath === navHref || currentPath === "/how";
         }
@@ -121,11 +115,9 @@ export default function Header() {
 
     const activeIdx = navLinksLeft.findIndex((link) => {
         if (!link.href) return false;
-        // Exact match check
         if (pathname === link.href) {
             return true;
         }
-        // Special case for HOME
         if (
             authToken &&
             link.label === "HOME" &&
@@ -133,15 +125,11 @@ export default function Header() {
         ) {
             return true;
         }
-        // Parent path check
         return isParentPath(link.href, pathname);
     });
 
     return (
         <header className={styles.headerWrapper}>
-            {/* Grey Top Bar - now empty */}
-            <div className={styles.greyTopBar}></div>
-            {/* White Nav Bar with Centered Logo */}
             <div className={styles.whiteNavBar}>
                 <div className={styles.logoContainer}>
                     <Image
