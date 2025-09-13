@@ -6,7 +6,7 @@ import { useUser } from '@/app/shared/contexts/userContext';
 import api from '@/utils/axios/api';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import '@/app/my/css/EditProfile.css';
+import '@/app/[locale]/my/css/EditProfile.css';
 import { LiaUserEditSolid } from 'react-icons/lia';
 import { IoIosFemale, IoIosMale } from 'react-icons/io';
 import { FaMountainSun } from 'react-icons/fa6';

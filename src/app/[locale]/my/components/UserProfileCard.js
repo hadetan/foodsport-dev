@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import RecentActivitiesTable from './RecentActivitiesTable';
 import { FaCalendarAlt, FaDoorOpen, FaMedal, FaUser } from 'react-icons/fa';
-import '@/app/my/css/UserProfileCard.css'
+import '@/app/[locale]/my/css/UserProfileCard.css'
 import EditProfile from './EditProfile';
 import AllBadges from './AllBadges';
 import ConfirmDialog from '@/app/shared/components/ConfirmDialog';

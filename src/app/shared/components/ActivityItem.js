@@ -15,6 +15,8 @@ import { FaLocationDot } from 'react-icons/fa6';
 import calculateTimer from '@/utils/calculateTimer';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/authContext';
+import { useTranslations, useLocale } from 'next-intl';
+import { pickLocalized } from '@/i18n/config';
 
 function formatTime(activity) {
 	const formattedStartTime = new Date(activity.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -32,16 +34,29 @@ export default function ActivityItem({
 }) {
 	const router = useRouter();
 	const { authToken } = useAuth();
+	const t = useTranslations();
+	const locale = useLocale();
 
 	const { formattedStartTime, formattedEndTime } = formatTime(activity);
 	const redirectUrl = user
-		? `/my/activities/${activity.id}`
-		: `/activities/${activity.id}`;
+		? `/${locale}/my/activities/${activity.id}`
+		: `/${locale}/activities/${activity.id}`;
+
+	const localizedTitle = pickLocalized({
+		locale,
+		en: activity.title,
+		zh: activity.titleZh
+	});
+	const localizedDescription = pickLocalized({
+		locale,
+		en: activity.description,
+		zh: activity.descriptionZh
+	});
 
 	const choppedDesc =
-		activity.description && activity.description.length > 90
-			? activity.description.slice(0, 90) + '...'
-			: activity.description;
+		localizedDescription && localizedDescription.length > 90
+			? localizedDescription.slice(0, 90) + '...'
+			: localizedDescription;
 
 	const { status: activityStatus, daysLeft } = getActivityStatus(activity);
 	const { seatsLeft } = calculateSeats(activity);
@@ -86,9 +101,9 @@ export default function ActivityItem({
 
 	function handleActTypeSearch(actType) {
 		authToken ?
-			router.push(`/my/activities?type=${encodeURIComponent(actType)}`)
+			router.push(`/${locale}/my/activities?type=${encodeURIComponent(actType)}`)
 			:
-			router.push(`/activities?type=${encodeURIComponent(actType)}`);
+			router.push(`/${locale}/activities?type=${encodeURIComponent(actType)}`);
 	}
 
 	return (
@@ -107,7 +122,7 @@ export default function ActivityItem({
 				{!isCancelledOrClosed && timerInfo.within24h && !timerInfo.finished && (
 					<div className={styles.imageBadge}>
 						<span className={styles.badgeNumber}>{timerInfo.formatted}</span>
-						<span className={styles.badgeLabel}>to start</span>
+						<span className={styles.badgeLabel}>{t('ActivityItem.toStart')}</span>
 					</div>
 				)}
 			</div>
@@ -117,7 +132,7 @@ export default function ActivityItem({
 						className={styles.cardTitleText}
 						onClick={() => router.push(redirectUrl)}
 					>
-						{activity.title}
+						{localizedTitle}
 					</h3>
 					<div className={styles.badges}>
 						<Button className={styles.filterBtn} title='Filter' onClick={() => handleActTypeSearch(activity.activityType)}>
@@ -125,7 +140,7 @@ export default function ActivityItem({
 						</Button>
 					</div>
 				</div>
-				<div className={styles.cardSubtitle} title={activity.description}>{choppedDesc}</div>
+				<div className={styles.cardSubtitle} title={localizedDescription}>{choppedDesc}</div>
 
 				<div className={styles.metaContainer}>
 					<div className={styles.metaLeft}>
@@ -146,25 +161,25 @@ export default function ActivityItem({
 						{activityStatus === 'upcoming' && daysLeft !== null && (
 							<div className={styles.rightRow}>
 								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
-								<span>{daysLeft} {daysLeft === 1 ? 'Day to go' : 'Days to go'}</span>
+								<span>{t('ActivityItem.daysToGo', { count: daysLeft })}</span>
 							</div>
 						)}
 						{activityStatus === 'ongoing' && (
 							<div className={styles.rightRow}>
 								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
-								<span>Ongoing</span>
+								<span>{t('ActivityItem.ongoing')}</span>
 							</div>
 						)}
 						{activityStatus === 'completed' && (
 							<div className={styles.rightRow}>
 								<span className={styles.icon}><RiSunFoggyFill size={23}/></span>
-								<span>Expired</span>
+								<span>{t('ActivityItem.expired')}</span>
 							</div>
 						)}
 						{seatsLeft !== null && (
 							<div className={styles.rightRow}>
 								<span className={styles.icon}><MdEventSeat size={23}/></span>
-								<span>{seatsLeft} {seatsLeft === 1 ? 'Seat Left' : 'Seats Left'}</span>
+								<span>{t('ActivityItem.seatsLeft', { count: seatsLeft })}</span>
 							</div>
 						)}
 					</div>

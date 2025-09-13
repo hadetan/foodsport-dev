@@ -3,7 +3,7 @@ import { useActivities } from '@/app/shared/contexts/ActivitiesContext';
 import { useUser } from '@/app/shared/contexts/userContext';
 import ActivityIcon from '@/app/shared/components/ActivityIcon';
 import InvitePartnersDialog from '@/app/shared/components/InvitePartnersDialog';
-import '@/app/my/css/RecentActivitiesTable.css'
+import '@/app/[locale]/my/css/RecentActivitiesTable.css'
 
 function formatDate(dateStr) {
   const date = new Date(dateStr);

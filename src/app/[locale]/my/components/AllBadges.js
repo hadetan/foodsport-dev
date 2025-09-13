@@ -1,5 +1,5 @@
 import React from 'react';
-import '@/app/my/css/AllBadges.css';
+import '@/app/[locale]/my/css/AllBadges.css';
 
 export default function AllBadges() {
   return (
