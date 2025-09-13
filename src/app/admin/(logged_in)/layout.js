@@ -9,6 +9,7 @@ import {
     Mail,
     UserPlus,
     LogOut,
+    ReceiptText,
 } from "lucide-react";
 import { UsersProvider } from "@/app/shared/contexts/usersContext";
 import { DashboardProvider } from "@/app/shared/contexts/DashboardContext";
@@ -73,7 +74,8 @@ export default function AdminLoggedInLayout({ children }) {
 
                                 <div className="drawer-side bg-base-200 rounded-2xl m-3">
                                     <aside className="w-full sm:w-64 relative">
-                                        <div className="sm:hidden sticky top-0 z-10 flex justify-end bg-base-200 p-2">
+                                        {/* Back button for mobile and tablet view, above Welcome Admin */}
+                                        <div className="lg:hidden sticky top-0 z-10 flex items-center bg-base-200 p-4">
                                             <label
                                                 htmlFor="admin-drawer"
                                                 className="btn btn-square btn-ghost"
@@ -88,12 +90,16 @@ export default function AdminLoggedInLayout({ children }) {
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
                                                         strokeWidth="2"
-                                                        d="M6 18L18 6M6 6l12 12"
+                                                        d="M15 19l-7-7 7-7"
                                                     />
                                                 </svg>
                                             </label>
+                                            <span className="ml-2 text-xl font-bold">
+                                                Welcome Admin
+                                            </span>
                                         </div>
-                                        <div className="flex gap-4 mt-4">
+                                        {/* Desktop Welcome Admin */}
+                                        <div className="hidden lg:flex gap-4 mt-4">
                                             <div className="text-xl font-bold px-4 py-2">
                                                 Welcome Admin
                                             </div>

@@ -21,8 +21,10 @@ const Table = ({
     );
 
     return (
-        <>
-            <table className={`table table-zebra w-full ${className}`}>
+        <div className="w-full overflow-x-auto rounded-lg">
+            <table
+                className={`table table-zebra w-full min-w-[600px] ${className}`}
+            >
                 <thead className="sticky top-0 bg-primary text-primary-content  ">
                     <tr>
                         {heading.map((columnName, idx) => (
@@ -56,8 +58,7 @@ const Table = ({
                           ))}
                 </tbody>
             </table>
-          
-        </>
+        </div>
     );
 };
 
