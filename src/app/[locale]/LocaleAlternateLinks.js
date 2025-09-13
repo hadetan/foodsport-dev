@@ -1,18 +1,19 @@
-'use client';
-import Head from 'next/head';
-import { usePathname } from 'next/navigation';
-import { useLocale } from 'next-intl';
+'use server';
 import { buildAlternateLinkTags } from '@/i18n/seo';
 
-export default function LocaleAlternateLinks() {
-  const pathname = usePathname() || '/';
-  const locale = useLocale();
-  const links = buildAlternateLinkTags(locale, pathname);
-  return (
-    <Head>
-      {links.map(l => (
-        <link key={l.rel + l.href + (l.hrefLang || '')} rel={l.rel} href={l.href} {...(l.hrefLang ? { hrefLang: l.hrefLang } : {})} />
-      ))}
-    </Head>
-  );
+export async function getAlternateLinksMetadata(locale, pathname = '/') {
+	const links = buildAlternateLinkTags(locale, pathname);
+	const languages = {};
+	links.forEach((l) => {
+		if (l.rel === 'alternate' && l.hrefLang) {
+			languages[l.hrefLang] = l.href;
+		}
+	});
+	const canonicalLink = links.find((l) => l.rel === 'canonical');
+	return {
+		alternates: {
+			canonical: canonicalLink ? canonicalLink.href : undefined,
+			languages,
+		},
+	};
 }

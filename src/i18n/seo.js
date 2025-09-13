@@ -1,7 +1,9 @@
 import { locales, defaultLocale } from '@/i18n/config';
 
+const localePattern = locales.map((l) => l.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');
+
 export function buildMetadataAlternates(locale, pathname = '/') {
-  const pathNoLocale = pathname.replace(/^\/(en|zh-HK)/, '') || '/';
+  const pathNoLocale = pathname.replace(new RegExp(`^\\/(${localePattern})`), '') || '/';
   const buildHref = (loc) => `/${loc}${pathNoLocale === '/' ? '' : pathNoLocale}`;
   const languages = Object.fromEntries(locales.map(l => [l, buildHref(l)]));
   return {
@@ -12,7 +14,7 @@ export function buildMetadataAlternates(locale, pathname = '/') {
 }
 
 export function buildAlternateLinkTags(locale, pathname = '/') {
-  const pathNoLocale = pathname.replace(/^\/(en|zh-HK)/, '') || '/';
+  const pathNoLocale = pathname.replace(new RegExp(`^\\/(${localePattern})`), '') || '/';
   const current = `/${locale}${pathNoLocale === '/' ? '' : pathNoLocale}`;
   const links = [];
   links.push({ rel: 'canonical', href: current });
