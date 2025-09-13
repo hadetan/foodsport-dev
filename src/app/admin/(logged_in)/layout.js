@@ -15,10 +15,11 @@ import { UsersProvider } from "@/app/shared/contexts/usersContext";
 import { DashboardProvider } from "@/app/shared/contexts/DashboardContext";
 import { AdminActivitiesProvider } from "@/app/shared/contexts/AdminActivitiesContext";
 import { SocialMediaImageProvider } from "@/app/shared/contexts/socialMediaImageContext";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function AdminLoggedInLayout({ children }) {
     const pathname = usePathname();
+    const drawerRef = useRef(null);
     useEffect(() => {
         if (typeof window !== "undefined") {
             const token = localStorage.getItem("admin_auth_token");
@@ -27,6 +28,12 @@ export default function AdminLoggedInLayout({ children }) {
             }
         }
     }, []);
+
+    const closeSidebar = () => {
+        if (drawerRef.current && drawerRef.current.checked) {
+            drawerRef.current.checked = false;
+        }
+    };
 
     return (
         <div data-theme="light">
@@ -39,6 +46,7 @@ export default function AdminLoggedInLayout({ children }) {
                                     id="admin-drawer"
                                     type="checkbox"
                                     className="drawer-toggle"
+                                    ref={drawerRef}
                                 />
 
                                 <div className="drawer-content flex flex-col">
@@ -111,36 +119,42 @@ export default function AdminLoggedInLayout({ children }) {
                                                     icon={<CircleGauge />}
                                                     label="Dashboard"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/users"
                                                     icon={<Users />}
                                                     label="All Users"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/activities"
                                                     icon={<Calendar1 />}
                                                     label="All Activities"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/social"
                                                     icon={<Share2 />}
                                                     label="Social Media Images"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/email"
                                                     icon={<Mail />}
                                                     label="Send Emails"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/register"
                                                     icon={<UserPlus />}
                                                     label="Create New Admin"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/terms&conditions"
@@ -150,6 +164,7 @@ export default function AdminLoggedInLayout({ children }) {
                                                         pathname ===
                                                         "/admin/terms&conditions"
                                                     }
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/logout"
@@ -157,6 +172,7 @@ export default function AdminLoggedInLayout({ children }) {
                                                     label="Logout"
                                                     pathname={pathname}
                                                     isLogoutButton={true}
+                                                    onClick={closeSidebar}
                                                 />
                                             </ul>
                                         </div>
