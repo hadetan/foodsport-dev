@@ -1,0 +1,1 @@
+export default LOCALE_PATTERN = locales.map((l) => l.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');

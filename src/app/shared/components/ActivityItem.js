@@ -106,7 +106,6 @@ export default function ActivityItem({
 			router.push(`/${locale}/activities?type=${encodeURIComponent(actType)}`);
 	}
 
-
 	return (
 		<div className={styles.card}>
 			<div className={styles.imageWrapper}>

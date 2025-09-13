@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { LOCALE_COOKIE, locales, defaultLocale } from '@/i18n/config';
+import LOCALE_PATTERN from '@@/src/utils/localePattern';
 
 function isBypassed(pathname) {
 	if (pathname.startsWith('/admin') || pathname.startsWith('/api'))
@@ -37,10 +38,9 @@ function detectPreferredLocale(request) {
 export function middleware(request) {
 	const url = request.nextUrl;
 	const { pathname } = url;
-	const localePattern = locales.map((l) => l.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')).join('|');
 
 	// If someone manually adds a locale prefix before an admin route, redirect to locale-less /admin.
-	const localeAdminMatch = pathname.match(new RegExp(`^\\/(${localePattern})\\/(admin(?:\\/.*)?)`));
+	const localeAdminMatch = pathname.match(new RegExp(`^\\/(${LOCALE_PATTERN})\\/(admin(?:\\/.*)?)`));
 	if (localeAdminMatch) {
 		const adminRemainder = '/' + localeAdminMatch[2];
 		const redirectUrl = new URL(adminRemainder + url.search, request.url);
@@ -51,9 +51,7 @@ export function middleware(request) {
 		return NextResponse.next();
 	}
 
-	const staticAssetMatch = pathname.match(
-		new RegExp(`^\\/(${localePattern})\\\/(.+\\.(?:png|jpe?g|gif|svg|webp|ico))$`, 'i')
-	);
+	const staticAssetMatch = pathname.match(new RegExp(`^\\/(${LOCALE_PATTERN})\\\/(.+\\.(?:png|jpe?g|gif|svg|webp|ico))$`, 'i'));
 	if (staticAssetMatch) {
 		const file = staticAssetMatch[2];
 		const rewriteUrl = new URL('/' + file, request.url);
@@ -81,7 +79,7 @@ export function middleware(request) {
 		return res;
 	}
 
-    const enAliases = ['e', 'en'];
+	const enAliases = ['e', 'en'];
 	if (seg0 && enAliases.includes(seg0Lower) && seg0Lower !== 'en') {
 		const rest = segments.slice(1).join('/');
 		const corrected = `/en${rest ? '/' + rest : ''}`;
@@ -91,14 +89,8 @@ export function middleware(request) {
 		return res;
 	}
 
-	const hasLocale =
-		segments.length > 0 &&
-		seg0 &&
-		locales.some((l) => l.toLowerCase() === seg0.toLowerCase());
-	let currentLocale = hasLocale
-		? locales.find((l) => l.toLowerCase() === seg0.toLowerCase()) ||
-		  defaultLocale
-		: null;
+	const hasLocale = segments.length > 0 && seg0 && locales.some((l) => l.toLowerCase() === seg0.toLowerCase());
+	let currentLocale = hasLocale ? locales.find((l) => l.toLowerCase() === seg0.toLowerCase()) || defaultLocale : null;
 
 	if (!hasLocale) {
 		currentLocale = detectPreferredLocale(request);
@@ -125,9 +117,7 @@ export function middleware(request) {
 
 	if (!token && remainderPath.startsWith('/my/activities/')) {
 		const target = remainderPath.replace(/^\/my/, '');
-		return NextResponse.redirect(
-			new URL(`${localePrefix}${target}${url.search}`, request.url)
-		);
+		return NextResponse.redirect(new URL(`${localePrefix}${target}${url.search}`, request.url));
 	}
 
 	if (token && remainderPath.startsWith('/activities/')) {
@@ -144,10 +134,7 @@ export function middleware(request) {
 			);
 		}
 	} else {
-		if (
-			remainderPath.startsWith('/my') &&
-			!remainderPath.startsWith('/my/activities/')
-		) {
+		if (remainderPath.startsWith('/my') && !remainderPath.startsWith('/my/activities/')) {
 			return NextResponse.redirect(
 				new URL(`${localePrefix}/auth/login`, request.url)
 			);
