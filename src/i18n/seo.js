@@ -1,5 +1,5 @@
 import { locales, defaultLocale } from '@/i18n/config';
-import LOCALE_PATTERN from '@@/src/utils/localePattern';
+import LOCALE_PATTERN from '@/utils/localePattern';
 
 export function buildMetadataAlternates(locale, pathname = '/') {
   const pathNoLocale = pathname.replace(new RegExp(`^\\/(${LOCALE_PATTERN})`), '') || '/';
