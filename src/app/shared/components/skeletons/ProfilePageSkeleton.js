@@ -1,8 +1,8 @@
 import React from 'react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import '@/app/my/css/profile.css'
-import '@/app/my/css/UserProfileCard.css'
+import '@/app/[locale]/my/css/profile.css'
+import '@/app/[locale]/my/css/UserProfileCard.css'
 
 export default function ProfilePageSkeleton() {
   return (

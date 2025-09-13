@@ -115,6 +115,7 @@ export default function EditActivityPage() {
             caloriesPerHourMin,
             caloriesPerHourMax,
             tncId: activity.tncId || activity.tnc?.id || "", // new field
+            isFeatured: !!activity.isFeatured, // add featured flag
         });
         setAudit({
             createdBy: activity.organizerName || "Unknown",
@@ -230,8 +231,11 @@ export default function EditActivityPage() {
     };
 
     const handleInput = (e) => {
-        const { name, value } = e.target;
-        setForm((f) => ({ ...f, [name]: value }));
+        const { name, value, type, checked } = e.target;
+        setForm((f) => ({
+            ...f,
+            [name]: type === "checkbox" ? checked : value,
+        }));
     };
 
     const handleImageChange = (e) => {
@@ -292,6 +296,7 @@ export default function EditActivityPage() {
                 `${form.caloriesPerHourMin}-${form.caloriesPerHourMax}`
             );
             formData.append("mapUrl", buildEmbedMapUrl(form.mapLocation));
+            formData.append("isFeatured", !!form.isFeatured); // send as boolean
 
             if (imageFile && imageFile.url === undefined) {
                 formData.append("image", imageFile);
@@ -761,6 +766,19 @@ export default function EditActivityPage() {
                                                 </option>
                                             ))}
                                         </select>
+                                    </div>
+                                    {/* Should be featured? Checkbox */}
+                                    <div className="form-control w-full">
+                                        <label className="label cursor-pointer justify-start gap-2 text-lg font-semibold mb-2 text-black">
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox checkbox-primary"
+                                                name="isFeatured"
+                                                checked={!!form.isFeatured}
+                                                onChange={handleInput}
+                                            />
+                                            <span>Should be featured?</span>
+                                        </label>
                                     </div>
                                 </div>
                                 {/* Search Map - full width */}

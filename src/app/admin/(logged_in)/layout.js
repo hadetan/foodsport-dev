@@ -8,6 +8,7 @@ import {
     Share2,
     Mail,
     UserPlus,
+    ReceiptText,
 } from "lucide-react";
 import { UsersProvider } from "@/app/shared/contexts/usersContext";
 import { DashboardProvider } from "@/app/shared/contexts/DashboardContext";
@@ -134,6 +135,15 @@ export default function AdminLoggedInLayout({ children }) {
                                                     icon={<UserPlus />}
                                                     label="Create New Admin"
                                                     pathname={pathname}
+                                                />
+                                                <SidebarItem
+                                                    href="/admin/terms&conditions"
+                                                    icon={<ReceiptText />}
+                                                    label="Terms & Conditions"
+                                                    isSelected={
+                                                        pathname ===
+                                                        "/admin/terms&conditions"
+                                                    }
                                                 />
                                             </ul>
                                         </div>

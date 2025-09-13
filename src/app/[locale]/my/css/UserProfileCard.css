@@ -51,6 +51,21 @@
   flex: 1;
 }
 
+.profile-card-menu-item.logout {
+  color: #dc2626;
+  border-color: transparent;
+}
+.profile-card-menu-item.logout .logout-icon {
+  color: #dc2626;
+}
+.profile-card-menu-item.logout:hover:not(:disabled) {
+  color: #b91c1c;
+}
+.profile-card-menu-item.logout:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Right Content */
 .profile-card-content {
   width: 75%;

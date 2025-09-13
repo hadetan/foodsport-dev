@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from '@/app/shared/contexts/userContext';
-import '@/app/my/css/profile.css';
+import '@/app/[locale]/my/css/profile.css';
 import Avatar from '@/app/shared/components/avatar';
 import AvatarSkeleton from '@/app/shared/components/skeletons/AvatarSkeleton';
 import UserProfileCard from '../components/UserProfileCard';

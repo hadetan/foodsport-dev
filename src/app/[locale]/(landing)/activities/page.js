@@ -8,7 +8,7 @@ import getActivityStatus from "@/utils/getActivityStatus";
 import sortFeaturedAndSoonest from "@/utils/sortFeaturedAndSoonest";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import ActivityItemSkeleton from "@/app/shared/components/skeletons/ActivityItemSkeleton";
-import ActivitiesFilter from "../../shared/components/ActivitiesFilter";
+import ActivitiesFilter from "../../../shared/components/ActivitiesFilter";
 import { Suspense, useState } from "react";
 import ActivityNotFound from "@/app/shared/components/ActivityNotFound";
 

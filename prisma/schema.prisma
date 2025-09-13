@@ -132,6 +132,23 @@ model User {
   @@map("users")
 }
 
+model PreProfile {
+  id               String   @id @default(uuid())
+  supabaseUserId   String   @unique @map("supabase_user_id")
+  provider         String   @default("google")
+  email            String
+  emailVerified    Boolean  @default(false) @map("email_verified")
+  firstname        String?  @map("firstname")
+  lastname         String?  @map("lastname")
+  pictureUrl       String?  @map("picture_url")
+  rawMetadata      Json?    @map("raw_metadata")
+  onboardingState  String?  @default("pending")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("pre_profiles")
+}
+
 model AdminUser {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -149,8 +166,11 @@ model AdminUser {
 model Activity {
   id                   String        @id @default(uuid())
   title                String
+  titleZh              String?       @map("title_zh")
   description          String?
+  descriptionZh        String?       @map("description_zh")
   summary              String?       @db.Text
+  summaryZh            String?       @db.Text @map("summary_zh")
   activityType         ActivityType  @map("activity_type")
   location             String
   startDate            DateTime      @map("start_date")
@@ -222,7 +242,7 @@ model InvitedUser {
   inviterId   String?  @map("inviter_id")
   tempUserId  String?  @map("temp_user_id")
   createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
 
   // Relations
   tempUser    TempUser? @relation(fields: [tempUserId], references: [id])

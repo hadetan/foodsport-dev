@@ -8,9 +8,9 @@ import sortFeaturedAndSoonest from '@/utils/sortFeaturedAndSoonest';
 import Hero from '@/app/shared/components/Hero';
 import { useActivities } from '@/app/shared/contexts/ActivitiesContext';
 import { useUser } from '@/app/shared/contexts/userContext';
-import Button from '../shared/components/Button';
+import Button from '../../shared/components/Button';
 import { useRouter } from 'next/navigation';
-import ActivityItemSkeleton from '../shared/components/skeletons/ActivityItemSkeleton';
+import ActivityItemSkeleton from '../../shared/components/skeletons/ActivityItemSkeleton';
 
 export default function Home() {
 	const { activities, setActivities } = useActivities();
