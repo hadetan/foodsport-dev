@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import Avatar from "@/app/shared/components/avatar";
 import FullPageLoader from "../../../components/FullPageLoader";
 import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
-import { Download, Upload } from "lucide-react";
+import { Download, Upload, Pencil } from "lucide-react";
 import { toast } from "@/utils/Toast";
+import axios from "axios";
+import parseUsersFromCsv from "@/utils/parseCsv";
 
 const ActivityDetailPage = () => {
     const [activity, setActivity] = useState(null);
@@ -23,6 +25,8 @@ const ActivityDetailPage = () => {
     const activityId = params?.id;
 
     const [activeTab, setActiveTab] = useState("details"); // "details" or "users"
+    const fileInputRef = useRef(null);
+    const [importing, setImporting] = useState(false);
 
     // Filter users who have joined this activity
     useEffect(() => {
@@ -59,6 +63,58 @@ const ActivityDetailPage = () => {
             setLoading(false);
         }
     }, [activityId, activities, activitiesLoading]);
+
+    const handleImportClick = () => fileInputRef.current?.click();
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files?.[0];
+        e.target.value = ""; // allow re-selecting the same file next time
+        if (!file) return;
+
+        if (!activityId) {
+            toast.error("Missing activity id");
+            return;
+        }
+
+        setImporting(true);
+        try {
+            const text = await file.text();
+            const { users, skipped } = parseUsersFromCsv(text);
+
+            // Removed strict validation; always attempt API call
+            const payloadUsers = users.map((u) => ({
+                email: String(u.email ?? ""),
+                calories: Number.isFinite(u.calories) ? Number(u.calories) : 0,
+                ...(Number.isFinite(u.duration)
+                    ? { duration: Number(u.duration) }
+                    : {}),
+            }));
+
+            const res = await axios.post(
+                "/api/admin/users/rewardCalories",
+                { activityId, users: payloadUsers },
+                { withCredentials: true }
+            );
+            const data = res?.data || {};
+
+            const results = Array.isArray(data?.results) ? data.results : [];
+            const successCount = results.filter((r) => r.success).length;
+            const failCount = results.length - successCount;
+            const skippedCount = skipped.length;
+            const totalProcessed = results.length;
+
+            toast.success(
+                `Import complete. Rewarded ${successCount}/${totalProcessed}. Skipped ${
+                    failCount + skippedCount
+                }.`
+            );
+        } catch (err) {
+            const msg = err?.response?.data?.error || "Import failed";
+            toast.error(msg);
+        } finally {
+            setImporting(false);
+        }
+    };
 
     if (loading) {
         return <FullPageLoader />;
@@ -134,7 +190,18 @@ const ActivityDetailPage = () => {
                         VIEW ACTIVITY
                     </h2>
                 </div>
-                <div></div>
+                {/* Show Edit Activity button only in details tab, top right */}
+                {activeTab === "details" && (
+                    <button
+                        className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors"
+                        onClick={() =>
+                            router.push(`/admin/activities/${activity?.id}`)
+                        }
+                    >
+                        <Pencil className="w-5 h-5 mr-2" />
+                        Edit Activity
+                    </button>
+                )}
             </div>
 
             {/* Tabs - just below navigation */}
@@ -351,97 +418,185 @@ const ActivityDetailPage = () => {
                                 {canImportExport && (
                                     <>
                                         <button
-                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
-                                            onClick={() => {
-                                                /* handle import */
-                                            }}
+                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors disabled:opacity-60"
+                                            onClick={handleImportClick}
+                                            disabled={importing}
                                             title="Import"
                                         >
                                             <Upload className="w-5 h-5 mr-2" />
-                                            Import
+                                            {importing
+                                                ? "Importing..."
+                                                : "Import"}
                                         </button>
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept=".csv,text/csv"
+                                            className="hidden"
+                                            onChange={handleFileChange}
+                                        />
                                         <button
                                             className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
                                             onClick={() => {
-                                                // Export only activity id and title, then users details
+                                                // Export activity info and user details, merging per-activity joined data
                                                 if (!activity) {
                                                     toast.error(
                                                         "No activity data to export"
                                                     );
                                                     return;
                                                 }
+                                                if (
+                                                    !participatingUsers ||
+                                                    participatingUsers.length ===
+                                                        0
+                                                ) {
+                                                    toast.error(
+                                                        "No participating users to export"
+                                                    );
+                                                    return;
+                                                }
+
+                                                const escapeCsv = (value) => {
+                                                    if (
+                                                        value === null ||
+                                                        value === undefined
+                                                    )
+                                                        return '""';
+                                                    const s = String(value);
+                                                    return `"${s.replace(
+                                                        /"/g,
+                                                        '""'
+                                                    )}"`;
+                                                };
+
+                                                const matchId = (val) => {
+                                                    if (!val) return false;
+                                                    const id =
+                                                        activityId?.toString();
+                                                    // support primitive id, object with id/activityId, or nested activity.id
+                                                    return (
+                                                        val === activityId ||
+                                                        val?.toString?.() ===
+                                                            id ||
+                                                        val?.id?.toString?.() ===
+                                                            id ||
+                                                        val?.activityId?.toString?.() ===
+                                                            id ||
+                                                        val?.activity?.id?.toString?.() ===
+                                                            id
+                                                    );
+                                                };
+
+                                                const findActivityJoin = (
+                                                    user
+                                                ) => {
+                                                    const arr = Array.isArray(
+                                                        user?.joinedActivities
+                                                    )
+                                                        ? user.joinedActivities
+                                                        : [];
+                                                    return (
+                                                        arr.find(matchId) || {}
+                                                    );
+                                                };
+
+                                                // Columns we will export (aligned with DB naming)
+                                                const headers = [
+                                                    "firstname",
+                                                    "lastname",
+                                                    "email",
+                                                    "Registered",
+                                                    "gender",
+                                                    "height",
+                                                    "weight",
+                                                    "dob",
+                                                    "joinedDate",
+                                                    "totalDuration",
+                                                    "totalCaloriesBurned",
+                                                ];
+                                                const userHeader = headers
+                                                    .map((h) => `"${h}"`)
+                                                    .join(",");
+
+                                                const userRows =
+                                                    participatingUsers.map(
+                                                        (user) => {
+                                                            const join =
+                                                                findActivityJoin(
+                                                                    user
+                                                                );
+
+                                                            const values = [
+                                                                user?.firstname ??
+                                                                    user?.firstName ??
+                                                                    "",
+                                                                user?.lastname ??
+                                                                    user?.lastName ??
+                                                                    "",
+                                                                user?.email ??
+                                                                    user?.user_email ??
+                                                                    user?.user
+                                                                        ?.email ??
+                                                                    "",
+                                                                // Registered (Yes/No based on isRegistered)
+                                                                user?.isRegistered
+                                                                    ? "Yes"
+                                                                    : "No",
+                                                                user?.gender ??
+                                                                    user?.sex ??
+                                                                    "",
+                                                                user?.height ??
+                                                                    user
+                                                                        ?.profile
+                                                                        ?.height ??
+                                                                    "",
+                                                                user?.weight ??
+                                                                    user
+                                                                        ?.profile
+                                                                        ?.weight ??
+                                                                    "",
+                                                                user?.dob ??
+                                                                    user?.dateOfBirth ??
+                                                                    user
+                                                                        ?.profile
+                                                                        ?.dob ??
+                                                                    "",
+                                                                join?.joinedDate ??
+                                                                    join?.joinDate ??
+                                                                    join?.createdAt ??
+                                                                    user?.joinedDate ??
+                                                                    user?.joinDate ??
+                                                                    user?.createdAt ??
+                                                                    "",
+                                                                // totalDuration
+                                                                join?.totalDuration ??
+                                                                    join?.duration ??
+                                                                    join?.activityDuration ??
+                                                                    join?.minutes ??
+                                                                    join?.timeSpent ??
+                                                                    "",
+                                                                // totalCaloriesBurned
+                                                                join?.totalCaloriesBurned ??
+                                                                    join?.calories ??
+                                                                    join?.totalCalories ??
+                                                                    join?.kcal ??
+                                                                    "",
+                                                            ];
+
+                                                            return values
+                                                                .map(escapeCsv)
+                                                                .join(",");
+                                                        }
+                                                    );
 
                                                 // Only id and title for activity
                                                 const activityHeader = `"id","title"`;
                                                 const activityRow = [
-                                                    activity.id
-                                                        ? `"${String(
-                                                              activity.id
-                                                          ).replace(
-                                                              /"/g,
-                                                              '""'
-                                                          )}"`
-                                                        : "",
-                                                    activity.title
-                                                        ? `"${String(
-                                                              activity.title
-                                                          ).replace(
-                                                              /"/g,
-                                                              '""'
-                                                          )}"`
-                                                        : "",
-                                                ].join(",");
-
-                                                // User fields + duration and calories
-                                                const userFields = [
-                                                    "firstname",
-                                                    "lastname",
-                                                    "email",
-                                                    "joinedDate",
-                                                    "height",
-                                                    "weight",
-                                                    "dob",
-                                                    "gender",
-                                                    "duration",
-                                                    "calories",
-                                                ];
-                                                const userHeader = userFields
-                                                    .map(
-                                                        (field) => `"${field}"`
-                                                    )
+                                                    activity?.id ?? "",
+                                                    activity?.title ?? "",
+                                                ]
+                                                    .map(escapeCsv)
                                                     .join(",");
-                                                const userRows =
-                                                    participatingUsers &&
-                                                    participatingUsers.length >
-                                                        0
-                                                        ? participatingUsers.map(
-                                                              (user) =>
-                                                                  userFields
-                                                                      .map(
-                                                                          (
-                                                                              key
-                                                                          ) =>
-                                                                              user[
-                                                                                  key
-                                                                              ] !==
-                                                                                  undefined &&
-                                                                              user[
-                                                                                  key
-                                                                              ] !==
-                                                                                  null
-                                                                                  ? `"${String(
-                                                                                        user[
-                                                                                            key
-                                                                                        ]
-                                                                                    ).replace(
-                                                                                        /"/g,
-                                                                                        '""'
-                                                                                    )}"`
-                                                                                  : ""
-                                                                      )
-                                                                      .join(",")
-                                                          )
-                                                        : [];
 
                                                 let usersSection = "";
                                                 if (userRows.length > 0) {
@@ -458,8 +613,9 @@ const ActivityDetailPage = () => {
                                                     activityRow +
                                                     usersSection;
 
+                                                // Add BOM for Excel compatibility
                                                 const blob = new Blob(
-                                                    [csvContent],
+                                                    ["\uFEFF" + csvContent],
                                                     {
                                                         type: "text/csv;charset=utf-8;",
                                                     }
@@ -485,29 +641,6 @@ const ActivityDetailPage = () => {
                                         </button>
                                     </>
                                 )}
-                                <button
-                                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors"
-                                    onClick={() =>
-                                        router.push(
-                                            `/admin/activities/${activity?.id}`
-                                        )
-                                    }
-                                >
-                                    <svg
-                                        className="w-5 h-5 mr-2"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                        />
-                                    </svg>
-                                    Edit Activity
-                                </button>
                             </div>
                             {/* Participating Users Table */}
                             <div className="bg-white rounded-lg shadow-md overflow-hidden">

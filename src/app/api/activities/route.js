@@ -9,7 +9,6 @@ function parseQueryParams(searchParams) {
 		page: parseInt(searchParams.get('page') || '1', 10),
 		limit: parseInt(searchParams.get('limit') || '20', 10),
 		type: searchParams.get('type') || '',
-		organizerId: searchParams.get('organizerId') || '',
 	};
 }
 
@@ -18,13 +17,12 @@ export async function GET(req) {
 	try {
 		const url = new URL(req.url);
 		const { searchParams } = url;
-		const { status, page, limit, type, organizerId } = parseQueryParams(searchParams);
+		const { status, page, limit, type } = parseQueryParams(searchParams);
 		const skip = (page - 1) * limit;
 		const filters = {};
 	if (status) filters.status = status;
 	filters.status = filters.status && filters.status !== 'draft' ? filters.status : undefined;
 		if (type) filters.type = type;
-		if (organizerId) filters.organizerId = organizerId;
 		const options = {
 			limit,
 			skip,
@@ -32,7 +30,7 @@ export async function GET(req) {
 		};
 
 		// Validate query parameters
-		const validation = validateRequiredFields({ status, page, limit, type, organizerId }, ['page', 'limit']);
+		const validation = validateRequiredFields({ status, page, limit, type }, ['page', 'limit']);
 		if (!validation.isValid) {
 			return new NextResponse(
 				JSON.stringify({ error: validation.error }),
@@ -40,7 +38,7 @@ export async function GET(req) {
 			);
 		}
 
-	const allowedFilters = ['status', 'type', 'organizerId'];
+	const allowedFilters = ['status', 'type'];
 	let sanitizedFilters = sanitizeData(filters, allowedFilters);
 	sanitizedFilters = { ...sanitizedFilters, NOT: { status: 'draft' } };
 
@@ -50,8 +48,11 @@ export async function GET(req) {
 			{
 				id: true,
 				title: true,
+				titleZh: true,
 				description: true,
+				descriptionZh: true,
 				summary: true,
+				summaryZh: true,
 				activityType: true,
 				location: true,
 				startDate: true,
@@ -59,7 +60,6 @@ export async function GET(req) {
 				startTime: true,
 				endTime: true,
 				participantLimit: true,
-				organizerId: true,
 				imageUrl: true,
 				caloriesPerHour: true,
 				isFeatured: true,
@@ -72,21 +72,11 @@ export async function GET(req) {
 		);
 
 		const activityIds = (activities || []).map(a => a.id);
-		const organizerIds = Array.from(new Set((activities || []).map(a => a.organizerId).filter(Boolean)));
 
 		const participantCountsRaw = await getMany('userActivity', { activityId: { in: activityIds } }, { activityId: true });
 		const participantCountMap = {};
 		for (const { activityId } of participantCountsRaw) {
 			participantCountMap[activityId] = (participantCountMap[activityId] || 0) + 1;
-		}
-
-		let organizerNameMap = {};
-		if (organizerIds.length > 0) {
-			const organizers = await getMany('adminUser', { id: { in: organizerIds } }, { id: true, name: true });
-			organizerNameMap = organizers.reduce((acc, org) => {
-				acc[org.id] = org.name;
-				return acc;
-			}, {});
 		}
 
 		const tncIds = Array.from(new Set((activities || []).map(a => a.tncId).filter(Boolean)));
@@ -106,8 +96,11 @@ export async function GET(req) {
 		const activitiesList = (activities || []).map((a) => ({
 			id: a.id,
 			title: a.title,
+			titleZh: a.titleZh || null,
 			description: a.description,
-			summary: a.summary,
+			descriptionZh: a.descriptionZh || null,
+			summary: a.summary || null,
+			summaryZh: a.summaryZh || null,
 			activityType: a.activityType,
 			location: a.location,
 			startDate: a.startDate,

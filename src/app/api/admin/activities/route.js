@@ -50,7 +50,11 @@ export async function GET(req) {
 			{
 				id: true,
 				title: true,
+				titleZh: true,
 				description: true,
+				descriptionZh: true,
+				summary: true,
+				summaryZh: true,
 				activityType: true,
 				location: true,
 				startDate: true,
@@ -140,7 +144,11 @@ export async function GET(req) {
 			return {
 				id: a.id,
 				title: a.title,
+				titleZh: a.titleZh || null,
 				description: a.description,
+				descriptionZh: a.descriptionZh || null,
+				summary: a.summary || null,
+				summaryZh: a.summaryZh || null,
 				activityType: a.activityType,
 				location: a.location,
 				startDate: a.startDate,
@@ -293,7 +301,9 @@ export async function POST(req) {
 		}
 		const allowedFields = [
 			'title',
+			'titleZh',
 			'description',
+			'descriptionZh',
 			'activityType',
 			'location',
 			'startDate',
@@ -430,7 +440,11 @@ export async function PATCH(req) {
 
 		const allowedFields = [
 			'title',
+			'titleZh',
 			'description',
+			'descriptionZh',
+			'summary',
+			'summaryZh',
 			'activityType',
 			'location',
 			'startDate',

@@ -137,6 +137,15 @@ export default function AdminLoggedInLayout({ children }) {
                                                     pathname={pathname}
                                                 />
                                                 <SidebarItem
+                                                    href="/admin/terms&conditions"
+                                                    icon={<ReceiptText />}
+                                                    label="Terms & Conditions"
+                                                    isSelected={
+                                                        pathname ===
+                                                        "/admin/terms&conditions"
+                                                    }
+                                                />
+                                                <SidebarItem
                                                     href="/admin/logout"
                                                     icon={<LogOut />}
                                                     label="Logout"

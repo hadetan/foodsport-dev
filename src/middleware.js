@@ -1,42 +1,149 @@
 import { NextResponse } from 'next/server';
+import { LOCALE_COOKIE, locales, defaultLocale } from '@/i18n/config';
+import { LOCALE_PATTERN } from '@/utils/localePattern';
+
+function isBypassed(pathname) {
+	if (pathname.startsWith('/admin') || pathname.startsWith('/api'))
+		return true;
+	if (pathname.startsWith('/_next')) return true;
+	return false;
+}
+
+function detectPreferredLocale(request) {
+	const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value;
+	if (cookieLocale) {
+		const cookieLocaleLower = cookieLocale.toLowerCase();
+		if (locales.some((l) => l.toLowerCase() === cookieLocaleLower)) {
+			return locales.find((l) => l.toLowerCase() === cookieLocaleLower);
+		}
+	}
+	const header = request.headers.get('accept-language');
+	if (header) {
+		const ranked = header
+			.split(',')
+			.map((part) => {
+				const [lang, qPart] = part.trim().split(';');
+				const q = qPart ? parseFloat(qPart.split('=')[1]) : 1;
+				return { lang: lang.toLowerCase(), q };
+			})
+			.sort((a, b) => b.q - a.q);
+		for (const { lang } of ranked) {
+			if (lang.startsWith('zh')) return 'zh-HK';
+			if (lang === 'en' || lang.startsWith('en-')) return 'en';
+		}
+	}
+	return defaultLocale;
+}
 
 export function middleware(request) {
-  // Find any cookie starting with 'sb' (Supabase session cookie)
-  let token = null;
-  for (const [name, value] of request.cookies) {
-    if (name.startsWith('sb')) {
-      token = value;
-      break;
-    }
-  }
-  const url = request.nextUrl;
+	const url = request.nextUrl;
+	const { pathname } = url;
 
-  // If not logged in and visiting /my/activities/:id, redirect to /activities/:id
-  if (!token && url.pathname.startsWith('/my/activities/')) {
-    const newPath = url.pathname.replace(/^\/my/, '');
-    return NextResponse.redirect(new URL(newPath + url.search, request.url));
-  }
+	// If someone manually adds a locale prefix before an admin route, redirect to locale-less /admin.
+	const localeAdminMatch = pathname.match(new RegExp(`^\\/(${LOCALE_PATTERN})\\/(admin(?:\\/.*)?)`));
+	if (localeAdminMatch) {
+		const adminRemainder = '/' + localeAdminMatch[2];
+		const redirectUrl = new URL(adminRemainder + url.search, request.url);
+		return NextResponse.redirect(redirectUrl);
+	}
 
-  // If logged in and visiting /activities/:id, redirect to /my/activities/:id
-  if (token && url.pathname.startsWith('/activities/')) {
-    const newPath = '/my' + url.pathname;
-    return NextResponse.redirect(new URL(newPath + url.search, request.url));
-  }
+	if (isBypassed(pathname)) {
+		return NextResponse.next();
+	}
 
-  if (token) {
-    // If logged in and visiting landing page, redirect to /my
-    if (url.pathname === '/') {
-      return NextResponse.redirect(new URL('/my', request.url));
-    }
-  } else {
-    // If not logged in and visiting /my (but not /my/activities), redirect to /auth/login
-    if (url.pathname.startsWith('/my') && !url.pathname.startsWith('/my/activities/')) {
-      return NextResponse.redirect(new URL('/auth/login', request.url));
-    }
-  }
-  return NextResponse.next();
+	const staticAssetMatch = pathname.match(new RegExp(`^\\/(${LOCALE_PATTERN})\\\/(.+\\.(?:png|jpe?g|gif|svg|webp|ico))$`, 'i'));
+	if (staticAssetMatch) {
+		const file = staticAssetMatch[2];
+		const rewriteUrl = new URL('/' + file, request.url);
+		return NextResponse.rewrite(rewriteUrl);
+	}
+
+	let token = null;
+	for (const [name, value] of request.cookies) {
+		if (name.startsWith('sb')) {
+			token = value;
+			break;
+		}
+	}
+
+	const segments = pathname.split('/').filter(Boolean);
+	const seg0 = segments[0];
+	const seg0Lower = seg0 ? seg0.toLowerCase() : '';
+	const zhAliases = ['z', 'zh', 'zh-', 'zh-h'];
+	if (seg0 && zhAliases.includes(seg0Lower) && seg0Lower !== 'zh-hk') {
+		const rest = segments.slice(1).join('/');
+		const corrected = `/zh-HK${rest ? '/' + rest : ''}`;
+		const redirectUrl = new URL(corrected + url.search, request.url);
+		const res = NextResponse.redirect(redirectUrl);
+		res.cookies.set(LOCALE_COOKIE, 'zh-HK', { path: '/', maxAge: 60 * 60 * 24 * 365 });
+		return res;
+	}
+
+	const enAliases = ['e', 'en'];
+	if (seg0 && enAliases.includes(seg0Lower) && seg0Lower !== 'en') {
+		const rest = segments.slice(1).join('/');
+		const corrected = `/en${rest ? '/' + rest : ''}`;
+		const redirectUrl = new URL(corrected + url.search, request.url);
+		const res = NextResponse.redirect(redirectUrl);
+		res.cookies.set(LOCALE_COOKIE, 'en', { path: '/', maxAge: 60 * 60 * 24 * 365 });
+		return res;
+	}
+
+	const hasLocale = segments.length > 0 && seg0 && locales.some((l) => l.toLowerCase() === seg0.toLowerCase());
+	let currentLocale = hasLocale ? locales.find((l) => l.toLowerCase() === seg0.toLowerCase()) || defaultLocale : null;
+
+	if (!hasLocale) {
+		currentLocale = detectPreferredLocale(request);
+		const newPathname = `/${currentLocale}${
+			pathname === '/' ? '' : pathname
+		}`;
+		const redirectUrl = new URL(newPathname + url.search, request.url);
+		const res = NextResponse.redirect(redirectUrl);
+		res.cookies.set(LOCALE_COOKIE, currentLocale, {
+			path: '/',
+			maxAge: 60 * 60 * 24 * 365,
+		});
+		return res;
+	}
+
+	const response = NextResponse.next();
+	response.cookies.set(LOCALE_COOKIE, currentLocale, {
+		path: '/',
+		maxAge: 60 * 60 * 24 * 365,
+	});
+
+	const localePrefix = `/${currentLocale}`;
+	const remainderPath = '/' + segments.slice(1).join('/');
+
+	if (!token && remainderPath.startsWith('/my/activities/')) {
+		const target = remainderPath.replace(/^\/my/, '');
+		return NextResponse.redirect(new URL(`${localePrefix}${target}${url.search}`, request.url));
+	}
+
+	if (token && remainderPath.startsWith('/activities/')) {
+		const target = '/my' + remainderPath;
+		return NextResponse.redirect(
+			new URL(`${localePrefix}${target}${url.search}`, request.url)
+		);
+	}
+
+	if (token) {
+		if (pathname === `${localePrefix}/` || pathname === localePrefix) {
+			return NextResponse.redirect(
+				new URL(`${localePrefix}/my`, request.url)
+			);
+		}
+	} else {
+		if (remainderPath.startsWith('/my') && !remainderPath.startsWith('/my/activities/')) {
+			return NextResponse.redirect(
+				new URL(`${localePrefix}/auth/login`, request.url)
+			);
+		}
+	}
+
+	return response;
 }
 
 export const config = {
-  matcher: ['/', '/my/:path*', '/activities/:path*', '/admin/:path*'],
+	matcher: ['/((?!_next|favicon.ico|robots.txt|admin).*)'],
 };

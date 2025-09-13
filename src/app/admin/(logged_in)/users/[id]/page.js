@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import axios from "axios";
 import api from "@/utils/axios/api";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import Avatar from "@/app/shared/components/avatar";
 import { IoIosArrowBack } from "react-icons/io";
-import { Pencil, Check } from "lucide-react";
+import { Pencil, Check, Copy } from "lucide-react";
 import formatDate from "@/utils/formatDate";
 import FullPageLoader from "../../components/FullPageLoader";
 
@@ -18,12 +19,26 @@ const UserDetailPage = () => {
     const [statusLoading, setStatusLoading] = useState(false);
     const [isEditingEmail, setIsEditingEmail] = useState(false);
     const [email, setEmail] = useState("");
+    const [copied, setCopied] = useState(false);
+    const [emailLoading, setEmailLoading] = useState(false);
+    const [activities, setActivities] = useState([]);
+    const [activitiesLoading, setActivitiesLoading] = useState(true);
+    const [activitiesError, setActivitiesError] = useState(null);
 
     useEffect(() => {
         if (users && users.length > 0) {
             const filtered = users.filter((u) => String(u.id) === String(id));
             setUser(filtered.length > 0 ? filtered[0] : null);
-            if (filtered.length > 0) setEmail(filtered[0].email || "");
+            if (filtered.length > 0) {
+                setEmail(filtered[0].email || "");
+                // Extract activities from user data
+                const activitiesList = filtered[0].joinedActivities ?? [];
+                setActivities(
+                    Array.isArray(activitiesList) ? activitiesList : []
+                );
+                setActivitiesLoading(false);
+                setActivitiesError(null);
+            }
         }
     }, [users, id]);
 
@@ -55,9 +70,36 @@ const UserDetailPage = () => {
         }
     };
 
-    const handleEmailSave = () => {
-        setIsEditingEmail(false);
-        // Optionally, update email in backend here
+    const handleEmailSave = async () => {
+        if (!user) return;
+        setEmailLoading(true);
+        try {
+            const { data } = await axios.patch("/api/admin/users", {
+                userId: user.id,
+                email,
+            });
+            if (data && !data.error) {
+                setUser({ ...user, email });
+                setUsers(
+                    users.map((u) => (u.id === user.id ? { ...u, email } : u))
+                );
+                setIsEditingEmail(false);
+            } else {
+                alert(data?.error || "Failed to update email.");
+            }
+        } catch (err) {
+            console.error("Email update error:", err);
+            alert("Failed to update email.");
+        } finally {
+            setEmailLoading(false);
+        }
+    };
+
+    const handleCopyId = () => {
+        if (!user?.id) return;
+        navigator.clipboard.writeText(user.id);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1200);
     };
 
     if (usersLoading) return <FullPageLoader />;
@@ -91,14 +133,13 @@ const UserDetailPage = () => {
                     </h2>
                 </div>
                 <div className="bg-base-100 border border-base-300 rounded-2xl shadow-lg overflow-hidden">
-                    {/* Profile Header */}
                     <div className="flex flex-col md:flex-row items-center gap-6 p-8 bg-gradient-to-r from-primary/10 to-base-100 border-b border-base-300">
                         <div className="flex-shrink-0">
                             <Avatar
                                 srcAvatar={user.profilePictureUrl}
                                 firstName={user.firstname}
                                 lastName={user.lastname}
-                                size="40" // reduced from 64 to 40 for a smaller profile picture
+                                size="40"
                                 isNav={true}
                             />
                         </div>
@@ -117,14 +158,20 @@ const UserDetailPage = () => {
                                                 setEmail(e.target.value)
                                             }
                                             autoFocus
+                                            disabled={emailLoading}
                                         />
                                         <button
                                             type="button"
                                             className="btn btn-ghost btn-xs"
                                             onClick={handleEmailSave}
                                             aria-label="Save Email"
+                                            disabled={emailLoading}
                                         >
-                                            <Check className="w-4 h-4 text-success" />
+                                            {emailLoading ? (
+                                                <span className="loading loading-spinner loading-xs text-success" />
+                                            ) : (
+                                                <Check className="w-4 h-4 text-success" />
+                                            )}
                                         </button>
                                     </>
                                 ) : (
@@ -183,9 +230,28 @@ const UserDetailPage = () => {
                             </div>
                         </div>
                     </div>
-                    {/* Details Grid */}
                     <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        <Detail label="ID" value={user.id} />
+                        <Detail
+                            label="ID"
+                            value={
+                                <span className="flex items-center gap-2">
+                                    {user.id}
+                                    <button
+                                        type="button"
+                                        className="btn btn-ghost btn-xs p-1"
+                                        onClick={handleCopyId}
+                                        aria-label="Copy User ID"
+                                    >
+                                        <Copy className="w-4 h-4" />
+                                    </button>
+                                    {copied && (
+                                        <span className="text-xs text-success ml-1">
+                                            Copied!
+                                        </span>
+                                    )}
+                                </span>
+                            }
+                        />
                         <Detail
                             label="Date of Birth"
                             value={
@@ -202,7 +268,8 @@ const UserDetailPage = () => {
                             label="Gender"
                             value={
                                 user.gender ? (
-                                    user.gender
+                                    user.gender.charAt(0).toUpperCase() +
+                                    user.gender.slice(1)
                                 ) : (
                                     <span className="italic text-base-content/50">
                                         Empty
@@ -215,6 +282,30 @@ const UserDetailPage = () => {
                             value={
                                 user.phoneNumber ? (
                                     user.phoneNumber
+                                ) : (
+                                    <span className="italic text-base-content/50">
+                                        Empty
+                                    </span>
+                                )
+                            }
+                        />
+                        <Detail
+                            label="Height"
+                            value={
+                                user.height ? (
+                                    `${user.height} cm`
+                                ) : (
+                                    <span className="italic text-base-content/50">
+                                        Empty
+                                    </span>
+                                )
+                            }
+                        />
+                        <Detail
+                            label="Weight"
+                            value={
+                                user.weight ? (
+                                    `${user.weight} kg`
                                 ) : (
                                     <span className="italic text-base-content/50">
                                         Empty
@@ -248,10 +339,128 @@ const UserDetailPage = () => {
                         />
                     </div>
                 </div>
+
+                <div className="mt-8 bg-base-100 border border-base-300 rounded-2xl shadow-lg overflow-hidden">
+                    <div className="px-6 py-4 border-b border-base-300 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-base-content">
+                            Joined Activities
+                            <span className="ml-2 text-base-content/60 text-sm">
+                                ({activities.length})
+                            </span>
+                        </h3>
+                    </div>
+
+                    {activitiesLoading ? (
+                        <div className="p-6 flex items-center gap-2">
+                            <span className="loading loading-spinner loading-sm" />
+                            <span className="text-base-content/70 text-sm">
+                                Loading activities...
+                            </span>
+                        </div>
+                    ) : activitiesError ? (
+                        <div className="p-6 text-error text-sm">
+                            {activitiesError}
+                        </div>
+                    ) : activities.length === 0 ? (
+                        <div className="p-6 text-base-content/60 text-sm">
+                            No activities joined.
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto ">
+                            <table className="table table-zebra-zebra mb-4">
+                                <thead className="bg-base-200">
+                                    <tr>
+                                        <th className="text-xs font-semibold uppercase text-base-content/60">
+                                            Activity
+                                        </th>
+                                        <th className="text-xs font-semibold uppercase text-base-content/60">
+                                            Activity Type
+                                        </th>
+                                        <th className="text-xs font-semibold uppercase text-base-content/60">
+                                            Location
+                                        </th>
+                                        <th className="text-xs font-semibold uppercase text-base-content/60">
+                                            Joined At
+                                        </th>
+                                        <th className="text-xs font-semibold uppercase text-base-content/60">
+                                            Was Present
+                                        </th>
+                                        <th className="text-xs font-semibold uppercase text-base-content/60">
+                                            Calories Donated
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {activities.slice().map((a, index) => {
+                                        const activityName =
+                                            a.title ?? a.name ?? "Unknown";
+                                        const activityType =
+                                            a.activityType ?? a.type ?? "—";
+                                        const location = a.location ?? "—";
+                                        const joinedAtRaw = a.createdAt ?? null;
+                                        const wasPresent =
+                                            a.wasPresent ?? false;
+                                        const calories = a.caloriesDonated ?? 0;
+
+                                        return (
+                                            <tr
+                                                key={`${
+                                                    a.id || "unknown"
+                                                }-${activityName}-${index}`}
+                                                className="py-3"
+                                            >
+                                                <td className="text-sm text-base-content">
+                                                    {activityName}
+                                                </td>
+                                                <td className="text-sm text-base-content/80">
+                                                    {activityType}
+                                                </td>
+                                                <td className="text-sm text-base-content/80">
+                                                    {location}
+                                                </td>
+                                                <td className="text-sm text-base-content/80">
+                                                    {joinedAtRaw ? (
+                                                        formatDate(
+                                                            String(
+                                                                joinedAtRaw
+                                                            ).split("T")[0]
+                                                        )
+                                                    ) : (
+                                                        <span className="italic text-base-content/50">
+                                                            —
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        className={`px-2 py-0.5 rounded-full text-xs ${
+                                                            wasPresent
+                                                                ? "bg-green-100 text-green-700"
+                                                                : "bg-red-100 text-red-700"
+                                                        }`}
+                                                    >
+                                                        {wasPresent
+                                                            ? "Yes"
+                                                            : "No"}
+                                                    </span>
+                                                </td>
+                                                <td className="text-sm text-base-content/80">
+                                                {calories || 0}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
 };
+
+// Helper function to get the join date for an activity
 
 // Detail row component for cleaner markup
 function Detail({ label, value }) {

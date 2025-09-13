@@ -19,6 +19,14 @@ const Avatar = ({ srcAvatar, firstName, lastName, isNav=false, pointer=false, si
         router.push('/my/profile');
     }
 
+    const avatarUrl = (() => {
+        if (!srcAvatar) return null;
+        if (srcAvatar.includes('googleusercontent') || /^https?:\/\//i.test(srcAvatar)) {
+            return srcAvatar;
+        }
+        return `${process.env.NEXT_PUBLIC_SUPABASE_URL}${srcAvatar}`;
+    })();
+
     return (
         <div onClick={() => pointer && handleClick()}>
             {!srcAvatar ? (
@@ -30,7 +38,7 @@ const Avatar = ({ srcAvatar, firstName, lastName, isNav=false, pointer=false, si
             ) : (
                 <div className="avatar">
                     <div className={imgMaskClass}>
-                        <img src={process.env.NEXT_PUBLIC_SUPABASE_URL+ srcAvatar} alt={`${firstName} ${lastName} avatar`} />
+                        <img src={avatarUrl} alt={`${firstName} ${lastName} avatar`} />
                     </div>
                 </div>
             )}

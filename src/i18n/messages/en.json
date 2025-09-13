@@ -1,0 +1,10 @@
+{
+  "ActivityItem": {
+    "toStart": "to start",
+    "daysToGo": "{count, plural, one {# Day to go} other {# Days to go}}",
+    "ongoing": "Ongoing",
+    "expired": "Expired",
+    "seatsLeft": "{count, plural, one {# Seat Left} other {# Seats Left}}"
+  },
+  "Landing": {"exploreMoreActivities": "EXPLORE MORE ACTIVITIES"}
+}

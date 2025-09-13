@@ -1,12 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
-.greyTopBar {
-    width: 100%;
-    background: #b3b3b3;
-    display: flex;
-    height: 48px;
-    padding: 0px 32px;
-    box-sizing: border-box;
-}
+
 .topBarLeft {
     flex: 1;
     display: flex;
@@ -23,7 +16,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    /* gap: 18px; */
+    margin-right: 32px; /* Add margin to separate from right edge */
 }
 .whiteNavBar {
     width: 100%;
@@ -34,6 +27,21 @@
     justify-content: center;
     border-bottom: 1px solid #e0e0e0;
     min-height: 100px;
+}
+.whiteNavBar * {
+    color: #333 !important;
+    whiteNavBar h1,
+    .whiteNavBar h2,
+    .whiteNavBar h3,
+    .whiteNavBar h4,
+    .whiteNavBar h5,
+    .whiteNavBar h6,
+    .whiteNavBar p,
+    .whiteNavBar span,
+    .whiteNavBar a,
+    .whiteNavBar button {
+        color: #333; /* Ensure all text in white nav bar is dark */
+    }
 }
 
 .headerWrapper {
@@ -65,7 +73,7 @@
 .menuIcon {
     align-self: center;
     font-size: 32px;
-    color: #888;
+    color: #333 !important; /* Dark color for menu icon */
     cursor: pointer;
 }
 
@@ -91,22 +99,26 @@
 
 .icon {
     font-size: 16px;
-    color: #ffffff;
+    color: #333 !important; /* Dark color for cart icon */
     cursor: pointer;
 }
 
 .login {
     font-size: 15px;
-    /* text-decoration: none; */
-    color: #ffffff;
+    color: #333 !important; /* Dark text for login link */
+    text-decoration: none;
     margin-left: 18px;
     cursor: pointer;
     font-weight: 500;
 }
 
+.login:hover {
+    color: #007bff !important; /* Blue hover color */
+}
+
 .langSwitch {
     font-size: 15px;
-    color: #ffffff;
+    color: #333 !important; /* Dark text for language switch */
     margin-left: 18px;
     cursor: pointer;
     font-weight: 500;
@@ -136,10 +148,11 @@
     font-weight: 400;
     align-items: center;
     font-family: "Bebas Neue", sans-serif;
+    color: #333; /* Ensure nav text is dark */
 }
 
 .navList li {
-    color: #555;
+    color: #333; /* Dark text for visibility */
     cursor: pointer;
     padding: 18px 0 14px 0;
     border-bottom: 2px solid transparent;
@@ -148,15 +161,24 @@
     letter-spacing: 0.1em;
 }
 
+.navList a {
+    color: #000 !important;
+}
+
+.navButtonRight {
+    color: #000;
+}
+
 .active {
-    color: #2BBFB0 !important;
+    color: #007bff !important; /* Blue for active state */
+    font-weight: bold;
     border-bottom: 3px solid #ffd600;
     background: transparent;
     transition: color 0.2s, border-bottom 0.2s;
 }
 
 .navHover {
-    color: #2BBFB0 !important;
+    color: #007bff !important; /* Blue for hover state */
     border-bottom: 3px solid #ffd600;
     background: transparent;
     transition: color 0.2s, border-bottom 0.2s;
@@ -182,14 +204,14 @@
     opacity: 0;
     padding: 0 16px 0 12px;
     height: 38px;
-    border: 1.5px solid #2BBFB0;
+    border: 1.5px solid #2bbfb0;
     border-radius: 20px;
     font-size: 1rem;
     background: #fff;
     color: #222;
     outline: none;
-    box-shadow: 0 2px 8px rgba(43,191,176,0.08);
-    transition: width 0.35s cubic-bezier(.4,2,.6,1), opacity 0.2s;
+    box-shadow: 0 2px 8px rgba(43, 191, 176, 0.08);
+    transition: width 0.35s cubic-bezier(0.4, 2, 0.6, 1), opacity 0.2s;
 }
 .searchForm:focus-within .searchInput,
 .searchInput:focus,
@@ -205,7 +227,7 @@
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    background: #2BBFB0;
+    background: #2bbfb0;
     border: none;
     border-radius: 0 20px 20px 0;
     color: #fff;
@@ -221,7 +243,7 @@
 }
 .searchIconBtn:hover {
     background: #ffd600;
-    color: #2BBFB0;
+    color: #2bbfb0;
 }
 
 .searchDropdown {
@@ -229,11 +251,11 @@
     min-width: 220px;
     background: #fff;
     border-radius: 0 0 8px 8px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     max-height: 0;
     opacity: 0;
-    transition: max-height 0.25s cubic-bezier(.4,2,.6,1), opacity 0.2s;
+    transition: max-height 0.25s cubic-bezier(0.4, 2, 0.6, 1), opacity 0.2s;
     position: absolute;
     top: 110%;
     left: 0;
@@ -243,7 +265,7 @@
 .dropdownOpen {
     max-height: 320px;
     opacity: 1;
-    transition: max-height 0.25s cubic-bezier(.4,2,.6,1), opacity 0.2s;
+    transition: max-height 0.25s cubic-bezier(0.4, 2, 0.6, 1), opacity 0.2s;
 }
 .dropdownItem {
     padding: 0.75rem 1rem;
