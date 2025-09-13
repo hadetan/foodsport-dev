@@ -155,9 +155,6 @@ export default function AdminLoggedInLayout({ children }) {
                                             </ul>
                                         </div>
                                     </aside>
-                                    {/* <div className="p-4">
-                    Logout
-                </div> */}
                                 </div>
                             </div>
                         </SocialMediaImageProvider>
