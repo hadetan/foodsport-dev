@@ -6,9 +6,11 @@ import Avatar from '@/app/shared/components/avatar';
 import AvatarSkeleton from '@/app/shared/components/skeletons/AvatarSkeleton';
 import UserProfileCard from '../components/UserProfileCard';
 import ProfilePageSkeleton from '@/app/shared/components/skeletons/ProfilePageSkeleton';
+import { useTranslations } from 'next-intl';
 
 export default function ProfilePage() {
 	const { user, loading } = useUser();
+	const t = useTranslations('ProfilePage');
 
 	if (!user || Object.keys(user).length === 0) {
 		return <ProfilePageSkeleton />;
@@ -57,7 +59,7 @@ export default function ProfilePage() {
 										{caloriesDonated.toLocaleString()}
 									</div>
 									<div className='stat-label'>
-										#Calories (Kcal) Donated
+										{t('stats.caloriesLabel')}
 									</div>
 								</div>
 							</div>
@@ -65,7 +67,7 @@ export default function ProfilePage() {
 								<span className='ribbon blue'></span>
 								<div className='stat-value'>{fsPoints}</div>
 								<div className='stat-label'>
-									FS POINTS (500kcal = 1 FS Points)
+									{t('stats.fsPointsLabel')}
 								</div>
 							</div>
 							<div className='profile-stat stat-purple'>
@@ -74,14 +76,14 @@ export default function ProfilePage() {
 									{activitiesJoined}
 								</div>
 								<div className='stat-label'>
-									#Activities Joined
+									{t('stats.activitiesLabel')}
 								</div>
 							</div>
 							<div className='profile-stat stat-pink'>
 								<span className='ribbon pink'></span>
 								<div className='stat-value'>{badges}</div>
 								<div className='stat-label'>
-									Achievement e-badges
+									{t('stats.badgesLabel')}
 								</div>
 							</div>
 						</div>

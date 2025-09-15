@@ -11,9 +11,12 @@ import { LiaUserEditSolid } from 'react-icons/lia';
 import { IoIosFemale, IoIosMale } from 'react-icons/io';
 import { FaMountainSun } from 'react-icons/fa6';
 import { DISTRICTS } from '@/app/constants/constants';
+import { useTranslations } from 'next-intl';
+import Tooltip from '@/app/shared/components/Tooltip';
 
 export default function EditProfile() {
 	const { user, setUser } = useUser();
+	const t = useTranslations('EditProfile');
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const [form, setForm] = useState({
@@ -64,10 +67,10 @@ export default function EditProfile() {
 
 		(async () => {
 			try {
-				toast.info('Please wait, linking your account to google...');
+				toast.info(t('google.linkingWait'));
 				const { data } = await api.put('/auth/link-to-google');
 				if (data?.ok && data?.linked) {
-					toast.success('Google account linked.');
+					toast.success(t('google.linkedSuccess'));
 					setUser((prev) => ({ ...prev, googleId: prev?.id }));
 					try {
 						const url = new URL(window.location.href);
@@ -75,7 +78,7 @@ export default function EditProfile() {
 						window.history.replaceState({}, '', url.toString());
 					} catch (e) {}
 				} else if (data?.reason === 'google_id_conflict') {
-					toast.error('This Google account is already linked to another user.');
+					toast.error(t('google.alreadyLinked'));
 				}
 			} catch (_) {
 				// ignore; not a hard failure for profile page
@@ -112,7 +115,7 @@ export default function EditProfile() {
 		const scaleY = image.naturalHeight / image.height;
 
 		if (crop.width <= 0 || crop.height <= 0) {
-			setError('Invalid crop dimensions');
+			setError(t('errors.invalidCrop'));
 			return;
 		}
 
@@ -150,7 +153,7 @@ export default function EditProfile() {
 
 		canvas.toBlob((blob) => {
 			if (!blob) {
-				setError('Failed to process image');
+				setError(t('errors.failedProcessImage'));
 				return;
 			}
 
@@ -160,7 +163,6 @@ export default function EditProfile() {
 			setShowCropModal(false);
 			setSrcImg(null);
 
-			// Cleanup previous URLs
 			return () => URL.revokeObjectURL(previewUrl);
 		}, fileType);
 	};
@@ -194,15 +196,15 @@ export default function EditProfile() {
 				profilePictureUrl: res.profilePictureUrl,
 			});
 			setInitialValues(form);
-			toast.info('Profile has been updated successfully.');
+			toast.info(t('success.profileUpdated'));
 			const returnTo = searchParams.get('returnTo');
 			if (returnTo) {
 				setTimeout(() => router.push(returnTo), 500);
 				return;
 			}
 		} catch (err) {
-			setError('Something went wrong, please try again.');
-			toast.error('Something went wrong, please try again');
+			setError(t('errors.generic'));
+			toast.error(t('errors.generic'));
 		}
 		setSaving(false);
 	};
@@ -219,23 +221,24 @@ export default function EditProfile() {
 			} catch (e) {}
 			const { data } = await api.post('/auth/link-to-google', { redirectTo });
 			if (data?.ok && data?.url) {
-				toast.info('Redirecting to Google…');
+				toast.info(t('google.redirecting'));
 				window.location.href = data.url;
 				return;
 			}
 			if (data?.reason === 'link_identity_not_supported') {
-				toast.error('Linking is not supported in this environment.');
+				toast.error(t('google.notSupported'));
 			} else if (data?.reason === 'link_identity_failed') {
 				if (data?.details && data.details.toLowerCase().includes('manual')) {
-					toast.error('Manual linking is disabled in Supabase. Enable it in the dashboard.');
+					toast.error(t('google.manualDisabled'));
 				} else {
-					toast.error('Failed to start linking. Please try again.');
+					toast.error(t('google.failedStart'));
 				}
 			} else {
-				toast.error('Unable to start linking.');
+				toast.error(t('google.unable'));
 			}
 		} catch (e) {
-			toast.error('Unable to start linking.');
+			toast.error(t('google.unable'));
+				// keep previous error message
 		} finally {
 			setLinking(false);
 		}
@@ -257,16 +260,16 @@ export default function EditProfile() {
 					<div className='profile'>
 						{croppedImgUrl ? (
 							<img
-								src={croppedImgUrl}
-								alt='Profile Preview'
-								className='edit-profile-avatar'
-							/>
+									src={croppedImgUrl}
+									alt={t('editPictureTitle')}
+									className='edit-profile-avatar'
+								/>
 						) : user.profilePictureUrl ? (
 							<img
 								src={
 									avatarUrl
 								}
-								alt='Profile'
+								alt={t('editPictureTitle')}
 								className='edit-profile-avatar'
 							/>
 						) : (
@@ -288,7 +291,7 @@ export default function EditProfile() {
 						onClick={() =>
 							fileRef.current && fileRef.current.click()
 						}
-						title='Edit profile picture'
+						title={t('editPictureTitle')}
 					>
 						<LiaUserEditSolid size={30} />
 					</div>
@@ -313,7 +316,7 @@ export default function EditProfile() {
 						>
 							<img
 								src={srcImg}
-								alt='Crop source'
+								alt={t('crop')}
 								ref={imgRef}
 								style={{
 									maxWidth: 320,
@@ -355,7 +358,7 @@ export default function EditProfile() {
 								onClick={handleCropConfirm}
 								className='edit-profile-crop-btn'
 							>
-								Crop
+								{t('crop')}
 							</button>
 							<button
 								type='button'
@@ -366,7 +369,7 @@ export default function EditProfile() {
 								}}
 								className='edit-profile-crop-cancel-btn'
 							>
-								Cancel
+								{t('cancel')}
 							</button>
 						</div>
 					</div>
@@ -377,23 +380,20 @@ export default function EditProfile() {
 					name='firstname'
 					value={form.firstname}
 					onChange={handleChange}
-					placeholder='First Name'
+					placeholder={t('placeholders.firstName')}
 				/>
 				<input
 					name='lastname'
 					value={form.lastname}
 					onChange={handleChange}
-					placeholder='Last Name'
+					placeholder={t('placeholders.lastName')}
 				/>
 				<div className='info'>
 					<div className="edit-profile-info-row">
-					<span className="edit-profile-info-label">Why provide weight and height?</span>
-					<span className="edit-profile-tooltip-wrapper">
+					<span className="edit-profile-info-label">{t('info.question')}</span>
+					<Tooltip content={t('info.tooltip')} width={'16rem'}>
 						<FaInfoCircle className="edit-profile-tooltip-icon" />
-						<span className="edit-profile-tooltip-text">
-							Providing your weight and height allows us to calculate your calorie burns more accurately for each activity, giving you better insights and more personalized results.
-						</span>
-					</span>
+					</Tooltip>
 				</div>
 				</div>
 				<div className='edit-profile-input-suffix-wrapper'>
@@ -401,7 +401,7 @@ export default function EditProfile() {
 						name='weight'
 						value={form.weight}
 						onChange={handleChange}
-						placeholder='Weight'
+						placeholder={t('placeholders.weight')}
 						className='edit-profile-input'
 					/>
 					<span className='edit-profile-input-suffix'>kg</span>
@@ -411,13 +411,13 @@ export default function EditProfile() {
 						name='height'
 						value={form.height}
 						onChange={handleChange}
-						placeholder='Height'
+						placeholder={t('placeholders.height')}
 						className='edit-profile-input'
 					/>
 					<span className='edit-profile-input-suffix'>cm</span>
 				</div>
 				<div className='edit-profile-gender'>
-					<span className='edit-profile-gender-label'>Gender:</span>
+					<span className='edit-profile-gender-label'>{t('gender.label')}</span>
 					<div className='edit-profile-gender-options'>
 						<label
 							className={`edit-profile-gender-card${
@@ -435,7 +435,7 @@ export default function EditProfile() {
 								<IoIosMale />
 							</span>
 							<span className='edit-profile-gender-text'>
-								Male
+								{t('gender.male')}
 							</span>
 						</label>
 						<label
@@ -454,7 +454,7 @@ export default function EditProfile() {
 								<IoIosFemale />
 							</span>
 							<span className='edit-profile-gender-text'>
-								Female
+								{t('gender.female')}
 							</span>
 						</label>
 					</div>
@@ -463,7 +463,7 @@ export default function EditProfile() {
 					name='phoneNumber'
 					value={form.phoneNumber}
 					onChange={handleChange}
-					placeholder='Contact No.'
+					placeholder={t('placeholders.contact')}
 					className='edit-profile-fullwidth'
 				/>
 				<input
@@ -471,7 +471,7 @@ export default function EditProfile() {
 					type='date'
 					value={form.dateOfBirth}
 					onChange={handleChange}
-					placeholder='Date of Birth'
+					placeholder={t('placeholders.dateOfBirth')}
 					className='edit-profile-fullwidth'
 				/>
 				<div className='edit-profile-link-google-container'>
@@ -481,7 +481,7 @@ export default function EditProfile() {
 						disabled={linking || !!user.googleId}
 						className='edit-profile-link-google-btn'
 					>
-						{user.googleId ? 'Google linked' : linking ? 'Starting…' : 'Link Google'}
+						{user.googleId ? t('google.linked') : linking ? t('google.starting') : t('google.link')}
 					</button>
 				</div>
 				<div className='edit-profile-district-bio-row'>
@@ -493,7 +493,7 @@ export default function EditProfile() {
 							onChange={handleDistrictChange}
 							className='edit-profile-district-dropdown'
 						>
-							<option value='' disabled>Select your district</option>
+							<option value='' disabled>{t('placeholders.selectDistrict')}</option>
 							{DISTRICTS.map((d) => (
 								<option key={d} value={d}>{d.replace(/_/g, ' ')}</option>
 							))}
@@ -505,7 +505,7 @@ export default function EditProfile() {
 							name='bio'
 							value={form.bio}
 							onChange={handleChange}
-							placeholder='Bio'
+							placeholder={t('placeholders.bio')}
 							className='edit-profile-bio-textarea'
 						/>
 					</div>
@@ -515,7 +515,7 @@ export default function EditProfile() {
 					className='edit-profile-save-btn'
 					disabled={saving || initialValues === form}
 				>
-					{saving ? 'Saving...' : 'Save Profile'}
+					{saving ? t('saving') : t('saveProfile')}
 				</button>
 			</div>
 			{error && <div className='edit-profile-error'>{error}</div>}

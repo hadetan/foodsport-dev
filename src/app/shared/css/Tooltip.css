@@ -20,7 +20,7 @@
 	position: absolute;
 	left: 50%;
 	bottom: 100%;
-	transform: translate(-50%, -50%) scale(0.95);
+	transform: translate(-50%, -50%);
 	opacity: 0;
 	visibility: hidden;
 	background: var(--tooltip-bg);
@@ -45,7 +45,7 @@
 .tooltip-content[data-visible='true'] {
 	opacity: 1;
 	visibility: visible;
-	transform: translate(-50%, -50%) scale(1);
+	transform: translate(-50%, -50%);
 }
 
 .tooltip-content::after {
@@ -65,7 +65,7 @@
 	.tooltip-content,
 	.tooltip-content[data-visible='true'] {
 		transition: none;
-		transform: translate(-50%, -4px) !important;
+		transform: translate(-50%, -10px) !important;
 	}
 }
 

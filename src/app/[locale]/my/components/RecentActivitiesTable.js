@@ -4,6 +4,7 @@ import { useUser } from '@/app/shared/contexts/userContext';
 import ActivityIcon from '@/app/shared/components/ActivityIcon';
 import InvitePartnersDialog from '@/app/shared/components/InvitePartnersDialog';
 import '@/app/[locale]/my/css/RecentActivitiesTable.css'
+import { useTranslations } from 'next-intl';
 
 function formatDate(dateStr) {
   const date = new Date(dateStr);
@@ -27,6 +28,7 @@ function getDuration(start, end) {
 export default function RecentActivitiesTable() {
   const { activities } = useActivities();
   const { user } = useUser();
+  const t = useTranslations('RecentActivities');
   const [inviteOpen, setInviteOpen] = useState(false);
   const [selectedActivityId, setSelectedActivityId] = useState(null);
 
@@ -46,18 +48,18 @@ export default function RecentActivitiesTable() {
         <table className="recent-activities-table">
           <thead>
             <tr className="recent-activities-table-header">
-              <th className="recent-activities-th">TYPE</th>
-              <th className="recent-activities-th">DATE</th>
-              <th className="recent-activities-th">EXERCISE</th>
-              <th className="recent-activities-th">TIME</th>
-              <th className="recent-activities-th">KCAL</th>
-              <th className="recent-activities-th">FS POINTS</th>
-              <th className="recent-activities-th">INVITE</th>
+              <th className="recent-activities-th">{t('headers.type')}</th>
+              <th className="recent-activities-th">{t('headers.date')}</th>
+              <th className="recent-activities-th">{t('headers.exercise')}</th>
+              <th className="recent-activities-th">{t('headers.time')}</th>
+              <th className="recent-activities-th">{t('headers.kcal')}</th>
+              <th className="recent-activities-th">{t('headers.fsPoints')}</th>
+              <th className="recent-activities-th">{t('headers.invite')}</th>
             </tr>
           </thead>
           <tbody>
             {joinedActivities.length === 0 ? (
-              <tr><td colSpan={7} className="recent-activities-empty">No activities found.</td></tr>
+              <tr><td colSpan={7} className="recent-activities-empty">{t('noActivities')}</td></tr>
             ) : (
               joinedActivities.map((act) => (
                 <tr key={act.id} className="recent-activities-row">
@@ -69,14 +71,14 @@ export default function RecentActivitiesTable() {
                   <td className="recent-activities-td">{formatDate(act.startDate)}</td>
                   <td className="recent-activities-td">{act.title}</td>
                   <td className="recent-activities-td">{getDuration(act.startTime, act.endTime)}</td>
-                  <td className="recent-activities-td">{act.caloriesPerHour ? `${act.caloriesPerHour}kcal` : 'N/A'}</td>
-                  <td className="recent-activities-td">{act.totalCaloriesBurnt ?? 'N/A'}</td>
+                  <td className="recent-activities-td">{act.caloriesPerHour ? `${act.caloriesPerHour}kcal` : t('na')}</td>
+                  <td className="recent-activities-td">{act.totalCaloriesBurnt ?? t('na')}</td>
                   <td className="recent-activities-td">
                     <button
                       type="button"
                       onClick={() => { setSelectedActivityId(act.id); setInviteOpen(true); }}
                       className="recent-activities-invite-btn"
-                    >Invite</button>
+                    >{t('invite')}</button>
                   </td>
                 </tr>
               ))

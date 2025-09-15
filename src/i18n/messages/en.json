@@ -151,5 +151,93 @@
 				"description": "Redeem rewards with FS POINTS"
 			}
 		}
+	},
+	"ProfilePage": {
+		"menu": {
+			"allActivities": "My Activities",
+			"earnedBadges": "My Achievement e-badges",
+			"editProfile": "My Profile",
+			"logout": "Logout",
+			"loggingOut": "Logging out..."
+		},
+		"stats": {
+			"caloriesLabel": "#Calories (Kcal) Donated",
+			"fsPointsLabel": "FS POINTS (500kcal = 1 FS Points)",
+			"activitiesLabel": "#Activities Joined",
+			"badgesLabel": "Achievement e-badges"
+		},
+		"confirm": {
+			"logoutTitle": "Log out",
+			"logoutMessage": "Are you sure you want to log out?",
+			"logoutConfirm": "Log out",
+			"cancel": "Cancel"
+		}
+	}
+	,
+	"RecentActivities": {
+		"headers": {
+			"type": "TYPE",
+			"date": "DATE",
+			"exercise": "EXERCISE",
+			"time": "TIME",
+			"kcal": "KCAL",
+			"fsPoints": "FS POINTS",
+			"invite": "INVITE"
+		},
+		"noActivities": "No activities found.",
+		"invite": "Invite",
+		"na": "N/A"
+	},
+	"AllBadges": {
+		"title": "Achievement e-badges",
+		"subtitle": "Coming Soon",
+		"description": "Unlock and showcase your achievements soon! Stay tuned for exciting rewards and badges."
+	},
+	"EditProfile": {
+		"info": {
+			"question": "Why provide weight and height?",
+			"tooltip": "Providing your weight and height allows us to calculate your calorie burns more accurately for each activity, giving you better insights and more personalized results."
+		},
+		"placeholders": {
+			"firstName": "First Name",
+			"lastName": "Last Name",
+			"weight": "Weight",
+			"height": "Height",
+			"contact": "Contact No.",
+			"dateOfBirth": "Date of Birth",
+			"selectDistrict": "Select your district",
+			"bio": "Bio"
+		},
+		"gender": {
+			"label": "Gender:",
+			"male": "Male",
+			"female": "Female"
+		},
+		"google": {
+			"linked": "Google linked",
+			"starting": "Starting…",
+			"link": "Link Google",
+			"linkingWait": "Please wait, linking your account to google...",
+			"linkedSuccess": "Google account linked.",
+			"alreadyLinked": "This Google account is already linked to another user.",
+			"redirecting": "Redirecting to Google…",
+			"notSupported": "Linking is not supported in this environment.",
+			"manualDisabled": "Manual linking is disabled in Supabase. Enable it in the dashboard.",
+			"failedStart": "Failed to start linking. Please try again.",
+			"unable": "Unable to start linking."
+		},
+		"crop": "Crop",
+		"cancel": "Cancel",
+		"editPictureTitle": "Edit profile picture",
+		"saving": "Saving...",
+		"saveProfile": "Save Profile",
+		"success": {
+			"profileUpdated": "Profile has been updated successfully."
+		},
+		"errors": {
+			"invalidCrop": "Invalid crop dimensions",
+			"failedProcessImage": "Failed to process image",
+			"generic": "Something went wrong, please try again."
+		}
 	}
 }
