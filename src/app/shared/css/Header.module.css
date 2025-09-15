@@ -122,21 +122,25 @@
     font-size: 15px;
     color: #333 !important; /* Dark text for login link */
     text-decoration: none;
-    margin-left: 18px;
     cursor: pointer;
     font-weight: 500;
 }
 
 .login:hover {
-    color: #007bff !important; /* Blue hover color */
+    color: #2bbfb0 !important; /* Blue hover color */
 }
 
 .langSwitch {
     font-size: 15px;
-    color: #333 !important; /* Dark text for language switch */
-    margin-left: 18px;
+    padding-left: 15px;
     cursor: pointer;
     font-weight: 500;
+    color: #333 !important;
+    border-left: 1px solid #dadada;
+}
+
+.langSwitch:hover {
+    color: #2bbfb0 !important;
 }
 
 .borderLeft {
@@ -162,7 +166,6 @@
     font-size: 16px;
     font-weight: 400;
     align-items: center;
-    font-family: "Bebas Neue", sans-serif;
     color: #333; /* Ensure nav text is dark */
 }
 
@@ -170,14 +173,8 @@
     color: #333; /* Dark text for visibility */
     cursor: pointer;
     padding: 18px 0 14px 0;
-    border-bottom: 2px solid transparent;
     transition: border 0.2s, color 0.2s;
-    font-family: "Bebas Neue", sans-serif;
     letter-spacing: 0.1em;
-}
-
-.navList a {
-    color: #000 !important;
 }
 
 .navButtonRight {
@@ -185,16 +182,13 @@
 }
 
 .active {
-    color: #007bff !important; /* Blue for active state */
-    font-weight: bold;
-    border-bottom: 3px solid #ffd600;
+    color: #2bbfb0 !important;
     background: transparent;
     transition: color 0.2s, border-bottom 0.2s;
 }
 
 .navHover {
-    color: #007bff !important; /* Blue for hover state */
-    border-bottom: 3px solid #ffd600;
+    color: #2bbfb0 !important;
     background: transparent;
     transition: color 0.2s, border-bottom 0.2s;
 }
@@ -204,7 +198,10 @@
     display: flex;
     align-items: center;
     min-width: 48px;
-    margin-right: 8px;
+}
+
+.searchContainer:hover {
+    color: #2bbfb0 !important;
 }
 
 .searchForm {
@@ -267,7 +264,7 @@
     background: #fff;
     border-radius: 0 0 8px 8px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    overflow: auto;
     max-height: 0;
     opacity: 0;
     transition: max-height 0.25s cubic-bezier(0.4, 2, 0.6, 1), opacity 0.2s;

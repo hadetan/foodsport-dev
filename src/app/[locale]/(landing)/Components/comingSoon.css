@@ -27,6 +27,8 @@
     font-weight: 600;
     margin-bottom: 2.5rem;
     color: #333;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dadada;
 }
 
 .brand-grid {

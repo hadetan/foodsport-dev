@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import "../css/ActivitiesFilter.css";
 import { useSearchParams, usePathname } from "next/navigation";
 import { ACTIVITY_TYPES, ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
+import { useTranslations } from 'next-intl';
 
 
 export default function ActivitiesFilter({ activities, setFilteredActivities }) {
+    const t = useTranslations();
     const searchParams = useSearchParams();
     const pathname = usePathname();
 
@@ -75,7 +77,7 @@ export default function ActivitiesFilter({ activities, setFilteredActivities }) 
                 name="name"
                 value={filters.name}
                 onChange={handleChange}
-                placeholder="Search by activity name"
+                placeholder={t('Search.placeholder')}
                 className="filter-input enhanced-input"
             />
             <select
@@ -84,9 +86,9 @@ export default function ActivitiesFilter({ activities, setFilteredActivities }) 
                 onChange={handleChange}
                 className="filter-select enhanced-select"
             >
-                <option value="">All Types</option>
-                {ACTIVITY_TYPES.map((type, idx) => (
-                    <option key={type} value={ACTIVITY_TYPES_FORMATTED[idx]}>{type.charAt(0).toUpperCase() + type.slice(1)}</option>
+                <option value="">{t('Activity.ActivityTypes.allTypes')}</option>
+                {ACTIVITY_TYPES_FORMATTED.map((formatted) => (
+                    <option key={formatted} value={formatted}>{t(`Activity.ActivityTypes.${formatted}`) || formatted}</option>
                 ))}
             </select>
             <input

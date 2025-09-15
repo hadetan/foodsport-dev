@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import Link from 'next/link';
+import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/app/shared/contexts/authContext';
 import { getSupabaseClient } from '@/lib/supabase';
 import toast from '@/utils/Toast';
@@ -22,12 +23,14 @@ export default function RegisterPage() {
   const { signup, authToken } = useAuth();
   const subOnce = useRef(false);
   const handledOnce = useRef(false);
+  const t = useTranslations();
+  const locale = useLocale();
 
   useEffect(() => {
       if (typeof window !== "undefined" && authToken) {
-        router.replace("/my");
+        router.replace(`/${locale}/my`);
       }
-    }, [router]);
+    }, [router, authToken, locale]);
 
   useEffect(() => {
     if (subOnce.current) return;
@@ -57,7 +60,7 @@ export default function RegisterPage() {
       const res = await api.post('/auth/pre-profile');
       const data = res.data || {};
       if (data.reason === 'email_exists') {
-        toast.info('Account with this email already exists. Please login and link Google in settings.');
+        toast.info(t('RegisterPage.emailExistsToast'));
         try { localStorage.removeItem('auth_token'); } catch {}
         try { await api.delete('/auth/logout'); } catch {}
         try {
@@ -66,15 +69,15 @@ export default function RegisterPage() {
             new Promise((resolve) => setTimeout(resolve, 750)),
           ]);
         } catch {}
-        router.replace('/auth/login');
+        router.replace(`/${locale}/auth/login`);
         return;
       }
       if (data.created || (data.existing && data.userExists)) {
-        window.location.href = '/my';
+        router.replace(`/${locale}/my`);
         return;
       }
       if (data.preProfile) {
-        window.location.href = '/auth/onboard';
+        router.replace(`/${locale}/auth/onboard`);
         return;
       }
     } catch (e) {
@@ -88,10 +91,18 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
     try {
-      await signup({ email, password, firstname, lastname, dateOfBirth })
-      router.push("/my");
-    } catch (err) {
-      setError(err.message);
+      const res = await signup({ email, password, firstname, lastname, dateOfBirth });
+      if (res.ok) {
+        router.replace(`/${locale}/my`);
+      } else {
+        // backend returned a non-successful payload
+        if (res && res.toString().includes('409')) {
+          setError(t('RegisterPage.accountAlreadyExists'));
+        } else {
+          setError(t('RegisterPage.genericError'));
+        }
+      }
+    } catch (_) {
     } finally {
       setLoading(false);
     }
@@ -100,7 +111,7 @@ export default function RegisterPage() {
   const onGoogle = async () => {
     setLoading(true);
     try {
-      const redirectTo = `${window.location.origin}/auth/register`;
+  const redirectTo = `${window.location.origin}/${locale}/auth/register`;
       await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
     } catch (e) {
       console.error(e);
@@ -111,11 +122,11 @@ export default function RegisterPage() {
   return (
     <div className="">
       <div className="w-full max-w-md p-6 bg-base-100 rounded">
-        <h1 className="text-2xl font-semibold mb-4 text-center">Register</h1>
+  <h1 className="text-2xl font-semibold mb-4 text-center">{t('RegisterPage.title')}</h1>
         <form className="space-y-6" onSubmit={handleRegister}>
           {error && <ErrorAlert message={error} onClose={() => setError("")} />}
           <div>
-            <label className="block mb-1 font-medium text-black">First Name</label>
+            <label className="block mb-1 font-medium text-black">{t('RegisterPage.firstName')}</label>
             <input
               type="text"
               className="input input-bordered w-full"
@@ -125,7 +136,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="block mb-1 font-medium text-black">Last Name</label>
+            <label className="block mb-1 font-medium text-black">{t('RegisterPage.lastName')}</label>
             <input
               type="text"
               className="input input-bordered w-full"
@@ -135,7 +146,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="block mb-1 font-medium text-black">Date of Birth</label>
+            <label className="block mb-1 font-medium text-black">{t('RegisterPage.dateOfBirth')}</label>
             <input
               type="date"
               className="input input-bordered w-full"
@@ -145,7 +156,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="block mb-1 font-medium text-black">Email</label>
+            <label className="block mb-1 font-medium text-black">{t('RegisterPage.email')}</label>
             <input
               type="email"
               className="input input-bordered w-full"
@@ -155,7 +166,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="block mb-1 font-medium text-black">Password</label>
+            <label className="block mb-1 font-medium text-black">{t('RegisterPage.password')}</label>
             <input
               type="password"
               className="input input-bordered w-full text-black"
@@ -169,14 +180,14 @@ export default function RegisterPage() {
             className="submit-button w-full text-black"
             disabled={loading}
           >
-            {loading ? "Registering..." : "Register"}
+            {loading ? t('RegisterPage.registering') : t('RegisterPage.register')}
           </button>
         </form>
         <button onClick={onGoogle} disabled={loading} className="btn btn-outline w-full mt-4">
-          Continue with Google
+          {t('RegisterPage.continueWithGoogle')}
         </button>
         <div className="mt-4 text-sm text-center">
-          Already have an account? <Link href="/auth/login" className="link">Login</Link>
+          {t('RegisterPage.alreadyHaveAccount')} <Link href={`/${locale}/auth/login`} className="link">{t('RegisterPage.login')}</Link>
         </div>
       </div>
     </div>

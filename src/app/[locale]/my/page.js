@@ -11,11 +11,13 @@ import { useUser } from '@/app/shared/contexts/userContext';
 import Button from '../../shared/components/Button';
 import { useRouter } from 'next/navigation';
 import ActivityItemSkeleton from '../../shared/components/skeletons/ActivityItemSkeleton';
+import { useTranslations } from 'next-intl';
 
 export default function Home() {
 	const { activities, setActivities } = useActivities();
 	const { user, setUser } = useUser();
 	const router = useRouter();
+	const t = useTranslations();
 
 	const filtered = activities
 		.filter(a => {
@@ -48,7 +50,7 @@ export default function Home() {
 					className={styles.explore}
 					onClick={() => router.push('/my/activities')}
 				>
-					EXPLORE MORE ACTIVITIES
+					{t('Activity.Landing.exploreMoreActivities')}
 				</Button>
 			</div>
 		</>

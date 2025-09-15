@@ -49,7 +49,7 @@ export default function Home() {
                     className={styles.explore}
                     onClick={() => router.push(`/${locale}/activities`)}
                 >
-                    {t('Landing.exploreMoreActivities')}
+                    {t('Activity.Landing.exploreMoreActivities')}
                 </Button>
             </div>
             <ComingSoon />

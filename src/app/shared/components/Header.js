@@ -6,12 +6,13 @@ import Link from "next/link";
 import { useAuth } from "@/app/shared/contexts/authContext";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BsCart2 } from "react-icons/bs";
 import Search from "./Search";
 import Avatar from "./avatar";
 import AvatarSkeleton from "./skeletons/AvatarSkeleton";
 import { useUser } from "@/app/shared/contexts/userContext";
 import { useActivities } from "../contexts/ActivitiesContext";
+import LocaleSwitcher from "./LocaleSwitcher";
+import { useTranslations, useLocale } from 'next-intl';
 
 export default function Header() {
     const { authToken } = useAuth();
@@ -20,6 +21,8 @@ export default function Header() {
     const pathname = usePathname();
     const [hoveredIdx, setHoveredIdx] = useState(null);
     const { activities } = useActivities();
+    const t = useTranslations();
+    const locale = useLocale();
 
     //#region This fixed the hydration error of mismatched authToken. The authToken is populated only after the mounting, so we wait to be mounted first before using the authToken.
     useEffect(() => {
@@ -30,32 +33,28 @@ export default function Header() {
 
     const navLinks = [
         {
-            label: "HOME",
-            href: authToken ? "/my/" : "/",
+            id: 'home',
+            label: t('Header.home'),
+            href: authToken ? `/${locale}/my/` : `/${locale}/`,
         },
         {
-            label: "JOIN ACTIVITIES",
-            href: authToken ? "/my/activities" : "/activities",
+            id: 'joinActivities',
+            label: t('Header.joinActivities'),
+            href: authToken ? `/${locale}/my/activities` : `/${locale}/activities`,
         },
         {
-            label: "REDEEM REWARDS",
+            id: 'redeemRewards',
+            label: t('Header.redeemRewards'),
             href: null,
+            clickable: true,
         },
         !authToken && {
-            label: "HOW DOES IT WORK",
-            href: "/how",
+            id: 'howDoesItWork',
+            label: t('Header.howDoesItWork'),
+            href: `/${locale}/how`,
         },
         {
             label: <Search sortedActivities={activities} />,
-            href: null,
-            isButton: true,
-        },
-        {
-            label: (
-                <span className={styles.icon}>
-                    <BsCart2 />
-                </span>
-            ),
             href: null,
             isButton: true,
         },
@@ -73,15 +72,15 @@ export default function Header() {
                     />
                 )
             ) : (
-                <Link href="/auth/login" className={styles.login}>
-                    LOGIN / REGISTER
+                    <Link href={`/${locale}/auth/login`} className={styles.login}>
+                    {t('Header.loginRegister')}
                 </Link>
             ),
             href: null,
             isButton: true,
         },
         {
-            label: <span className={styles.langSwitch}>繁 / EN</span>,
+            label: <LocaleSwitcher className={styles.langSwitch}/>,
             href: null,
             isButton: true,
         },
@@ -89,44 +88,31 @@ export default function Header() {
 
     const filteredNavLinks = navLinks.filter(Boolean);
 
-    const isParentPath = (navHref, currentPath) => {
-        if (!navHref || !currentPath) return false;
-
-        if (currentPath.includes("/activities")) {
-            return navHref.includes("/activities");
-        }
-
-        if (currentPath.startsWith("/my/") && navHref === "/my/") {
-            return true;
-        }
-
-        if (currentPath.startsWith(navHref) && navHref !== "/") {
-            return true;
-        }
-
-        if (navHref === "/" || navHref === "/my/") {
-            return currentPath === navHref || currentPath === "/how";
-        }
-
-        return false;
-    };
-
     const navLinksLeft = filteredNavLinks.filter((link) => !link.isButton);
 
-    const activeIdx = navLinksLeft.findIndex((link) => {
-        if (!link.href) return false;
-        if (pathname === link.href) {
-            return true;
-        }
-        if (
-            authToken &&
-            link.label === "HOME" &&
-            (pathname === "/my" || pathname === "/my/")
-        ) {
-            return true;
-        }
-        return isParentPath(link.href, pathname);
-    });
+    const strippedPath = (() => {
+        if (!pathname) return '';
+        const prefix = `/${locale}`;
+        let p = pathname;
+        if (p === prefix) return '/';
+        if (p.startsWith(prefix + '/')) p = p.slice(prefix.length);
+        // Normalize trailing slash (treat '/my' and '/my/' the same)
+        if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+        return p || '/';
+    })();
+
+    let activeIdx = -1;
+    if (strippedPath === '/') {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === 'home');
+    } else if (strippedPath === '/my') {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === 'home');
+    } else if (strippedPath === '/how') {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === 'howDoesItWork');
+    } else if (strippedPath === '/activities' || strippedPath === '/my/activities' || strippedPath.startsWith('/activities/')) {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === 'joinActivities');
+    } else {
+        activeIdx = -1;
+    }
 
     return (
         <header className={styles.headerWrapper}>
@@ -182,7 +168,7 @@ export default function Header() {
                             onMouseEnter={() => setHoveredIdx(idx)}
                             onMouseLeave={() => setHoveredIdx(null)}
                             style={{
-                                cursor: link.href ? "pointer" : "default",
+                                cursor: link.clickable || link.href ? "pointer" : "default",
                             }}
                         >
                             {link.href ? (
