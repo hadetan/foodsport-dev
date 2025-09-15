@@ -775,7 +775,6 @@ export default function EditActivityPage() {
                                         </span>
                                     )}
                                 </div>
-                                <div></div>
                                 </div>
                             </div>
                             {/* Google Map at the bottom */}
