@@ -323,17 +323,26 @@ const ActivityDetails = ({
                     </div>
                     {/* Avatars */}
                     <div className="activityDetailsAvatars">
-                        {activity?.participantAvatars
-                            ?.slice(0, 7)
-                            .map((avatar, idx) => (
-                                <Avatar
-                                    key={idx}
-                                    src={avatar}
-                                    alt="avatar"
-                                    size={32}
-                                    className="activityDetailsAvatar"
-                                />
-                            ))}
+                        {Array.isArray(activity.participants) &&
+                            activity.participants
+                                .slice(0, 7)
+                                .map((p, idx) => {
+                                    const first = p.firstname || "";
+                                    const last = p.lastname || "";
+                                    const full = `${(first + " " + last).trim()}`;
+                                    const alt = full || "avatar";
+                                    return (
+                                        <Avatar
+                                            key={idx}
+                                            srcAvatar={p.profilePictureUrl}
+                                            firstName={first}
+                                            lastName={last}
+                                            className="activityDetailsAvatar"
+                                            title={alt}
+                                            isNav={true}
+                                        />
+                                    );
+                                })}
                         {activity.participantCount > 7 && (
                             <span className="activityDetailsAvatarMore">
                                 +{activity.participantCount - 7}
