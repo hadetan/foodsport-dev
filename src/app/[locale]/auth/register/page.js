@@ -99,7 +99,7 @@ export default function RegisterPage() {
         if (res && res.toString().includes('409')) {
           setError(t('RegisterPage.accountAlreadyExists'));
         } else {
-          
+          setError(t('RegisterPage.genericError'));
         }
       }
     } catch (_) {

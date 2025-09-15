@@ -20,7 +20,7 @@ export default function ActivityDetailsSkeleton() {
             <div className="activityDetailsDetailsSection">
             <div className="skeleton skeleton-subtitle" style={{height: 20, width: '40%', marginBottom: 12}} />
             <div className="activityDetailsDetailsGrid">
-                {Array.from({length:4}).map((_, i) => (
+                {Array.from({length: 4}).map((_, i) => (
                 <div className="activityDetailsDetailsItem" key={i}>
                     <div className="skeleton" style={{height: 36, width: 36, borderRadius: 6, marginRight: 12}} />
                         <div style={{flex: 1}}>
@@ -70,7 +70,7 @@ export default function ActivityDetailsSkeleton() {
             <div className="skeleton" style={{height: 16, width: '80%', marginBottom: 12}} />
 
             <div className="activityDetailsAvatars" style={{marginTop: 12}}>
-            {Array.from({length:5}).map((_, i) => (
+            {Array.from({length: 5}).map((_, i) => (
                 <div key={i} className="skeleton" style={{width:32, height:32, borderRadius: 9999, marginRight: 6}} />
             ))}
             </div>
