@@ -70,7 +70,7 @@ export default function ActivityItem({ activity, user }) {
 		zh: activity.descriptionZh
 	});
 
-    const choppedTitle = truncateText(localizedDescription, 65);
+    const choppedTitle = truncateText(localizedTitle, 65);
 	const choppedDesc =
 		localizedDescription && localizedDescription.length > 90
 			? truncateText(localizedDescription, 200)

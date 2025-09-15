@@ -3,64 +3,86 @@ import '@/app/shared/css/ActivityDetails.css';
 export default function ActivityDetailsSkeleton() {
   return (
     <div className="activityDetailsPage">
-      <div className="activityDetailsHero">
-        <div className="activityDetailsBackBtn skeleton" style={{width: 80, height: 32}} />
-        <div className="activityDetailsImage skeleton" style={{borderRadius: 0}} />
-      </div>
-      <div className="activityDetailsContent">
+        <div className="activityDetailsContent">
         <main className="activityDetailsMain">
-          <div className="skeleton" style={{width: 220, height: 36, marginBottom: 16}} />
-          <div className="skeleton" style={{width: 380, height: 24, marginBottom: 24}} />
-          <div className="skeleton" style={{width: 160, height: 24, marginBottom: 18}} />
-          <div className="activityDetailsDetailsGrid">
-            {[...Array(4)].map((_, i) => (
-              <div className="activityDetailsDetailsItem" key={i}>
-                <div className="skeleton" style={{width: 32, height: 32, borderRadius: 8}} />
-                <div>
-                  <div className="skeleton" style={{width: 90, height: 16, marginBottom: 6}} />
-                  <div className="skeleton" style={{width: 70, height: 18}} />
+            <div className="skeleton skeleton-title" style={{height: 32, width: '60%', marginBottom: 12}} />
+            <div className="activityDetailsMainDesc">
+            <div className="activityDetailsHero">
+                <div className="skeleton skeleton-image" style={{width: '100%', height: 460, borderRadius: 8}} />
+            </div>
+            <section className="desc-section">
+                <div className="skeleton" style={{height: 12, width: '90%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '80%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '95%', marginBottom: 8}} />
+            </section>
+            </div>
+
+            <div className="activityDetailsDetailsSection">
+            <div className="skeleton skeleton-subtitle" style={{height: 20, width: '40%', marginBottom: 12}} />
+            <div className="activityDetailsDetailsGrid">
+                {Array.from({length:4}).map((_, i) => (
+                <div className="activityDetailsDetailsItem" key={i}>
+                    <div className="skeleton" style={{height: 36, width: 36, borderRadius: 6, marginRight: 12}} />
+                        <div style={{flex: 1}}>
+                        <div className="skeleton" style={{height: 12, width: '50%', marginBottom: 6}} />
+                        <div className="skeleton" style={{height: 14, width: '80%'}} />
+                    </div>
                 </div>
-              </div>
-            ))}
-          </div>
-          {/* Google Maps skeleton */}
-          <div className="skeleton" style={{width: '100%', height: 320, borderRadius: 12, margin: '32px 0'}} />
+                ))}
+            </div>
+            </div>
+            <div style={{marginTop: '12px'}}>
+                <div className="skeleton" style={{height: 12, width: '90%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '80%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '95%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '90%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '80%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '95%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '90%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '80%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '95%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '90%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '80%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '95%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '90%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '80%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '95%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '90%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '80%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '95%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '90%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '80%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '95%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '90%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '80%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '95%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '90%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '80%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '95%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '90%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '80%', marginBottom: 8}} />
+                <div className="skeleton" style={{height: 12, width: '95%', marginBottom: 8}} />
+            </div>
         </main>
         <aside className="activityDetailsSidebar">
-          <div className="activityDetailsSidebarRow">
-            <div className="skeleton" style={{width: 24, height: 24, borderRadius: 6}} />
-            <div className="skeleton" style={{width: 120, height: 16}} />
-          </div>
-          <div className="activityDetailsSidebarRow">
-            <div className="skeleton" style={{width: 24, height: 24, borderRadius: 6}} />
-            <div className="skeleton" style={{width: 120, height: 16}} />
-          </div>
-          <div className="activityDetailsSidebarRow">
-            <div className="skeleton" style={{width: 24, height: 24, borderRadius: 6}} />
-            <div className="skeleton" style={{width: 120, height: 16}} />
-          </div>
-          <div className="activityDetailsSidebarRow">
-            <div className="skeleton" style={{width: 24, height: 24, borderRadius: 6}} />
-            <div className="skeleton" style={{width: 120, height: 16}} />
-          </div>
-          <div className="activityDetailsAvatars">
-            {[...Array(5)].map((_, i) => (
-              <div className="skeleton" style={{width: 32, height: 32, borderRadius: '50%', marginRight: 4}} key={i} />
+            <div className="skeleton" style={{height: 16, width: '70%', marginBottom: 12}} />
+            <div className="skeleton" style={{height: 16, width: '60%', marginBottom: 12}} />
+            <div className="skeleton" style={{height: 16, width: '80%', marginBottom: 12}} />
+
+            <div className="activityDetailsAvatars" style={{marginTop: 12}}>
+            {Array.from({length:5}).map((_, i) => (
+                <div key={i} className="skeleton" style={{width:32, height:32, borderRadius: 9999, marginRight: 6}} />
             ))}
-            <span className="activityDetailsAvatarMore skeleton" style={{width: 32, height: 32, borderRadius: '50%'}} />
-          </div>
-          <div className="activityDetailsSidebarActions">
-            {/* TNC Checkbox skeleton */}
-            <div className="skeleton" style={{width: 220, height: 22, marginBottom: 12}} />
-            {/* Invite Partners button skeleton */}
-            <div className="skeleton" style={{width: 160, height: 38, marginBottom: 12, borderRadius: 6}} />
-            {/* Leave/Join button skeleton */}
-            <div className="skeleton" style={{width: 160, height: 38, marginRight: 12}} />
-            {/* Share button skeleton */}
-            <div className="skeleton" style={{width: 160, height: 38}} />
-          </div>
+            </div>
+
+            <div className="activityDetailsSidebarActions" style={{marginTop: 18}}>
+            <div className="skeleton" style={{height: 40, width: '100%', borderRadius: 8, marginBottom: 10}} />
+            <div className="skeleton" style={{height: 36, width: '60%', borderRadius: 8}} />
+            </div>
+
+            <div className="skeleton" style={{width: '100%', height: 200, marginTop: 28, borderRadius: 12}} />
         </aside>
-      </div>
+        </div>
     </div>
   );
 }
