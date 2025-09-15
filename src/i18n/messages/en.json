@@ -129,5 +129,27 @@
 			"redeem": "Redeem Now",
 			"imageAlt": "Reward image"
 		}
+	},
+	"HowPage": {
+		"heading": "HOW DOES IT WORK",
+		"steps": {
+			"1": {
+				"title": "SIGN UP",
+				"description": "Sign Up to become a FOODSPORT Member",
+				"details": "Start your exercising for hunger journey with FOODSPORT by becoming a FOODSPORT member"
+			},
+			"2": {
+				"title": "JOIN",
+				"description": "Join a FOODSPORT Calorie Drive Activity / Program"
+			},
+			"3": {
+				"title": "KCALS",
+				"description": "Convert your calories into food equivalent for donation"
+			},
+			"4": {
+				"title": "FS POINTS",
+				"description": "Redeem rewards with FS POINTS"
+			}
+		}
 	}
 }

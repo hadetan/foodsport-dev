@@ -131,5 +131,27 @@
 			"redeem": "立即兌換",
 			"imageAlt": "獎賞圖片"
 		}
+	},
+	"HowPage": {
+		"heading": "如何運作",
+		"steps": {
+			"1": {
+				"title": "註冊",
+				"description": "註冊成為 FOODSPORT 會員",
+				"details": "成為 FOODSPORT 會員，開始你的「以運動換食物」之旅。"
+			},
+			"2": {
+				"title": "參與",
+				"description": "加入 FOODSPORT 卡路里捐贈活動 / 計劃"
+			},
+			"3": {
+				"title": "卡路里",
+				"description": "將你燃燒的卡路里轉換為食物等值以作捐贈"
+			},
+			"4": {
+				"title": "FOODSPORT 積分",
+				"description": "以 FOODSPORT 積分兌換獎賞"
+			}
+		}
 	}
 }
