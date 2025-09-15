@@ -44,7 +44,7 @@
 		"joinActivities": "JOIN ACTIVITIES",
 		"redeemRewards": "REDEEM REWARDS",
 		"howDoesItWork": "HOW DOES IT WORK",
-		"loginRegister": "LOGIN / REGISTER"
+		"loginRegister": "LOGIN"
 	},
 	"Search": {
 		"placeholder": "Search activities..."

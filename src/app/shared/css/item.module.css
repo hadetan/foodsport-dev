@@ -111,6 +111,40 @@
 	object-fit: contain;
 	display: block;
 }
+
+/* Activity type badge for small screens - initially hidden */
+.activityTypeBadgeSmall {
+	position: absolute;
+	bottom: 12px;
+	left: 12px;
+	display: none;
+	z-index: 3;
+}
+
+.filterBtnSmall {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 6px;
+	border-radius: 8px;
+	background-color: #ffe23b;
+	outline: none;
+	display: block;
+	transition: background-color 0.2s;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.filterBtnSmall:hover {
+	background-color: #ecd136;
+}
+
+.filterBtnSmall img {
+	width: 22px;
+	height: 22px;
+	max-width: none;
+	object-fit: contain;
+	display: block;
+}
 .detailsRow {
 	display: flex;
 	align-items: center;
@@ -192,43 +226,307 @@
 	letter-spacing: 0.8px;
 }
 
+/* Large tablets and small desktops */
+@media (max-width: 900px) {
+	.cardTitleRow {
+		font-size: 1.15rem;
+	}
+	
+	.cardSubtitle {
+		font-size: 0.9rem;
+	}
+	
+	.detailsRow {
+		font-size: 0.92rem;
+	}
+	
+	.rightRow {
+		font-size: 0.92rem;
+	}
+	
+	.content {
+		padding: 16px 18px 0 18px;
+	}
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+	.card {
+		margin-bottom: 1.5rem;
+		max-width: 100%;
+	}
+	
+	.cardTitleRow {
+		font-size: 1.1rem;
+		margin-bottom: 8px;
+		padding-bottom: 8px;
+	}
+	
+	.cardSubtitle {
+		font-size: 0.88rem;
+		line-height: 1.4;
+		margin-bottom: 8px;
+	}
+	
+	.detailsRow {
+		font-size: 0.9rem;
+		margin-top: 16px;
+	}
+	
+	.rightRow {
+		font-size: 0.9rem;
+		margin-top: 16px;
+	}
+	
+	.content {
+		padding: 15px 16px 0 16px;
+	}
+	
+	.metaContainer {
+		gap: 14px;
+		margin-top: 10px;
+	}
+	
+	.metaRight {
+		width: 130px;
+	}
+	
+	.filterBtn img {
+		width: 26px;
+		height: 26px;
+	}
+	
+	.badgeNumber {
+		font-size: 1.25rem;
+	}
+	
+	.badgeLabel {
+		font-size: 0.68rem;
+	}
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+	.card {
+		margin-bottom: 2rem;
+		padding-bottom: 1rem;
+		border-radius: 10px;
+	}
+	
+	.cardImage {
+		border-radius: 10px 10px 0 0;
+	}
+	
+	.cardTitleRow {
+		font-size: 1.05rem;
+		margin-bottom: 6px;
+		padding-bottom: 6px;
+	}
+	
+	.cardSubtitle {
+		font-size: 0.85rem;
+		line-height: 1.45;
+		margin-bottom: 6px;
+	}
+	
+	.detailsRow {
+		font-size: 0.88rem;
+		margin-top: 14px;
+		gap: 6px;
+	}
+	
+	.rightRow {
+		font-size: 0.88rem;
+		margin-top: 14px;
+		gap: 6px;
+	}
+	
+	.content {
+		padding: 14px 15px 0 15px;
+	}
+	
+	.metaContainer {
+		gap: 12px;
+		margin-top: 8px;
+	}
+	
+	.metaRight {
+		width: 120px;
+	}
+	
+	.icon {
+		font-size: 1rem;
+	}
+	
+	.filterBtn {
+		padding: 4px;
+		border-radius: 8px;
+		margin-left: 6px;
+	}
+	
+	.filterBtn img {
+		width: 24px;
+		height: 24px;
+	}
+	
+	.imageBadge {
+		top: 12px;
+		right: 12px;
+		padding: 6px 12px 5px 12px;
+		border-radius: 10px;
+		min-width: 58px;
+	}
+	
+	.badgeNumber {
+		font-size: 1.2rem;
+	}
+	
+	.badgeLabel {
+		font-size: 0.65rem;
+	}
+}
+
+/* Small mobile devices */
 @media (max-width: 420px) {
+	/* Hide the regular title row badge */
+	.badges {
+		display: none;
+	}
+	
+	/* Show the image overlay badge */
+	.activityTypeBadgeSmall {
+		display: block;
+	}
+	
+	.cardTitleRow {
+		font-size: 1rem;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+		/* Remove justify-content since badges are hidden */
+		justify-content: flex-start;
+	}
+	
+	.cardSubtitle {
+		font-size: 0.82rem;
+	}
+	
+	.detailsRow {
+		font-size: 0.85rem;
+		margin-top: 12px;
+	}
+	
+	.rightRow {
+		font-size: 0.85rem;
+		margin-top: 12px;
+	}
+	
+	.content {
+		padding: 12px 14px 0 14px;
+	}
+	
 	.metaContainer {
 		flex-direction: column;
 		gap: 10px;
 	}
+	
 	.metaRight {
 		width: 100%;
-		flex-direction: row;
+		flex-direction: column;
 		justify-content: flex-start;
-		gap: 8px;
-		align-items: center;
+		gap: 10px;
+		align-items: start;
 	}
+	
 	.rightRow {
 		flex: 1;
 		min-width: 0;
+		margin-top: 12px;
 	}
+	
 	.imageBadge {
 		top: 10px;
 		right: 10px;
 		min-width: 54px;
-		padding: 6px 10px 4px 10px;
+		padding: 5px 10px 4px 10px;
+	}
+	
+	.badgeNumber {
+		font-size: 1.1rem;
+	}
+	
+	.badgeLabel {
+		font-size: 0.62rem;
+	}
+	
+	.filterBtn img {
+		width: 22px;
+		height: 22px;
 	}
 }
 
-@media (max-width: 768px) {
-	.card {
-		margin-bottom: 1.5rem;
+/* Extra small devices */
+@media (max-width: 320px) {
+	/* Ensure badges remain hidden and small badge stays visible */
+	.badges {
+		display: none;
 	}
-}
-
-@media (max-width: 480px) {
-	.card {
-		margin-bottom: 2rem;
+	
+	.activityTypeBadgeSmall {
+		display: block;
+		bottom: 8px;
+		left: 8px;
 	}
-}
-@media (max-width: 1000px) {
-	.card {
-		margin-bottom: 2rem;
+	
+	.filterBtnSmall img {
+		width: 18px;
+		height: 18px;
+	}
+	
+	.cardTitleRow {
+		font-size: 0.95rem;
+	}
+	
+	.cardSubtitle {
+		font-size: 0.8rem;
+		line-height: 1.5;
+	}
+	
+	.detailsRow {
+		font-size: 0.82rem;
+		margin-top: 10px;
+	}
+	
+	.rightRow {
+		font-size: 0.82rem;
+	}
+	
+	.content {
+		padding: 10px 12px 0 12px;
+	}
+	
+	.icon {
+		font-size: 0.9rem;
+	}
+	
+	.filterBtn img {
+		width: 20px;
+		height: 20px;
+	}
+	
+	.imageBadge {
+		top: 8px;
+		right: 8px;
+		min-width: 50px;
+		padding: 4px 8px 3px 8px;
+	}
+	
+	.badgeNumber {
+		font-size: 1rem;
+	}
+	
+	.badgeLabel {
+		font-size: 0.6rem;
+		letter-spacing: 0.6px;
 	}
 }

@@ -150,6 +150,17 @@ export default function ActivityItem({ activity, user }) {
 						<span className={styles.badgeLabel}>{t('Activity.ActivityItem.toStart')}</span>
 					</div>
 				)}
+
+				<div className={styles.activityTypeBadgeSmall}>
+					<Button
+						className={styles.filterBtnSmall}
+						onClick={() =>
+							handleActTypeSearch(activity.activityType)
+						}
+					>
+						<ActivityIcon type={activity.activityType} />
+					</Button>
+				</div>
             </div>
             <div className={styles.content}>
                 <div className={styles.cardTitleRow}>

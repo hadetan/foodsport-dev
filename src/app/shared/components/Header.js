@@ -23,7 +23,6 @@ export default function Header() {
     const { activities } = useActivities();
     const t = useTranslations();
     const locale = useLocale();
-
     //#region This fixed the hydration error of mismatched authToken. The authToken is populated only after the mounting, so we wait to be mounted first before using the authToken.
     useEffect(() => {
         setMounted(true);
@@ -57,6 +56,7 @@ export default function Header() {
             label: <Search sortedActivities={activities} />,
             href: null,
             isButton: true,
+            className: styles.searchButton,
         },
         {
             label: authToken ? (
@@ -96,7 +96,6 @@ export default function Header() {
         let p = pathname;
         if (p === prefix) return '/';
         if (p.startsWith(prefix + '/')) p = p.slice(prefix.length);
-        // Normalize trailing slash (treat '/my' and '/my/' the same)
         if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
         return p || '/';
     })();
@@ -127,13 +126,12 @@ export default function Header() {
                     />
                 </div>
                 <div className={styles.topBarRight}>
-                    {/* Render right-side buttons */}
                     {filteredNavLinks
                         .filter((link) => link.isButton)
                         .map((link, idx) => (
                             <span
                                 key={`${link.label}-${idx}`}
-                                className={styles.navButtonRight}
+                                className={`${styles.navButtonRight} ${link.className || ''}`}
                                 style={{
                                     cursor: "pointer",
                                     marginLeft: "24px",

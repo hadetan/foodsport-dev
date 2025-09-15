@@ -4,8 +4,8 @@
     background-size: cover;
     background-position: center;
     width: 100%;
-    height: 70vh;
-    min-height: 360px;
+        height: 70vh; /* desktop large view */
+        min-height: 470px; /* align with Activity initial min height */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -13,6 +13,41 @@
     background-color: #f8f8f8;
     margin: 0;
     overflow: hidden;
+}
+
+/* Large tablets / small desktop */
+@media (max-width: 900px) {
+    .coming-soon-bg {
+        min-height: 350px;
+        height: 500px; /* mirrors Activity 500px */
+    }
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+    .coming-soon-bg {
+        min-height: 120px !important;
+        height: 200px !important; /* mirror Activity tablet heights */
+        padding: 1.5rem 0;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .coming-soon-bg {
+        min-height: 120px !important;
+        height: 145px !important; /* mirror Activity mobile heights */
+        padding: 1.25rem 0;
+    }
+}
+
+/* Small mobile */
+@media (max-width: 360px) {
+    .coming-soon-bg {
+        min-height: 200px; /* matches small mobile Activity adjustments */
+        height: 280px;
+        padding: 1rem 0;
+    }
 }
 
 .sponsor-section {
