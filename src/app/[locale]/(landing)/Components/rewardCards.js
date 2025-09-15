@@ -3,6 +3,8 @@ import Image from "next/image";
 export default function RewardCards({ items = [] }) {
     if (!Array.isArray(items) || items.length === 0) return null;
 
+    const formatPoints = (n) => new Intl.NumberFormat().format(n ?? 0);
+
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {items.map((item, idx) => (
@@ -40,12 +42,12 @@ export default function RewardCards({ items = [] }) {
                             <button
                                 type="button"
                                 aria-label="Save reward"
-                                className="text-gray-300 hover:text-yellow-400 transition"
+                                className="p-2 rounded-md border border-gray-200 bg-gray-50 text-gray-400 hover:text-yellow-500 transition"
                             >
                                 {/* Star icon */}
                                 <svg
-                                    width="24"
-                                    height="24"
+                                    width="20"
+                                    height="20"
                                     viewBox="0 0 24 24"
                                     fill="currentColor"
                                     aria-hidden="true"
@@ -54,9 +56,33 @@ export default function RewardCards({ items = [] }) {
                                 </svg>
                             </button>
                         </div>
+
+                        {/* Points row */}
+                        <div className="mt-3 flex items-center justify-end">
+                            <div className="inline-flex items-center gap-1 text-amber-600 font-semibold">
+                                {/* Coin icon */}
+                                <svg
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                    className="text-amber-500"
+                                    fill="currentColor"
+                                >
+                                    <circle
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        className="opacity-20"
+                                    />
+                                    <path d="M12 6c3.31 0 6 1.79 6 4s-2.69 4-6 4-6-1.79-6-4 2.69-4 6-4zm0 10c-3.31 0-6-1.79-6-4v2c0 2.21 2.69 4 6 4s6-1.79 6-4v-2c0 2.21-2.69 4-6 4z" />
+                                </svg>
+                                <span>{formatPoints(item.points)}</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="border-t border-gray-200 px-4 py-3 flex items-stretch">
+                    <div className="border-t border-gray-200 px-4 py-3 flex items-stretch bg-gray-50">
                         <button
                             type="button"
                             className="flex-1 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition"

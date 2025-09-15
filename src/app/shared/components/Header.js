@@ -39,7 +39,7 @@ export default function Header() {
         },
         {
             label: "REDEEM REWARDS",
-            href: null,
+            href: "/redeem",
         },
         !authToken && {
             label: "HOW DOES IT WORK",
