@@ -6,9 +6,7 @@ import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext
 import FullPageLoader from "../../components/FullPageLoader";
 import { Pencil } from "lucide-react";
 import statusOptions from "@/app/constants/constants";
-import {
-    ACTIVITY_TYPES_FORMATTED,
-} from "@/app/constants/constants";
+import { ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
 import Tabs from "../../components/Tabs";
 
 function extractMapLocationFromUrl(raw) {
@@ -345,7 +343,7 @@ export default function EditActivityPage() {
     return (
         <div className="flex flex-col items-center justify-center w-full h-full min-h-0 bg-white px-2 sm:px-4 md:px-8 lg:px-16 flex-1">
             {/* Back Button */}
-            <div className="w-full max-w-5xl flex justify-start mb-4">
+            <div className="w-full flex justify-start mb-4">
                 <button
                     className="btn btn-primary"
                     onClick={() => router.push("/admin/activities")}
@@ -354,7 +352,7 @@ export default function EditActivityPage() {
                     &larr; Back
                 </button>
             </div>
-            <div className="w-full max-w-5xl bg-white overflow-y-auto mb-2">
+            <div className="w-full  bg-white overflow-y-auto mb-2">
                 {/* Tabs */}
                 <Tabs
                     setTab={setActiveTab}
@@ -383,10 +381,12 @@ export default function EditActivityPage() {
                                 e.preventDefault();
                                 handleSave();
                             }}
+                            className="w-full"
+                            style={{ marginLeft: 0, marginRight: 0 }}
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-8 w-full">
                                 {/* Upload Image - full width */}
-                                <div className="md:col-span-2">
+                                <div className="col-span-1 md:col-span-3">
                                     <label className="label text-lg font-semibold mb-2 text-black">
                                         Upload Image
                                     </label>
@@ -492,335 +492,289 @@ export default function EditActivityPage() {
                                         </span>
                                     )}
                                 </div>
-                                {/* Left column */}
-                                <div className="flex flex-col gap-4 sm:gap-6">
-                                    {/* Activity Title */}
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Activity Title
-                                        </label>
-                                        <input
-                                            className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="title"
-                                            value={form.title}
-                                            onChange={handleInput}
-                                            maxLength={100}
-                                            required
-                                        />
-                                        {errors.title && (
-                                            <span className="text-error text-base">
-                                                {errors.title}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {/* Chinese Title */}
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Chinese Title
-                                        </label>
-                                        <input
-                                            className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="titleZh"
-                                            value={form.titleZh}
-                                            onChange={handleInput}
-                                            maxLength={100}
-                                            placeholder="输入中文标题"
-                                        />
-                                    </div>
-                                    {/* Activity Type */}
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Activity Type
-                                        </label>
-                                        <select
-                                            className="select select-bordered select-lg w-full bg-white text-black"
-                                            name="activityType"
-                                            value={form.activityType}
-                                            onChange={handleInput}
-                                            required
-                                        >
-                                            <option value="">
-                                                Select activity type
-                                            </option>
-                                            {ACTIVITY_TYPES_FORMATTED.map(
-                                                (formatted, idx) => (
-                                                    <option
-                                                        key={formatted}
-                                                        value={formatted}
-                                                    >
-                                                        {formatted.replace(
-                                                            /_/g,
-                                                            " "
-                                                        )}
-                                                    </option>
-                                                )
-                                            )}
-                                        </select>
-                                        {/* {fieldErrors.activityType && (
-                                            <span className="text-error text-base">
-                                                {fieldErrors.activityType}
-                                            </span>
-                                        )} */}
-                                    </div>
-                                    {/* Summary */}
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Summary
-                                        </label>
-                                        <textarea
-                                            className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
-                                            name="description"
-                                            value={form.description}
-                                            onChange={handleInput}
-                                            required
-                                            rows={3}
-                                            placeholder="Enter summary"
-                                        />
-                                        {errors.description && (
-                                            <span className="text-error text-base">
-                                                {errors.description}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {/* Chinese Summary */}
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Chinese Summary
-                                        </label>
-                                        <textarea
-                                            className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
-                                            name="descriptionZh"
-                                            value={form.descriptionZh}
-                                            onChange={handleInput}
-                                            rows={3}
-                                            placeholder="输入中文简介"
-                                        />
-                                    </div>
-                                    {/* Start Date & Time */}
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Start Date & Time
-                                        </label>
-                                        <input
-                                            type="datetime-local"
-                                            className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="startDateTime"
-                                            value={form.startDateTime}
-                                            onChange={handleInput}
-                                            required
-                                        />
-                                        {errors.startDateTime && (
-                                            <span className="text-error text-base">
-                                                {errors.startDateTime}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {/* End Date & Time */}
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            End Date & Time
-                                        </label>
-                                        <input
-                                            type="datetime-local"
-                                            className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="endDateTime"
-                                            value={form.endDateTime}
-                                            onChange={handleInput}
-                                            required
-                                        />
-                                        {errors.endDateTime && (
-                                            <span className="text-error text-base">
-                                                {errors.endDateTime}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                {/* Right column */}
-
-                                <div className="flex flex-col gap-4 sm:gap-6">
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Location
-                                        </label>
-                                        <input
-                                            className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="location"
-                                            value={form.location}
-                                            onChange={handleInput}
-                                            required
-                                            placeholder="Search In Map "
-                                        />
-                                        {errors.location && (
-                                            <span className="text-error text-base">
-                                                {errors.location}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {/* Capacity */}
-
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Capacity
-                                        </label>
-                                        <input
-                                            type="number"
-                                            className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="capacity"
-                                            value={form.capacity}
-                                            onChange={handleInput}
-                                            min={1}
-                                            required
-                                            placeholder="Enter participant limit"
-                                        />
-                                        {errors.capacity && (
-                                            <span className="text-error text-base">
-                                                {errors.capacity}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {/* Calories Per Hour */}
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Calories Per Hour
-                                        </label>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="number"
-                                                className="input input-bordered input-lg w-full bg-white text-black"
-                                                name="caloriesPerHourMin"
-                                                value={form.caloriesPerHourMin}
-                                                onChange={handleInput}
-                                                min={0.01}
-                                                step="any"
-                                                required
-                                                placeholder="Min"
-                                            />
-                                            <span className="self-center text-lg font-bold">
-                                                -
-                                            </span>
-                                            <input
-                                                type="number"
-                                                className="input input-bordered input-lg w-full bg-white text-black"
-                                                name="caloriesPerHourMax"
-                                                value={form.caloriesPerHourMax}
-                                                onChange={handleInput}
-                                                min={0.01}
-                                                step="any"
-                                                required
-                                                placeholder="Max"
-                                            />
-                                        </div>
-                                        <span className="text-xs text-gray-400 mt-1">
-                                            Enter minimum and maximum calories
-                                            participants could lose per hour
-                                            (e.g. 150-200)
+                                {/* Row 1: Activity Title, Chinese Title, Activity Type */}
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Activity Title
+                                    </label>
+                                    <input
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="title"
+                                        value={form.title}
+                                        onChange={handleInput}
+                                        maxLength={100}
+                                        required
+                                    />
+                                    {errors.title && (
+                                        <span className="text-error text-base">
+                                            {errors.title}
                                         </span>
-                                        {errors.caloriesPerHour && (
-                                            <span className="text-error text-base">
-                                                {errors.caloriesPerHour}
-                                            </span>
+                                    )}
+                                </div>
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Chinese Title
+                                    </label>
+                                    <input
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="titleZh"
+                                        value={form.titleZh}
+                                        onChange={handleInput}
+                                        maxLength={100}
+                                        placeholder="输入中文标题"
+                                    />
+                                </div>
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Activity Type
+                                    </label>
+                                    <select
+                                        className="select select-bordered select-lg w-full bg-white text-black"
+                                        name="activityType"
+                                        value={form.activityType}
+                                        onChange={handleInput}
+                                        required
+                                    >
+                                        <option value="">
+                                            Select activity type
+                                        </option>
+                                        {ACTIVITY_TYPES_FORMATTED.map(
+                                            (formatted, idx) => (
+                                                <option
+                                                    key={formatted}
+                                                    value={formatted}
+                                                >
+                                                    {formatted.replace(
+                                                        /_/g,
+                                                        " "
+                                                    )}
+                                                </option>
+                                            )
                                         )}
-                                    </div>
-                                    {/* Total Calories Burnt */}
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Total Calories Burnt
-                                        </label>
+                                    </select>
+                                </div>
+                                {/* Row 2: Summary, Chinese Summary, Start Date & Time */}
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Summary
+                                    </label>
+                                    <textarea
+                                        className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
+                                        name="description"
+                                        value={form.description}
+                                        onChange={handleInput}
+                                        required
+                                        rows={3}
+                                        placeholder="Enter summary"
+                                    />
+                                    {errors.description && (
+                                        <span className="text-error text-base">
+                                            {errors.description}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Chinese Summary
+                                    </label>
+                                    <textarea
+                                        className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
+                                        name="descriptionZh"
+                                        value={form.descriptionZh}
+                                        onChange={handleInput}
+                                        rows={3}
+                                        placeholder="输入中文简介"
+                                    />
+                                </div>
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Start Date & Time
+                                    </label>
+                                    <input
+                                        type="datetime-local"
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="startDateTime"
+                                        value={form.startDateTime}
+                                        onChange={handleInput}
+                                        required
+                                    />
+                                    {errors.startDateTime && (
+                                        <span className="text-error text-base">
+                                            {errors.startDateTime}
+                                        </span>
+                                    )}
+                                </div>
+                                {/* Row 3: Should be featured?, Location, Capacity */}
+                                <div className="form-control w-full">
+                                    <label className="label cursor-pointer justify-start gap-2 text-lg font-semibold mb-2 text-black">
+                                        <input
+                                            type="checkbox"
+                                            className="checkbox checkbox-primary"
+                                            name="isFeatured"
+                                            checked={!!form.isFeatured}
+                                            onChange={handleInput}
+                                        />
+                                        <span>Should be featured?</span>
+                                    </label>
+                                </div>
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Location
+                                    </label>
+                                    <input
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="location"
+                                        value={form.location}
+                                        onChange={handleInput}
+                                        required
+                                        placeholder="Search In Map "
+                                    />
+                                    {errors.location && (
+                                        <span className="text-error text-base">
+                                            {errors.location}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Capacity
+                                    </label>
+                                    <input
+                                        type="number"
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="capacity"
+                                        value={form.capacity}
+                                        onChange={handleInput}
+                                        min={1}
+                                        required
+                                        placeholder="Enter participant limit"
+                                    />
+                                    {errors.capacity && (
+                                        <span className="text-error text-base">
+                                            {errors.capacity}
+                                        </span>
+                                    )}
+                                </div>
+                                {/* Row 4: Calories Per Hour, End Date & Time, Status */}
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Calories Per Hour
+                                    </label>
+                                    <div className="flex gap-2">
                                         <input
                                             type="number"
                                             className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="totalCaloriesBurnt"
-                                            value={form.totalCaloriesBurnt}
+                                            name="caloriesPerHourMin"
+                                            value={form.caloriesPerHourMin}
                                             onChange={handleInput}
                                             min={0.01}
                                             step="any"
-                                            placeholder="Enter total calories burnt"
+                                            required
+                                            placeholder="Min"
                                         />
-                                        {errors.totalCaloriesBurnt && (
-                                            <span className="text-error text-base">
-                                                {errors.totalCaloriesBurnt}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {/* Status */}
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Status
-                                        </label>
-                                        <select
-                                            className="select select-bordered select-lg w-full bg-white text-black"
-                                            name="status"
-                                            value={form.status}
-                                            onChange={handleInput}
-                                        >
-                                            {statusOptions.map((status) => (
-                                                <option
-                                                    key={status}
-                                                    value={status}
-                                                >
-                                                    {status
-                                                        .charAt(0)
-                                                        .toUpperCase() +
-                                                        status.slice(1)}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    {/* Terms & Conditions */}
-                                    <div className="form-control w-full">
-                                        <label className="label text-lg font-semibold mb-2 text-black">
-                                            Terms & Conditions
-                                        </label>
-                                        <select
-                                            className="select select-bordered select-lg w-full bg-white text-black"
-                                            name="tncId"
-                                            value={form.tncId || ""}
-                                            onChange={handleInput}
-                                            disabled={tncLoading}
-                                        >
-                                            <option value="">
-                                                {tncLoading
-                                                    ? "Loading..."
-                                                    : "Select T&C"}
-                                            </option>
-                                            {tncOptions.map((t) => (
-                                                <option key={t.id} value={t.id}>
-                                                    {t.title}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    {/* Should be featured? Checkbox */}
-                                    <div className="form-control w-full">
-                                        <label className="label cursor-pointer justify-start gap-2 text-lg font-semibold mb-2 text-black">
-                                            <input
-                                                type="checkbox"
-                                                className="checkbox checkbox-primary"
-                                                name="isFeatured"
-                                                checked={!!form.isFeatured}
-                                                onChange={handleInput}
-                                            />
-                                            <span>Should be featured?</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                {/* Search Map - full width */}
-                                <div className="md:col-span-2">
-                                    <div className="form-control w-full">
+                                        <span className="self-center text-lg font-bold">
+                                            -
+                                        </span>
                                         <input
+                                            type="number"
                                             className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="mapLocation"
+                                            name="caloriesPerHourMax"
+                                            value={form.caloriesPerHourMax}
                                             onChange={handleInput}
-                                            value={form.mapLocation}
-                                            placeholder="Search In Map"
+                                            min={0.01}
+                                            step="any"
+                                            required
+                                            placeholder="Max"
                                         />
-                                        {errors.mapLocation && (
-                                            <span className="text-error text-base">
-                                                {errors.mapLocation}
-                                            </span>
-                                        )}
                                     </div>
+                                    <span className="text-xs text-gray-400 mt-1">
+                                        Enter minimum and maximum calories
+                                        participants could lose per hour (e.g.
+                                        150-200)
+                                    </span>
+                                    {errors.caloriesPerHour && (
+                                        <span className="text-error text-base">
+                                            {errors.caloriesPerHour}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        End Date & Time
+                                    </label>
+                                    <input
+                                        type="datetime-local"
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="endDateTime"
+                                        value={form.endDateTime}
+                                        onChange={handleInput}
+                                        required
+                                    />
+                                    {errors.endDateTime && (
+                                        <span className="text-error text-base">
+                                            {errors.endDateTime}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Status
+                                    </label>
+                                    <select
+                                        className="select select-bordered select-lg w-full bg-white text-black"
+                                        name="status"
+                                        value={form.status}
+                                        onChange={handleInput}
+                                    >
+                                        {statusOptions.map((status) => (
+                                            <option key={status} value={status}>
+                                                {status
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                    status.slice(1)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                {/* Row 5: Terms & Conditions, Map Location (empty for spacing) */}
+                                <div className="form-control w-full">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Terms & Conditions
+                                    </label>
+                                    <select
+                                        className="select select-bordered select-lg w-full bg-white text-black"
+                                        name="tncId"
+                                        value={form.tncId || ""}
+                                        onChange={handleInput}
+                                        disabled={tncLoading}
+                                    >
+                                        <option value="">
+                                            {tncLoading
+                                                ? "Loading..."
+                                                : "Select T&C"}
+                                        </option>
+                                        {tncOptions.map((t) => (
+                                            <option key={t.id} value={t.id}>
+                                                {t.title}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="col-span-full">
+                                <div className="form-control w-full">
+                                    <input
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="mapLocation"
+                                        onChange={handleInput}
+                                        value={form.mapLocation}
+                                        placeholder="Search In Map"
+                                    />
+                                    {errors.mapLocation && (
+                                        <span className="text-error text-base">
+                                            {errors.mapLocation}
+                                        </span>
+                                    )}
+                                </div>
                                 </div>
                             </div>
                             {/* Google Map at the bottom */}
@@ -842,7 +796,7 @@ export default function EditActivityPage() {
                                     ></iframe>
                                 </div>
                             </div>
-                            <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full">
+                            <div className="md:col-span-3 flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full">
                                 <button
                                     type="submit"
                                     className={`btn btn-primary btn-lg flex-1 ${

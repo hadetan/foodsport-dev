@@ -9,6 +9,7 @@ import {
     Mail,
     UserPlus,
     LogOut,
+    ReceiptText
 } from "lucide-react";
 import { UsersProvider } from "@/app/shared/contexts/usersContext";
 import { DashboardProvider } from "@/app/shared/contexts/DashboardContext";
