@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import React from "react";
 
-const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=false, size='8' }) => {
+const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, isProfile=false, pointer=false, size='8' }) => {
     const first = firstName?.[0]?.toUpperCase() || '';
     const last = lastName?.[0]?.toUpperCase() || '';
     const router = useRouter();
@@ -41,7 +41,7 @@ const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=fal
         <div onClick={() => pointer && handleClick()}>
             {!avatarUrl ? (
                 <div className="avatar avatar-placeholder">
-                    <div className={maskClass}>
+                    <div className={maskClass} style={{width: '100%'}}>
                         <span className={isNav ? size : "text-xl"}>{`${first}${last}`}</span>
                     </div>
                 </div>

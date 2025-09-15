@@ -39,13 +39,14 @@ export default function ProfilePage() {
 									firstName={user.firstname || ''}
 									lastName={user.lastname || ''}
 									isNav={true}
+									isProfile={true}
 									pointer={false}
 									size='24'
 								/>
 							)}
-							<div className='profile-level-badge'>
+							{/* <div className='profile-level-badge'>
 								{user.level || 1}
-							</div>
+							</div> */}
 						</div>
 						<div className='profile-name'>{displayName}</div>
 						<div className='profile-id'>{userId}</div>

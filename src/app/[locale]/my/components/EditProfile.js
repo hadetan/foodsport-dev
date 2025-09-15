@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { FaInfoCircle } from 'react-icons/fa';
+import { FaInfoCircle, FaUser } from 'react-icons/fa';
 import { toast } from '@/utils/Toast';
 import { useUser } from '@/app/shared/contexts/userContext';
 import api from '@/utils/axios/api';
@@ -274,14 +274,16 @@ export default function EditProfile() {
 							/>
 						) : (
 							<div
+								className='something'
 								style={{
 									width: '100%',
 									height: '100%',
 									display: 'flex',
+									backgroundColor: '#676767'
 								}}
 							>
-								<FaMountainSun
-									style={{ width: '100%', height: '100%' }}
+								<FaUser
+									style={{ width: '100%', height: '100%', color: '#fff' }}
 								/>
 							</div>
 						)}
