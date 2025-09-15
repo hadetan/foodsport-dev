@@ -761,7 +761,6 @@ export default function EditActivityPage() {
                                     </select>
                                 </div>
                                 <div className="col-span-full">
-
                                 <div className="form-control w-full">
                                     <input
                                         className="input input-bordered input-lg w-full bg-white text-black"
