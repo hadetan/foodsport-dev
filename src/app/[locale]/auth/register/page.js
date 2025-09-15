@@ -28,9 +28,9 @@ export default function RegisterPage() {
 
   useEffect(() => {
       if (typeof window !== "undefined" && authToken) {
-        router.replace("/my");
+        router.replace(`/${locale}/my`);
       }
-    }, [router]);
+    }, [router, authToken, locale]);
 
   useEffect(() => {
     if (subOnce.current) return;
@@ -73,11 +73,11 @@ export default function RegisterPage() {
         return;
       }
       if (data.created || (data.existing && data.userExists)) {
-        window.location.href = `/${locale}/my`;
+        router.replace(`/${locale}/my`);
         return;
       }
       if (data.preProfile) {
-        window.location.href = `/${locale}/auth/onboard`;
+        router.replace(`/${locale}/auth/onboard`);
         return;
       }
     } catch (e) {
@@ -91,10 +91,18 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
     try {
-      await signup({ email, password, firstname, lastname, dateOfBirth })
-      router.push(`/${locale}/my`);
-    } catch (err) {
-      setError(err.message);
+      const res = await signup({ email, password, firstname, lastname, dateOfBirth });
+      if (res.ok) {
+        router.replace(`/${locale}/my`);
+      } else {
+        // backend returned a non-successful payload
+        if (res && res.toString().includes('409')) {
+          setError(t('RegisterPage.accountAlreadyExists'));
+        } else {
+          
+        }
+      }
+    } catch (_) {
     } finally {
       setLoading(false);
     }

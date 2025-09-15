@@ -9,6 +9,7 @@ import ActivityDetails from '@/app/shared/components/ActivityDetails';
 import ActivityDetailsSkeleton from '@/app/shared/components/skeletons/ActivityDetailsSkeleton';
 import { HiOutlineEmojiSad } from 'react-icons/hi';
 import { IoIosArrowBack } from 'react-icons/io';
+import { useTranslations } from 'next-intl';
 
 function getActivity(activities, id) {
 	return activities.find((activity) => activity.id === id);
@@ -38,6 +39,7 @@ export default function ActivityDetailsPage() {
 	const { activities, setActivities, loading: activityLoading } = useActivities();
 	const { user, setUser, loading: userLoading } = useUser();
 	const { id } = useParams();
+	const t = useTranslations();
 
 	if (activityLoading || !activities || !activities.length) {
 		return <ActivityDetailsSkeleton />;
@@ -54,12 +56,10 @@ export default function ActivityDetailsPage() {
 					<HiOutlineEmojiSad />
 				</div>
 				<div className='activityDetailsEmptyTitle'>
-					No Activity Found
+					{t('Activity.DetailsPage.noActivityTitle')}
 				</div>
 				<div className='activityDetailsEmptyDesc'>
-					We couldn't find the activity you're looking for.
-					<br />
-					Please check the link again.
+					{t('Activity.DetailsPage.noActivityDesc')}
 				</div>
 				<button
 					className='activityDetailsEmptyBtn'
@@ -68,7 +68,7 @@ export default function ActivityDetailsPage() {
 					<span className='back'>
 						<IoIosArrowBack />
 					</span>{' '}
-					Go Back
+					{t('Activity.DetailsPage.back')}
 				</button>
 			</div>
 		);

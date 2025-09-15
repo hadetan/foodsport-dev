@@ -88,45 +88,28 @@ export default function Header() {
 
     const filteredNavLinks = navLinks.filter(Boolean);
 
-    const isParentPath = (navHref, currentPath) => {
-        if (!navHref || !currentPath) return false;
-
-        if (currentPath.includes("/activities")) {
-            return navHref.includes("/activities");
-        }
-
-        if (currentPath.startsWith("/my/") && navHref === "/my/") {
-            return true;
-        }
-
-        if (currentPath.startsWith(navHref) && navHref !== "/") {
-            return true;
-        }
-
-        if (navHref === "/" || navHref === "/my/") {
-            return currentPath === navHref || currentPath === "/how";
-        }
-
-        return false;
-    };
-
     const navLinksLeft = filteredNavLinks.filter((link) => !link.isButton);
 
     const strippedPath = (() => {
         if (!pathname) return '';
         const prefix = `/${locale}`;
-        if (pathname === prefix) return '/';
-        if (pathname.startsWith(prefix + '/')) return pathname.slice(prefix.length);
-        return pathname;
+        let p = pathname;
+        if (p === prefix) return '/';
+        if (p.startsWith(prefix + '/')) p = p.slice(prefix.length);
+        // Normalize trailing slash (treat '/my' and '/my/' the same)
+        if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
+        return p || '/';
     })();
 
     let activeIdx = -1;
     if (strippedPath === '/') {
         activeIdx = navLinksLeft.findIndex((l) => l.id === 'home');
-    } else if (strippedPath.startsWith('/activities')) {
-        activeIdx = navLinksLeft.findIndex((l) => l.id === 'joinActivities');
+    } else if (strippedPath === '/my') {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === 'home');
     } else if (strippedPath === '/how') {
         activeIdx = navLinksLeft.findIndex((l) => l.id === 'howDoesItWork');
+    } else if (strippedPath === '/activities' || strippedPath === '/my/activities' || strippedPath.startsWith('/activities/')) {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === 'joinActivities');
     } else {
         activeIdx = -1;
     }

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import api from '@/utils/axios/api';
 import { DISTRICTS } from '@/app/constants/constants';
+import { useRouter } from 'next/navigation';
 
 export default function OnboardPage() {
   const [loading, setLoading] = useState(true);
@@ -10,6 +11,7 @@ export default function OnboardPage() {
   const [error, setError] = useState('');
   const t = useTranslations();
   const locale = useLocale();
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
@@ -17,7 +19,7 @@ export default function OnboardPage() {
         const res = await api.get('/auth/pre-profile');
         const { preProfile } = res.data || {};
         if (!preProfile) {
-          window.location.href = `/${locale}/auth/login`;
+          router.replace(`/${locale}/auth/login`);
           return;
         }
         setLoading(false);
@@ -33,8 +35,8 @@ export default function OnboardPage() {
     setError('');
     try {
       const payload = { ...form };
-      await api.post('/auth/complete-onboarding', payload);
-      window.location.href = `/${locale}/my`;
+      const res = await api.post('/auth/complete-onboarding', payload);
+      router.replace(`/${locale}/my`);
     } catch (e) {
       setError(e?.response?.data?.error || t('OnboardPage.failedToComplete'));
     }

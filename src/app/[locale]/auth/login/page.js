@@ -25,9 +25,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined" && authToken) {
-      router.replace("/my");
+      router.replace(`/${locale}/my`);
     }
-  }, [router]);
+  }, [router, authToken, locale]);
 
   // Subscribe once to auth changes to sync server cookie and run pre-profile
   useEffect(() => {
@@ -71,11 +71,11 @@ export default function LoginPage() {
         return;
       }
       if (data.created || (data.existing && data.userExists)) {
-        window.location.href = `/${locale}/my`;
+        router.replace(`/${locale}/my`);
         return;
       }
       if (data.preProfile) {
-        window.location.href = `/${locale}/auth/onboard`;
+        router.replace(`/${locale}/auth/onboard`);
         return;
       }
     } catch (e) {
@@ -89,10 +89,12 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      await login({ email, password });
-      router.replace(`/${locale}/my`);
-    } catch (err) {
-      setError(`${t('LoginPage.genericError')} ${err.message}`);
+      const res = await login({ email, password });
+      if (res === true) {
+        router.replace(`/${locale}/my`);
+      }
+    } catch (_) {
+      setError(`${t('LoginPage.genericError')}`);
     } finally {
       setLoading(false);
     }

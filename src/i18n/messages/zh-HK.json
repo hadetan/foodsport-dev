@@ -11,7 +11,9 @@
 		"continueWithGoogle": "使用 Google 繼續",
 		"alreadyHaveAccount": "已經有帳戶？",
 		"login": "登入",
-		"emailExistsToast": "此電郵已註冊。請登入並在設定中綁定 Google。"
+		"emailExistsToast": "此電郵已註冊。請登入並在設定中綁定 Google。",
+		"accountAlreadyExists": "此電郵已存在，請嘗試登入。",
+		"genericError": "發生錯誤，請稍後再試。"
 	},
 	"OnboardPage": {
 		"title": "新手設定",
@@ -35,7 +37,7 @@
 		"dontHaveAccount": "沒有帳戶？",
 		"register": "註冊",
 		"emailExistsToast": "此電郵已註冊。請登入並在個人檔案中綁定 Google。",
-		"genericError": "發生錯誤。請再試一次。"
+		"genericError": "請檢查你的電郵和密碼，然後再試一次"
 	},
 	"Header": {
 		"home": "主頁",

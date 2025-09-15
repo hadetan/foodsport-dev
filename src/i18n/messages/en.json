@@ -11,7 +11,9 @@
 		"continueWithGoogle": "Continue with Google",
 		"alreadyHaveAccount": "Already have an account?",
 		"login": "Login",
-		"emailExistsToast": "Account with this email already exists. Please login and link Google in settings."
+		"emailExistsToast": "Account with this email already exists. Please login and link Google in settings.",
+		"accountAlreadyExists": "This email already exists",
+		"genericError": "Something went wrong, please try again later"
 	},
 	"OnboardPage": {
 		"title": "Onboarding",
@@ -34,8 +36,8 @@
 		"continueWithGoogle": "Continue with Google",
 		"dontHaveAccount": "Don't have an account?",
 		"register": "Register",
-		"emailExistsToast": "Account with this email already exists. Please login and link Google from your profile.",
-		"genericError": "Something went wrong. Please try again."
+		"emailExistsToast": "Account with this email already exists. Please login and link Google from your profile",
+		"genericError": "Please check your email and password, and try again"
 	},
 	"Header": {
 		"home": "HOME",
