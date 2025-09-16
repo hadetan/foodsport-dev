@@ -141,7 +141,6 @@ const LoginPage = () => {
                             >
                                 {loading ? (
                                     <div className="flex items-center justify-center gap-2">
-                                        <span className="loading loading-spinner loading-sm"></span>
                                         Signing in...
                                     </div>
                                 ) : (
