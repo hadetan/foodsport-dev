@@ -9,6 +9,7 @@ export default function SidebarItem({
     isSelected,
     pathname,
     isLogoutButton,
+    onClick,
 }) {
     const router = useRouter();
 
@@ -37,7 +38,8 @@ export default function SidebarItem({
 
     const isActive = isSelected || isParentActive(href, pathname);
 
-    const handleLogout = async () => {
+    const handleLogout = async (e) => {
+        if (onClick) onClick(e);
         try {
             await axios.delete("/api/admin/auth/logout");
             // Redirect to login page or home page after successful logout
@@ -77,6 +79,7 @@ export default function SidebarItem({
                         ? "bg-primary text-primary-content rounded-lg"
                         : "text-base-content"
                 }
+                onClick={onClick}
             >
                 {icon}
                 {label}

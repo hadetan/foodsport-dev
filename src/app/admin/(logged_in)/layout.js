@@ -9,17 +9,18 @@ import {
     Mail,
     UserPlus,
     LogOut,
-    ReceiptText
+    ReceiptText,
 } from "lucide-react";
 import { UsersProvider } from "@/app/shared/contexts/usersContext";
 import { DashboardProvider } from "@/app/shared/contexts/DashboardContext";
 import { AdminActivitiesProvider } from "@/app/shared/contexts/AdminActivitiesContext";
 import { SocialMediaImageProvider } from "@/app/shared/contexts/socialMediaImageContext";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { VerifiedAttendeesProvider } from "@/app/shared/contexts/VerifiedAttendeesContext";
 
 export default function AdminLoggedInLayout({ children }) {
     const pathname = usePathname();
+    const drawerRef = useRef(null);
     useEffect(() => {
         if (typeof window !== "undefined") {
             const token = localStorage.getItem("admin_auth_token");
@@ -28,6 +29,12 @@ export default function AdminLoggedInLayout({ children }) {
             }
         }
     }, []);
+
+    const closeSidebar = () => {
+        if (drawerRef.current && drawerRef.current.checked) {
+            drawerRef.current.checked = false;
+        }
+    };
 
     return (
         <div data-theme="light">
@@ -41,6 +48,7 @@ export default function AdminLoggedInLayout({ children }) {
                                     id="admin-drawer"
                                     type="checkbox"
                                     className="drawer-toggle"
+                                    ref={drawerRef}
                                 />
 
                                 <div className="drawer-content flex flex-col">
@@ -76,7 +84,8 @@ export default function AdminLoggedInLayout({ children }) {
 
                                 <div className="drawer-side bg-base-200 rounded-2xl m-3">
                                     <aside className="w-full sm:w-64 relative">
-                                        <div className="sm:hidden sticky top-0 z-10 flex justify-end bg-base-200 p-2">
+                                        {/* Back button for mobile and tablet view, above Welcome Admin */}
+                                        <div className="lg:hidden sticky top-0 z-10 flex items-center bg-base-200 p-4">
                                             <label
                                                 htmlFor="admin-drawer"
                                                 className="btn btn-square btn-ghost"
@@ -91,12 +100,16 @@ export default function AdminLoggedInLayout({ children }) {
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
                                                         strokeWidth="2"
-                                                        d="M6 18L18 6M6 6l12 12"
+                                                        d="M15 19l-7-7 7-7"
                                                     />
                                                 </svg>
                                             </label>
+                                            <span className="ml-2 text-xl font-bold">
+                                                Welcome Admin
+                                            </span>
                                         </div>
-                                        <div className="flex gap-4 mt-4">
+                                        {/* Desktop Welcome Admin */}
+                                        <div className="hidden lg:flex gap-4 mt-4">
                                             <div className="text-xl font-bold px-4 py-2">
                                                 Welcome Admin
                                             </div>
@@ -108,36 +121,42 @@ export default function AdminLoggedInLayout({ children }) {
                                                     icon={<CircleGauge />}
                                                     label="Dashboard"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/users"
                                                     icon={<Users />}
                                                     label="All Users"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/activities"
                                                     icon={<Calendar1 />}
                                                     label="All Activities"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/social"
                                                     icon={<Share2 />}
                                                     label="Social Media Images"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/email"
                                                     icon={<Mail />}
                                                     label="Send Emails"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/register"
                                                     icon={<UserPlus />}
                                                     label="Create New Admin"
                                                     pathname={pathname}
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/terms&conditions"
@@ -147,6 +166,7 @@ export default function AdminLoggedInLayout({ children }) {
                                                         pathname ===
                                                         "/admin/terms&conditions"
                                                     }
+                                                    onClick={closeSidebar}
                                                 />
                                                 <SidebarItem
                                                     href="/admin/logout"
@@ -154,6 +174,7 @@ export default function AdminLoggedInLayout({ children }) {
                                                     label="Logout"
                                                     pathname={pathname}
                                                     isLogoutButton={true}
+                                                    onClick={closeSidebar}
                                                 />
                                             </ul>
                                         </div>

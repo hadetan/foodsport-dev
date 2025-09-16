@@ -13,110 +13,133 @@ import { ACTIVITY_TYPES, MONTHS } from "@/app/constants/constants"; // Ensure th
 // Responsive filter bar
 const FilterBar = ({ setFilters, filters }) => {
     return (
-        <div className="flex flex-col gap-2 md:flex-row md:gap-4 w-full mb-6">
-            {/* Type Filter */}
-            <div className="flex flex-col min-w-[160px]">
-                <label className="text-xs font-semibold mb-1">Type</label>
-                <select
-                    className="input input-bordered min-w-[160px]"
-                    value={filters.type}
-                    onChange={(e) =>
-                        setFilters((f) => ({ ...f, type: e.target.value }))
-                    }
-                >
-                    <option value="">All</option>
-                    {ACTIVITY_TYPES?.map((type) => (
-                        <option key={type} value={type}>
-                            {type}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            {/* Month Filter */}
-            <div className="flex flex-col min-w-[160px]">
-                <label className="text-xs font-semibold mb-1">Month</label>
-                <select
-                    className="input input-bordered min-w-[160px]"
-                    value={filters.month}
-                    onChange={(e) =>
-                        setFilters((f) => ({ ...f, month: e.target.value }))
-                    }
-                >
-                    <option value="">All</option>
-                    {MONTHS.map((m) => (
-                        <option key={m.value} value={m.value}>
-                            {m.label}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            {/* Location Filter */}
-            <div className="flex flex-col min-w-[180px]">
-                <label className="text-xs font-semibold mb-1">Location</label>
-                <input
-                    type="text"
-                    className="input input-bordered min-w-[180px]"
-                    placeholder="Location"
-                    value={filters.location}
-                    onChange={(e) =>
-                        setFilters((f) => ({ ...f, location: e.target.value }))
-                    }
-                />
-            </div>
-            {/* Status Filter */}
-            <div className="flex flex-col min-w-[140px]">
-                <label className="text-xs font-semibold mb-1">Status</label>
-                <select
-                    className="input input-bordered min-w-[140px]"
-                    value={filters.status}
-                    onChange={(e) =>
-                        setFilters((f) => ({ ...f, status: e.target.value }))
-                    }
-                >
-                    <option value="">All</option>
-                    {Object.values(ActivityStatus).map((status) => (
-                        <option key={status} value={status}>
-                            {status}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            {/* Activity Name Filter */}
-            <div className="flex flex-col min-w-[180px]">
-                <label className="text-xs font-semibold mb-1">
-                    Activity Name
-                </label>
-                <input
-                    type="text"
-                    className="input input-bordered min-w-[180px]"
-                    placeholder="Search activity name"
-                    value={filters.activityName || ""}
-                    onChange={(e) =>
-                        setFilters((f) => ({
-                            ...f,
-                            activityName: e.target.value,
-                        }))
-                    }
-                />
-            </div>
-            {/* Reset Icon */}
-            <div className="flex items-end">
-                <button
-                    type="button"
-                    className="btn btn-ghost p-2"
-                    title="Reset filters"
-                    onClick={() =>
-                        setFilters({
-                            type: "",
-                            month: "",
-                            location: "",
-                            status: "",
-                            activityName: "",
-                        })
-                    }
-                >
-                    <RotateCcw className="w-5 h-5" />
-                </button>
+        <div className="w-full mb-6">
+            {/* Tablet: 3 filters per row, Web: all in one row */}
+            <div className="flex flex-col md:flex-row md:flex-wrap md:gap-4 lg:flex-nowrap lg:gap-4">
+                {/* First row (Type, Month, Location) */}
+                <div className="flex flex-col md:flex-row md:w-full md:gap-4">
+                    <div className="flex flex-col min-w-[160px] md:flex-1">
+                        <label className="text-xs font-semibold mb-1">
+                            Type
+                        </label>
+                        <select
+                            className="input input-bordered min-w-[160px]"
+                            value={filters.type}
+                            onChange={(e) =>
+                                setFilters((f) => ({
+                                    ...f,
+                                    type: e.target.value,
+                                }))
+                            }
+                        >
+                            <option value="">All</option>
+                            {ACTIVITY_TYPES?.map((type) => (
+                                <option key={type} value={type}>
+                                    {type}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="flex flex-col min-w-[160px] md:flex-1">
+                        <label className="text-xs font-semibold mb-1">
+                            Month
+                        </label>
+                        <select
+                            className="input input-bordered min-w-[160px]"
+                            value={filters.month}
+                            onChange={(e) =>
+                                setFilters((f) => ({
+                                    ...f,
+                                    month: e.target.value,
+                                }))
+                            }
+                        >
+                            <option value="">All</option>
+                            {MONTHS.map((m) => (
+                                <option key={m.value} value={m.value}>
+                                    {m.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="flex flex-col min-w-[180px] md:flex-1">
+                        <label className="text-xs font-semibold mb-1">
+                            Location
+                        </label>
+                        <input
+                            type="text"
+                            className="input input-bordered min-w-[180px]"
+                            placeholder="Location"
+                            value={filters.location}
+                            onChange={(e) =>
+                                setFilters((f) => ({
+                                    ...f,
+                                    location: e.target.value,
+                                }))
+                            }
+                        />
+                    </div>
+                </div>
+                {/* Second row (Status, Activity Name, Reset) */}
+                <div className="flex flex-col md:flex-row md:w-full md:gap-4 mt-2 md:mt-0">
+                    <div className="flex flex-col min-w-[140px] md:flex-1">
+                        <label className="text-xs font-semibold mb-1">
+                            Status
+                        </label>
+                        <select
+                            className="input input-bordered min-w-[140px]"
+                            value={filters.status}
+                            onChange={(e) =>
+                                setFilters((f) => ({
+                                    ...f,
+                                    status: e.target.value,
+                                }))
+                            }
+                        >
+                            <option value="">All</option>
+                            {Object.values(ActivityStatus).map((status) => (
+                                <option key={status} value={status}>
+                                    {status}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="flex flex-col min-w-[180px] md:flex-1">
+                        <label className="text-xs font-semibold mb-1">
+                            Activity Name
+                        </label>
+                        <input
+                            type="text"
+                            className="input input-bordered min-w-[180px]"
+                            placeholder="Search activity name"
+                            value={filters.activityName || ""}
+                            onChange={(e) =>
+                                setFilters((f) => ({
+                                    ...f,
+                                    activityName: e.target.value,
+                                }))
+                            }
+                        />
+                    </div>
+                    <div className="flex items-end md:flex-1">
+                        <button
+                            type="button"
+                            className="btn btn-ghost p-2"
+                            title="Reset filters"
+                            onClick={() =>
+                                setFilters({
+                                    type: "",
+                                    month: "",
+                                    location: "",
+                                    status: "",
+                                    activityName: "",
+                                })
+                            }
+                        >
+                            <RotateCcw className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -204,14 +227,13 @@ function ActivityManagementPageContent() {
     return (
         <>
             {" "}
-            <h2 className="text-2xl font-bold">Activities</h2>
+            <h2 className="text-2xl font-bold">Activities </h2>
             <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
                 {/* Responsive Filters + Create Button inline */}
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-6 gap-2">
                     <div className="flex-1">
                         <FilterBar setFilters={setFilters} filters={filters} />
-                    </div>
-                    <div className="mt-2 md:mt-0 md:ml-4 flex-shrink-0">
+                        <div className="mt-2 md:mt-0 md:ml-4 flex-shrink-0">
                         <button
                             className="btn btn-primary"
                             onClick={() =>
@@ -221,7 +243,10 @@ function ActivityManagementPageContent() {
                             Create Activity
                         </button>
                     </div>
+                    </div>
+                   
                 </div>
+
                 {/* Activities Table */}
                 <div className="overflow-x-auto bg-base-100 rounded-lg shadow relative">
                     {tableLoading ? (
