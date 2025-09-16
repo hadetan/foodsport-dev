@@ -44,7 +44,7 @@ export default function Header() {
         {
             id: 'redeemRewards',
             label: t('Header.redeemRewards'),
-            href: null,
+            href: "/redeem",
             clickable: true,
         },
         !authToken && {
