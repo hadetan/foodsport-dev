@@ -1,233 +1,532 @@
 .card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    width: 100%;
-    max-width: 550px;
-    margin: 0 auto 32px auto;
-    display: flex;
-    flex-direction: column;
-    transition: box-shadow 0.2s;
-    position: relative;
-    margin-bottom: 1rem;
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+	width: 100%;
+	max-width: 550px;
+	margin: 0 auto 32px auto;
+	display: flex;
+	flex-direction: column;
+	transition: box-shadow 0.2s;
+	position: relative;
+	margin-bottom: 1rem;
 }
 
 .card:hover {
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.16);
+	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.16);
 }
 
 .imageWrapper {
-    position: relative;
-    width: 100%;
-    height: 40%;
-    aspect-ratio: 16/9;
+	position: relative;
+	width: 100%;
+	height: 40%;
+	aspect-ratio: 16/9;
+	background: #eee;
+	display: flex;
+	align-items: center;
+	justify-content: center;
     overflow: hidden;
-    background: #eee;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .cardImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 0;
-    cursor: pointer;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	cursor: pointer;
+    border-radius: 12px 12px 0 0;
 }
 
 .content {
-    padding: 18px 20px 0 20px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+	padding: 18px 20px 0 20px;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
 }
 .cardTitle {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #dadada;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: #222;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #dadada;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }
 .cardTitle h3 {
-    cursor: pointer;
+	cursor: pointer;
 }
 .cardTitle h3:hover {
-    color: teal;
+	color: teal;
 }
 .cardTitleRow {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    width: 100%;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #dadada;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	width: 100%;
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: #222;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #dadada;
 }
 .cardTitleText {
-    cursor: pointer;
-    flex: 1;
-    min-width: 0;
+	cursor: pointer;
+	flex: 1;
+	min-width: 0;
 }
 .cardTitleText:hover {
-    color: teal;
+	color: teal;
 }
 .cardSubtitle {
-    font-size: 0.95rem;
-    color: #888;
-    margin-bottom: 6px;
-    line-height: 1.3;
-    word-break: break-word;
+	font-size: 0.95rem;
+	color: #888;
+	margin-bottom: 6px;
+	line-height: 1.3;
+	word-break: break-word;
 }
 .filterBtn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 10px;
-    background-color: #ffe23b;
-    margin-left: 8px;
-    outline: none;
-    display: block;
-    transition: background-color 0.2s;
-    align-self: flex-start;
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 5px;
+	border-radius: 10px;
+	background-color: #ffe23b;
+	margin-left: 8px;
+	outline: none;
+	display: block;
+	transition: background-color 0.2s;
+	align-self: flex-start;
 }
 
 .filterBtn:hover {
-    background-color: #ecd136;
+	background-color: #ecd136;
 }
 
 .filterBtn img {
-    width: 28px;
-    height: 28px;
-    max-width: none;
-    object-fit: contain;
-    display: block;
+	width: 28px;
+	height: 28px;
+	max-width: none;
+	object-fit: contain;
+	display: block;
+}
+
+/* Activity type badge for small screens - initially hidden */
+.activityTypeBadgeSmall {
+	position: absolute;
+	bottom: 12px;
+	left: 12px;
+	display: none;
+	z-index: 3;
+}
+
+.filterBtnSmall {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 6px;
+	border-radius: 8px;
+	background-color: #ffe23b;
+	outline: none;
+	display: block;
+	transition: background-color 0.2s;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.filterBtnSmall:hover {
+	background-color: #ecd136;
+}
+
+.filterBtnSmall img {
+	width: 22px;
+	height: 22px;
+	max-width: none;
+	object-fit: contain;
+	display: block;
 }
 .detailsRow {
-    display: flex;
-    align-items: center;
-    margin-top: 20px;
-    gap: 8px;
-    font-size: 0.98rem;
-    color: #555;
-    margin-bottom: 2px;
+	display: flex;
+	align-items: center;
+	margin-top: 20px;
+	gap: 8px;
+	font-size: 0.98rem;
+	color: #555;
+	margin-bottom: 2px;
 }
 .icon {
-    font-size: 1.1rem;
-    margin-right: 2px;
+	font-size: 1.1rem;
+	margin-right: 2px;
+	color: #ffe23b;
 }
 
 .metaContainer {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-around;
-    gap: 16px;
-    margin-top: 12px;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-around;
+	gap: 16px;
+	margin-top: 12px;
 }
 
 .metaLeft {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
 }
 
 .metaRight {
-    width: 140px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    justify-content: flex-start;
+	width: 140px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	justify-content: flex-start;
 }
 
 .rightRow {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.98rem;
-    color: #555;
-    margin-top: 20px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.98rem;
+	color: #555;
+	margin-top: 20px;
 }
 
 .imageBadge {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: #22222280;
-    border-radius: 12px;
-    padding: 8px 14px 6px 14px;
-    text-align: center;
-    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 64px;
-    z-index: 2;
-    backdrop-filter: blur(16px); /* stronger blur for more frost */
-    -webkit-backdrop-filter: blur(16px);
-    border: 1.5px solid rgba(255, 255, 255, 0.25); /* subtle border for glassy edge */
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	background: #22222280;
+	border-radius: 12px;
+	padding: 8px 14px 6px 14px;
+	text-align: center;
+	box-shadow: 0 6px 18px rgba(16, 24, 40, 0.1);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-width: 64px;
+	z-index: 2;
+	backdrop-filter: blur(16px); /* stronger blur for more frost */
+	-webkit-backdrop-filter: blur(16px);
+	border: 1.5px solid rgba(255, 255, 255, 0.25); /* subtle border for glassy edge */
 }
 
 .badgeNumber {
-    font-size: 1.35rem;
-    color: #fff;
-    letter-spacing: 0.5px;
-    font-family: monospace;
+	font-size: 1.35rem;
+	color: #fff;
+	letter-spacing: 0.5px;
+	font-family: monospace;
 }
 
 .badgeLabel {
-    font-size: 0.72rem;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
+	font-size: 0.72rem;
+	color: #fff;
+	text-transform: uppercase;
+	letter-spacing: 0.8px;
 }
 
-@media (max-width: 420px) {
-    .metaContainer {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .metaRight {
-        width: 100%;
-        flex-direction: row;
-        justify-content: flex-start;
-        gap: 8px;
-        align-items: center;
-    }
-    .rightRow {
-        flex: 1;
-        min-width: 0;
-    }
-    .imageBadge {
-        top: 10px;
-        right: 10px;
-        min-width: 54px;
-        padding: 6px 10px 4px 10px;
-    }
-}
-
-@media (max-width: 768px) {
-    .card {
-        margin-bottom: 1.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .card {
-        margin-bottom: 2rem;
-    }
+/* Large tablets and small desktops */
+@media (max-width: 900px) {
+	.cardTitleRow {
+		font-size: 1.15rem;
+	}
 	
+	.cardSubtitle {
+		font-size: 0.9rem;
+	}
+	
+	.detailsRow {
+		font-size: 0.92rem;
+	}
+	
+	.rightRow {
+		font-size: 0.92rem;
+	}
+	
+	.content {
+		padding: 16px 18px 0 18px;
+	}
 }
-@media (max-width: 1000px) {
-    .card {
-        margin-bottom: 2rem;
-    }}
+
+/* Tablets */
+@media (max-width: 768px) {
+	.card {
+		margin-bottom: 1.5rem;
+		max-width: 100%;
+	}
+	
+	.cardTitleRow {
+		font-size: 1.1rem;
+		margin-bottom: 8px;
+		padding-bottom: 8px;
+	}
+	
+	.cardSubtitle {
+		font-size: 0.88rem;
+		line-height: 1.4;
+		margin-bottom: 8px;
+	}
+	
+	.detailsRow {
+		font-size: 0.9rem;
+		margin-top: 16px;
+	}
+	
+	.rightRow {
+		font-size: 0.9rem;
+		margin-top: 16px;
+	}
+	
+	.content {
+		padding: 15px 16px 0 16px;
+	}
+	
+	.metaContainer {
+		gap: 14px;
+		margin-top: 10px;
+	}
+	
+	.metaRight {
+		width: 130px;
+	}
+	
+	.filterBtn img {
+		width: 26px;
+		height: 26px;
+	}
+	
+	.badgeNumber {
+		font-size: 1.25rem;
+	}
+	
+	.badgeLabel {
+		font-size: 0.68rem;
+	}
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+	.card {
+		margin-bottom: 2rem;
+		padding-bottom: 1rem;
+		border-radius: 10px;
+	}
+	
+	.cardImage {
+		border-radius: 10px 10px 0 0;
+	}
+	
+	.cardTitleRow {
+		font-size: 1.05rem;
+		margin-bottom: 6px;
+		padding-bottom: 6px;
+	}
+	
+	.cardSubtitle {
+		font-size: 0.85rem;
+		line-height: 1.45;
+		margin-bottom: 6px;
+	}
+	
+	.detailsRow {
+		font-size: 0.88rem;
+		margin-top: 14px;
+		gap: 6px;
+	}
+	
+	.rightRow {
+		font-size: 0.88rem;
+		margin-top: 14px;
+		gap: 6px;
+	}
+	
+	.content {
+		padding: 14px 15px 0 15px;
+	}
+	
+	.metaContainer {
+		gap: 12px;
+		margin-top: 8px;
+	}
+	
+	.metaRight {
+		width: 120px;
+	}
+	
+	.icon {
+		font-size: 1rem;
+	}
+	
+	.filterBtn {
+		padding: 4px;
+		border-radius: 8px;
+		margin-left: 6px;
+	}
+	
+	.filterBtn img {
+		width: 24px;
+		height: 24px;
+	}
+	
+	.imageBadge {
+		top: 12px;
+		right: 12px;
+		padding: 6px 12px 5px 12px;
+		border-radius: 10px;
+		min-width: 58px;
+	}
+	
+	.badgeNumber {
+		font-size: 1.2rem;
+	}
+	
+	.badgeLabel {
+		font-size: 0.65rem;
+	}
+}
+
+/* Small mobile devices */
+@media (max-width: 420px) {
+	/* Hide the regular title row badge */
+	.badges {
+		display: none;
+	}
+	
+	/* Show the image overlay badge */
+	.activityTypeBadgeSmall {
+		display: block;
+	}
+	
+	.cardTitleRow {
+		font-size: 1rem;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+		/* Remove justify-content since badges are hidden */
+		justify-content: flex-start;
+	}
+	
+	.cardSubtitle {
+		font-size: 0.82rem;
+	}
+	
+	.detailsRow {
+		font-size: 0.85rem;
+		margin-top: 12px;
+	}
+	
+	.rightRow {
+		font-size: 0.85rem;
+		margin-top: 12px;
+	}
+	
+	.content {
+		padding: 12px 14px 0 14px;
+	}
+	
+	.metaContainer {
+		flex-direction: column;
+		gap: 10px;
+	}
+	
+	.metaRight {
+		width: 100%;
+		flex-direction: column;
+		justify-content: flex-start;
+		gap: 10px;
+		align-items: start;
+	}
+	
+	.rightRow {
+		flex: 1;
+		min-width: 0;
+		margin-top: 12px;
+	}
+	
+	.imageBadge {
+		top: 10px;
+		right: 10px;
+		min-width: 54px;
+		padding: 5px 10px 4px 10px;
+	}
+	
+	.badgeNumber {
+		font-size: 1.1rem;
+	}
+	
+	.badgeLabel {
+		font-size: 0.62rem;
+	}
+	
+	.filterBtn img {
+		width: 22px;
+		height: 22px;
+	}
+}
+
+/* Extra small devices */
+@media (max-width: 320px) {
+	/* Ensure badges remain hidden and small badge stays visible */
+	.badges {
+		display: none;
+	}
+	
+	.activityTypeBadgeSmall {
+		display: block;
+		bottom: 8px;
+		left: 8px;
+	}
+	
+	.filterBtnSmall img {
+		width: 18px;
+		height: 18px;
+	}
+	
+	.cardTitleRow {
+		font-size: 0.95rem;
+	}
+	
+	.cardSubtitle {
+		font-size: 0.8rem;
+		line-height: 1.5;
+	}
+	
+	.detailsRow {
+		font-size: 0.82rem;
+		margin-top: 10px;
+	}
+	
+	.rightRow {
+		font-size: 0.82rem;
+	}
+	
+	.content {
+		padding: 10px 12px 0 12px;
+	}
+	
+	.icon {
+		font-size: 0.9rem;
+	}
+	
+	.filterBtn img {
+		width: 20px;
+		height: 20px;
+	}
+	
+	.imageBadge {
+		top: 8px;
+		right: 8px;
+		min-width: 50px;
+		padding: 4px 8px 3px 8px;
+	}
+	
+	.badgeNumber {
+		font-size: 1rem;
+	}
+	
+	.badgeLabel {
+		font-size: 0.6rem;
+		letter-spacing: 0.6px;
+	}
+}

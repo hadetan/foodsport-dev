@@ -1,10 +1,264 @@
 {
-  "ActivityItem": {
-    "toStart": "開始倒數",
-    "daysToGo": "{count, plural, one {尚餘 # 日} other {尚餘 # 日}}",
-    "ongoing": "進行中",
-    "expired": "已結束",
-    "seatsLeft": "{count, plural, one {尚餘 # 個名額} other {尚餘 # 個名額}}"
-  },
-  "Landing": {"exploreMoreActivities": "查看更多活動"}
+	"RegisterPage": {
+		"title": "註冊",
+		"firstName": "名",
+		"lastName": "姓",
+		"dateOfBirth": "出生日期",
+		"email": "電郵",
+		"password": "密碼",
+		"register": "註冊",
+		"registering": "註冊中...",
+		"continueWithGoogle": "使用 Google 繼續",
+		"alreadyHaveAccount": "已經有帳戶？",
+		"login": "登入",
+		"emailExistsToast": "此電郵已註冊。請登入並在設定中綁定 Google。",
+		"accountAlreadyExists": "此電郵已存在，請嘗試登入。",
+		"genericError": "發生錯誤，請稍後再試。"
+	},
+	"OnboardPage": {
+		"title": "新手設定",
+		"loading": "載入中…",
+		"failedToLoad": "載入失敗。",
+		"dateOfBirth": "出生日期",
+		"weight": "體重（公斤）",
+		"height": "身高（厘米）",
+		"district": "地區",
+		"selectDistrict": "選擇地區（可選）",
+		"finish": "完成",
+		"failedToComplete": "完成新手設定失敗。"
+	},
+	"LoginPage": {
+		"title": "登入",
+		"email": "電郵",
+		"password": "密碼",
+		"loggingIn": "登入中...",
+		"login": "登入",
+		"continueWithGoogle": "使用 Google 繼續",
+		"dontHaveAccount": "沒有帳戶？",
+		"register": "註冊",
+		"emailExistsToast": "此電郵已註冊。請登入並在個人檔案中綁定 Google。",
+		"genericError": "請檢查你的電郵和密碼，然後再試一次"
+	},
+	"Header": {
+		"home": "主頁",
+		"joinActivities": "參與活動",
+		"redeemRewards": "兌換獎賞",
+		"howDoesItWork": "如何運作",
+		"loginRegister": "登入"
+	},
+	"Search": {
+		"placeholder": "搜尋活動..."
+	},
+	"Activity": {
+		"Landing": { "exploreMoreActivities": "查看更多活動" },
+		"ActivitySection": {
+			"title": "活動"
+		},
+		"ActivityItem": {
+			"toStart": "開始倒數",
+			"daysToGo": "{count, plural, one {尚餘 # 日} other {尚餘 # 日}}",
+			"ongoing": "進行中",
+			"expired": "已結束",
+			"seatsLeft": "{count, plural, one {尚餘 # 個名額} other {尚餘 # 個名額}}",
+			"startEndFull": "活動於 {startDate} {startTime} 開始，並於 {endDate} {endTime} 結束"
+		},
+		"ActivityTypes": {
+            "allTypes": "所有類型",
+			"Running": "跑步",
+			"Hiking": "行山",
+			"Water_Sport": "水上活動",
+			"Volunteering": "義工",
+			"Racket_Sport": "球類運動",
+			"Yoga": "瑜伽",
+			"Dance": "舞蹈",
+			"Fitness": "健身",
+			"Cycling": "單車",
+			"Mindfulness": "正念",
+			"Team_Sport": "隊際運動",
+			"Virtual": "虛擬",
+			"Multi_Sports": "多項運動",
+			"other": "其他"
+		},
+		"ActivitiesPage": {
+			"upcomingOngoing": "即將及進行中",
+			"finished": "已完結"
+		},
+		"DetailsPage": {
+			"noActivityTitle": "找不到活動",
+			"noActivityDesc": "我們找不到您尋找的活動。\n請再次檢查連結。",
+			"back": "返回",
+			"pageTitle": "活動詳情",
+			"detailsTitle": "活動詳情",
+			"activityTypeLabel": "活動類型",
+			"totalCaloriesLabel": "總消耗卡路里",
+			"caloriesPerHourLabel": "每小時消耗",
+			"organizerLabel": "主辦單位",
+			"unknown": "未知",
+			"seatsLeft_one": "尚餘 # 個名額",
+			"seatsLeft_other": "尚餘 # 個名額",
+			"acceptTnc": "我同意參與活動的<link>條款</link>",
+			"conditions": "條款",
+			"leaving": "離開中",
+			"leave": "離開",
+			"joining": "加入中",
+			"joinNow": "立即加入",
+			"share": "分享",
+			"mapError": "載入 Google 地圖時發生問題。",
+			"agreeTncWarning": "您必須先同意條款。",
+			"notActiveWarning": "無法加入非進行中活動。",
+			"fillProfileWarning": "您必須填寫身高和體重才可參與活動。",
+			"saveReward": "儲存獎賞"
+		}
+	},
+	"ComingSoon": {
+		"trustedBy": "受頂級品牌信賴",
+		"popularRewards": "熱門獎賞",
+		"rewards": {
+			"smartwatch": {
+				"title": "智慧手錶",
+				"description": "Garmin Forerunner 965 智能手錶"
+			},
+			"nike_gift_card": {
+				"title": "Nike",
+				"description": "Nike 禮品卡"
+			},
+			"apple_airpods_3": {
+				"title": "Apple",
+				"description": "AirPods (第 3 代)"
+			}
+		},
+		"RewardCards": {
+			"saveAria": "儲存獎賞",
+			"share": "分享",
+			"redeem": "立即兌換",
+			"imageAlt": "獎賞圖片"
+		}
+	},
+	"HowPage": {
+		"heading": "如何運作",
+		"steps": {
+			"1": {
+				"title": "註冊",
+				"description": "註冊成為 FOODSPORT 會員",
+				"details": "成為 FOODSPORT 會員，開始你的「以運動換食物」之旅。"
+			},
+			"2": {
+				"title": "參與",
+				"description": "加入 FOODSPORT 卡路里捐贈活動 / 計劃"
+			},
+			"3": {
+				"title": "卡路里",
+				"description": "將你燃燒的卡路里轉換為食物等值以作捐贈"
+			},
+			"4": {
+				"title": "FOODSPORT 積分",
+				"description": "以 FOODSPORT 積分兌換獎賞"
+			}
+		}
+	},
+	"ProfilePage": {
+		"menu": {
+			"allActivities": "我的活動",
+			"earnedBadges": "我的成就電子徽章",
+			"editProfile": "我的個人檔案",
+			"logout": "登出",
+			"loggingOut": "正在登出..."
+		},
+		"stats": {
+			"caloriesLabel": "已捐贈卡路里（Kcal）",
+			"fsPointsLabel": "FOODSPORT 積分（500kcal = 1 積分）",
+			"activitiesLabel": "已參與活動數目",
+			"badgesLabel": "成就電子徽章"
+		},
+		"confirm": {
+			"logoutTitle": "登出",
+			"logoutMessage": "你確定要登出嗎？",
+			"logoutConfirm": "登出",
+			"cancel": "取消"
+		}
+	}
+	,
+	"RecentActivities": {
+		"headers": {
+			"type": "類型",
+			"date": "日期",
+			"exercise": "運動",
+			"time": "時間",
+			"kcal": "卡路里",
+			"fsPoints": "FOODSPORT 積分",
+			"invite": "邀請"
+		},
+		"noActivities": "未找到活動。",
+		"invite": "邀請",
+		"na": "不適用"
+	},
+	"AllBadges": {
+		"title": "成就電子徽章",
+		"subtitle": "即將推出",
+		"description": "即將解鎖並展示你的成就！敬請期待精彩獎賞和徽章。"
+	},
+	"EditProfile": {
+		"info": {
+			"question": "為什麼要提供體重和身高？",
+			"tooltip": "提供你的體重和身高可讓我們更準確地計算每項活動的卡路里消耗，從而提供更好的洞察和個人化結果。"
+		},
+		"placeholders": {
+			"firstName": "名",
+			"lastName": "姓",
+			"weight": "體重",
+			"height": "身高",
+			"contact": "聯絡電話",
+			"dateOfBirth": "出生日期",
+			"selectDistrict": "請選擇地區",
+			"bio": "個人簡介"
+		},
+		"gender": {
+			"label": "性別：",
+			"male": "男",
+			"female": "女"
+		},
+		"google": {
+			"linked": "Google 已連結",
+			"starting": "啟動中…",
+			"link": "連結 Google",
+			"linkingWait": "請稍候，正在將你的帳戶連結到 Google...",
+			"linkedSuccess": "已成功連結 Google 帳戶。",
+			"alreadyLinked": "此 Google 帳戶已連結至另一個用戶。",
+			"redirecting": "正在跳轉至 Google…",
+			"notSupported": "在此環境不支援連結功能。",
+			"manualDisabled": "Supabase 中已禁用手動連結。請在儀表板啟用。",
+			"failedStart": "無法開始連結。請再試一次。",
+			"unable": "無法開始連結。"
+		},
+		"crop": "裁剪",
+		"cancel": "取消",
+		"editPictureTitle": "編輯個人頭像",
+		"saving": "儲存中...",
+		"saveProfile": "儲存個人檔案",
+		"success": {
+			"profileUpdated": "個人資料已成功更新。"
+		},
+		"errors": {
+			"invalidCrop": "無效的裁剪大小",
+			"failedProcessImage": "處理圖片失敗",
+			"generic": "發生錯誤，請再試一次。"
+		}
+	},
+	"InvitePartnersDialog": {
+		"title": "邀請夥伴",
+		"emailLabel": "電郵",
+		"tab": "夥伴",
+		"buttons": {
+			"cancel": "取消",
+			"addMore": "新增更多",
+			"invite": "邀請",
+			"inviting": "邀請中..."
+		},
+		"errors": {
+			"fillBeforeAdd": "請先填寫電郵，然後再新增夥伴。",
+			"fillEach": "請為每位夥伴填寫電郵。",
+			"inviteFailed": "邀請時發生錯誤。"
+		},
+		"partner": "夥伴"
+	}
 }

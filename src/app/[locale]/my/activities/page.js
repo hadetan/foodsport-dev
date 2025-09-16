@@ -12,9 +12,11 @@ import { useUser } from '@/app/shared/contexts/userContext';
 import ActivitiesFilter from '@/app/shared/components/ActivitiesFilter';
 import { Suspense, useState } from 'react';
 import ActivityNotFound from '@/app/shared/components/ActivityNotFound';
+import { useTranslations } from 'next-intl';
 
 export default function ActivitiesPage() {
 	const { activities, setActivities, loading } = useActivities();
+	const t = useTranslations();
 	const [filteredActivities, setFilteredActivities] = useState(activities);
 	const { user, setUser } = useUser();
 
@@ -49,7 +51,7 @@ export default function ActivitiesPage() {
 				<>
 					{sortedUpcomingOngoing.length > 0 && (
 						<div className={sectionStyles.activitySection}>
-							<h2 className={sectionStyles.activitySectionHeading}>Upcoming & Ongoing</h2>
+							<h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.upcomingOngoing')}</h2>
 							<div className={styles.grid3}>
 								{sortedUpcomingOngoing.map((a) => (
 									<ActivityItem key={a.id} activity={a} user={user} setUser={setUser} setActivities={setActivities} />
@@ -59,7 +61,7 @@ export default function ActivitiesPage() {
 					)}
 					{finished.length > 0 && (
 						<div className={sectionStyles.activitySection}>
-							<h2 className={sectionStyles.activitySectionHeading}>Finished</h2>
+							<h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.finished')}</h2>
 							<div className={styles.grid3}>
 								{finished.map((a) => (
 									<ActivityItem key={a.id} activity={a} user={user} setUser={setUser} setActivities={setActivities} />

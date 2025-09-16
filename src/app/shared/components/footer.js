@@ -11,7 +11,6 @@ import {
     Youtube,
     Globe,
     Phone,
-    Printer,
     Mail,
     MapPin,
 } from "lucide-react";
@@ -32,15 +31,9 @@ export default function Footer() {
     // Fetch images for the footer gallery
     async function fetchImages() {
         try {
-            const data = await api.request({
-                method: "GET",
-                url: "/social",
-            });
-            if (Array.isArray(data.data.images)) {
-                setGalleryImages(data.data.images);
-            } else {
-                setGalleryImages([]);
-            }
+            const data = await api.request({ method: "GET", url: "/social" });
+            if (Array.isArray(data.data.images)) setGalleryImages(data.data.images);
+            else setGalleryImages([]);
         } catch (e) {
             setGalleryImages([]);
         }
@@ -52,59 +45,23 @@ export default function Footer() {
                 <div className={styles.mainContent}>
                     <div className={styles.followSection}>
                         <h2 className={styles.title}>FOLLOW US</h2>
-                        <div
-                            className="imageGallery"
-                            style={{
-                                display: "flex",
-                                justifyContent: "center",
-                                gap: "1rem",
-                                flexWrap: "wrap",
-                            }}
-                        >
+                        <div className={styles.imageGallery}>
                             {galleryImages.map((img, index) => (
                                 <a
                                     key={index}
-                                    href={img.socialMediaUrl}
+                                    href={img.socialMediaUrl || "#"}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    style={{
-                                        width: "200px",
-                                        height: "200px",
-                                        overflow: "hidden",
-                                        position: "relative",
-                                        display: "block",
-                                        cursor: "pointer",
-                                    }}
+                                    className={styles.galleryItem}
                                     onMouseEnter={() => setHoveredIndex(index)}
                                     onMouseLeave={() => setHoveredIndex(null)}
                                 >
                                     <img
                                         src={img.imageUrl}
                                         alt={`Activity ${index + 1}`}
-                                        style={{
-                                            width: "100%",
-                                            height: "100%",
-                                            objectFit: "cover",
-                                            display: "block",
-                                        }}
                                     />
                                     {hoveredIndex === index && (
-                                        <div
-                                            style={{
-                                                position: "absolute",
-                                                top: 0,
-                                                left: 0,
-                                                width: "100%",
-                                                height: "100%",
-                                                background: "rgba(0,0,0,0.5)",
-                                                color: "#fff",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                fontSize: "1.2rem",
-                                                fontWeight: "bold",
-                                            }}
-                                        >
+                                        <div className={styles.overlay}>
                                             View In Social Media
                                         </div>
                                     )}
@@ -114,6 +71,7 @@ export default function Footer() {
                     </div>
 
                     <div className={styles.socialLinks}>
+                    <div className={styles.socialRow}>
                         <a
                             href="https://www.facebook.com/FoodSport.hk"
                             className={styles.socialIcon}
@@ -154,25 +112,18 @@ export default function Footer() {
                         >
                             <Globe size={20} />
                         </a>
+                    </div>
+
                         <div className={styles.navLinks}>
-                            <Link
-                                href="https://www.foodsport.com.hk/aboutus "
-                                target="_blank"
-                            >
+                            <Link href="https://www.foodsport.com.hk/aboutus " target="_blank">
                                 ABOUT FOODSPORT
                             </Link>
                             <span className={styles.separator}>|</span>
-                            <Link
-                                href="https://www.foodsport.com.hk/supportus"
-                                target="_blank"
-                            >
+                            <Link href="https://www.foodsport.com.hk/supportus" target="_blank">
                                 SUPPORT US
                             </Link>
                             <span className={styles.separator}>|</span>
-                            <Link
-                                href="https://www.foodsport.com.hk/privacy-policy"
-                                target="_blank"
-                            >
+                            <Link href="https://www.foodsport.com.hk/privacy-policy" target="_blank">
                                 PRIVACY POLICY
                             </Link>
                         </div>

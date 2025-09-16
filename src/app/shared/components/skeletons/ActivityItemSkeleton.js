@@ -6,43 +6,52 @@ export default function ActivityItemSkeleton() {
   return (
     <div className={styles.card}>
       <div className={styles.imageWrapper}>
-        <Skeleton height={180} width="100%" />
+        <Skeleton height={140} />
       </div>
       <div className={styles.content}>
         <div className={styles.cardTitleRow}>
-          <h3 className={styles.cardTitleText}>
-            <Skeleton width={120} />
-          </h3>
+          <div style={{ flex: 1 }}>
+            <Skeleton width={`70%`} height={20} />
+            <div style={{ height: 8 }} />
+            <Skeleton width={`40%`} height={14} />
+          </div>
           <div className={styles.badges}>
-            <Skeleton circle width={32} height={32} />
+            <Skeleton circle={true} height={36} width={36} />
           </div>
         </div>
+
         <div className={styles.cardSubtitle}>
-          <Skeleton count={2} />
+          <Skeleton count={3} />
         </div>
+
         <div className={styles.metaContainer}>
           <div className={styles.metaLeft}>
             <div className={styles.detailsRow}>
-              <span className={styles.icon}><Skeleton circle width={19} height={19} /></span>
-              <Skeleton width={110} />
-            </div>
-            <div className={styles.detailsRow}>
-              <span className={styles.icon}><Skeleton circle width={20} height={20} /></span>
-              <Skeleton width={90} />
-            </div>
-            <div className={styles.detailsRow}>
-              <span className={styles.icon}><Skeleton circle width={20} height={20} /></span>
+              <Skeleton width={20} height={20} />
+              <div style={{ width: 8 }} />
               <Skeleton width={80} />
+            </div>
+            <div className={styles.detailsRow}>
+              <Skeleton width={20} height={20} />
+              <div style={{ width: 8 }} />
+              <Skeleton width={40} />
+            </div>
+            <div className={styles.detailsRow}>
+              <Skeleton width={20} height={20} />
+              <div style={{ width: 8 }} />
+              <Skeleton width={50} />
             </div>
           </div>
           <div className={styles.metaRight}>
             <div className={styles.rightRow}>
-              <span className={styles.icon}><Skeleton circle width={23} height={23} /></span>
+              <Skeleton circle={true} height={20} width={20} />
+              <div style={{ width: 8 }} />
               <Skeleton width={80} />
             </div>
             <div className={styles.rightRow}>
-              <span className={styles.icon}><Skeleton circle width={23} height={23} /></span>
-              <Skeleton width={80} />
+              <Skeleton circle={true} height={20} width={20} />
+              <div style={{ width: 8 }} />
+              <Skeleton width={60} />
             </div>
           </div>
         </div>

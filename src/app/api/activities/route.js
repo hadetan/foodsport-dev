@@ -29,7 +29,6 @@ export async function GET(req) {
 			orderBy: { startDate: 'desc' },
 		};
 
-		// Validate query parameters
 		const validation = validateRequiredFields({ status, page, limit, type }, ['page', 'limit']);
 		if (!validation.isValid) {
 			return new NextResponse(
@@ -73,10 +72,51 @@ export async function GET(req) {
 
 		const activityIds = (activities || []).map(a => a.id);
 
-		const participantCountsRaw = await getMany('userActivity', { activityId: { in: activityIds } }, { activityId: true });
+		const participantCountsRaw = await getMany(
+			'userActivity',
+			{ activityId: { in: activityIds } },
+			{
+				activityId: true,
+				user: {
+					select: {
+						id: true,
+						profilePictureUrl: true,
+						firstname: true,
+						lastname: true,
+					},
+				},
+				tempUser: {
+					select: {
+						id: true,
+						firstname: true,
+						lastname: true,
+					},
+				},
+			}
+		);
 		const participantCountMap = {};
-		for (const { activityId } of participantCountsRaw) {
+		const participantMap = {};
+		for (const row of participantCountsRaw) {
+			const { activityId, user, tempUser } = row;
 			participantCountMap[activityId] = (participantCountMap[activityId] || 0) + 1;
+			let participant = null;
+			if (user) {
+				participant = {
+					profilePictureUrl: user.profilePictureUrl || null,
+					firstname: user.firstname || null,
+					lastname: user.lastname || null,
+				};
+			} else if (tempUser) {
+				participant = {
+					profilePictureUrl: null,
+					firstname: tempUser.firstname || null,
+					lastname: tempUser.lastname || null,
+				};
+			}
+			if (participant) {
+				participantMap[activityId] = participantMap[activityId] || [];
+				participantMap[activityId].push(participant);
+			}
 		}
 
 		const tncIds = Array.from(new Set((activities || []).map(a => a.tncId).filter(Boolean)));
@@ -110,6 +150,11 @@ export async function GET(req) {
 			status: a.status,
 			participantLimit: a.participantLimit,
 			participantCount: participantCountMap[a.id] || 0,
+			participants: (participantMap[a.id] || []).map(p => ({
+				profilePictureUrl: p.profilePictureUrl || null,
+				firstname: p.firstname || null,
+				lastname: p.lastname || null,
+			})),
 			imageUrl: a.imageUrl,
 			caloriesPerHour: a.caloriesPerHour,
 			isFeatured: a.isFeatured,

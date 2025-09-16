@@ -126,27 +126,8 @@
   position: relative;
   width: 100%;
   height: 460px;
-}
-/* Back button styles */
-.activityDetailsBackBtn {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  z-index: 2;
-  background: rgba(255,255,255,0.85);
-  color: #222;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transition: background 0.2s;
+  border-radius: 16px;
+  overflow: hidden;
 }
 .activityDetailsBackBtn:hover {
   background: #f0f0f0;
@@ -187,6 +168,7 @@
   border-left: 1px solid #dadada;
   position: sticky;
   top: 32px;
+  margin-top: 20px;
   max-height: calc(100vh - 32px);
 }
 .activityDetailsSidebarTitle {
@@ -300,8 +282,9 @@
 .activityDetailsMainTitle {
   font-weight: bolder;
   font-size: 48px;
-  margin-bottom: 16px;
+  margin-bottom: 2vh;
   color: #222;
+  border-bottom: 1px solid #dadada;
 }
 .activityDetailsMainDesc {
   color: #444;
@@ -309,6 +292,10 @@
   margin-bottom: 18px;
   border-bottom: 1px solid #dadada;
   padding-bottom: 10px;
+}
+
+.desc-section {
+  margin-top: 5vh;
 }
 
 /* Empty state */
@@ -321,10 +308,101 @@
 
 .activityDetailsImage {
   object-fit: cover;
-  width: 100vw !important;
-  height: 100% !important;
-  z-index: 1;
+  width: 100%;
+  height: 100%;
   filter: brightness(0.85) saturate(1.1);
+}
+
+/* Responsive tweaks: stack content and make hero/title scale on smaller screens */
+@media (max-width: 1024px) {
+  .activityDetailsContent {
+    flex-direction: column;
+    padding: 24px 32px;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .activityDetailsSidebar {
+    position: static;
+    border-left: none;
+    max-width: 100%;
+    min-width: auto;
+    width: 100%;
+    max-height: none;
+    margin-top: 0;
+    padding: 20px;
+    box-shadow: none;
+  }
+
+  .activityDetailsMain {
+    width: 100%;
+    padding: 18px;
+  }
+
+  .activityDetailsHero {
+    height: 340px;
+  }
+
+  .activityDetailsMainTitle {
+    font-size: 36px;
+    text-align: center;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .activityDetailsContent {
+    padding: 16px 16px 32px 16px;
+    gap: 16px;
+  }
+
+  .activityDetailsHero {
+    height: 220px;
+    border-radius: 12px;
+  }
+
+  .activityDetailsMainTitle {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .activityDetailsDetailsGrid {
+    gap: 16px;
+    grid-auto-flow: row;
+    grid-template-rows: none;
+  }
+
+  /* On small screens we stack the sidebar below the main content but keep the
+     sidebar card content left-aligned. Previously many sidebar elements were
+     centered which caused the blue bordered card to appear centered; for a
+     more natural reading flow we align these to the left. */
+
+  .activityDetailsSidebarRow {
+    justify-content: flex-start;
+  }
+
+  .activityDetailsSidebarTitle {
+    text-align: left;
+  }
+
+  .activityDetailsAvatars {
+    justify-content: flex-start;
+  }
+
+  .activityDetailsSidebarActions {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  /* Make the calendar/info card stand out on the left by giving it a max-width
+     and keeping its internal alignment to the left. */
+  .activityDetailsSidebar > div:first-child {
+    max-width: 360px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+  }
 }
 
 .logo {
