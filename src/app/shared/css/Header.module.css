@@ -296,3 +296,210 @@
     text-align: center;
     font-size: 1rem;
 }
+
+@media screen and (max-width: 1100px) {
+    .whiteNavBar {
+        justify-content: space-between;
+        padding: 0 32px 0 0;
+        min-height: 80px;
+    }
+    
+    .logoContainer {
+        position: static;
+        width: auto;
+        padding: 0;
+        margin-left: 32px;
+        justify-content: flex-start;
+    }
+    
+    .logoContainer img {
+        width: 160px !important;
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .whiteNavBar {
+        justify-content: space-between;
+        padding: 0 32px 0 0;
+        min-height: 80px;
+    }
+    
+    .logoContainer {
+        position: static;
+        width: auto;
+        padding: 0;
+        margin-left: 32px;
+        justify-content: flex-start;
+    }
+    
+    .logoContainer img {
+        width: 160px !important;
+    }
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 768px) {
+    /* Top Bar Responsive Layout */
+    .whiteNavBar {
+        justify-content: space-between;
+        padding: 0 32px 0 0;
+        min-height: 80px;
+    }
+    
+    .logoContainer {
+        position: static;
+        width: auto;
+        padding: 0;
+        margin-left: 32px;
+        justify-content: flex-start;
+    }
+    
+    .logoContainer img {
+        width: 160px !important;
+    }
+    
+    /* Hide search bar on mobile */
+    .searchButton {
+        display: none !important;
+    }
+    
+    .topBarRight {
+        margin-right: 32px;
+        gap: 16px;
+    }
+    
+    .navButtonRight {
+        margin-left: 16px !important;
+    }
+    
+    /* Bottom Navigation Responsive */
+    .navBar {
+        padding: 0 20px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+        justify-content: flex-start; /* ensure first item (HOME) is fully visible at scroll start */
+    }
+    
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .navBar::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .navList {
+        gap: 20px;
+        font-size: 14px;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        min-width: max-content;
+        padding: 0 8px;
+        margin: 0;
+        width: 100%;
+        list-style: none;
+        position: relative;
+    }
+
+    /* Create a tiny spacer at the very start so first link not flush against edge */
+    .navList::before {
+        content: '';
+        display: block;
+        width: 4px;
+        flex-shrink: 0;
+        height: 1px;
+    }
+    
+    .navList li {
+        padding: 14px 12px 12px 12px;
+        text-align: center;
+        font-size: 14px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        display: block;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .whiteNavBar {
+        min-height: 70px;
+        padding: 0 16px 0 0;
+    }
+    
+    .logoContainer {
+        margin-left: 16px;
+    }
+    
+    .logoContainer img {
+        width: 140px !important;
+    }
+    
+    .topBarRight {
+        margin-right: 16px;
+        gap: 12px;
+    }
+    
+    .navButtonRight {
+        margin-left: 12px !important;
+    }
+    
+    .login, .langSwitch {
+        font-size: 14px;
+    }
+    
+    .navList {
+        gap: 16px;
+        font-size: 13px;
+        padding: 0 4px;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        min-width: max-content;
+        margin: 0;
+        width: 100%;
+        position: relative;
+    }
+    .navList::before { width: 4px; }
+    
+    .navList li {
+        padding: 12px 10px 10px 10px;
+        font-size: 13px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        display: block;
+    }
+}
+
+@media screen and (max-width: 320px) {
+    .logoContainer img {
+        width: 120px !important;
+    }
+    
+    .topBarRight {
+        margin-right: 12px;
+        gap: 8px;
+    }
+    
+    .navButtonRight {
+        margin-left: 8px !important;
+    }
+    
+    .login, .langSwitch {
+        font-size: 13px;
+    }
+    
+    .navList {
+        gap: 12px;
+        font-size: 12px;
+        padding: 0 2px;
+        margin: 0;
+        width: 100%;
+        position: relative;
+    }
+    .navList::before { width: 4px; }
+    
+    .navList li {
+        padding: 10px 8px 8px 8px;
+        font-size: 12px;
+        display: block;
+    }
+}

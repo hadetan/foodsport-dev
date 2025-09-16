@@ -44,7 +44,7 @@
 		"joinActivities": "參與活動",
 		"redeemRewards": "兌換獎賞",
 		"howDoesItWork": "如何運作",
-		"loginRegister": "登入 / 註冊"
+		"loginRegister": "登入"
 	},
 	"Search": {
 		"placeholder": "搜尋活動..."
@@ -243,5 +243,22 @@
 			"failedProcessImage": "處理圖片失敗",
 			"generic": "發生錯誤，請再試一次。"
 		}
+	},
+	"InvitePartnersDialog": {
+		"title": "邀請夥伴",
+		"emailLabel": "電郵",
+		"tab": "夥伴",
+		"buttons": {
+			"cancel": "取消",
+			"addMore": "新增更多",
+			"invite": "邀請",
+			"inviting": "邀請中..."
+		},
+		"errors": {
+			"fillBeforeAdd": "請先填寫電郵，然後再新增夥伴。",
+			"fillEach": "請為每位夥伴填寫電郵。",
+			"inviteFailed": "邀請時發生錯誤。"
+		},
+		"partner": "夥伴"
 	}
 }

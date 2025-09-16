@@ -416,3 +416,196 @@
     grid-column: span 1;
   }
 }
+
+/* Extra small mobile: very small screens (<=420px) */
+@media (max-width: 420px) {
+  .edit-profile-avatar-wrapper {
+    width: 96px;
+    height: 96px;
+  }
+  .edit-profile-avatar {
+    width: 96px;
+    height: 96px;
+  }
+  .edit-profile-avatar-pencil {
+    width: 32px;
+    height: 32px;
+    right: 4px;
+    bottom: 4px;
+  }
+  .edit-profile-fields {
+    padding: 0 12px 18px 12px;
+    gap: 12px;
+  }
+  .edit-profile-save-btn {
+    padding: 12px 0;
+    font-size: 16px;
+  }
+  .edit-profile-gender-card {
+    padding: 12px 0;
+    font-size: 16px;
+  }
+}
+
+/* Mobile: small phones and larger (<=720px) */
+@media (max-width: 720px) {
+  .edit-profile-avatar-wrapper {
+    width: 112px;
+    height: 112px;
+  }
+  .edit-profile-avatar {
+    width: 112px;
+    height: 112px;
+  }
+  .edit-profile-fields {
+    padding: 0 18px 20px 18px;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .edit-profile-district-bio-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .edit-profile-gender-options {
+    gap: 12px;
+    flex-direction: column;
+  }
+  .edit-profile-gender-card {
+    width: 100%;
+    padding: 12px 14px;
+    min-height: 48px;
+    font-size: 16px;
+  }
+  .edit-profile-link-google-btn {
+    padding: 12px 0;
+    font-size: 15px;
+  }
+
+  /* Force all direct children of the form grid to be full width (one per row) */
+  .edit-profile-fields > * {
+    grid-column: span 1 !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+  .edit-profile-fields input,
+  .edit-profile-fields textarea,
+  .edit-profile-fields select,
+  .edit-profile-input-suffix-wrapper {
+    width: 100% !important;
+  }
+}
+
+/* Mid-tablet: narrow tablets and large phones (721px - 900px) - two-column, controlled spans for neat alignment */
+@media (min-width: 721px) and (max-width: 900px) {
+  .edit-profile-fields {
+    padding: 0 36px 28px 36px;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+    align-items: start;
+  }
+  .edit-profile-avatar-wrapper {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 12px;
+  }
+  .edit-profile-avatar {
+    width: 120px;
+    height: 120px;
+  }
+  /* Elements that should be full-width (span both columns) */
+  .edit-profile-fields textarea,
+  .edit-profile-link-google-container,
+  .edit-profile-district-bio-row,
+  .edit-profile-save-btn,
+  .info {
+    grid-column: 1 / -1;
+  }
+
+  /* Make most inputs span full width (one per row) on mid-tablet */
+  .edit-profile-fields > input,
+  .edit-profile-fields > select,
+  .edit-profile-fields .edit-profile-input-suffix-wrapper {
+    grid-column: 1 / -1;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Gender buttons: keep side-by-side 50/50 */
+  .edit-profile-gender {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .edit-profile-gender-options {
+    display: flex;
+    gap: 12px;
+    flex-wrap: nowrap;
+  }
+  .edit-profile-gender-card {
+    width: 50%;
+    padding: 12px 0;
+    box-sizing: border-box;
+  }
+
+  .edit-profile-district-bio-row {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+}
+
+/* Tablet: medium screens (901px - 1024px) keep two-column layout */
+@media (min-width: 901px) and (max-width: 1024px) {
+  .edit-profile-fields {
+    padding: 0 28px 28px 28px;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+  }
+  .edit-profile-avatar-wrapper {
+    width: 120px;
+    height: 120px;
+  }
+  .edit-profile-avatar {
+    width: 120px;
+    height: 120px;
+  }
+  .edit-profile-gender-card {
+    padding: 16px 0;
+    font-size: 17px;
+  }
+}
+
+/* Desktop / laptop: large screens (>=1025px) maintain two-column layout */
+@media (min-width: 1025px) {
+  .edit-profile-fields {
+    padding: 0 48px 32px 48px;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 32px;
+  }
+  .edit-profile-avatar-wrapper {
+    width: 140px;
+    height: 140px;
+  }
+  .edit-profile-avatar {
+    width: 140px;
+    height: 140px;
+  }
+  .edit-profile-gender-card {
+    padding: 18px 0;
+    font-size: 18px;
+  }
+}
+
+/* Make inputs and buttons full width on small devices */
+.edit-profile-fields input,
+.edit-profile-fields textarea,
+.edit-profile-link-google-btn,
+.edit-profile-save-btn {
+  width: 100%;
+}
+
+/* Small niceties: ensure tooltip fits on small screens */
+.edit-profile-tooltip-text {
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 90vw;
+}

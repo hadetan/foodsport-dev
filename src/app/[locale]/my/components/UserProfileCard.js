@@ -10,9 +10,9 @@ import api from '@/utils/axios/api';
 import { useTranslations } from 'next-intl';
 
 const menuItems = (t) => [
-  { key: 'allActivities', label: t('menu.allActivities'), icon: <FaCalendarAlt className="mr-2" /> },
-  { key: 'earnedBadges', label: t('menu.earnedBadges'), icon: <FaMedal className="mr-2" /> },
-  { key: 'editProfile', label: t('menu.editProfile'), icon: <FaUser className="mr-2" /> },
+  { key: 'allActivities', label: t('menu.allActivities'), icon: <FaCalendarAlt className="menu-item-icon" aria-hidden /> },
+  { key: 'earnedBadges', label: t('menu.earnedBadges'), icon: <FaMedal className="menu-item-icon" aria-hidden /> },
+  { key: 'editProfile', label: t('menu.editProfile'), icon: <FaUser className="menu-item-icon" aria-hidden /> },
 ];
 
 export default function UserProfileCard() {
@@ -30,7 +30,6 @@ export default function UserProfileCard() {
       if (first) menuKey = first;
     }
   } catch (e) {
-    // fallback
     menuKey = 'allActivities';
   }
 
@@ -66,8 +65,10 @@ export default function UserProfileCard() {
         {menuItems(t).map(item => (
           <button
             key={item.key}
-            className={`profile-card-menu-item${menuKey === item.key ? ' active' : ''}`}
+            className={`profile-card-menu-item ${menuKey === item.key ? 'active' : ''}`}
             onClick={() => handleMenuClick(item.key)}
+            aria-pressed={menuKey === item.key}
+            role="tab"
           >
             <span className="profile-card-menu-icon">{item.icon}</span>
             <span className="profile-card-menu-label">{item.label}</span>
@@ -78,8 +79,9 @@ export default function UserProfileCard() {
           className={`profile-card-menu-item logout`}
           onClick={() => setShowConfirm(true)}
           disabled={loggingOut}
+          role="button"
         >
-          <span className="profile-card-menu-icon"><FaDoorOpen className="mr-2 logout-icon" /></span>
+          <span className="profile-card-menu-icon"><FaDoorOpen className="logout-icon menu-item-icon" aria-hidden /></span>
           <span className="profile-card-menu-label">{loggingOut ? t('menu.loggingOut') : t('menu.logout')}</span>
         </button>
       </div>

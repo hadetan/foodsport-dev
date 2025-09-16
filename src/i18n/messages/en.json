@@ -44,7 +44,7 @@
 		"joinActivities": "JOIN ACTIVITIES",
 		"redeemRewards": "REDEEM REWARDS",
 		"howDoesItWork": "HOW DOES IT WORK",
-		"loginRegister": "LOGIN / REGISTER"
+		"loginRegister": "LOGIN"
 	},
 	"Search": {
 		"placeholder": "Search activities..."
@@ -241,5 +241,22 @@
 			"failedProcessImage": "Failed to process image",
 			"generic": "Something went wrong, please try again."
 		}
+	},
+	"InvitePartnersDialog": {
+		"title": "Invite Partners",
+		"emailLabel": "Email",
+		"tab": "Partner",
+		"buttons": {
+			"cancel": "Cancel",
+			"addMore": "Add More",
+			"invite": "Invite",
+			"inviting": "Inviting..."
+		},
+		"errors": {
+			"fillBeforeAdd": "Please fill the email before adding another partner.",
+			"fillEach": "Please fill email for each partner.",
+			"inviteFailed": "Something went wrong while inviting."
+		},
+		"partner": "Partner"
 	}
 }
