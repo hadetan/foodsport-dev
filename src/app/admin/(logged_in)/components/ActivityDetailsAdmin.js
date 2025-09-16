@@ -145,7 +145,7 @@ const ActivityDetailsAdmin = ({
                             />
                         </span>
                         <span>
-                            {seatsLeft === 1 ? 'Seat left' : 'Seats left'}
+                            {seatsLeft} {seatsLeft === 1 ? 'Seat left' : 'Seats left'}
                         </span>
                     </div>
                     {/* Avatars */}
