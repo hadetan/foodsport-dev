@@ -60,6 +60,9 @@
 @media (max-width: 900px) {
     .content {
         padding: 10px;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
     }
 
     .navbar {
