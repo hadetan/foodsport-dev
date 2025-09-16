@@ -63,17 +63,17 @@ export default function RecentActivitiesTable() {
             ) : (
               joinedActivities.map((act) => (
                 <tr key={act.id} className="recent-activities-row">
-                  <td className="recent-activities-td">
+                  <td className=" no-wrap recent-activities-td recent-activities-exercise" data-label={t('headers.exercise')}>{act.title}</td>
+                  <td className="recent-activities-td" data-label={t('headers.type')}>
                     <span className="recent-activities-type-icon">
                       <ActivityIcon type={act.activityType} size={20} />
                     </span>
                   </td>
-                  <td className="recent-activities-td">{formatDate(act.startDate)}</td>
-                  <td className="recent-activities-td">{act.title}</td>
-                  <td className="recent-activities-td">{getDuration(act.startTime, act.endTime)}</td>
-                  <td className="recent-activities-td">{act.caloriesPerHour ? `${act.caloriesPerHour}kcal` : t('na')}</td>
-                  <td className="recent-activities-td">{act.totalCaloriesBurnt ?? t('na')}</td>
-                  <td className="recent-activities-td">
+                  <td className="recent-activities-td no-wrap" data-label={t('headers.date')}>{formatDate(act.startDate)}</td>
+                  <td className="recent-activities-td no-wrap" data-label={t('headers.time')}>{getDuration(act.startTime, act.endTime)}</td>
+                  <td className="recent-activities-td no-wrap" data-label={t('headers.kcal')}>{act.caloriesPerHour ? `${act.caloriesPerHour}kcal` : t('na')}</td>
+                  <td className="recent-activities-td" data-label={t('headers.fsPoints')}>{act.totalCaloriesBurnt ?? t('na')}</td>
+                  <td className="recent-activities-td no-wrap" data-label={t('headers.invite')}>
                     <button
                       type="button"
                       onClick={() => { setSelectedActivityId(act.id); setInviteOpen(true); }}

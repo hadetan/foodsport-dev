@@ -95,9 +95,134 @@
     flex-direction: row;
     gap: 8px;
     margin-bottom: 16px;
+    overflow: auto;
   }
   .profile-card-content {
     width: 100%;
     padding-left: 0;
   }
+}
+
+/* Improved responsive/tab styles */
+.menu-item-icon {
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Small devices: show menu as a horizontal scrollable tab bar */
+@media (max-width: 700px) {
+  .profile-card-menu {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    gap: 8px;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+  .profile-card-menu-item {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    margin: 10px 5px;
+    border-radius: 999px;
+    background: #f9fafb;
+    color: #374151;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+    justify-content: center;
+  }
+  .profile-card-menu-item.logout {
+    background: #fff5f5;
+    color: #b91c1c;
+  }
+  .profile-card-menu-item .profile-card-menu-label {
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .profile-card-menu-icon {
+    margin-right: 6px;
+  }
+  .user-profile-card {
+    width: 100%;
+    padding: 12px;
+  }
+  .profile-card-content {
+    padding-left: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .profile-card-menu-item {
+    margin: 10px 5px;
+    background: #f9fafb;
+    color: #374151;
+  }
+
+  .profile-card-menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+@media (max-width: 420px) {
+  .profile-card-menu {
+    justify-content: start;
+    align-items: center;
+  }
+}
+
+/* Medium devices: show menu as vertical pills left side, but compact */
+@media (min-width: 701px) and (max-width: 1024px) {
+  .user-profile-card {
+    flex-direction: column;
+    padding: 20px;
+  }
+  .profile-card-menu {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .profile-card-menu-item {
+    flex: 0 0 auto;
+    padding: 12px 16px;
+    border-radius: 12px;
+  }
+  .profile-card-content {
+    width: 100%;
+    padding-left: 0;
+    margin-top: 12px;
+  }
+}
+
+/* Large devices: two-column layout (menu left, content right) */
+@media (min-width: 1025px) {
+  .user-profile-card {
+    flex-direction: row;
+    padding: 32px;
+  }
+  .profile-card-menu {
+    width: 28%;
+    padding-right: 32px;
+    flex-direction: column;
+  }
+  .profile-card-content {
+    width: 72%;
+    padding-left: 32px;
+  }
+}
+
+/* Accessibility: focus styles */
+.profile-card-menu-item:focus {
+  outline: 3px solid rgba(59,130,246,0.18);
+  outline-offset: 2px;
 }

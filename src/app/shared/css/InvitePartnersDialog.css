@@ -19,14 +19,14 @@
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  padding: 32px 32px 24px 32px;
-  min-width: 340px;
+  padding: 28px 24px 20px 24px;
+  min-width: 300px;
   max-width: 95vw;
-  width: 400px;
+  width: min(640px, 92vw);
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   animation: dialogPopIn 180ms cubic-bezier(.4,0,.2,1);
 }
 
@@ -44,7 +44,7 @@
 .invitePartnersDialogFormGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18px 24px;
+  gap: 12px 16px;
 }
 .invitePartnersDialogFormGrid > div {
   width: 100%;
@@ -63,11 +63,63 @@
   box-sizing: border-box;
 }
 .invitePartnersDialogTitle {
-  font-size: 1.7rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #222;
   margin-bottom: 8px;
   text-align: center;
+}
+
+/* Tabs styling (replaces inline styles in JS) */
+.invitePartnersDialogTabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  justify-content: flex-start;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  max-width: 100%;
+  scrollbar-width: thin;
+}
+.invitePartnersDialogTab {
+  padding: 8px 22px 8px 14px;
+  border-radius: 6px 6px 0 0;
+  border: none;
+  background: #eee;
+  color: #222;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 90px;
+  font-size: 1rem;
+  position: relative;
+  max-width: 180px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.invitePartnersDialogTab.active {
+  background: #ffe600;
+  outline: 2px solid #ffe600;
+}
+.invitePartnersDialogTabLabel {
+  text-overflow: ellipsis;
+  max-width: 120px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.invitePartnersDialogTabRemove {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  color: #d32f2f;
+  font-weight: 700;
+  font-size: 1.1em;
+  cursor: pointer;
+  line-height: 1;
 }
 .invitePartnersDialogForm {
   display: flex;
@@ -109,41 +161,41 @@
   color: #222;
   border: none;
   border-radius: 6px;
-  padding: 12px 28px;
-  font-size: 1.1rem;
+  padding: 10px 18px;
+  font-size: 1rem;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transition: background 0.2s;
+  transition: background 0.15s;
 }
 .invitePartnersDialogBtn:hover {
   background: #e6bf00;
 }
 
 .invitePartnersDialogMoreBtn {
-    background: #00cbe6;
-    color: #ffffff;
-    border: none;
-    border-radius: 6px;
-    padding: 12px 28px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: background 0.2s;
+  background: #00cbe6;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 0.98rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: background 0.15s;
 }
 .invitePartnersDialogMoreBtn:hover {
   background: #00aec5;
 }
 
 .invitePartnersDialogCancelBtn {
-    background: #d3d3d3;
-    color: #222;
-    border: none;
-    border-radius: 6px;
-    padding: 12px 28px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: background 0.2s;
+  background: #d3d3d3;
+  color: #222;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 0.98rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: background 0.15s;
 }
 
 .invitePartnersDialogCancelBtn:hover {
@@ -159,4 +211,71 @@
   font-size: 1.5rem;
   color: #888;
   cursor: pointer;
+}
+
+/* Responsive tweaks */
+@media (max-width: 720px) {
+  .invitePartnersDialog {
+    padding: 18px 16px 16px 16px;
+    width: min(92vw, 520px);
+    gap: 12px;
+  }
+  .invitePartnersDialogTitle {
+    font-size: 1.2rem;
+  }
+  .invitePartnersDialogFormGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .invitePartnersDialogInput {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+  }
+  .invitePartnersDialogBtn,
+  .invitePartnersDialogMoreBtn,
+  .invitePartnersDialogCancelBtn {
+    padding: 10px 14px;
+    font-size: 0.95rem;
+  }
+  .invitePartnersDialogTabs {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 420px) {
+  .invitePartnersDialog {
+    width: 96vw;
+    padding: 14px 12px;
+    border-radius: 12px;
+  }
+  .invitePartnersDialogActions {
+    flex-direction: column-reverse;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .invitePartnersDialogActions button {
+    width: 100%;
+  }
+  .invitePartnersDialogTab {
+    padding: 8px 32px 8px 18px !important;
+    min-width: 64px !important;
+  }
+}
+
+/* Fix: ensure close button doesn't overlap header/tabs on very small screens */
+@media (max-width: 420px) {
+  .invitePartnersDialog {
+    /* add extra top padding so absolute close button doesn't cover content */
+    padding-top: 44px;
+  }
+  .invitePartnersDialogClose {
+    top: 12px;
+    right: 12px;
+    font-size: 1.2rem;
+    z-index: 30;
+  }
+  .invitePartnersDialogTabs {
+    margin-top: 6px !important;
+    padding-top: 0;
+  }
 }
