@@ -76,8 +76,8 @@ export default function SidebarItem({
                 href={href}
                 className={
                     isActive
-                        ? "bg-primary text-primary-content rounded-lg"
-                        : "text-base-content"
+                        ? "bg-primary text-primary-content rounded-lg flex content"
+                        : "text-base-content flex content"
                 }
                 onClick={onClick}
             >
