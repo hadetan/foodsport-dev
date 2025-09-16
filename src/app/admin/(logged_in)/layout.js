@@ -16,6 +16,7 @@ import { DashboardProvider } from "@/app/shared/contexts/DashboardContext";
 import { AdminActivitiesProvider } from "@/app/shared/contexts/AdminActivitiesContext";
 import { SocialMediaImageProvider } from "@/app/shared/contexts/socialMediaImageContext";
 import { useEffect, useRef } from "react";
+import { VerifiedAttendeesProvider } from "@/app/shared/contexts/VerifiedAttendeesContext";
 
 export default function AdminLoggedInLayout({ children }) {
     const pathname = usePathname();
@@ -41,6 +42,7 @@ export default function AdminLoggedInLayout({ children }) {
                 <DashboardProvider>
                     <AdminActivitiesProvider>
                         <SocialMediaImageProvider>
+                            <VerifiedAttendeesProvider>
                             <div className="drawer lg:drawer-open">
                                 <input
                                     id="admin-drawer"
@@ -179,6 +181,7 @@ export default function AdminLoggedInLayout({ children }) {
                                     </aside>
                                 </div>
                             </div>
+                            </VerifiedAttendeesProvider>
                         </SocialMediaImageProvider>
                     </AdminActivitiesProvider>
                 </DashboardProvider>

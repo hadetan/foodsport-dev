@@ -22,13 +22,6 @@
     /* subtle overlay for text readability */
 }
 
-@media (max-width: 900px) {
-    .hero {
-        min-height: 30vh;
-        height: 200px;
-    }
-}
-
 .title {
     font-family: 'Bebas Neue', sans-serif;
     font-style: italic;
@@ -38,4 +31,74 @@
     letter-spacing: 0.05em;
     text-align: left;
     text-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
+}
+
+/* Tablet and smaller desktop screens */
+@media (max-width: 900px) {
+    .hero {
+        min-height: 30vh;
+        height: 400px;
+    }
+    
+    .title {
+        font-size: 5.5rem;
+    }
+    
+    .overlay {
+        padding-left: 4vw;
+    }
+}
+
+/* Tablet screens */
+@media (max-width: 768px) {
+    .hero {
+        min-height: 25vh;
+        height: 350px;
+    }
+
+    .overlay {
+        align-items: start;
+    }
+    
+    .title {
+        font-size: 4.5rem;
+    }
+    
+    .overlay {
+        padding-left: 3vw;
+    }
+}
+
+/* Mobile screens */
+@media (max-width: 480px) {
+    .hero {
+        min-height: 20vh;
+        height: 280px;
+    }
+    
+    .title {
+        font-size: 3.5rem;
+        letter-spacing: 0.03em;
+    }
+    
+    .overlay {
+        padding-left: 5vw;
+    }
+}
+
+/* Small mobile screens */
+@media (max-width: 360px) {
+    .hero {
+        min-height: 18vh;
+        height: 240px;
+    }
+    
+    .title {
+        font-size: 2.8rem;
+        letter-spacing: 0.02em;
+    }
+    
+    .overlay {
+        padding-left: 4vw;
+    }
 }

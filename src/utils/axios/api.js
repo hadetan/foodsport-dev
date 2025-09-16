@@ -20,11 +20,16 @@ if (typeof window !== 'undefined') {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    const url = error?.config?.url || '';
+    const isPublicAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/pre-profile') || url.includes('/auth/sync-session') || url.includes('/auth/complete-onboarding');
+    if (isPublicAuthEndpoint) {
+      showApiError(error);
+      return Promise.reject(error);
+    }
     if (error.response && error.response.status === 401) {
       try {
         // Admin API handling
         if (error.config?.url?.includes('/admin/')) {
-          // ...existing code for admin refresh...
           if (error.config?.url?.includes('/admin/auth/refresh')) {
             await api.delete('/admin/auth/logout');
             localStorage.removeItem('admin_auth_token');

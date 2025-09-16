@@ -7,11 +7,12 @@ import EditProfile from './EditProfile';
 import AllBadges from './AllBadges';
 import ConfirmDialog from '@/app/shared/components/ConfirmDialog';
 import api from '@/utils/axios/api';
+import { useTranslations } from 'next-intl';
 
-const menuItems = [
-  { key: 'allActivities', label: 'My Activities', icon: <FaCalendarAlt className="mr-2" /> },
-  { key: 'earnedBadges', label: 'My Achievement e-badges', icon: <FaMedal className="mr-2" /> },
-  { key: 'editProfile', label: 'My Profile', icon: <FaUser className="mr-2" /> },
+const menuItems = (t) => [
+  { key: 'allActivities', label: t('menu.allActivities'), icon: <FaCalendarAlt className="menu-item-icon" aria-hidden /> },
+  { key: 'earnedBadges', label: t('menu.earnedBadges'), icon: <FaMedal className="menu-item-icon" aria-hidden /> },
+  { key: 'editProfile', label: t('menu.editProfile'), icon: <FaUser className="menu-item-icon" aria-hidden /> },
 ];
 
 export default function UserProfileCard() {
@@ -19,6 +20,7 @@ export default function UserProfileCard() {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const t = useTranslations('ProfilePage');
   let menuKey = 'allActivities';
   try {
     if (searchParams && typeof searchParams.has === 'function' && searchParams.has('editProfile')) {
@@ -28,7 +30,6 @@ export default function UserProfileCard() {
       if (first) menuKey = first;
     }
   } catch (e) {
-    // fallback
     menuKey = 'allActivities';
   }
 
@@ -61,11 +62,13 @@ export default function UserProfileCard() {
   return (
     <div className="user-profile-card" ref={contentRef}>
       <div className="profile-card-menu">
-        {menuItems.map(item => (
+        {menuItems(t).map(item => (
           <button
             key={item.key}
-            className={`profile-card-menu-item${menuKey === item.key ? ' active' : ''}`}
+            className={`profile-card-menu-item ${menuKey === item.key ? 'active' : ''}`}
             onClick={() => handleMenuClick(item.key)}
+            aria-pressed={menuKey === item.key}
+            role="tab"
           >
             <span className="profile-card-menu-icon">{item.icon}</span>
             <span className="profile-card-menu-label">{item.label}</span>
@@ -76,9 +79,10 @@ export default function UserProfileCard() {
           className={`profile-card-menu-item logout`}
           onClick={() => setShowConfirm(true)}
           disabled={loggingOut}
+          role="button"
         >
-          <span className="profile-card-menu-icon"><FaDoorOpen className="mr-2 logout-icon" /></span>
-          <span className="profile-card-menu-label">{loggingOut ? 'Logging out...' : 'Logout'}</span>
+          <span className="profile-card-menu-icon"><FaDoorOpen className="logout-icon menu-item-icon" aria-hidden /></span>
+          <span className="profile-card-menu-label">{loggingOut ? t('menu.loggingOut') : t('menu.logout')}</span>
         </button>
       </div>
         <div className="profile-card-content">
@@ -90,10 +94,10 @@ export default function UserProfileCard() {
         open={showConfirm}
         onClose={() => setShowConfirm(false)}
         onConfirm={() => { setShowConfirm(false); handleLogout(); }}
-        title="Log out"
-        message="Are you sure you want to log out?"
-        confirmText="Log out"
-        cancelText="Cancel"
+        title={t('confirm.logoutTitle')}
+        message={t('confirm.logoutMessage')}
+        confirmText={t('confirm.logoutConfirm')}
+        cancelText={t('confirm.cancel')}
         confirmColor="#dc2626"
         cancelColor="#6b7280"
       />

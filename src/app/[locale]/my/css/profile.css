@@ -1,26 +1,34 @@
 .profile-page-container {
-	width: 100vw;
+	width: 100%;
 	background: #f3f4f6;
 	display: flex;
 	justify-content: center;
 	align-items: flex-start;
-	padding: 40px 0;
+	padding: 24px 12px;
+}
+
+/* center content and constrain width similar to max-w-5xl */
+.profile-page-container > .profile-main-row,
+.profile-page-container > .profile-main-row + * {
+	max-width: 80rem; /* approx Tailwind's 5xl */
+	width: 100%;
+	margin: 0 auto;
 }
 
 .profile-main-row {
 	display: flex;
-	gap: 48px;
-	/* width: 1100px; */
-	/* max-width: 95vw; */
+	gap: 24px;
 	align-items: center;
-	justify-content: center;
+	justify-content: space-between;
+	flex-direction: column; /* mobile first */
 }
 
 .profile-left {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	min-width: 220px;
+	min-width: 180px;
+	width: 100%;
 }
 
 .profile-avatar-wrapper {
@@ -74,6 +82,12 @@
 	text-align: center;
 }
 
+.profile-meta {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
 .profile-id {
 	font-size: 0.95rem;
 	color: #888;
@@ -86,34 +100,33 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	width: 100%;
 }
 
 .profile-stats-grid {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
-	grid-template-rows: 1fr 1fr;
-	gap: 28px;
-	max-width: 90vw;
+	grid-template-columns: 1fr;
+	gap: 20px;
+	width: 100%;
 }
 
 .profile-stat {
 	position: relative;
-    overflow: hidden;
+	overflow: hidden;
 	border-radius: 18px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	min-width: 200px;
 	min-height: 110px;
 	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 	color: #fff;
+	padding: 18px 12px;
 }
 
 .stats {
 	width: 100%;
 	height: 100%;
-	margin: 36px 200px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -121,7 +134,7 @@
 }
 
 .stat-value {
-	font-size: 3.5rem;
+	font-size: 2.25rem;
 	font-weight: 700;
 }
 
@@ -139,6 +152,116 @@
     left: 0;
     width: 200px;
     height: 100px;
+}
+
+/* Responsive breakpoints to mimic Tailwind md/lg behaviors */
+@media (min-width: 640px) {
+	.profile-main-row {
+		gap: 28px;
+	}
+	.profile-stats-grid {
+		grid-template-columns: 1fr 1fr;
+	}
+	.stat-value {
+		font-size: 2.75rem;
+	}
+}
+
+@media (min-width: 768px) {
+	.profile-main-row {
+		flex-direction: row;
+		align-items: flex-start;
+	}
+	.profile-left {
+		width: 33%;
+		align-items: center;
+		text-align: center;
+	}
+	.profile-meta {
+		align-items: center;
+		margin-left: 0;
+	}
+	.profile-right {
+		width: 66%;
+	}
+}
+
+/* Tablet / small laptop: force a nicer stacked + centered layout at <=900px */
+@media (max-width: 900px) {
+	.profile-main-row {
+		flex-direction: column;
+		align-items: center;
+		gap: 20px;
+	}
+	.profile-left {
+		width: 100%;
+		align-items: center;
+		text-align: center;
+		padding: 0 12px;
+	}
+	.profile-meta {
+		align-items: center;
+		margin-left: 0;
+	}
+	.profile-avatar-wrapper {
+		width: 110px;
+		height: 110px;
+		margin-bottom: 12px;
+	}
+	.profile-avatar-wrapper .avatar,
+	.profile-avatar-wrapper .avatar-skeleton {
+		width: 100px;
+		height: 100px;
+		border-radius: 50%;
+		border: 5px solid #fff;
+		box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+		font-size: 36px;
+	}
+	.profile-level-badge {
+		right: -8px;
+		bottom: 6px;
+		width: 34px;
+		height: 34px;
+		font-size: 1.15rem;
+		border: 3px solid #fff;
+	}
+	.profile-right {
+		width: 100%;
+		padding-top: 8px;
+	}
+	.profile-stats-grid {
+		grid-template-columns: 1fr 1fr;
+		gap: 18px;
+		width: 100%;
+	}
+	.profile-name,
+	.profile-id {
+		text-align: center;
+	}
+}
+
+@media (min-width: 1024px) {
+	/* Desktop: keep profile card on the left and stats on the right with two columns */
+	.profile-main-row {
+		flex-direction: row;
+		align-items: center;
+	}
+	.profile-left {
+		width: 32%;
+		align-items: center;
+		text-align: center;
+	}
+	.profile-right {
+		width: 68%;
+		justify-content: flex-start;
+	}
+	.profile-stats-grid {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 28px;
+	}
+	.stat-value {
+		font-size: 3.5rem;
+	}
 }
 
 /* Gradient backgrounds for stats */

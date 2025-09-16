@@ -1,9 +1,10 @@
 import "./comingSoon.css";
 import Image from "next/image";
 import RewardCards from "./rewardCards";
+import { useTranslations } from 'next-intl';
 
 export default function ComingSoon() {
-    // Array of brand sponsors with their names
+    const t = useTranslations();
     const brands = [
         { id: 1, name: "GARMIN", logo: "/garmin.png" },
         { id: 2, name: "Häagen-Dazs", logo: "/haagen-dazs.svg" },
@@ -15,40 +16,36 @@ export default function ComingSoon() {
         { id: 8, name: "HOKA", logo: "/hoka.svg" },
     ];
 
-    // Rewards to showcase as cards (shared component expects image, title, description)
     const rewards = [
         {
             id: "smartwatch",
-            title: "SMARTWATCH",
-            description: "Garmin Forerunner 965 Smart Watch",
+            title: t('ComingSoon.rewards.smartwatch.title'),
+            description: t('ComingSoon.rewards.smartwatch.description'),
             image: "/smart.jpg",
         },
         {
             id: "nike-gift-card",
-            title: "Nike",
-            description: "Nike Gift Card",
+            title: t('ComingSoon.rewards.nike_gift_card.title'),
+            description: t('ComingSoon.rewards.nike_gift_card.description'),
             image: "/nike.webp",
         },
         {
             id: "apple-airpods-3",
-            title: "Apple",
-            description: "AirPods (3rd generation)",
+            title: t('ComingSoon.rewards.apple_airpods_3.title'),
+            description: t('ComingSoon.rewards.apple_airpods_3.description'),
             image: "/aripod.webp",
         },
     ];
 
     return (
         <>
-            <div className="coming-soon-bg w-full">
-                {/* Existing coming soon content will remain here */}
-            </div>
+            <div className="coming-soon-bg w-full"></div>
 
-            {/* Wrap the entire section (46-73) to apply a single overlay */}
             <div className="light-grey-overlay-wrap">
                 <div className="fade-overlay" />
 
                 <div className="sponsor-section">
-                    <h2 className="sponsor-title">Trusted by top brands</h2>
+                    <h2 className="sponsor-title">{t('ComingSoon.trustedBy')}</h2>
                     <div className="brand-grid">
                         {brands.map((brand) => (
                             <div key={brand.id} className="brand-card">
@@ -74,11 +71,8 @@ export default function ComingSoon() {
                     </div>
                 </div>
 
-                {/* New rewards UI cards (as shown in the reference image) */}
-                <section className="mt-12 mb-4 popular-rewards-section">
-                    {/* removed inner overlay to use the wrapper overlay */}
-                    <h2 className="sponsor-title">Popular rewards</h2>
-                    {/* replaced inline grid with shared component */}
+                <section className="mt-12 popular-rewards-section">
+                    <h2 className="sponsor-title">{t('ComingSoon.popularRewards')}</h2>
                     <RewardCards items={rewards} />
                 </section>
             </div>

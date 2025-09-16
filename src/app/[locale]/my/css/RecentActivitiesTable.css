@@ -67,6 +67,33 @@
     text-align: center;
 }
 
+/* Prefer fixed-ish widths for non-wrapping columns to keep layout stable */
+.recent-activities-th:nth-child(2),
+.recent-activities-td:nth-child(2) { /* date */
+	min-width: 110px;
+}
+.recent-activities-th:nth-child(4),
+.recent-activities-td:nth-child(4) { /* time */
+	min-width: 90px;
+}
+.recent-activities-th:nth-child(5),
+.recent-activities-td:nth-child(5) { /* kcal */
+	min-width: 90px;
+}
+.recent-activities-th:nth-child(7),
+.recent-activities-td:nth-child(7) { /* invite */
+	min-width: 110px;
+}
+
+/* Exercise title: allow truncation with ellipsis when space constrained */
+.recent-activities-exercise {
+	text-align: left;
+	max-width: 350px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .recent-activities-loading,
 .recent-activities-empty {
 	text-align: center;
@@ -87,4 +114,129 @@
 	border: 1px solid transparent;
 	background-color: #ffd700;
 	color: #fff;
+}
+
+@media (max-width: 900px) {
+	/* Tablet tweaks: tighten spacing, allow exercise text to wrap and reduce column min-widths
+		 Keep the table layout but make it resilient at ~720-900px widths. */
+	.recent-activities-card {
+		border: none;
+	}
+
+	.recent-activities-table thead {
+		display: none;
+	}
+	.recent-activities-table {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+	}
+	.recent-activities-row, .recent-activities-td {
+		display: block;
+		width: 100%;
+	}
+	.recent-activities-row {
+		margin-bottom: 12px;
+		border-radius: 12px;
+		padding: 12px;
+		background: #fff;
+		box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+		border: 1px solid #eef2f7;
+	}
+	.recent-activities-td {
+		text-align: left;
+		padding: 8px 12px;
+		border-bottom: none;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+	}
+	.recent-activities-td::before {
+		content: attr(data-label) " ";
+		font-weight: 600;
+		color: #374151;
+		margin-right: 8px;
+		flex: 0 0 auto;
+	}
+	.recent-activities-type-icon {
+		margin-right: 8px;
+	}
+	.recent-activities-exercise {
+		width: 100%;
+		white-space: normal;
+		overflow: visible;
+		text-overflow: unset;
+		text-align: end;
+		font-weight: bold;
+	}
+	.recent-activities-table-wrapper {
+		max-height: none;
+		height: auto;
+		overflow: visible;
+	}
+}
+
+/* Mobile: switch to stacked card rows with labels for readability */
+@media (max-width: 720px) {
+	.recent-activities-card {
+		border: none;
+	}
+
+	.recent-activities-table thead {
+		display: none;
+	}
+	.recent-activities-table {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+	}
+	.recent-activities-row, .recent-activities-td {
+		display: block;
+		width: 100%;
+	}
+	.recent-activities-row {
+		margin-bottom: 12px;
+		border-radius: 12px;
+		padding: 12px;
+		background: #fff;
+		box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+		border: 1px solid #eef2f7;
+	}
+	.recent-activities-td {
+		text-align: left;
+		padding: 8px 12px;
+		border-bottom: none;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+	}
+	.recent-activities-td::before {
+		content: attr(data-label) " ";
+		font-weight: 600;
+		color: #374151;
+		margin-right: 8px;
+		flex: 0 0 auto;
+	}
+	.recent-activities-type-icon {
+		margin-right: 8px;
+	}
+	.recent-activities-exercise {
+		width: 100%;
+		white-space: normal;
+		overflow: visible;
+		text-overflow: unset;
+		text-align: end;
+		font-weight: bold;
+	}
+	.recent-activities-table-wrapper {
+		max-height: none;
+		height: auto;
+		overflow: visible;
+	}
 }

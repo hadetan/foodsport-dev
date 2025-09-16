@@ -1,10 +1,262 @@
 {
-  "ActivityItem": {
-    "toStart": "to start",
-    "daysToGo": "{count, plural, one {# Day to go} other {# Days to go}}",
-    "ongoing": "Ongoing",
-    "expired": "Expired",
-    "seatsLeft": "{count, plural, one {# Seat Left} other {# Seats Left}}"
-  },
-  "Landing": {"exploreMoreActivities": "EXPLORE MORE ACTIVITIES"}
+	"RegisterPage": {
+		"title": "Register",
+		"firstName": "First Name",
+		"lastName": "Last Name",
+		"dateOfBirth": "Date of Birth",
+		"email": "Email",
+		"password": "Password",
+		"register": "Register",
+		"registering": "Registering...",
+		"continueWithGoogle": "Continue with Google",
+		"alreadyHaveAccount": "Already have an account?",
+		"login": "Login",
+		"emailExistsToast": "Account with this email already exists. Please login and link Google in settings.",
+		"accountAlreadyExists": "This email already exists",
+		"genericError": "Something went wrong, please try again later"
+	},
+	"OnboardPage": {
+		"title": "Onboarding",
+		"loading": "Loading…",
+		"failedToLoad": "Failed to load.",
+		"dateOfBirth": "Date of Birth",
+		"weight": "Weight (kg)",
+		"height": "Height (cm)",
+		"district": "District",
+		"selectDistrict": "Select a district (optional)",
+		"finish": "Finish",
+		"failedToComplete": "Failed to complete onboarding."
+	},
+	"LoginPage": {
+		"title": "Login",
+		"email": "Email",
+		"password": "Password",
+		"loggingIn": "Logging in...",
+		"login": "Login",
+		"continueWithGoogle": "Continue with Google",
+		"dontHaveAccount": "Don't have an account?",
+		"register": "Register",
+		"emailExistsToast": "Account with this email already exists. Please login and link Google from your profile",
+		"genericError": "Please check your email and password, and try again"
+	},
+	"Header": {
+		"home": "HOME",
+		"joinActivities": "JOIN ACTIVITIES",
+		"redeemRewards": "REDEEM REWARDS",
+		"howDoesItWork": "HOW DOES IT WORK",
+		"loginRegister": "LOGIN"
+	},
+	"Search": {
+		"placeholder": "Search activities..."
+	},
+	"Activity": {
+		"Landing": { "exploreMoreActivities": "EXPLORE MORE ACTIVITIES" },
+		"ActivitySection": { "title": "ACTIVITIES" },
+		"ActivityItem": {
+			"toStart": "to start",
+			"daysToGo": "{count, plural, one {# Day to go} other {# Days to go}}",
+			"ongoing": "Ongoing",
+			"expired": "Expired",
+			"seatsLeft": "{count, plural, one {# Seat Left} other {# Seats Left}}",
+			"startEndFull": "The activity starts at {startDate} {startTime} and ends on {endDate} {endTime}"
+		},
+		"ActivityTypes": {
+			"allTypes": "All Types",
+			"Running": "Running",
+			"Hiking": "Hiking",
+			"Water_Sport": "Water Sport",
+			"Volunteering": "Volunteering",
+			"Racket_Sport": "Racket Sport",
+			"Yoga": "Yoga",
+			"Dance": "Dance",
+			"Fitness": "Fitness",
+			"Cycling": "Cycling",
+			"Mindfulness": "Mindfulness",
+			"Team_Sport": "Team Sport",
+			"Virtual": "Virtual",
+			"Multi_Sports": "Multi Sports",
+			"other": "Other"
+		},
+		"ActivitiesPage": {
+			"upcomingOngoing": "Upcoming & Ongoing",
+			"finished": "Finished"
+		},
+		"DetailsPage": {
+			"noActivityTitle": "No Activity Found",
+			"noActivityDesc": "We couldn't find the activity you're looking for.\nPlease check the link again.",
+			"back": "Back",
+			"pageTitle": "Activity Details",
+			"detailsTitle": "Activity Details",
+			"activityTypeLabel": "Activity Type",
+			"totalCaloriesLabel": "Total Calories Burnt",
+			"caloriesPerHourLabel": "Calories Burned",
+			"organizerLabel": "Organizer",
+			"unknown": "Unknown",
+			"seatsLeft_one": "# Seat Left",
+			"seatsLeft_other": "# Seats Left",
+			"acceptTnc": "I accept the <link>conditions</link> for participating on the event",
+			"conditions": "conditions",
+			"leaving": "LEAVING",
+			"leave": "LEAVE",
+			"joining": "JOINING",
+			"joinNow": "JOIN NOW",
+			"share": "SHARE",
+			"mapError": "Something went wrong while loading the google map.",
+			"agreeTncWarning": "You must agree to the Conditions first.",
+			"notActiveWarning": "Cannot join activity that is not active.",
+			"fillProfileWarning": "You must fill height and weight to join activities.",
+			"saveReward": "Save reward"
+		}
+	},
+	"ComingSoon": {
+		"trustedBy": "Trusted by top brands",
+		"popularRewards": "Popular rewards",
+		"rewards": {
+			"smartwatch": {
+				"title": "SMARTWATCH",
+				"description": "Garmin Forerunner 965 Smart Watch"
+			},
+			"nike_gift_card": {
+				"title": "Nike",
+				"description": "Nike Gift Card"
+			},
+			"apple_airpods_3": {
+				"title": "Apple",
+				"description": "AirPods (3rd generation)"
+			}
+		},
+		"RewardCards": {
+			"saveAria": "Save reward",
+			"share": "Share",
+			"redeem": "Redeem Now",
+			"imageAlt": "Reward image"
+		}
+	},
+	"HowPage": {
+		"heading": "HOW DOES IT WORK",
+		"steps": {
+			"1": {
+				"title": "SIGN UP",
+				"description": "Sign Up to become a FOODSPORT Member",
+				"details": "Start your exercising for hunger journey with FOODSPORT by becoming a FOODSPORT member"
+			},
+			"2": {
+				"title": "JOIN",
+				"description": "Join a FOODSPORT Calorie Drive Activity / Program"
+			},
+			"3": {
+				"title": "KCALS",
+				"description": "Convert your calories into food equivalent for donation"
+			},
+			"4": {
+				"title": "FS POINTS",
+				"description": "Redeem rewards with FS POINTS"
+			}
+		}
+	},
+	"ProfilePage": {
+		"menu": {
+			"allActivities": "My Activities",
+			"earnedBadges": "My Achievement e-badges",
+			"editProfile": "My Profile",
+			"logout": "Logout",
+			"loggingOut": "Logging out..."
+		},
+		"stats": {
+			"caloriesLabel": "#Calories (Kcal) Donated",
+			"fsPointsLabel": "FS POINTS (500kcal = 1 FS Points)",
+			"activitiesLabel": "#Activities Joined",
+			"badgesLabel": "Achievement e-badges"
+		},
+		"confirm": {
+			"logoutTitle": "Log out",
+			"logoutMessage": "Are you sure you want to log out?",
+			"logoutConfirm": "Log out",
+			"cancel": "Cancel"
+		}
+	}
+	,
+	"RecentActivities": {
+		"headers": {
+			"type": "TYPE",
+			"date": "DATE",
+			"exercise": "EXERCISE",
+			"time": "TIME",
+			"kcal": "KCAL",
+			"fsPoints": "FS POINTS",
+			"invite": "INVITE"
+		},
+		"noActivities": "No activities found.",
+		"invite": "Invite",
+		"na": "N/A"
+	},
+	"AllBadges": {
+		"title": "Achievement e-badges",
+		"subtitle": "Coming Soon",
+		"description": "Unlock and showcase your achievements soon! Stay tuned for exciting rewards and badges."
+	},
+	"EditProfile": {
+		"info": {
+			"question": "Why provide weight and height?",
+			"tooltip": "Providing your weight and height allows us to calculate your calorie burns more accurately for each activity, giving you better insights and more personalized results."
+		},
+		"placeholders": {
+			"firstName": "First Name",
+			"lastName": "Last Name",
+			"weight": "Weight",
+			"height": "Height",
+			"contact": "Contact No.",
+			"dateOfBirth": "Date of Birth",
+			"selectDistrict": "Select your district",
+			"bio": "Bio"
+		},
+		"gender": {
+			"label": "Gender:",
+			"male": "Male",
+			"female": "Female"
+		},
+		"google": {
+			"linked": "Google linked",
+			"starting": "Starting…",
+			"link": "Link Google",
+			"linkingWait": "Please wait, linking your account to google...",
+			"linkedSuccess": "Google account linked.",
+			"alreadyLinked": "This Google account is already linked to another user.",
+			"redirecting": "Redirecting to Google…",
+			"notSupported": "Linking is not supported in this environment.",
+			"manualDisabled": "Manual linking is disabled in Supabase. Enable it in the dashboard.",
+			"failedStart": "Failed to start linking. Please try again.",
+			"unable": "Unable to start linking."
+		},
+		"crop": "Crop",
+		"cancel": "Cancel",
+		"editPictureTitle": "Edit profile picture",
+		"saving": "Saving...",
+		"saveProfile": "Save Profile",
+		"success": {
+			"profileUpdated": "Profile has been updated successfully."
+		},
+		"errors": {
+			"invalidCrop": "Invalid crop dimensions",
+			"failedProcessImage": "Failed to process image",
+			"generic": "Something went wrong, please try again."
+		}
+	},
+	"InvitePartnersDialog": {
+		"title": "Invite Partners",
+		"emailLabel": "Email",
+		"tab": "Partner",
+		"buttons": {
+			"cancel": "Cancel",
+			"addMore": "Add More",
+			"invite": "Invite",
+			"inviting": "Inviting..."
+		},
+		"errors": {
+			"fillBeforeAdd": "Please fill the email before adding another partner.",
+			"fillEach": "Please fill email for each partner.",
+			"inviteFailed": "Something went wrong while inviting."
+		},
+		"partner": "Partner"
+	}
 }

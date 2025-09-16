@@ -10,11 +10,13 @@ import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import ActivityItemSkeleton from "@/app/shared/components/skeletons/ActivityItemSkeleton";
 import ActivitiesFilter from "../../../shared/components/ActivitiesFilter";
 import { Suspense, useState } from "react";
+import { useTranslations } from 'next-intl';
 import ActivityNotFound from "@/app/shared/components/ActivityNotFound";
 
 export default function ActivitiesPage() {
     const { activities, loading } = useActivities();
     const [filteredActivities, setFilteredActivities] = useState(activities);
+    const t = useTranslations();
 
     const mergedUpcomingOngoing = (filteredActivities || []).filter(a => {
         const { status } = getActivityStatus(a);
@@ -48,7 +50,7 @@ export default function ActivitiesPage() {
                 <>
                     {sortedUpcomingOngoing.length > 0 && (
                         <div className={sectionStyles.activitySection}>
-                            <h2 className={sectionStyles.activitySectionHeading}>Upcoming & Ongoing</h2>
+                            <h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.upcomingOngoing')}</h2>
                             <div className={styles.grid3}>
                                 {sortedUpcomingOngoing.map((a) => (
                                     <ActivityItem key={a.id} activity={a} />
@@ -58,7 +60,7 @@ export default function ActivitiesPage() {
                     )}
                     {finished.length > 0 && (
                         <div className={sectionStyles.activitySection}>
-                            <h2 className={sectionStyles.activitySectionHeading}>Finished</h2>
+                            <h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.finished')}</h2>
                             <div className={styles.grid3}>
                                 {finished.map((a) => (
                                     <ActivityItem key={a.id} activity={a} />

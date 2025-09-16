@@ -158,7 +158,7 @@ export async function GET(req) {
 				status: a.status,
 				participantLimit: a.participantLimit,
 				participantCount: participantCountMap[a.id] || 0,
-				organizerName: a.organizerId ? organizerNameMap[a.organizerId] : undefined,
+				organizerName: a.organizerId ? organizerNameMap[a.organizerId] : 'unknown',
 				organizationName: a.organizationName,
 				imageUrl: a.imageUrl,
 				caloriesPerHour: a.caloriesPerHour,
@@ -332,10 +332,11 @@ export async function POST(req) {
 		}
 		activityData.imageUrl = imageUrl;
 
-		if (user && user.internal !== true && user.email) {
+		let adminId = null;
+		if (user && user.email) {
 			const adminRows = await getMany('adminUser', { email: user.email }, { id: true });
 			if (adminRows && adminRows.length > 0) {
-				activityData.organizerId = adminRows[0].id;
+				adminId = adminRows[0].id;
 			}
 		}
 
@@ -379,6 +380,7 @@ export async function POST(req) {
 		}
 		
 		const sanitizedData = sanitizeData(activityData, allowedFields);
+		if (adminId) sanitizedData.organizerId = adminId;
 		const activity = await insert('activity', sanitizedData);
 		if (activity && activity.error) {
 			return NextResponse.json(
@@ -472,10 +474,12 @@ export async function PATCH(req) {
             }
         }
 
-		if (user && user.internal !== true && user.email) {
+		let adminId = null;
+		if (user && user.email) {
 			const adminRows = await getMany('adminUser', { email: user.email }, { id: true });
 			if (adminRows && adminRows.length > 0) {
-				updates.organizerId = adminRows[0].id;
+				adminId = adminRows[0].id;
+				updates.organizerId = adminId;
 			}
 		}
 

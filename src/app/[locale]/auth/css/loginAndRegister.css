@@ -41,3 +41,60 @@ input {
     padding: 10px 10px;
     color: white;
 }
+
+/* Responsive adjustments for auth forms */
+.responsive-form {
+    /* keep desktop look via existing utility classes; add a sensible max-height on small devices */
+    box-sizing: border-box;
+}
+
+/* Small phones: <= 420px */
+@media (max-width: 420px) {
+    .responsive-form {
+        width: 50vw; /* take roughly half the viewport width to reveal background */
+        max-width: 50vw;
+        min-width: 220px; /* don't get too tiny on very narrow devices */
+        padding: 8px;
+        border-radius: 12px;
+        position: relative;
+        /* make the form area scrollable if content overflows vertically */
+        max-height: 70vh;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+        margin: 8px auto; /* center horizontally with small margin */
+    }
+
+    .responsive-form h1,
+    .responsive-form label,
+    .responsive-form .submit-button,
+    .responsive-form .btn {
+        font-size: 0.85rem; /* smaller, touch-friendly text */
+    }
+
+    .responsive-form input,
+    .responsive-form .input {
+        font-size: 0.85rem;
+        padding: 8px 6px;
+    }
+
+    .responsive-form .submit-button {
+        padding: 8px 6px;
+    }
+
+    /* Increase tap target for buttons while keeping them visually compact */
+    .responsive-form .btn,
+    .responsive-form .submit-button {
+        min-height: 40px;
+        line-height: 1.2;
+    }
+}
+
+/* Medium screens (tablets) — reduce width a bit but keep layout similar to desktop */
+@media (min-width: 421px) and (max-width: 768px) {
+    .responsive-form {
+        max-width: 360px; /* slightly narrower than desktop */
+        padding: 12px;
+    }
+}

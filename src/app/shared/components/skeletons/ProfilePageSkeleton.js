@@ -13,8 +13,8 @@ export default function ProfilePageSkeleton() {
           <div className="profile-left">
             <div className="profile-avatar-wrapper animate-pulse">
               <Skeleton circle height={80} width={80} style={{ marginBottom: 8 }} />
-              <div className="profile-level-badge animate-pulse">
-              </div>
+              {/* <div className="profile-level-badge animate-pulse">
+              </div> */}
             </div>
             <div className="profile-name animate-pulse">
               <Skeleton width={120} height={24} />
