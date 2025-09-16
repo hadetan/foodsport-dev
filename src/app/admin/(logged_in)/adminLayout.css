@@ -14,6 +14,18 @@
 	.admin-topnav {
 		display: none !important;
 	}
+    .content {
+        padding: 10px;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .navbar {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+    }
 }
 
 /* Top navbar: prevent wrapping of item labels, allow horizontal scroll */

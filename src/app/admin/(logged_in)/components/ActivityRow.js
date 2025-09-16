@@ -68,8 +68,9 @@ const ActivityRow = ({ activity, onRowClick }) => {
                                 />
                             </div>
                         </div>
-                        <div>
-                            <div className="font-bold text-base">
+                        <div className="min-w-[120px] sm:min-w-[160px] md:min-w-[200px]">
+                            {/* Provide a minimum width so title doesn't collapse; allow wrapping and limit max width */}
+                            <div className="font-bold text-base max-w-[220px] md:max-w-[320px] break-words">
                                 {activity.title}
                             </div>
                         </div>

@@ -25,15 +25,15 @@ export const UserRow = ({ user, onRowClick }) => {
                             }
                         </div>
                     </div>
-                    <div>
-                        <div className="font-bold">
+                    <div className="min-w-[120px] sm:min-w-[160px] md:min-w-[200px]">
+                        <div className="font-bold max-w-[220px] md:max-w-[320px] break-words">
                             {user.firstname +
                                 " " +
                                 (user.lastname !== undefined
                                     ? user.lastname
                                     : "")}
                         </div>
-                        <div className="text-sm opacity-50">{user.email}</div>
+                        <div className="text-sm opacity-50 truncate">{user.email}</div>
                     </div>
                 </div>
             </td>

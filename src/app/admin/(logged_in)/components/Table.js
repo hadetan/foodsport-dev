@@ -9,12 +9,8 @@ const Table = ({
     onRowClick,
     className = "",
 }) => {
-    // Pagination state
-    const [currentPage, setCurrentPage] = useState(1);
     const rowsPerPage = 10;
-    const totalPages = Math.ceil(tableData.length / rowsPerPage);
-
-    // Calculate paginated data
+    const currentPage = 1;
     const paginatedData = tableData.slice(
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage

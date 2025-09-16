@@ -29,15 +29,18 @@ const iconMap = {
   "Multi_Sports": { Component: FaMendeley },
 };
 
-export default function ActivityIcon({ type, size = 24, className = '' }) {
-  const t = useTranslations();
+export default function ActivityIcon({ type, size = 24, className = '', translate=true }) {
+  let title = null;
+  if (translate) {
+    const t = useTranslations();
+    title = t(`Activity.ActivityTypes.${key}`) || t('Activity.ActivityTypes.other');
+  }
   const iconConfig = iconMap[type] || { Component: HiQuestionMarkCircle };
   const { Component } = iconConfig;
   const idx = ACTIVITY_TYPES_FORMATTED.indexOf(type);
   const key = idx !== -1 ? ACTIVITY_TYPES_FORMATTED[idx] : "other";
-  const title = t(`Activity.ActivityTypes.${key}`) || t('Activity.ActivityTypes.other');
   return (
-  <Tooltip content={title}>
+    <Tooltip content={title}>
       <Component size={size} className={className} />
     </Tooltip>
   )

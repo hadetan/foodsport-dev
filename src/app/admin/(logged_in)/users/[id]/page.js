@@ -139,7 +139,7 @@ const UserDetailPage = () => {
                                 srcAvatar={user.profilePictureUrl}
                                 firstName={user.firstname}
                                 lastName={user.lastname}
-                                size="40"
+                                size="20"
                                 isNav={true}
                             />
                         </div>
@@ -460,9 +460,6 @@ const UserDetailPage = () => {
     );
 };
 
-// Helper function to get the join date for an activity
-
-// Detail row component for cleaner markup
 function Detail({ label, value }) {
     return (
         <div className="flex flex-col gap-1">

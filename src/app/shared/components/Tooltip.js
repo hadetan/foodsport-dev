@@ -10,6 +10,8 @@ export default function Tooltip({
     delay = 50,
     width
 }) {
+
+    if (!content) return;
     const [visible, setVisible] = useState(false);
     const [timer, setTimer] = useState(null);
     const id = useId();
