@@ -45,7 +45,7 @@ const CreateActivityPage = () => {
     const [tncOptions, setTncOptions] = useState([]);
     const [tncLoading, setTncLoading] = useState(false);
 
-    const getMapUrl = (location) => { return `https://www.google.com/maps?q=${location}&output=embed&z=14`}
+    const getMapUrl = (location) => `https://www.google.com/maps?q=${location}&output=embed&z=14`
 
     useEffect(() => {
         if (formData.mapLocation) {
@@ -59,7 +59,7 @@ const CreateActivityPage = () => {
                 mapUrl: url,
             }));
         } else {
-            const url = getMapUrl();
+            const url = "https://www.google.com/maps?q=Hong+Kong&output=embed&z=12";
             setMapUrl(url);
             setFormData((prev) => ({
                 ...prev,

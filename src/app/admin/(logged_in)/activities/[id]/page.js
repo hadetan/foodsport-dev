@@ -813,7 +813,7 @@ export default function EditActivityPage() {
                                 </div>
                             </div>
                             {/* Google Map at the bottom */}
-                            <div className="w-full max-w-5xl mt-8 mb-4">
+                            <div className="w-full mt-8 mb-4">
                                 <div className="w-full h-[320px] rounded-xl overflow-hidden border border-gray-200">
                                     <iframe
                                         title="Google Map"
