@@ -196,6 +196,114 @@ export async function GET(req) {
 	}
 }
 
+// Helper to build canonical activity response (same shape as GET's mapping)
+async function buildActivityResponse(id) {
+	const activity = await getById('activity', id, {
+		id: true,
+		title: true,
+		titleZh: true,
+		description: true,
+		descriptionZh: true,
+		summary: true,
+		summaryZh: true,
+		activityType: true,
+		location: true,
+		startDate: true,
+		endDate: true,
+		startTime: true,
+		endTime: true,
+		status: true,
+		participantLimit: true,
+		organizerId: true,
+		organizationName: true,
+		imageUrl: true,
+		caloriesPerHour: true,
+		isFeatured: true,
+		totalCaloriesBurnt: true,
+		mapUrl: true,
+		tncId: true,
+		createdAt: true,
+		updatedAt: true,
+	});
+	if (!activity) return null;
+
+	// participant count
+	const participantRows = await getMany('userActivity', { activityId: id }, { activityId: true });
+	const participantCount = Array.isArray(participantRows) ? participantRows.length : 0;
+
+	// organizer name
+	let organizerName = 'unknown';
+	if (activity.organizerId) {
+		const admins = await getMany('adminUser', { id: activity.organizerId }, { id: true, name: true });
+		if (Array.isArray(admins) && admins.length > 0) organizerName = admins[0].name || organizerName;
+	}
+
+	// tnc mapping
+	let tnc = null;
+	if (activity.tncId) {
+		const tncRaw = await getById('tnc', activity.tncId, {
+			id: true,
+			title: true,
+			description: true,
+			adminUserId: true,
+			updatedBy: true,
+			createdAt: true,
+			updatedAt: true,
+		});
+		if (tncRaw) {
+			// get admin names if available
+			let createdBy = null;
+			let updatedBy = null;
+			if (tncRaw.adminUserId) {
+				const adm = await getMany('adminUser', { id: tncRaw.adminUserId }, { id: true, name: true });
+				if (Array.isArray(adm) && adm.length > 0) createdBy = adm[0].name || null;
+			}
+			if (tncRaw.updatedBy) {
+				const adm2 = await getMany('adminUser', { id: tncRaw.updatedBy }, { id: true, name: true });
+				if (Array.isArray(adm2) && adm2.length > 0) updatedBy = adm2[0].name || null;
+			}
+			tnc = {
+				id: tncRaw.id,
+				title: tncRaw.title,
+				description: tncRaw.description,
+				createdBy,
+				updatedBy,
+				createdAt: tncRaw.createdAt,
+				updatedAt: tncRaw.updatedAt,
+			};
+		}
+	}
+
+	return {
+		id: activity.id,
+		title: activity.title,
+		titleZh: activity.titleZh || null,
+		description: activity.description,
+		descriptionZh: activity.descriptionZh || null,
+		summary: activity.summary || null,
+		summaryZh: activity.summaryZh || null,
+		activityType: activity.activityType,
+		location: activity.location,
+		startDate: activity.startDate,
+		endDate: activity.endDate,
+		startTime: activity.startTime,
+		endTime: activity.endTime,
+		status: activity.status,
+		participantLimit: activity.participantLimit,
+		participantCount,
+		organizerName,
+		organizationName: activity.organizationName,
+		imageUrl: activity.imageUrl,
+		caloriesPerHour: activity.caloriesPerHour,
+		isFeatured: activity.isFeatured,
+		totalCaloriesBurnt: activity.totalCaloriesBurnt,
+		mapUrl: activity.mapUrl,
+		tnc,
+		createdAt: activity.createdAt,
+		updatedAt: activity.updatedAt,
+	};
+}
+
 // POST /api/admin/activities
 export async function POST(req) {
 	try {
@@ -388,20 +496,11 @@ export async function POST(req) {
 				{ status: 500 }
 			);
 		}
-		let tnc = null;
-		if (activity.tncId) {
-			tnc = await getById('tnc', activity.tncId, {
-				id: true,
-				title: true,
-				description: true,
-				adminUserId: true,
-				updatedBy: true,
-				createdAt: true,
-				updatedAt: true,
-			});
-		}
 
-		return NextResponse.json({ ...activity, tnc }, { status: 201 });
+		// Build canonical response so the client receives the same shape
+		// as the GET endpoint (participantCount, organizerName, tnc mapping, etc.)
+		const canonical = await buildActivityResponse(activity.id || activity?.[0]?.id || activity?.id);
+		return NextResponse.json(canonical || activity, { status: 201 });
 	} catch (error) {
 		console.error('Error in POST /api/admin/activities:', error);
 		return new NextResponse(
@@ -586,20 +685,8 @@ export async function PATCH(req) {
 				{ status: 500 }
 			);
 
-		let tnc = null;
-		if (updatedActivity.tncId) {
-			tnc = await getById('tnc', updatedActivity.tncId, {
-				id: true,
-				title: true,
-				description: true,
-				adminUserId: true,
-				updatedBy: true,
-				createdAt: true,
-				updatedAt: true,
-			});
-		}
-
-		return NextResponse.json({ ...updatedActivity, tnc }, { status: 200 });
+		const canonical = await buildActivityResponse(activityId);
+		return NextResponse.json(canonical || updatedActivity, { status: 200 });
     } catch (error) {
         console.error('Error in PATCH /api/admin/activities:', error);
         return new NextResponse(

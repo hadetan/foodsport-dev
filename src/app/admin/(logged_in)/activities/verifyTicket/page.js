@@ -5,10 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useVerifiedAttendees } from "@/app/shared/contexts/VerifiedAttendeesContext";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
+import FullPageLoader from "../../components/FullPageLoader";
 
 function VerifiedAttendeesTable({ attendees, loading, error }) {
     if (loading)
-        return <div className="mt-8">Loading verified attendees...</div>;
+        return <FullPageLoader />
     if (error) return <div className="mt-8 text-red-600">{error}</div>;
     if (!attendees.length)
         return <div className="mt-8">No verified attendees yet.</div>;

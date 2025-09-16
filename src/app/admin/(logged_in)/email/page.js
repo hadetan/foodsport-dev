@@ -18,7 +18,6 @@ function TemplatePreviewModal({ open, onClose, templateId, params }) {
         setLoading(true);
         setError("");
         setHtml("");
-        // Only send params if it has at least one non-empty value
         const filteredParams = Object.fromEntries(
             Object.entries(params || {}).filter(
                 ([_, v]) =>
@@ -56,7 +55,7 @@ function TemplatePreviewModal({ open, onClose, templateId, params }) {
                     Close
                 </button>
                 <h2 className="text-xl font-semibold mb-4">Template Preview</h2>
-                {loading && <div>Loading preview...</div>}
+                {loading && <div className="loading">Loading preview...</div>}
                 {error && <div className="alert alert-error mb-2">{error}</div>}
                 {!loading && !error && html && (
                     <iframe

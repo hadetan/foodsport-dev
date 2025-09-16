@@ -11,6 +11,7 @@ import { toast } from "@/utils/Toast";
 import axios from "axios";
 import parseUsersFromCsv from "@/utils/parseCsv";
 import ActivityDetailsAdmin from "../../../components/ActivityDetailsAdmin";
+import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 
 function formatDateTime(startTime, endTime) {
     const formattedStartTime = startTime
@@ -41,7 +42,7 @@ const ActivityDetailPage = () => {
     const params = useParams();
     const router = useRouter();
 
-    const { activities, loading: activitiesLoading } = useActivities();
+    const { activities, loading: activitiesLoading } = useAdminActivities();
     const activityId = params?.id;
 
     const [activeTab, setActiveTab] = useState("details");
@@ -99,7 +100,6 @@ const ActivityDetailPage = () => {
             const text = await file.text();
             const { users, skipped } = parseUsersFromCsv(text);
 
-            // Removed strict validation; always attempt API call
             const payloadUsers = users.map((u) => ({
                 email: String(u.email ?? ""),
                 calories: Number.isFinite(u.calories) ? Number(u.calories) : 0,

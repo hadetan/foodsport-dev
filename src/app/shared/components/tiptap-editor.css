@@ -9,6 +9,7 @@
     outline: none;
     font-size: 1rem;
     overflow-y: auto; /* changed from hidden to auto for scrollability */
+    white-space: pre-wrap;
     transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 

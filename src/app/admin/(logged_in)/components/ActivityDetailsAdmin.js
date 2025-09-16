@@ -22,6 +22,7 @@ const ActivityDetailsAdmin = ({
     formattedEndTime,
 }) => {
     const { seatsLeft } = calculateSeats(activity);
+    console.log(activity);
 
     return (
         <div className="activityDetailsPage">
@@ -108,7 +109,7 @@ const ActivityDetailsAdmin = ({
                                         Organizer
                                     </div>
                                     <div className="activityDetailsDetailsValue">
-                                        {activity.organizerName || 'Unknown'}
+                                        {activity.organizationName || 'Unknown'}
                                     </div>
                                 </div>
                             </div>
@@ -120,6 +121,12 @@ const ActivityDetailsAdmin = ({
                 </main>
                 <aside className="activityDetailsSidebar">
                     <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+                        <div className="activityDetailsSidebarRow">
+                            <h3>
+                                <span>Created By:{' '}</span>
+                                <span>{activity.organizerName}</span>
+                            </h3>
+                        </div>
                         <div className="activityDetailsSidebarRow">
                             <FaCalendar className="logo logo-faded" size={22} />
                             <span>{`${formatDate(
