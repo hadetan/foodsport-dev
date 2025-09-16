@@ -29,19 +29,27 @@ const iconMap = {
   "Multi_Sports": { Component: FaMendeley },
 };
 
-export default function ActivityIcon({ type, size = 24, className = '', translate=true }) {
-  let title = null;
-  if (translate) {
-    const t = useTranslations();
-    title = t(`Activity.ActivityTypes.${key}`) || t('Activity.ActivityTypes.other');
-  }
-  const iconConfig = iconMap[type] || { Component: HiQuestionMarkCircle };
-  const { Component } = iconConfig;
+export default function ActivityIcon({ type, size = 24, className = '', translate = true }) {
   const idx = ACTIVITY_TYPES_FORMATTED.indexOf(type);
   const key = idx !== -1 ? ACTIVITY_TYPES_FORMATTED[idx] : "other";
-  return (
-    <Tooltip content={title}>
-      <Component size={size} className={className} />
-    </Tooltip>
-  )
+
+  let title = null;
+  if (translate) {
+  const t = useTranslations();
+  title = translate ? (t(`Activity.ActivityTypes.${key}`) || t('Activity.ActivityTypes.other')) : null;
+  }
+
+  const iconConfig = iconMap[type] || { Component: HiQuestionMarkCircle };
+  const { Component } = iconConfig;
+
+  // Render with Tooltip only when translate === true
+  if (translate) {
+    return (
+      <Tooltip content={title}>
+        <Component size={size} className={className} />
+      </Tooltip>
+    );
+  }
+
+  return <Component size={size} className={className} />;
 }

@@ -14,6 +14,7 @@ import ActivitySummary from "@/app/shared/components/ActivitySummary";
 import { FaLocationDot } from "react-icons/fa6";
 import calculateSeats from "@/utils/calculateSeats";
 import { MdEventSeat } from "react-icons/md";
+import '@/app/shared/css/public.css'
 
 const ActivityDetailsAdmin = ({
     activity,
