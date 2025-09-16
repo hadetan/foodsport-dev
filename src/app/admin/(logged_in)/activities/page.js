@@ -8,15 +8,12 @@ import ActivityStatus from "@/app/constants/constants";
 import FullPageLoader from "../components/FullPageLoader";
 import { RotateCcw } from "lucide-react";
 import Pagination from "@/app/admin/(logged_in)/components/Pagination";
-import { ACTIVITY_TYPES, MONTHS } from "@/app/constants/constants"; // Ensure this exists or define locally
+import { ACTIVITY_TYPES, MONTHS } from "@/app/constants/constants";
 
-// Responsive filter bar
 const FilterBar = ({ setFilters, filters }) => {
     return (
         <div className="w-full mb-6">
-            {/* Tablet: 3 filters per row, Web: all in one row */}
             <div className="flex flex-col md:flex-row md:flex-wrap md:gap-4 lg:flex-nowrap lg:gap-4">
-                {/* First row (Type, Month, Location) */}
                 <div className="flex flex-col md:flex-row md:w-full md:gap-4">
                     <div className="flex flex-col min-w-[160px] md:flex-1">
                         <label className="text-xs font-semibold mb-1">
@@ -80,7 +77,6 @@ const FilterBar = ({ setFilters, filters }) => {
                         />
                     </div>
                 </div>
-                {/* Second row (Status, Activity Name, Reset) */}
                 <div className="flex flex-col md:flex-row md:w-full md:gap-4 mt-2 md:mt-0">
                     <div className="flex flex-col min-w-[140px] md:flex-1">
                         <label className="text-xs font-semibold mb-1">
@@ -159,7 +155,6 @@ function ActivityManagementPageContent() {
 
     const { activities, loading: tableLoading } = useAdminActivities();
 
-    // Sort activities by creation date (descending)
     const sortedActivities = [...activities].sort((a, b) => {
         const dateA = new Date(a.createdAt || a.created_at || 0);
         const dateB = new Date(b.createdAt || b.created_at || 0);
@@ -167,9 +162,7 @@ function ActivityManagementPageContent() {
     });
 
     const filteredActivities = sortedActivities.filter((a) => {
-        // Type filter
         if (filters.type && a.activityType !== filters.type) return false;
-        // Month filter (checks month of startDate)
         if (
             filters.month &&
             (!a.startDate ||
@@ -177,9 +170,7 @@ function ActivityManagementPageContent() {
                 a.startDate.slice(5, 7) !== filters.month)
         )
             return false;
-        // Status filter
         if (filters.status && a.status !== filters.status) return false;
-        // Location filter (partial match, case-insensitive)
         if (
             filters.location &&
             (!a.location ||
@@ -212,7 +203,7 @@ function ActivityManagementPageContent() {
         "Location",
         "Capacity",
         "Status",
-        "Created At", // <-- Added column heading
+        "Created At",
         "Actions",
     ];
 
@@ -229,22 +220,23 @@ function ActivityManagementPageContent() {
             {" "}
             <h2 className="text-2xl font-bold">Activities </h2>
             <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
-                {/* Responsive Filters + Create Button inline */}
-                <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-6 gap-2">
+                <div style={{display: 'flex', justifyContent: 'end'}}>
+                    <button
+                        className="btn btn-primary"
+                        onClick={() =>
+                            router.push("/admin/activities/createActivity")
+                        }
+                    >
+                        Create Activity
+                    </button>
+                </div>
+                <div style={{marginBottom: '30px'}}>
+                    <div className="flex flex-col  md:flex-row md:items-end md:justify-between mb-6 gap-2">
                     <div className="flex-1">
                         <FilterBar setFilters={setFilters} filters={filters} />
-                        <div className="mt-2 md:mt-0 md:ml-4 flex-shrink-0">
-                        <button
-                            className="btn btn-primary"
-                            onClick={() =>
-                                router.push("/admin/activities/createActivity")
-                            }
-                        >
-                            Create Activity
-                        </button>
                     </div>
-                    </div>
-                   
+
+                </div>
                 </div>
 
                 {/* Activities Table */}

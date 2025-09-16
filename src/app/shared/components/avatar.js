@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import React from "react";
 
-const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, isProfile=false, pointer=false, size='8' }) => {
+const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=false, size='8' }) => {
     const first = firstName?.[0]?.toUpperCase() || '';
     const last = lastName?.[0]?.toUpperCase() || '';
     const router = useRouter();

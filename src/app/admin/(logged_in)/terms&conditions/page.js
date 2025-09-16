@@ -4,15 +4,7 @@ import React, { useEffect, useState } from "react";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import { X } from "lucide-react"; // add lucide X icon
 import axios from "axios";
-
-// Local fallback FullPageLoader (overlay spinner)
-function FullPageLoader() {
-    return (
-        <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-[1px] flex items-center justify-center">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-        </div>
-    );
-}
+import FullPageLoader from "../components/FullPageLoader";
 
 // Reusable close button using lucide-react X icon
 function CloseIconButton({ onClick, className = "" }) {
@@ -40,7 +32,7 @@ function TncModal({ open, onClose, onSave, initial, loading }) {
     return (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
             <div
-                className="bg-white rounded-lg p-6 w-full max-w-4xl shadow-lg relative flex flex-col"
+                className="bg-white rounded-lg p-6 w-[92%] sm:w-[90%] md:w-3/4 lg:max-w-4xl shadow-lg relative flex flex-col mx-auto"
                 style={{ maxHeight: "90vh" }}
             >
                 <CloseIconButton onClick={onClose} />

@@ -6,7 +6,6 @@ import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import axiosClient from "@/utils/axios/api";
 import ActivityStatus, { MAX_IMAGE_SIZE_MB } from "@/app/constants/constants";
 import { ImageUp, Pencil } from "lucide-react";
-import Tabs from "@/app/admin/(logged_in)/components/Tabs";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import {
     ACTIVITY_TYPES,
@@ -32,57 +31,35 @@ const CreateActivityPage = () => {
         status: "draft",
         mapUrl: "",
         tncId: "",
+        organizationName: "",
         isFeatured: false,
     });
     const { setActivities } = useAdminActivities();
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
     const [loading, setLoading] = useState(false);
-    const [imageAspect, setImageAspect] = useState(null);
     const imgRef = useRef(null);
-    const [tab, setTab] = useState("details");
-    const [activityId, setActivityId] = useState(null);
     const [mapUrl, setMapUrl] = useState(
         "https://www.google.com/maps?q=&output=embed"
     );
     const [tncOptions, setTncOptions] = useState([]);
     const [tncLoading, setTncLoading] = useState(false);
 
-    useEffect(() => {
-        if (formData.image && imgRef.current) {
-            const img = imgRef.current;
-            if (img.complete) {
-                setImageAspect({
-                    width: img.naturalWidth,
-                    height: img.naturalHeight,
-                });
-            } else {
-                img.onload = () => {
-                    setImageAspect({
-                        width: img.naturalWidth,
-                        height: img.naturalHeight,
-                    });
-                };
-            }
-        } else {
-            setImageAspect(null);
-        }
-    }, [formData.image]);
+    const getMapUrl = (location) => `https://www.google.com/maps?q=${location}&output=embed&z=14`
 
     useEffect(() => {
         if (formData.mapLocation) {
             const encodedLocation = encodeURIComponent(
                 formData.mapLocation + ", Hong Kong"
             );
-            const url = `https://www.google.com/maps?q=${encodedLocation}&output=embed&z=14`;
+            const url = getMapUrl(encodedLocation);
             setMapUrl(url);
             setFormData((prev) => ({
                 ...prev,
                 mapUrl: url,
             }));
         } else {
-            const url =
-                "https://www.google.com/maps?q=Hong+Kong&output=embed&z=12";
+            const url = "https://www.google.com/maps?q=Hong+Kong&output=embed&z=12";
             setMapUrl(url);
             setFormData((prev) => ({
                 ...prev,
@@ -103,6 +80,7 @@ const CreateActivityPage = () => {
                 setTncOptions(res.data.tncs);
             }
         } catch (e) {
+            console.error(e.message);
         } finally {
             setTncLoading(false);
         }
@@ -252,6 +230,7 @@ const CreateActivityPage = () => {
                 image: formData.image,
                 mapUrl: formData.mapUrl,
                 tncId: formData.tncId || "",
+                organizationName: formData.organizationName || "",
                 isFeatured: !!formData.isFeatured,
             };
             const formDataToSend = new FormData();
@@ -274,15 +253,13 @@ const CreateActivityPage = () => {
                 }
             );
             if (response?.data?.id) {
-                setActivityId(response?.data?.id);
                 setActivities((prev) =>
                     Array.isArray(prev)
                         ? [...prev, response?.data]
                         : [response?.data]
                 );
+                router.push(`/admin/activities/${response.data.id}?tab=description`);
             }
-
-            setTab("description");
         } catch (err) {
             setError(err?.response?.data?.error || err.message);
         } finally {
@@ -302,12 +279,7 @@ const CreateActivityPage = () => {
                     &larr; Back
                 </button>
             </div>
-            <div className="w-full bg-white  overflow-y-auto mb-2">
-                {/* Tabs */}
-                <Tabs setTab={setTab} activeTab={tab} activityId={activityId} />
-
-                {tab === "details" && (
-                    <>
+            <div className="w-full bg-white  overflow-y-auto mb-2">                
                         <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-black">
                             Create Activity
                         </h1>
@@ -323,7 +295,7 @@ const CreateActivityPage = () => {
                                 await handleCreateActivity();
                             }}
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6" style={{alignItems: 'center'}}>
                                 {/* Upload Image - full width */}
                                 <div className="col-span-full">
                                     <label className="label text-lg font-semibold mb-2 text-black">
@@ -491,6 +463,26 @@ const CreateActivityPage = () => {
                                     )}
                                 </div>
 
+                                {/* Should be featured? checkbox */}
+                                <div className="form-control w-full col-span-1">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Featured
+                                    </label>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <p className="text-sm text-gray-600">Feature this activity to highlight it on the landing page.</p>
+                                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="toggle toggle-primary"
+                                                name="isFeatured"
+                                                checked={!!formData.isFeatured}
+                                                onChange={handleFormChange}
+                                                aria-label="Feature this activity"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+
                                 {/* Summary (description) */}
                                 <div className="form-control w-full col-span-1 xl:col-span-1">
                                     <label className="label text-lg font-semibold mb-2 text-black">
@@ -562,18 +554,24 @@ const CreateActivityPage = () => {
                                     )}
                                 </div>
 
-                                {/* Should be featured? checkbox */}
-                                <div className="form-control w-full col-span-1 flex flex-col justify-start">
-                                    <label className="cursor-pointer label text-lg font-semibold mb-0 text-black flex items-center gap-2">
-                                        <span>Should be featured?</span>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox checkbox-primary"
-                                            name="isFeatured"
-                                            checked={!!formData.isFeatured}
-                                            onChange={handleFormChange}
-                                        />
+                                {/* End Date & Time */}
+                                <div className="form-control w-full col-span-1">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        End Date &amp; Time
                                     </label>
+                                    <input
+                                        type="datetime-local"
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="endDateTime"
+                                        value={formData.endDateTime}
+                                        onChange={handleFormChange}
+                                        required
+                                    />
+                                    {fieldErrors.endDateTime && (
+                                        <span className="text-error text-base">
+                                            {fieldErrors.endDateTime}
+                                        </span>
+                                    )}
                                 </div>
 
                                 {/* Location (Event Address) */}
@@ -656,26 +654,6 @@ const CreateActivityPage = () => {
                                     )}
                                 </div>
 
-                                {/* End Date & Time */}
-                                <div className="form-control w-full col-span-1">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        End Date &amp; Time
-                                    </label>
-                                    <input
-                                        type="datetime-local"
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="endDateTime"
-                                        value={formData.endDateTime}
-                                        onChange={handleFormChange}
-                                        required
-                                    />
-                                    {fieldErrors.endDateTime && (
-                                        <span className="text-error text-base">
-                                            {fieldErrors.endDateTime}
-                                        </span>
-                                    )}
-                                </div>
-
                                 {/* Status */}
                                 <div className="form-control w-full col-span-1">
                                     <label className="label text-lg font-semibold mb-2 text-black">
@@ -733,6 +711,18 @@ const CreateActivityPage = () => {
                                         </span>
                                     )}
                                 </div>
+                                <div className="form-control w-full col-span-1">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Organization Name
+                                    </label>
+                                    <input
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="organizationName"
+                                        value={formData.organizationName || ""}
+                                        onChange={handleFormChange}
+                                        placeholder="Name of organizer of this activity"
+                                    />
+                                </div>
 
                                 {/* Search Map - full width */}
                                 <div className="col-span-full">
@@ -776,12 +766,10 @@ const CreateActivityPage = () => {
                             <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full">
                                 <button
                                     type="submit"
-                                    className={`btn btn-primary btn-lg flex-1 ${
-                                        loading ? "loading" : ""
-                                    }`}
+                                    className={`btn btn-primary btn-lg flex-1`}
                                     disabled={loading}
                                 >
-                                    Save & Continue
+                                    {loading ? 'Creating Activity' : 'Save & Continue'}
                                 </button>
                                 <button
                                     type="button"
@@ -794,11 +782,7 @@ const CreateActivityPage = () => {
                                     Cancel
                                 </button>
                             </div>
-                            
                         </form>
-                        
-                    </>
-                )}
             </div>
         </div>
     );

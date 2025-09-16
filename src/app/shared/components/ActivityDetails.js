@@ -275,7 +275,7 @@ const ActivityDetails = ({
                                         {t('Activity.DetailsPage.organizerLabel')}
                                     </div>
                                     <div className="activityDetailsDetailsValue">
-                                        {activity.organizerName || t('Activity.DetailsPage.unknown')}
+                                        {activity.organizationName || t('Activity.DetailsPage.unknown')}
                                     </div>
                                 </div>
                             </div>

@@ -5,13 +5,13 @@ const EmailPreview = ({ subject, content, recipients, onClose }) => {
     const sanitizedContent = DOMPurify.sanitize(content);
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="card bg-base-100 w-full max-w-3xl shadow-xl">
-                <div className="card-body">
+            <div className="card bg-base-100 w-full max-w-3xl shadow-xl max-h-[80vh]">
+                <div className="card-body flex flex-col h-full">
                     <h2 className="card-title">Email Preview</h2>
 
                     <div className="divider my-2"></div>
 
-                    <div className="bg-base-200 p-4 rounded-lg">
+                    <div className="bg-base-200 p-4 rounded-lg flex-1 overflow-auto max-h-[60vh]">
                         <div className="mb-4">
                             <strong>To:</strong>{" "}
                             {recipients.map((r) => r.name).join(", ")}

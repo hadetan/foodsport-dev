@@ -60,9 +60,9 @@ export async function PATCH(req) {
 
     let updateData = {};
     if (hasSummary) {
-        updateData.summary = body.summary.trim();
+        updateData.summary = body.summary;
     } else if (hasSummaryZh) {
-        updateData.summaryZh = body.summaryZh.trim();
+        updateData.summaryZh = body.summaryZh;
     }
 
     const updated = await updateById("activity", id, updateData);

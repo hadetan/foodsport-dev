@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import Avatar from "@/app/shared/components/avatar";
@@ -11,6 +10,28 @@ import { Download, Upload, Pencil } from "lucide-react";
 import { toast } from "@/utils/Toast";
 import axios from "axios";
 import parseUsersFromCsv from "@/utils/parseCsv";
+import ActivityDetailsAdmin from "../../../components/ActivityDetailsAdmin";
+import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
+
+function formatDateTime(startTime, endTime) {
+    const formattedStartTime = startTime
+        ? new Date(startTime).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+          })
+        : "";
+    const formattedEndTime = endTime
+        ? new Date(endTime).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+          })
+        : "";
+
+    return {
+        formattedStartTime,
+        formattedEndTime,
+    };
+}
 
 const ActivityDetailPage = () => {
     const [activity, setActivity] = useState(null);
@@ -21,14 +42,13 @@ const ActivityDetailPage = () => {
     const params = useParams();
     const router = useRouter();
 
-    const { activities, loading: activitiesLoading } = useActivities();
+    const { activities, loading: activitiesLoading } = useAdminActivities();
     const activityId = params?.id;
 
-    const [activeTab, setActiveTab] = useState("details"); // "details" or "users"
+    const [activeTab, setActiveTab] = useState("details");
     const fileInputRef = useRef(null);
     const [importing, setImporting] = useState(false);
 
-    // Filter users who have joined this activity
     useEffect(() => {
         if (users && users.length > 0 && activityId) {
             const filteredUsers = users.filter(
@@ -49,7 +69,6 @@ const ActivityDetailPage = () => {
         if (!activityId || activitiesLoading) return;
         setLoading(true);
         setError(null);
-        // Find the activity from the activities context
         const found = activities?.find(
             (a) =>
                 a.id === activityId ||
@@ -68,7 +87,7 @@ const ActivityDetailPage = () => {
 
     const handleFileChange = async (e) => {
         const file = e.target.files?.[0];
-        e.target.value = ""; // allow re-selecting the same file next time
+        e.target.value = "";
         if (!file) return;
 
         if (!activityId) {
@@ -81,7 +100,6 @@ const ActivityDetailPage = () => {
             const text = await file.text();
             const { users, skipped } = parseUsersFromCsv(text);
 
-            // Removed strict validation; always attempt API call
             const payloadUsers = users.map((u) => ({
                 email: String(u.email ?? ""),
                 calories: Number.isFinite(u.calories) ? Number(u.calories) : 0,
@@ -139,8 +157,7 @@ const ActivityDetailPage = () => {
                     Activity not found
                 </h2>
                 <p className="text-gray-500">
-                    The activity you are looking for does not exist or has been
-                    removed.
+                    The activity you are looking for does not exist or has been removed.
                 </p>
             </div>
         );
@@ -158,9 +175,13 @@ const ActivityDetailPage = () => {
         return new Date(dateString).toLocaleTimeString("en-US", options);
     };
 
-    // Simple check for cancelled or closed status
     const canImportExport =
         activity?.status === "cancelled" || activity?.status === "closed";
+
+    const { formattedStartTime, formattedEndTime } = formatDateTime(
+        activity.startTime,
+        activity.endTime
+    );
 
     return (
         <div className="w-full min-h-screen bg-white">
@@ -237,180 +258,18 @@ const ActivityDetailPage = () => {
 
             {/* Header Section with Image and Activity Details Side by Side */}
             {activeTab === "details" && (
-                <div className="container mx-auto px-4 py-8 ">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 ">
-                        {/* Cover Image - Takes 2/3 of the width on large screens */}
-                        <div className="lg:col-span-2 border-2">
-                            <div
-                                className="relative w-full"
-                                style={{ aspectRatio: "16/9" }}
-                            >
-                                {activity.imageUrl ? (
-                                    <Image
-                                        src={activity.imageUrl}
-                                        alt={activity.title}
-                                        fill
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-                                        className="object-cover rounded-lg"
-                                        priority
-                                    />
-                                ) : (
-                                    <div className="absolute inset-0 w-full h-full bg-gray-200 flex items-center justify-center">
-                                        <p className="text-gray-500">
-                                            No image available
-                                        </p>
-                                    </div>
-                                )}
-                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                                    {/* Title */}
-                                    <h1 className="text-3xl md:text-4xl font-bold text-white">
-                                        {activity.title}
-                                    </h1>
-                                    {/* Date and status badge, styled like the card preview */}
-                                    <div className="flex items-center mt-2">
-                                        <span className="text-white text-base mr-4">
-                                            {activity.startDate
-                                                ? formatDate(activity.startDate)
-                                                : "Date not specified"}
-                                        </span>
-                                        {activity.status && (
-                                            <span
-                                                className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${
-                                                    activity.status === "active"
-                                                        ? "bg-green-600 text-white"
-                                                        : activity.status ===
-                                                          "inactive"
-                                                        ? "bg-gray-400 text-white"
-                                                        : activity.status ===
-                                                          "cancelled"
-                                                        ? "bg-red-600 text-white"
-                                                        : activity.status ===
-                                                          "completed"
-                                                        ? "bg-gray-600 text-white"
-                                                        : "bg-yellow-500 text-white"
-                                                }`}
-                                            >
-                                                {activity.status}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Activity Details - Takes 1/3 of the width on large screens */}
-                        <div>
-                            <div className="bg-white rounded-lg shadow-md p-6 h-full">
-                                <h2 className="text-xl font-bold mb-4 text-gray-800">
-                                    Activity Details
-                                </h2>
-                                <div className="space-y-3">
-                                    <div>
-                                        <p className="text-sm text-gray-500">
-                                            Type
-                                        </p>
-                                        <p className="font-medium text-gray-800">
-                                            {activity.activityType}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">
-                                            Location
-                                        </p>
-                                        <p className="font-medium text-gray-800">
-                                            {activity.location}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">
-                                            Start Date
-                                        </p>
-                                        <p className="font-medium text-gray-800">
-                                            {formatDate(activity.startDate)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">
-                                            End Date
-                                        </p>
-                                        <p className="font-medium text-gray-800">
-                                            {formatDate(activity.endDate)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">
-                                            Start Time
-                                        </p>
-                                        <p className="font-medium text-gray-800">
-                                            {formatTime(activity.startTime)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">
-                                            End Time
-                                        </p>
-                                        <p className="font-medium text-gray-800">
-                                            {formatTime(activity.endTime)}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">
-                                            Participant Limit
-                                        </p>
-                                        <p className="font-medium text-gray-800">
-                                            {activity.participantLimit ??
-                                                "Not specified"}
-                                        </p>
-                                    </div>
-                                    <div></div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">
-                                            Calories Per Hour
-                                        </p>
-                                        <p className="font-medium text-gray-800">
-                                            {activity.caloriesPerHour ??
-                                                "Not specified"}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">
-                                            Featured
-                                        </p>
-                                        <p className="font-medium text-gray-800">
-                                            {activity.isFeatured ? "Yes" : "No"}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div className="container mx-auto py-8 ">
+                    <ActivityDetailsAdmin
+                        activity={activity}
+                        formattedStartTime={formattedStartTime}
+                        formattedEndTime={formattedEndTime}
+                    />
                 </div>
             )}
 
             {/* Tab Panels */}
             <div className="container mx-auto px-4">
                 <div className="w-full">
-                    {activeTab === "details" && (
-                        <div>
-                            {/* Description */}
-                            <div className="bg-white rounded-lg shadow-md p-6 mb-8 w-full">
-                                <h2 className="text-2xl font-bold mb-4 text-gray-800">
-                                    Description
-                                </h2>
-                                <div className="prose max-w-none">
-                                    {activity.description ? (
-                                        <p className="text-gray-700 whitespace-pre-line">
-                                            {activity.description}
-                                        </p>
-                                    ) : (
-                                        <p className="text-gray-500 italic">
-                                            No description provided
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
                     {activeTab === "users" && (
                         <div>
                             {/* Import/Export buttons only when status is cancelled or closed */}

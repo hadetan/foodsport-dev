@@ -5,10 +5,8 @@ import { useRouter } from "next/navigation";
 import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
-import api from "@/utils/axios/api";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import FullPageLoader from "../components/FullPageLoader";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DISTRICTS } from "@/app/constants/constants";
 import Pagination from "@/app/admin/(logged_in)/components/Pagination";
 
@@ -22,7 +20,6 @@ const UserManagementPage = () => {
     const pageSize = 10;
     const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
-    // Format district names for display (replace underscores with spaces, capitalize)
     const formatDistrict = (district) =>
         district.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -34,9 +31,18 @@ const UserManagementPage = () => {
             return;
         }
 
+        const q = String(searchQuery || "").trim().toLowerCase();
+
         const filtered = users.filter((user) => {
-            const fullName = `${user.firstname} ${user.lastname}`.toLowerCase();
-            const matchesSearch = fullName.includes(searchQuery.toLowerCase());
+            const fullName = `${user.firstname || ""} ${user.lastname || ""}`.toLowerCase();
+            const email = (user.email || "").toLowerCase();
+            const id = String(user.id || user.userId || "").toLowerCase();
+
+            const matchesSearch =
+                !q ||
+                fullName.includes(q) ||
+                email.includes(q) ||
+                id.includes(q);
 
             const matchesStatus =
                 statusFilter === "all" ||
@@ -46,6 +52,7 @@ const UserManagementPage = () => {
             return matchesSearch && matchesStatus;
         });
 
+        setCurrentPage(1);
         setFilteredUsers(filtered);
     }, [searchQuery, users, statusFilter, loading]);
 
@@ -57,7 +64,7 @@ const UserManagementPage = () => {
     const statusOfUser = ["All", "Active", "Inactive"];
     const tableHeading = [
         "User Info",
-        "Joined At",
+        "Registered At",
         "Status",
         "Statistics",
         "Actions",

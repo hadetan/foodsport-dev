@@ -1,0 +1,85 @@
+.admin-sidebar {
+	display: none;
+}
+
+.admin-topnav {
+	display: block;
+}
+
+/* Ensure sidebar is visible at desktop widths (1024px and up) */
+@media (min-width: 1024px) {
+	.admin-sidebar {
+		display: block !important;
+	}
+	.admin-topnav {
+		display: none !important;
+	}
+    .content {
+        padding: 10px;
+        align-items: center;
+        justify-content: start;
+        gap: 10px;
+    }
+
+    .navbar {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+    }
+}
+
+/* Top navbar: prevent wrapping of item labels, allow horizontal scroll */
+.admin-topnav nav {
+	-webkit-overflow-scrolling: touch;
+}
+
+.admin-topnav .menu {
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	white-space: nowrap; /* prevent text wrapping */
+}
+
+.admin-topnav .menu li a,
+.admin-topnav .menu li button {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	white-space: nowrap;
+	padding: 0.5rem 0.75rem;
+}
+
+/* Remove default list markers and ensure li items are inline */
+.admin-topnav .menu {
+	list-style: none;
+}
+.admin-topnav .menu li {
+	display: inline-flex;
+	align-items: center;
+}
+
+/* If items overflow, let the nav scroll horizontally */
+.admin-topnav nav {
+	overflow-x: auto;
+}
+
+/* Slight visual padding so first/last items aren't flush to the edge */
+.admin-topnav nav {
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+@media (max-width: 900px) {
+    .content {
+        padding: 10px;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .navbar {
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+    }
+}

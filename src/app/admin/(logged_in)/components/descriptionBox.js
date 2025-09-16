@@ -73,23 +73,23 @@ const ActivityDetailsStep = ({
 
             <TiptapEditor value={details} onChange={setDetails} />
             {showPreview && (
-                <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
-                    <div className="bg-white w-full h-xxl flex flex-col relative mx-auto md:max-w-7xl md:my-8 md:rounded-lg">
+                <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-4xl shadow-lg rounded-lg overflow-hidden max-h-[80vh] flex flex-col">
                         <button
                             className="absolute top-4 right-4 btn btn-sm btn-circle z-10"
                             onClick={() => setShowPreview(false)}
                         >
                             ✕
                         </button>
-                        <h2 className="text-2xl font-bold mb-0 px-8 pt-8 pb-2">
-                            Preview
-                        </h2>
+                        <h2 className="text-2xl font-bold mb-0 px-6 pt-6 pb-2">Preview</h2>
                         <div className="border-t border-neutral-200 mt-2" />
-                        <div
-                            className="tiptap-editor prose max-w-none flex-1 overflow-y-auto px-8"
-                            style={{ paddingBottom: 0, paddingTop: 0 }}
-                            dangerouslySetInnerHTML={{ __html: details }}
-                        />
+                        <div className="p-6 flex-1 overflow-auto">
+                            <div
+                                className="tiptap-editor prose max-w-none"
+                                style={{ paddingBottom: 0, paddingTop: 0 }}
+                                dangerouslySetInnerHTML={{ __html: details }}
+                            />
+                        </div>
                     </div>
                 </div>
             )}

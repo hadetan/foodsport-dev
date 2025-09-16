@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import FullPageLoader from "../../components/FullPageLoader";
@@ -54,6 +54,7 @@ export default function EditActivityPage() {
     const fileInputRef = useRef();
     const params = useParams();
     const activityId = params?.id;
+    const searchParams = useSearchParams();
     const {
         activities,
         loading: actLoading,
@@ -64,6 +65,15 @@ export default function EditActivityPage() {
     const [tncOptions, setTncOptions] = useState([]);
     const [tncLoading, setTncLoading] = useState(false);
     useEffect(() => {
+        // If the URL contains ?tab=description (or chinese), open that tab.
+        try {
+            const tabFromUrl = searchParams?.get("tab");
+            if (tabFromUrl === "description" || tabFromUrl === "chinese") {
+                setActiveTab(tabFromUrl);
+            }
+        } catch (e) {
+            // ignore if searchParams not available
+        }
         if (!activities || !activityId) return;
         const found =
             activities.find((a) => String(a.id) === String(activityId)) || null;
@@ -109,6 +119,7 @@ export default function EditActivityPage() {
             caloriesPerHourMax,
             tncId: activity.tncId,
             isFeatured: !!activity.isFeatured,
+            organizationName: activity.organizationName,
         });
         setAudit({
             createdBy: activity.organizerName || "Unknown",
@@ -234,10 +245,6 @@ export default function EditActivityPage() {
         setImageFile(file);
     };
 
-    const handleImageRemove = () => {
-        setImageFile(null);
-    };
-
     const handleSave = async () => {
         if (!validate()) return;
         setLoading(true);
@@ -258,9 +265,14 @@ export default function EditActivityPage() {
                 )
                     return;
                 if (value !== "" && value !== null && value !== undefined) {
+                    if (key === 'capacity') return;
                     formData.append(key, value);
                 }
             });
+
+            if (form.capacity !== undefined && form.capacity !== null && form.capacity !== '') {
+                formData.append('participantLimit', String(form.capacity));
+            }
 
             if (form.startDateTime) {
                 const start = new Date(form.startDateTime);
@@ -291,6 +303,16 @@ export default function EditActivityPage() {
             }
             if (form.descriptionZh) {
                 formData.append("summaryZh", form.descriptionZh);
+            }
+
+            // Ensure organizationName is included when present
+            if (form.organizationName !== undefined && form.organizationName !== null) {
+                formData.append("organizationName", form.organizationName);
+            }
+
+            // Ensure tncId is included when present (can be empty string)
+            if (form.tncId !== undefined) {
+                formData.append("tncId", form.tncId || "");
             }
 
             if (imageFile && imageFile.url === undefined) {
@@ -384,7 +406,7 @@ export default function EditActivityPage() {
                             className="w-full"
                             style={{ marginLeft: 0, marginRight: 0 }}
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-8 w-full">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-8 w-full" style={{alignItems: 'center'}}>
                                 {/* Upload Image - full width */}
                                 <div className="col-span-1 md:col-span-3">
                                     <label className="label text-lg font-semibold mb-2 text-black">
@@ -539,7 +561,7 @@ export default function EditActivityPage() {
                                             Select activity type
                                         </option>
                                         {ACTIVITY_TYPES_FORMATTED.map(
-                                            (formatted, idx) => (
+                                            (formatted) => (
                                                 <option
                                                     key={formatted}
                                                     value={formatted}
@@ -553,7 +575,26 @@ export default function EditActivityPage() {
                                         )}
                                     </select>
                                 </div>
-                                {/* Row 2: Summary, Chinese Summary, Start Date & Time */}
+                                {/* Should be featured, Summary, Chinese Summary */}
+                                {/* ? */}
+                                <div className="form-control w-full col-span-1">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Featured
+                                    </label>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <p className="text-sm text-gray-600">Feature this activity to highlight it on the landing page.</p>
+                                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="toggle toggle-primary"
+                                                name="isFeatured"
+                                                checked={!!form.isFeatured}
+                                                onChange={handleInput}
+                                                aria-label="Feature this activity"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
                                 <div className="form-control w-full">
                                     <label className="label text-lg font-semibold mb-2 text-black">
                                         Summary
@@ -604,18 +645,23 @@ export default function EditActivityPage() {
                                         </span>
                                     )}
                                 </div>
-                                {/* Row 3: Should be featured?, Location, Capacity */}
                                 <div className="form-control w-full">
-                                    <label className="label cursor-pointer justify-start gap-2 text-lg font-semibold mb-2 text-black">
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox checkbox-primary"
-                                            name="isFeatured"
-                                            checked={!!form.isFeatured}
-                                            onChange={handleInput}
-                                        />
-                                        <span>Should be featured?</span>
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        End Date & Time
                                     </label>
+                                    <input
+                                        type="datetime-local"
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="endDateTime"
+                                        value={form.endDateTime}
+                                        onChange={handleInput}
+                                        required
+                                    />
+                                    {errors.endDateTime && (
+                                        <span className="text-error text-base">
+                                            {errors.endDateTime}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="form-control w-full">
                                     <label className="label text-lg font-semibold mb-2 text-black">
@@ -687,32 +733,9 @@ export default function EditActivityPage() {
                                             placeholder="Max"
                                         />
                                     </div>
-                                    <span className="text-xs text-gray-400 mt-1">
-                                        Enter minimum and maximum calories
-                                        participants could lose per hour (e.g.
-                                        150-200)
-                                    </span>
                                     {errors.caloriesPerHour && (
                                         <span className="text-error text-base">
                                             {errors.caloriesPerHour}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        End Date & Time
-                                    </label>
-                                    <input
-                                        type="datetime-local"
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="endDateTime"
-                                        value={form.endDateTime}
-                                        onChange={handleInput}
-                                        required
-                                    />
-                                    {errors.endDateTime && (
-                                        <span className="text-error text-base">
-                                            {errors.endDateTime}
                                         </span>
                                     )}
                                 </div>
@@ -760,6 +783,18 @@ export default function EditActivityPage() {
                                         ))}
                                     </select>
                                 </div>
+                                <div className="form-control w-full col-span-1">
+                                    <label className="label text-lg font-semibold mb-2 text-black">
+                                        Organization Name
+                                    </label>
+                                    <input
+                                        className="input input-bordered input-lg w-full bg-white text-black"
+                                        name="organizationName"
+                                        value={form.organizationName || ""}
+                                        onChange={handleInput}
+                                        placeholder="Name of organizer of this activity"
+                                    />
+                                </div>
                                 <div className="col-span-full">
                                 <div className="form-control w-full">
                                     <input
@@ -778,7 +813,7 @@ export default function EditActivityPage() {
                                 </div>
                             </div>
                             {/* Google Map at the bottom */}
-                            <div className="w-full max-w-5xl mt-8 mb-4">
+                            <div className="w-full mt-8 mb-4">
                                 <div className="w-full h-[320px] rounded-xl overflow-hidden border border-gray-200">
                                     <iframe
                                         title="Google Map"
@@ -799,12 +834,10 @@ export default function EditActivityPage() {
                             <div className="md:col-span-3 flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full">
                                 <button
                                     type="submit"
-                                    className={`btn btn-primary btn-lg flex-1 ${
-                                        loading ? "loading" : ""
-                                    }`}
+                                    className={`btn btn-primary btn-lg flex-1`}
                                     disabled={loading}
                                 >
-                                    Save
+                                    {loading ? 'Saving ...' : 'Save'}
                                 </button>
                                 <button
                                     type="button"
@@ -814,9 +847,6 @@ export default function EditActivityPage() {
                                 >
                                     Cancel
                                 </button>
-                                {loading && (
-                                    <span className="loading loading-spinner"></span>
-                                )}
                             </div>
                         </form>
                         {/* Cancel Confirmation */}
