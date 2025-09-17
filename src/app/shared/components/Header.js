@@ -12,7 +12,7 @@ import AvatarSkeleton from "./skeletons/AvatarSkeleton";
 import { useUser } from "@/app/shared/contexts/userContext";
 import { useActivities } from "../contexts/ActivitiesContext";
 import LocaleSwitcher from "./LocaleSwitcher";
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations, useLocale } from "next-intl";
 
 export default function Header() {
     const { authToken } = useAuth();
@@ -32,24 +32,26 @@ export default function Header() {
 
     const navLinks = [
         {
-            id: 'home',
-            label: t('Header.home'),
+            id: "home",
+            label: t("Header.home"),
             href: authToken ? `/${locale}/my/` : `/${locale}/`,
         },
         {
-            id: 'joinActivities',
-            label: t('Header.joinActivities'),
-            href: authToken ? `/${locale}/my/activities` : `/${locale}/activities`,
+            id: "joinActivities",
+            label: t("Header.joinActivities"),
+            href: authToken
+                ? `/${locale}/my/activities`
+                : `/${locale}/activities`,
         },
         {
-            id: 'redeemRewards',
-            label: t('Header.redeemRewards'),
+            id: "redeemRewards",
+            label: t("Header.redeemRewards"),
             href: "/redeem",
             clickable: true,
         },
         !authToken && {
-            id: 'howDoesItWork',
-            label: t('Header.howDoesItWork'),
+            id: "howDoesItWork",
+            label: t("Header.howDoesItWork"),
             href: `/${locale}/how`,
         },
         {
@@ -72,15 +74,15 @@ export default function Header() {
                     />
                 )
             ) : (
-                    <Link href={`/${locale}/auth/login`} className={styles.login}>
-                    {t('Header.loginRegister')}
+                <Link href={`/${locale}/auth/login`} className={styles.login}>
+                    {t("Header.loginRegister")}
                 </Link>
             ),
             href: null,
             isButton: true,
         },
         {
-            label: <LocaleSwitcher className={styles.langSwitch}/>,
+            label: <LocaleSwitcher className={styles.langSwitch} />,
             href: null,
             isButton: true,
         },
@@ -91,24 +93,30 @@ export default function Header() {
     const navLinksLeft = filteredNavLinks.filter((link) => !link.isButton);
 
     const strippedPath = (() => {
-        if (!pathname) return '';
+        if (!pathname) return "";
         const prefix = `/${locale}`;
         let p = pathname;
-        if (p === prefix) return '/';
-        if (p.startsWith(prefix + '/')) p = p.slice(prefix.length);
-        if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1);
-        return p || '/';
+        if (p === prefix) return "/";
+        if (p.startsWith(prefix + "/")) p = p.slice(prefix.length);
+        if (p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
+        return p || "/";
     })();
 
     let activeIdx = -1;
-    if (strippedPath === '/') {
-        activeIdx = navLinksLeft.findIndex((l) => l.id === 'home');
-    } else if (strippedPath === '/my') {
-        activeIdx = navLinksLeft.findIndex((l) => l.id === 'home');
-    } else if (strippedPath === '/how') {
-        activeIdx = navLinksLeft.findIndex((l) => l.id === 'howDoesItWork');
-    } else if (strippedPath === '/activities' || strippedPath === '/my/activities' || strippedPath.startsWith('/activities/')) {
-        activeIdx = navLinksLeft.findIndex((l) => l.id === 'joinActivities');
+    if (strippedPath === "/") {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === "home");
+    } else if (strippedPath === "/my") {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === "home");
+    } else if (strippedPath === "/how") {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === "howDoesItWork");
+    } else if (
+        strippedPath === "/activities" ||
+        strippedPath === "/my/activities" ||
+        strippedPath.startsWith("/activities/")
+    ) {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === "joinActivities");
+    } else if (strippedPath === "/redeem") {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === "redeemRewards");
     } else {
         activeIdx = -1;
     }
@@ -131,7 +139,9 @@ export default function Header() {
                         .map((link, idx) => (
                             <span
                                 key={`${link.label}-${idx}`}
-                                className={`${styles.navButtonRight} ${link.className || ''}`}
+                                className={`${styles.navButtonRight} ${
+                                    link.className || ""
+                                }`}
                                 style={{
                                     cursor: "pointer",
                                     marginLeft: "24px",
@@ -166,7 +176,10 @@ export default function Header() {
                             onMouseEnter={() => setHoveredIdx(idx)}
                             onMouseLeave={() => setHoveredIdx(null)}
                             style={{
-                                cursor: link.clickable || link.href ? "pointer" : "default",
+                                cursor:
+                                    link.clickable || link.href
+                                        ? "pointer"
+                                        : "default",
                             }}
                         >
                             {link.href ? (
