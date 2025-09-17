@@ -13,13 +13,14 @@ export async function POST(req) {
 
 
 		const user = await prisma.user.findUnique({ where: { email } });
-		if (!user) return Response.json({ error: 'User not found.' }, { status: 404 });
-
 		const otpCode = generateOtp(6);
 		const hashed = await bcrypt.hash(otpCode, 10);
-
 		const ttlMinutes = parseInt(process.env.OTP_TTL_MINUTES || '5', 10);
 		const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
+		if (!user) {
+			await new Promise((resolve) => setTimeout(resolve, 500));
+			return Response.json({ error: 'Invalid credentials.' }, { status: 400 });
+		}
 
 		const result = await prisma.$transaction(async (tx) => {
 			await tx.otp.updateMany({ where: { userId: user.id, status: 'active' }, data: { status: 'cancelled' } });

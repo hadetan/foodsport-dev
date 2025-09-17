@@ -70,7 +70,7 @@ export function AuthProvider({ children }) {
 			}
 			throw new Error('Registration verification failed');
 		} catch (err) {
-			return `Something went wrong. Please try again. ${err.message}`;
+			throw new Error(`Something went wrong. Please try again. ${err.message}`);
 		}
 	};
 

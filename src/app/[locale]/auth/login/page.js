@@ -20,7 +20,7 @@ export default function LoginPage() {
 	const [sessionId, setSessionId] = useState(null);
 	const [otpCode, setOtpCode] = useState('');
 	const router = useRouter();
-	 const { login, authToken, verifyOtp } = useAuth();
+	const { login, authToken, verifyOtp } = useAuth();
 	const subOnce = useRef(false);
 	const handledOnce = useRef(false);
 	const t = useTranslations();
