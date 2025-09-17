@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useVerifiedAttendees } from "@/app/shared/contexts/VerifiedAttendeesContext";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
@@ -77,14 +77,11 @@ function VerifiedAttendeesTable({ attendees, loading, error }) {
 
 export default function VerifyTicketPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
     const { attendees, loading, error, setAttendees, setError, setLoading } =
         useVerifiedAttendees();
     const { getActivityNameById } = useAdminActivities();
 
-    const [activityId, setActivityId] = useState(
-        searchParams.get("activityId")
-    );
+    const [activityId, setActivityId] = useState("");
     const [ticketCode, setTicketCode] = useState("");
     const [verifying, setVerifying] = useState(false);
     const [verifyError, setVerifyError] = useState(null);
@@ -121,12 +118,23 @@ export default function VerifyTicketPage() {
         }
     };
 
-    // Keep activityId in sync with URL params
     useEffect(() => {
-        const id = searchParams.get("activityId") || "";
-        setActivityId(id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchParams]);
+        function readActivityIdFromLocation() {
+            try {
+                if (typeof window === "undefined") return "";
+                const params = new URLSearchParams(window.location.search);
+                return params.get("activityId") || "";
+            } catch (e) {
+                return "";
+            }
+        }
+
+        const update = () => setActivityId(readActivityIdFromLocation());
+        update();
+        window.addEventListener("popstate", update);
+
+        return () => window.removeEventListener("popstate", update);
+    }, []);
 
     // Fetch attendees whenever activityId changes
     useEffect(() => {
