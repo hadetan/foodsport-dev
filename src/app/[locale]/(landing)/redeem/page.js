@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import RewardCards from "../Components/rewardCards";
 import Image from "next/image";
+import redeemTitle from "@/app/shared/components/redeemTitle";
 
 const categories = [
     { key: "food", label: "Food & Beverages" },
@@ -83,25 +84,22 @@ export default function RedeemPage() {
         <div className="min-h-screen bg-[#E5E1DB]">
             {/* Rewards banner image */}
             <div className="w-full px-0 ">
-                <Image
-                    src="/rewardsImage.png"
-                    alt="Rewards banner"
-                    width={1242}
-                    height={770}
-                    className="w-full h-auto rounded-2xl object-cover shadow"
-                    priority
-                />
+            {redeemTitle()}
+
+             
+
+
             </div>
 
             {/* Header watermark */}
-            <div className="relative overflow-hidden bg-white py-10">
-                <div className="container mx-auto px-4 flex justify-center">
-                    <h1 className="uppercase font-extrabold tracking-[0.25em] text-[10vw] leading-none text-gray-800 sm:text-7xl lg:text-8xl select-none text-center">
-                        Rewards
+            <div className="relative overflow-hidden">
+                <div className="container mx-auto px-4 pt-10 pb-6 flex justify-center">
+                    <h1 className="uppercase font-extrabold tracking-[0.25em] text-[10vw] leading-none text-white  sm:text-7xl lg:text-8xl select-none text-center">
+                        Redeem Rewards
                     </h1>
                 </div>
+                <div className="h-px bg-[#C9C3BB]/70" />
             </div>
-            <div className="h-px bg-[#C9C3BB]/70" />
 
             {/* Filters row */}
             <div className="container mx-auto px-4">
