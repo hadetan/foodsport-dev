@@ -31,25 +31,46 @@ export function AuthProvider({ children }) {
 	const login = async ({ email, password }) => {
 		try {
 			const { data } = await api.post('/auth/login', { email, password });
-			setToken(data.session?.access_token);
-			setAuthToken(data.session?.access_token);
-			return true;
+			return data;
 		} catch (err) {
 			throw new Error(`Login failed: ${err?.message || 'Unknown error'}`);
 		}
 	};
 
+	const verifyOtp = async ({ otpId, code, email, password }) => {
+		try {
+			const { data } = await api.post('/auth/login/otp/verify', { otpId, code, email, password });
+			if (data?.session?.access_token) {
+				setToken(data.session.access_token);
+				setAuthToken(data.session.access_token);
+				return data;
+			}
+			throw new Error('Verification failed');
+		} catch (err) {
+			throw err;
+		}
+	};
+
 	const signup = async ({ email, password, firstname, lastname, dateOfBirth, }) => {
 		try {
-			const { data } = await api.post('/auth/register', { email, password, firstname, lastname, dateOfBirth, });
-			if (!data.session?.access_token) {
-				return data.error || 'Registration failed';
-			}
-			setToken(data.session.access_token);
-			setAuthToken(data.session.access_token);
-			return true;
+			const { data } = await api.post('/auth/register', { email, password, firstname, lastname, dateOfBirth });
+			return data;
 		} catch (err) {
-			return `Something went wrong. Please try again. ${err.message}`;
+			throw new Error(`Signup failed: ${err?.message || 'Unknown error'}`);
+		}
+	};
+
+	const verifyRegisterOtp = async ({ otpId, code, email, password, firstname, lastname, dateOfBirth }) => {
+		try {
+			const { data } = await api.post('/auth/register/otp/verify', { otpId, code, email, password, firstname, lastname, dateOfBirth });
+			if (data?.session?.access_token) {
+				setToken(data.session.access_token);
+				setAuthToken(data.session.access_token);
+				return data;
+			}
+			throw new Error('Registration verification failed');
+		} catch (err) {
+			throw new Error(`Something went wrong. Please try again. ${err.message}`);
 		}
 	};
 
@@ -59,7 +80,7 @@ export function AuthProvider({ children }) {
 	};
 
 	return (
-		<AuthContext.Provider value={{ authToken, login, logout, signup }}>
+		<AuthContext.Provider value={{ authToken, login, logout, signup, verifyOtp, verifyRegisterOtp }}>
 			{children}
 		</AuthContext.Provider>
 	);

@@ -16,8 +16,11 @@ export default function LoginPage() {
 	const [password, setPassword] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
+	const [otpStep, setOtpStep] = useState(false);
+	const [sessionId, setSessionId] = useState(null);
+	const [otpCode, setOtpCode] = useState('');
 	const router = useRouter();
-	const { login, authToken } = useAuth();
+	const { login, authToken, verifyOtp } = useAuth();
 	const subOnce = useRef(false);
 	const handledOnce = useRef(false);
 	const t = useTranslations();
@@ -102,12 +105,29 @@ export default function LoginPage() {
 		setLoading(true);
 		setError('');
 		try {
-			const res = await login({ email, password });
-			if (res === true) {
-				router.replace(`/${locale}/my`);
+			const data = await login({ email, password });
+			if (data?.sessionId) {
+				setSessionId(data.sessionId);
+				setOtpStep(true);
 			}
 		} catch (_) {
 			setError(`${t('LoginPage.genericError')}`);
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	async function handleVerify(e) {
+		e.preventDefault();
+		setLoading(true);
+		setError('');
+		try {
+			const data = await verifyOtp({ otpId: sessionId, code: otpCode, email, password });
+			if (data?.session?.access_token) {
+				router.replace(`/${locale}/my`);
+			}
+		} catch (err) {
+			setError('Verification failed');
 		} finally {
 			setLoading(false);
 		}
@@ -136,7 +156,8 @@ export default function LoginPage() {
 				{error && (
 					<ErrorAlert message={error} onClose={() => setError('')} />
 				)}
-				<form className='space-y-6' onSubmit={handleLogin}>
+				{!otpStep && (
+					<form className='space-y-6' onSubmit={handleLogin}>
 					<div>
 						<label className='block mb-1 font-medium text-black'>
 							{t('LoginPage.email')}
@@ -171,6 +192,24 @@ export default function LoginPage() {
 							: t('LoginPage.login')}
 					</button>
 				</form>
+			)}
+			{otpStep && (
+				<form className='space-y-6' onSubmit={handleVerify}>
+					<div>
+						<label className='block mb-1 font-medium text-black'>Enter OTP</label>
+						<input
+							type='text'
+							className='input input-bordered w-full'
+							value={otpCode}
+							onChange={(e) => setOtpCode(e.target.value)}
+							required
+						/>
+					</div>
+					<button type='submit' className='submit-button w-full' disabled={loading}>
+						{loading ? 'Verifying...' : 'Verify OTP'}
+					</button>
+				</form>
+			)}
 				<button
 					onClick={onGoogle}
 					disabled={loading}

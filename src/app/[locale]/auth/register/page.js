@@ -19,8 +19,11 @@ export default function RegisterPage() {
 	const [password, setPassword] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
+	const [otpStep, setOtpStep] = useState(false);
+	const [sessionId, setSessionId] = useState(null);
+	const [otpCode, setOtpCode] = useState('');
 	const router = useRouter();
-	const { signup, authToken } = useAuth();
+	const { signup, authToken, verifyRegisterOtp } = useAuth();
 	const subOnce = useRef(false);
 	const handledOnce = useRef(false);
 	const t = useTranslations();
@@ -36,7 +39,7 @@ export default function RegisterPage() {
 		if (subOnce.current) return;
 		subOnce.current = true;
 		const { data: subscription } = supabase.auth.onAuthStateChange(
-			async (event, session) => {
+			async (_, session) => {
 				if (!session?.access_token) return;
 				await handleSession(session);
 			}
@@ -104,24 +107,33 @@ export default function RegisterPage() {
 		setLoading(true);
 		setError('');
 		try {
-			const res = await signup({
-				email,
-				password,
-				firstname,
-				lastname,
-				dateOfBirth,
-			});
-			if (res.ok) {
+			const data = await signup({ email, password, firstname, lastname, dateOfBirth });
+			if (data?.sessionId) {
+				setSessionId(data.sessionId);
+				setOtpStep(true);
+			} else {
+				setError(t('RegisterPage.genericError'));
+			}
+		} catch (err) {
+			setError(t('RegisterPage.genericError'));
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	async function handleVerify(e) {
+		e.preventDefault();
+		setLoading(true);
+		setError('');
+		try {
+			const data = await verifyRegisterOtp({ otpId: sessionId, code: otpCode, email, password, firstname, lastname, dateOfBirth });
+			if (data?.session?.access_token) {
 				router.replace(`/${locale}/my`);
 			} else {
-				// backend returned a non-successful payload
-				if (res && res.toString().includes('409')) {
-					setError(t('RegisterPage.accountAlreadyExists'));
-				} else {
-					setError(t('RegisterPage.genericError'));
-				}
+				setError('Verification failed');
 			}
 		} catch (_) {
+			setError('Verification failed');
 		} finally {
 			setLoading(false);
 		}
@@ -147,83 +159,102 @@ export default function RegisterPage() {
 				<h1 className='text-2xl font-semibold mb-4 text-center'>
 					{t('RegisterPage.title')}
 				</h1>
-				<form className='space-y-6' onSubmit={handleRegister}>
-					{error && (
-						<ErrorAlert
-							message={error}
-							onClose={() => setError('')}
-						/>
-					)}
-					<div>
-						<label className='block mb-1 font-medium text-black'>
-							{t('RegisterPage.firstName')}
-						</label>
-						<input
-							type='text'
-							className='input input-bordered w-full'
-							value={firstname}
-							onChange={(e) => setFirstname(e.target.value)}
-							required
-						/>
-					</div>
-					<div>
-						<label className='block mb-1 font-medium text-black'>
-							{t('RegisterPage.lastName')}
-						</label>
-						<input
-							type='text'
-							className='input input-bordered w-full'
-							value={lastname}
-							onChange={(e) => setLastname(e.target.value)}
-							required
-						/>
-					</div>
-					<div>
-						<label className='block mb-1 font-medium text-black'>
-							{t('RegisterPage.dateOfBirth')}
-						</label>
-						<input
-							type='date'
-							className='input input-bordered w-full'
-							value={dateOfBirth}
-							onChange={(e) => setDateOfBirth(e.target.value)}
-							required
-						/>
-					</div>
-					<div>
-						<label className='block mb-1 font-medium text-black'>
-							{t('RegisterPage.email')}
-						</label>
-						<input
-							type='email'
-							className='input input-bordered w-full'
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							required
-						/>
-					</div>
-					<div>
-						<label className='block mb-1 font-medium text-black'>
-							{t('RegisterPage.password')}
-						</label>
-						<input
-							type='password'
-							className='input input-bordered w-full text-black'
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							required
-						/>
-					</div>
-					<button
-						type='submit'
-						className='submit-button w-full text-black'
-						disabled={loading}
-					>
-						{loading
-							? t('RegisterPage.registering')
-							: t('RegisterPage.register')}
-					</button>
-				</form>
+				{!otpStep && (
+					<form className='space-y-6' onSubmit={handleRegister}>
+						{error && (
+							<ErrorAlert
+								message={error}
+								onClose={() => setError('')}
+							/>
+						)}
+						<div>
+							<label className='block mb-1 font-medium text-black'>
+								{t('RegisterPage.firstName')}
+							</label>
+							<input
+								type='text'
+								className='input input-bordered w-full'
+								value={firstname}
+								onChange={(e) => setFirstname(e.target.value)}
+								required
+							/>
+						</div>
+						<div>
+							<label className='block mb-1 font-medium text-black'>
+								{t('RegisterPage.lastName')}
+							</label>
+							<input
+								type='text'
+								className='input input-bordered w-full'
+								value={lastname}
+								onChange={(e) => setLastname(e.target.value)}
+								required
+							/>
+						</div>
+						<div>
+							<label className='block mb-1 font-medium text-black'>
+								{t('RegisterPage.dateOfBirth')}
+							</label>
+							<input
+								type='date'
+								className='input input-bordered w-full'
+								value={dateOfBirth}
+								onChange={(e) => setDateOfBirth(e.target.value)}
+								required
+							/>
+						</div>
+						<div>
+							<label className='block mb-1 font-medium text-black'>
+								{t('RegisterPage.email')}
+							</label>
+							<input
+								type='email'
+								className='input input-bordered w-full'
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								required
+							/>
+						</div>
+						<div>
+							<label className='block mb-1 font-medium text-black'>
+								{t('RegisterPage.password')}
+							</label>
+							<input
+								type='password'
+								className='input input-bordered w-full text-black'
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+								required
+							/>
+						</div>
+						<button
+							type='submit'
+							className='submit-button w-full text-black'
+							disabled={loading}
+						>
+							{loading
+								? t('RegisterPage.registering')
+								: t('RegisterPage.register')}
+						</button>
+					</form>
+				)}
+				{otpStep && (
+					<form className='space-y-6' onSubmit={handleVerify}>
+						<div>
+							<label className='block mb-1 font-medium text-black'>Enter OTP</label>
+							<input
+								type='text'
+								className='input input-bordered w-full'
+								value={otpCode}
+								onChange={(e) => setOtpCode(e.target.value)}
+								required
+							/>
+						</div>
+						<button type='submit' className='submit-button w-full text-black' disabled={loading}>
+							{loading ? 'Verifying...' : 'Verify OTP'}
+						</button>
+					</form>
+				)}
 				<button
 					onClick={onGoogle}
 					disabled={loading}

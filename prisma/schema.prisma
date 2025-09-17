@@ -70,6 +70,13 @@ enum OtpEntityType {
   password_reset
 }
 
+enum OtpStatus {
+  active
+  used
+  cancelled
+  expired
+}
+
 enum District {
   Central_and_Western
   Eastern
@@ -231,6 +238,7 @@ model TempUser {
   userActivities      UserActivity[]
   tickets             Ticket[]
   invitedUsers        InvitedUser[]
+  otps                Otp[]
 
   @@map("temp_users")
 }
@@ -424,17 +432,22 @@ model Referral {
 
 model Otp {
   id          String   @id @default(uuid())
-  userId      String   @map("user_id")
+  userId      String?  @map("user_id")
+  tempUserId  String?  @map("temp_user_id")
   entityType  OtpEntityType @map("entity_type")
   entityName  String   @map("entity_name")
-  code        String
-  expiryTime  DateTime @map("expiry_time")
-  isUsed      Boolean  @default(false) @map("is_used")
+  hashedCode  String   @map("hashed_code")
+  attempts    Int      @default(0)
+  maxAttempts Int      @default(5) @map("max_attempts")
+  expiresAt   DateTime @map("expires_at")
+  sentTo      String   @map("sent_to")
+  status      OtpStatus @default(active)
   usedAt      DateTime? @map("used_at")
   createdAt   DateTime @default(now()) @map("created_at")
 
   // Relations
-  user        User     @relation(fields: [userId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
+  tempUser    TempUser? @relation(fields: [tempUserId], references: [id])
 
   @@map("otps")
 }

@@ -1,62 +1,63 @@
-import { createServerClient } from '@/lib/supabase/server-only';
 import { prisma } from '@/lib/prisma/db';
-import { cookies } from 'next/headers';
+import serverApi from '@/utils/axios/serverApi';
+import bcrypt from 'bcryptjs';
+import { generateOtp } from '@/utils/generateOtp';
 
+// POST /api/auth/login
 export async function POST(req) {
 	try {
 		const { email, password } = await req.json();
 		if (!email || !password) {
-			return Response.json(
-				{ error: 'Missing email or password.' },
-				{ status: 400 }
-			);
+			return Response.json({ error: 'Missing email or password.' }, { status: 400 });
 		}
 
-		const supabase = await createServerClient();
-		const { data, error } = await supabase.auth.signInWithPassword({
-			email,
-			password,
-		});
-		if (error) {
-			return Response.json(
-				{ error: 'Invalid credentials. ' + error },
-				{ status: 401 }
-			);
-		}
+
 		const user = await prisma.user.findUnique({ where: { email } });
+		const otpCode = generateOtp(6);
+		const hashed = await bcrypt.hash(otpCode, 10);
+		const ttlMinutes = parseInt(process.env.OTP_TTL_MINUTES || '5', 10);
+		const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
 		if (!user) {
-			return Response.json({ error: 'User not found.' }, { status: 404 });
+			await new Promise((resolve) => setTimeout(resolve, 500));
+			return Response.json({ error: 'Invalid credentials.' }, { status: 400 });
 		}
-		if (data.session?.access_token) {
-			const cookieStore = await cookies();
-			cookieStore.set('auth_token', data.session.access_token, {
-				httpOnly: true,
-				path: '/',
-				sameSite: 'lax',
-				maxAge: data.session.expires_in || 3600,
+
+		const result = await prisma.$transaction(async (tx) => {
+			await tx.otp.updateMany({ where: { userId: user.id, status: 'active' }, data: { status: 'cancelled' } });
+
+			const otp = await tx.otp.create({
+				data: {
+					userId: user.id,
+					entityType: 'email_verification',
+					entityName: 'login',
+					hashedCode: hashed,
+					expiresAt,
+					sentTo: email,
+					status: 'active',
+				},
 			});
-			if (data.session.refresh_token) {
-				cookieStore.set('refresh_token', data.session.refresh_token, {
-					httpOnly: true,
-					path: '/',
-					sameSite: 'lax',
-					maxAge: 60 * 60 * 24 * 30,
-				});
-			}
-		}
-		return Response.json({
-			session: data.session,
-			user: {
-				id: user.id,
-				firstname: user.firstname,
-				lastname: user.lastname,
-				email: user.email,
-			},
+
+			return { otp, otpCode };
 		});
+
+		try {
+			const templateId = parseInt(process.env.OTP_TEMPLATE_ID || '191', 10);
+			const params = { code: result.otpCode, name: `${user.firstname || ''} ${user.lastname || ''}` };
+			const res = await serverApi.post(
+				'/admin/email/template_email',
+				{ to: user.email, templateId, params },
+				{ headers: { 'x-internal-api': process.env.INTERNAL_API_SECRET } }
+			);
+			if (!res?.data?.success) throw new Error('Email send failed');
+		} catch (err) {
+			console.error('Failed to send OTP email', err.message || err);
+			await prisma.otp.updateMany({ where: { id: result.otp.id }, data: { status: 'cancelled' } });
+			return Response.json({ error: 'Failed to send OTP email' }, { status: 500 });
+		}
+
+		return Response.json({ sessionId: result.otp.id });
 	} catch (err) {
-		return Response.json(
-			{ error: 'Internal server error.' },
-			{ status: 500 }
-		);
+		console.error(err);
+		return Response.json({ error: 'Internal server error.' }, { status: 500 });
 	}
 }
