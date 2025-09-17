@@ -39,6 +39,17 @@
 		"emailExistsToast": "此電郵已註冊。請登入並在個人檔案中綁定 Google。",
 		"genericError": "請檢查你的電郵和密碼，然後再試一次"
 	},
+	"Auth": {
+		"loginFailed": "登入失敗",
+		"verificationFailed": "驗證失敗",
+		"signupFailed": "註冊失敗",
+		"registrationVerificationFailed": "註冊驗證失敗",
+		"genericTryAgain": "發生錯誤，請稍後再試。",
+		"enterOtpLabel": "輸入一次性密碼 (OTP)",
+		"verifyOtp": "驗證 OTP",
+		"verifying": "驗證中...",
+		"otpFailed": "OTP 驗證失敗"
+	},
 	"Header": {
 		"home": "主頁",
 		"joinActivities": "參與活動",

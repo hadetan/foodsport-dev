@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma/db';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { cookies } from 'next/headers';
+import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
     try {
@@ -17,7 +18,6 @@ export async function POST(req) {
             return Response.json({ error: 'OTP expired' }, { status: 400 });
         }
 
-        const bcrypt = (await import('bcryptjs')).default;
         const match = await bcrypt.compare(code, otp.hashedCode);
         if (!match) {
             await prisma.otp.update({ where: { id: otpId }, data: { attempts: { increment: 1 } } });

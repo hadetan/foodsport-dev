@@ -11,7 +11,6 @@ export async function POST(req) {
 			return Response.json({ error: 'Missing email or password.' }, { status: 400 });
 		}
 
-
 		const user = await prisma.user.findUnique({ where: { email } });
 		const otpCode = generateOtp(6);
 		const hashed = await bcrypt.hash(otpCode, 10);
