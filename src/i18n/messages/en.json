@@ -39,6 +39,17 @@
 		"emailExistsToast": "Account with this email already exists. Please login and link Google from your profile",
 		"genericError": "Please check your email and password, and try again"
 	},
+	"Auth": {
+		"loginFailed": "Login failed",
+		"verificationFailed": "Verification failed",
+		"signupFailed": "Signup failed",
+		"registrationVerificationFailed": "Registration verification failed",
+		"genericTryAgain": "Something went wrong. Please try again.",
+		"enterOtpLabel": "Enter OTP",
+		"verifyOtp": "Verify OTP",
+		"verifying": "Verifying...",
+		"otpFailed": "OTP verification failed"
+	},
 	"Header": {
 		"home": "HOME",
 		"joinActivities": "JOIN ACTIVITIES",

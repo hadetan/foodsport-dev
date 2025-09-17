@@ -130,10 +130,10 @@ export default function RegisterPage() {
 			if (data?.session?.access_token) {
 				router.replace(`/${locale}/my`);
 			} else {
-				setError('Verification failed');
+				setError(t('Auth.registrationVerificationFailed'));
 			}
 		} catch (_) {
-			setError('Verification failed');
+			setError(t('Auth.registrationVerificationFailed'));
 		} finally {
 			setLoading(false);
 		}
@@ -241,7 +241,7 @@ export default function RegisterPage() {
 				{otpStep && (
 					<form className='space-y-6' onSubmit={handleVerify}>
 						<div>
-							<label className='block mb-1 font-medium text-black'>Enter OTP</label>
+							<label className='block mb-1 font-medium text-black'>{t('Auth.enterOtpLabel')}</label>
 							<input
 								type='text'
 								className='input input-bordered w-full'
@@ -251,7 +251,7 @@ export default function RegisterPage() {
 							/>
 						</div>
 						<button type='submit' className='submit-button w-full text-black' disabled={loading}>
-							{loading ? 'Verifying...' : 'Verify OTP'}
+							{loading ? t('Auth.verifying') : t('Auth.verifyOtp')}
 						</button>
 					</form>
 				)}
