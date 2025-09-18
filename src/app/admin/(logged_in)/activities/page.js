@@ -240,7 +240,7 @@ function ActivityManagementPageContent() {
             {" "}
             <h2 className="text-2xl font-bold">Activities </h2>
             <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
-                <div style={{display: 'flex', justifyContent: 'end'}}>
+                <div style={{ display: "flex", justifyContent: "end" }}>
                     <button
                         className="btn btn-primary"
                         onClick={() =>
@@ -250,13 +250,11 @@ function ActivityManagementPageContent() {
                         Create Activity
                     </button>
                 </div>
-                <div style={{marginBottom: '30px'}}>
+                <div style={{ marginBottom: "30px" }}>
                     <div className="flex flex-col  md:flex-row md:items-end md:justify-between mb-6 gap-2">
                     <div className="flex-1">
                         <FilterBar setFilters={handleSetFilters} filters={filters} />
                     </div>
-
-                </div>
                 </div>
 
                 {/* Activities Table */}
