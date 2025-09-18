@@ -1,21 +1,14 @@
 import React, { useEffect, useState } from "react";
 import "../css/ActivitiesFilter.css";
 import { useSearchParams, usePathname } from "next/navigation";
-import { ACTIVITY_TYPES, ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
+import { ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
 import { useTranslations } from 'next-intl';
 
 
-export default function ActivitiesFilter({ activities, setFilteredActivities }) {
+export default function ActivitiesFilter({ activities, setFilteredActivities, handleReset, filters, setFilters }) {
     const t = useTranslations();
     const searchParams = useSearchParams();
     const pathname = usePathname();
-
-    const [filters, setFilters] = useState({
-        name: searchParams.get("activity") || "",
-        status: searchParams.get("status") || "",
-        date: searchParams.get("date") || "",
-        type: searchParams.get("type") || "",
-    });
 
     useEffect(() => {
         const params = new URLSearchParams();
@@ -98,6 +91,9 @@ export default function ActivitiesFilter({ activities, setFilteredActivities }) 
                 onChange={handleChange}
                 className="filter-input"
             />
+            <div className="filter-actions">
+                <button type="button" className="filter-btn reset" onClick={handleReset}>{t('Actions.reset') || 'Reset'}</button>
+            </div>
         </div>
     );
 }

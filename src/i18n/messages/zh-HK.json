@@ -60,6 +60,9 @@
 	"Search": {
 		"placeholder": "搜尋活動..."
 	},
+	"Actions": {
+		"reset": "重設"
+	},
 	"Activity": {
 		"Landing": { "exploreMoreActivities": "查看更多活動" },
 		"ActivitySection": {
@@ -97,6 +100,8 @@
 		"DetailsPage": {
 			"noActivityTitle": "找不到活動",
 			"noActivityDesc": "我們找不到您尋找的活動。\n請再次檢查連結。",
+			"noSearchActivityTitle": "找不到您搜尋的活動",
+			"noSearchActivityDesc": "請檢查您的搜尋字詞或篩選，然後再試一次。",
 			"back": "返回",
 			"pageTitle": "活動詳情",
 			"detailsTitle": "活動詳情",

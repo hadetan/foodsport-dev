@@ -5,11 +5,28 @@
 
 .activitySectionHeading {
     margin: 0 50px;
-	font-size: 1.4rem;
+	font-size: 2rem;
 	font-weight: 600;
 	margin-bottom: 18px;
 	border-bottom: 2px solid #dadada;
 	padding-bottom: 6px;
 	letter-spacing: 0.5px;
     text-align: center;
+}
+
+@media (max-width: 480px) {
+  .activitySection {
+    margin-bottom: 24px;
+  }
+
+  .activitySectionHeading {
+    margin: 0 16px;
+    font-size: 1.25rem; /* smaller on mobile */
+    font-weight: 600;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #dadada;
+    padding-bottom: 4px;
+    letter-spacing: 0.3px;
+    text-align: center;
+  }
 }
