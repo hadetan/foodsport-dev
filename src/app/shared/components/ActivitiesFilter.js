@@ -51,7 +51,22 @@ export default function ActivitiesFilter({ activities, setFilteredActivities, ha
         }
         if (filters.date) {
             filtered = filtered.filter(a => {
-                return (a.date && a.date === filters.date) || (a.startDate && a.startDate === filters.date);
+                const candidate = a.date || a.startDate || a.startTime || '';
+                if (!candidate) return false;
+                const normalized = (() => {
+                    const isoDateMatch = candidate.match(/^(\d{4}-\d{2}-\d{2})/);
+                    if (isoDateMatch) return isoDateMatch[1];
+                    try {
+                        const d = new Date(candidate);
+                        if (!isNaN(d)) {
+                            return d.toISOString().slice(0, 10);
+                        }
+                    } catch (e) {
+                        return '';
+                    }
+                    return '';
+                })();
+                return normalized === filters.date;
             });
         }
         setFilteredActivities(filtered);
