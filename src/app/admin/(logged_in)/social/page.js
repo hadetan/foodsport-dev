@@ -182,9 +182,7 @@ export default function SocialMediaPage() {
                         accept="image/jpeg,image/png"
                         className="hidden"
                         onChange={handleFileSelect}
-                        disabled={
-                            images.length >= MAX_IMAGES || currentImage !== null
-                        }
+                        disabled={images.length >= MAX_IMAGES && editingIndex === null || currentImage !== null}
                     />
 
                     {images.length === 0 && !currentImage && (
