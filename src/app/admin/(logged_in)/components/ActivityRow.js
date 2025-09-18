@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Pencil, Eye, TicketCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import formatDate from "@/utils/formatDate";
+import { ACTIVITY_TYPES } from "@/app/constants/constants";
 
 const statusBadgeClass = {
     upcoming: "bg-yellow-400 text-black btn-md",
@@ -13,8 +14,21 @@ const statusBadgeClass = {
 const ActivityRow = ({ activity, onRowClick }) => {
     const router = useRouter();
 
+   
+
     // Helper to capitalize first letter
     const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
+    // Normalize to ACTIVITY_TYPES (constants.js:23-37) instead of formatted values
+    const normalizeActivityType = (type) => {
+        if (!type) return "";
+        if (ACTIVITY_TYPES.includes(type)) return type;
+        const normalized = type.toString().replace(/[_\s]+/g, "").toLowerCase();
+        const match = ACTIVITY_TYPES.find(
+            (t) => t.replace(/\s+/g, "").toLowerCase() === normalized
+        );
+        return match || type.replace(/_/g, " ").toLowerCase();
+    };
 
     const handleEdit = (e) => {
         e.stopPropagation(); // Prevent row click event
@@ -78,7 +92,7 @@ const ActivityRow = ({ activity, onRowClick }) => {
                 </td>
                 {/* Show activity type */}
                 <td className="text-base align-middle">
-                    {activity.activityType}
+                    {normalizeActivityType(activity.activityType)}
                 </td>
                 {/* Date & Time column */}
                 <td className="text-base align-middle text-center whitespace-nowrap">
