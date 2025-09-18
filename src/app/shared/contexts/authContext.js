@@ -74,13 +74,33 @@ export function AuthProvider({ children }) {
 		}
 	};
 
+	const handleSession = async (session) => {
+		if (!session?.access_token) return null;
+		try {
+			await api.post('/auth/sync-session', {
+				access_token: session.access_token,
+				refresh_token: session.refresh_token,
+			});
+			try {
+				localStorage.setItem('auth_token', session.access_token);
+			} catch {}
+			setAuthToken(session.access_token);
+			setToken(session.access_token);
+			const res = await api.post('/auth/pre-profile');
+			return res.data || {};
+		} catch (e) {
+			console.error('handleSession error', e);
+			throw e;
+		}
+	};
+
 	const logout = async () => {
 		await removeToken();
 		setAuthToken(null);
 	};
 
 	return (
-		<AuthContext.Provider value={{ authToken, login, logout, signup, verifyOtp, verifyRegisterOtp }}>
+		<AuthContext.Provider value={{ authToken, login, logout, signup, verifyOtp, verifyRegisterOtp, handleSession }}>
 			{children}
 		</AuthContext.Provider>
 	);

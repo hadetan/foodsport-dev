@@ -4,6 +4,7 @@ import '@/app/globals.css';
 import LoadingBarRootClient from '@/app/LoadingBarRootClient';
 import { locales } from '@/i18n/request';
 import { getAlternateLinksMetadata } from '@/app/[locale]/LocaleAlternateLinks';
+import { ActivitiesProvider } from '../shared/contexts/ActivitiesContext';
 
 export function generateStaticParams() {
 	return locales.map((locale) => ({ locale }));
@@ -37,7 +38,7 @@ export default async function LocaleRootLayout({ children, params }) {
 					messages={messages}
 					timeZone='Asia/Hong_Kong'
 				>
-					<LoadingBarRootClient>{children}</LoadingBarRootClient>
+					<ActivitiesProvider>{children}</ActivitiesProvider>
 				</NextIntlClientProvider>
 			</body>
 		</html>
