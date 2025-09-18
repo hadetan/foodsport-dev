@@ -10,15 +10,43 @@ import { useActivities } from '@/app/shared/contexts/ActivitiesContext';
 import ActivityItemSkeleton from '@/app/shared/components/skeletons/ActivityItemSkeleton';
 import { useUser } from '@/app/shared/contexts/userContext';
 import ActivitiesFilter from '@/app/shared/components/ActivitiesFilter';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import ActivityNotFound from '@/app/shared/components/ActivityNotFound';
 import { useTranslations } from 'next-intl';
+import { usePathname, useSearchParams } from 'next/navigation';
+import ActivitySearchNotFound from '@/app/shared/components/ActivitySearchNotFound';
 
 export default function ActivitiesPage() {
 	const { activities, setActivities, loading } = useActivities();
 	const t = useTranslations();
 	const [filteredActivities, setFilteredActivities] = useState(activities);
 	const { user, setUser } = useUser();
+	const searchParams = useSearchParams();
+	const pathname = usePathname();
+	const [filters, setFilters] = useState({
+		name: searchParams.get("activity") || "",
+		status: searchParams.get("status") || "",
+		date: searchParams.get("date") || "",
+		type: searchParams.get("type") || "",
+	});
+
+	useEffect(() => {
+		setFilteredActivities(activities);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activities]);
+
+	const noActivities = !activities.length && !loading;
+	const searchNoResults = activities.length > 0 && filteredActivities && filteredActivities.length === 0;
+
+	function handleReset() {
+		const empty = { name: '', status: '', date: '', type: '' };
+		setFilters(empty);
+		setFilteredActivities(activities);
+		if (typeof window !== 'undefined') {
+			const newUrl = pathname;
+			window.history.replaceState(null, '', newUrl);
+		}
+	}
 
 	const mergedUpcomingOngoing = (filteredActivities || []).filter(a => {
 		const { status } = getActivityStatus(a);
@@ -42,12 +70,16 @@ export default function ActivitiesPage() {
 	});
 
 	return (
-		<div className='main-activities'>
+		<div className="main-activities">
 			<ActivityImg />
 			<Suspense fallback={null}>
-				<ActivitiesFilter activities={activities} setFilteredActivities={setFilteredActivities} />
+				<ActivitiesFilter activities={activities} setFilteredActivities={setFilteredActivities} handleReset={handleReset} filters={filters} setFilters={setFilters} />
 			</Suspense>
-			{!filteredActivities.length && !loading ? <ActivityNotFound /> : (
+			{noActivities ? (
+				<ActivityNotFound />
+			) : searchNoResults ? (
+				<ActivitySearchNotFound handleReset={handleReset} />
+			) : (
 				<>
 					{sortedUpcomingOngoing.length > 0 && (
 						<div className={sectionStyles.activitySection}>
