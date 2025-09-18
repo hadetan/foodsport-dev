@@ -74,45 +74,45 @@ export default function ActivitiesPage() {
 
 	return (
 		<div className="main-activities">
-            <ActivityImg />
-            <Suspense fallback={null}>
-                <ActivitiesFilter activities={activities} setFilteredActivities={setFilteredActivities} handleReset={handleReset} filters={filters} setFilters={setFilters} />
-            </Suspense>
-            {noActivities ? (
-                <ActivityNotFound />
-            ) : searchNoResults ? (
-                <ActivitySearchNotFound handleReset={handleReset} />
-            ) : (
-                <>
-                    {sortedUpcomingOngoing.length > 0 && (
-                        <div className={sectionStyles.activitySection}>
-                            <h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.upcomingOngoing')}</h2>
-                            <div className={styles.grid3}>
-                                {sortedUpcomingOngoing.map((a) => (
-                                    <ActivityItem key={a.id} activity={a} />
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                    {finished.length > 0 && (
-                        <div className={sectionStyles.activitySection}>
-                            <h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.finished')}</h2>
-                            <div className={styles.grid3}>
-                                {finished.map((a) => (
-                                    <ActivityItem key={a.id} activity={a} />
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                    {!activities.length && loading && (
-                        <div className={styles.grid3}>
-                            {Array.from({ length: 6 }).map((_, i) => (
-                                <ActivityItemSkeleton key={i} />
-                            ))}
-                        </div>
-                    )}
-                </>
-            )}
-        </div>
+			<ActivityImg />
+			<Suspense fallback={null}>
+				<ActivitiesFilter activities={activities} setFilteredActivities={setFilteredActivities} handleReset={handleReset} filters={filters} setFilters={setFilters} />
+			</Suspense>
+			{noActivities ? (
+				<ActivityNotFound />
+			) : searchNoResults ? (
+				<ActivitySearchNotFound handleReset={handleReset} />
+			) : (
+				<>
+					{sortedUpcomingOngoing.length > 0 && (
+						<div className={sectionStyles.activitySection}>
+							<h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.upcomingOngoing')}</h2>
+							<div className={styles.grid3}>
+								{sortedUpcomingOngoing.map((a) => (
+									<ActivityItem key={a.id} activity={a} user={user} setUser={setUser} setActivities={setActivities} />
+								))}
+							</div>
+						</div>
+					)}
+					{finished.length > 0 && (
+						<div className={sectionStyles.activitySection}>
+							<h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.finished')}</h2>
+							<div className={styles.grid3}>
+								{finished.map((a) => (
+									<ActivityItem key={a.id} activity={a} user={user} setUser={setUser} setActivities={setActivities} />
+								))}
+							</div>
+						</div>
+					)}
+					{!activities.length && loading && (
+						<div className={styles.grid3}>
+							{Array.from({ length: 6 }).map((_, i) => (
+								<ActivityItemSkeleton key={i} />
+							))}
+						</div>
+					)}
+				</>
+			)}
+		</div>
 	);
 }
