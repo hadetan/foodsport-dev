@@ -1,7 +1,6 @@
 'use client';
 
 import '@/app/shared/css/ActivityDetails.css';
-import { useEffect, useRef } from 'react';
 import { useActivities } from '@/app/shared/contexts/ActivitiesContext';
 import { useUser } from '@/app/shared/contexts/userContext';
 import { useParams } from 'next/navigation';

@@ -1,21 +1,14 @@
 import React, { useEffect, useState } from "react";
 import "../css/ActivitiesFilter.css";
 import { useSearchParams, usePathname } from "next/navigation";
-import { ACTIVITY_TYPES, ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
+import { ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
 import { useTranslations } from 'next-intl';
 
 
-export default function ActivitiesFilter({ activities, setFilteredActivities }) {
+export default function ActivitiesFilter({ activities, setFilteredActivities, handleReset, filters, setFilters }) {
     const t = useTranslations();
     const searchParams = useSearchParams();
     const pathname = usePathname();
-
-    const [filters, setFilters] = useState({
-        name: searchParams.get("activity") || "",
-        status: searchParams.get("status") || "",
-        date: searchParams.get("date") || "",
-        type: searchParams.get("type") || "",
-    });
 
     useEffect(() => {
         const params = new URLSearchParams();
@@ -58,7 +51,22 @@ export default function ActivitiesFilter({ activities, setFilteredActivities }) 
         }
         if (filters.date) {
             filtered = filtered.filter(a => {
-                return (a.date && a.date === filters.date) || (a.startDate && a.startDate === filters.date);
+                const candidate = a.date || a.startDate || a.startTime || '';
+                if (!candidate) return false;
+                const normalized = (() => {
+                    const isoDateMatch = candidate.match(/^(\d{4}-\d{2}-\d{2})/);
+                    if (isoDateMatch) return isoDateMatch[1];
+                    try {
+                        const d = new Date(candidate);
+                        if (!isNaN(d)) {
+                            return d.toISOString().slice(0, 10);
+                        }
+                    } catch (e) {
+                        return '';
+                    }
+                    return '';
+                })();
+                return normalized === filters.date;
             });
         }
         setFilteredActivities(filtered);
@@ -98,6 +106,9 @@ export default function ActivitiesFilter({ activities, setFilteredActivities }) 
                 onChange={handleChange}
                 className="filter-input"
             />
+            <div className="filter-actions">
+                <button type="button" className="filter-btn reset" onClick={handleReset}>{t('Actions.reset') || 'Reset'}</button>
+            </div>
         </div>
     );
 }

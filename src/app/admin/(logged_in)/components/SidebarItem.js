@@ -42,6 +42,7 @@ export default function SidebarItem({
         if (onClick) onClick(e);
         try {
             await axios.delete("/api/admin/auth/logout");
+            localStorage.removeItem('admin_auth_token')
             // Redirect to login page or home page after successful logout
             router.push("/admin/login");
         } catch (error) {

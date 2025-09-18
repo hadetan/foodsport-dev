@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import Avatar from "@/app/shared/components/avatar";
 import FullPageLoader from "../../../components/FullPageLoader";
-import { useActivities } from "@/app/shared/contexts/ActivitiesContext";
 import { Download, Upload, Pencil } from "lucide-react";
 import { toast } from "@/utils/Toast";
 import axios from "axios";

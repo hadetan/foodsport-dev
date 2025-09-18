@@ -5,7 +5,6 @@ import LoadingBar from "react-top-loading-bar";
 import ClientLoadingBarEvents from "./client-loading-bar";
 import { setLoadingBarInstance } from "../utils/loadingBarEvents";
 import { AuthProvider } from '@/app/shared/contexts/authContext';
-import { ActivitiesProvider } from '@/app/shared/contexts/ActivitiesContext';
 import { Toaster } from "sonner";
 
 function LoadingBarConsumerWrapper({ children }) {
@@ -31,10 +30,8 @@ export default function LoadingBarRootClient({ children }) {
       <LoadingBarConsumerWrapper>
         <ClientLoadingBarEvents />
         <AuthProvider>
-          <ActivitiesProvider>
-            {children}
-            <Toaster richColors position="bottom-right" />
-          </ActivitiesProvider>
+          {children}
+          <Toaster richColors position="bottom-right" />
         </AuthProvider>
       </LoadingBarConsumerWrapper>
     </LoadingBarProvider>

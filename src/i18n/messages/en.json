@@ -60,6 +60,9 @@
 	"Search": {
 		"placeholder": "Search activities..."
 	},
+	"Actions": {
+		"reset": "Reset"
+	},
 	"Activity": {
 		"Landing": { "exploreMoreActivities": "EXPLORE MORE ACTIVITIES" },
 		"ActivitySection": { "title": "ACTIVITIES" },
@@ -95,6 +98,8 @@
 		"DetailsPage": {
 			"noActivityTitle": "No Activity Found",
 			"noActivityDesc": "We couldn't find the activity you're looking for.\nPlease check the link again.",
+			"noSearchActivityTitle": "The activity you searched for was not found",
+			"noSearchActivityDesc": "Please check your search terms or filters and try again.",
 			"back": "Back",
 			"pageTitle": "Activity Details",
 			"detailsTitle": "Activity Details",

@@ -20,7 +20,7 @@ export default function LoginPage() {
 	const [sessionId, setSessionId] = useState(null);
 	const [otpCode, setOtpCode] = useState('');
 	const router = useRouter();
-	const { login, authToken, verifyOtp } = useAuth();
+	const { login, authToken, verifyOtp, handleSession } = useAuth();
 	const subOnce = useRef(false);
 	const handledOnce = useRef(false);
 	const t = useTranslations();
@@ -39,7 +39,32 @@ export default function LoginPage() {
 		const { data: subscription } = supabase.auth.onAuthStateChange(
 			async (_, session) => {
 				if (!session?.access_token) return;
-				await handleSession(session);
+				try {
+					const data = await handleSession(session);
+					if (data?.reason === 'email_exists') {
+						toast.info(t('LoginPage.emailExistsToast'));
+						try { localStorage.removeItem('auth_token'); } catch {}
+						try { await api.delete('/auth/logout'); } catch {}
+						try {
+							await Promise.race([
+								supabase.auth.signOut({ scope: 'local' }).catch(() => {}),
+								new Promise((resolve) => setTimeout(resolve, 750)),
+							]);
+						} catch {}
+						router.replace(`/${locale}/auth/login`);
+						return;
+					}
+					if (data?.created || (data?.existing && data?.userExists)) {
+						router.replace(`/${locale}/my`);
+						return;
+					}
+					if (data?.preProfile) {
+						router.replace(`/${locale}/auth/onboard`);
+						return;
+					}
+				} catch (e) {
+					console.error(e);
+				}
 			}
 		);
 		return () => subscription?.subscription?.unsubscribe?.();
@@ -49,56 +74,37 @@ export default function LoginPage() {
 		(async () => {
 			const { data } = await supabase.auth.getSession();
 			if (data?.session && !handledOnce.current) {
-				await handleSession(data.session);
+				try {
+					const res = await handleSession(data.session);
+					if (res?.reason === 'email_exists') {
+						toast.info(t('LoginPage.emailExistsToast'));
+						try { localStorage.removeItem('auth_token'); } catch {}
+						try { await api.delete('/auth/logout'); } catch {}
+						try {
+							await Promise.race([
+								supabase.auth.signOut({ scope: 'local' }).catch(() => {}),
+								new Promise((resolve) => setTimeout(resolve, 750)),
+							]);
+						} catch {}
+						router.replace(`/${locale}/auth/login`);
+						return;
+					}
+					if (res?.created || (res?.existing && res?.userExists)) {
+						router.replace(`/${locale}/my`);
+						return;
+					}
+					if (res?.preProfile) {
+						router.replace(`/${locale}/auth/onboard`);
+						return;
+					}
+				} catch (e) {
+					console.error(e);
+					handledOnce.current = false;
+				}
 			}
 		})();
 	}, [supabase]);
 
-	const handleSession = async (session) => {
-		if (handledOnce.current) return;
-		handledOnce.current = true;
-		try {
-			await api.post('/auth/sync-session', {
-				access_token: session.access_token,
-				refresh_token: session.refresh_token,
-			});
-			try {
-				localStorage.setItem('auth_token', session.access_token);
-			} catch {}
-			const res = await api.post('/auth/pre-profile');
-			const data = res.data || {};
-			if (data.reason === 'email_exists') {
-				toast.info(t('LoginPage.emailExistsToast'));
-				try {
-					localStorage.removeItem('auth_token');
-				} catch {}
-				try {
-					await api.delete('/auth/logout');
-				} catch {}
-				try {
-					await Promise.race([
-						supabase.auth
-							.signOut({ scope: 'local' })
-							.catch(() => {}),
-						new Promise((resolve) => setTimeout(resolve, 750)),
-					]);
-				} catch {}
-				router.replace(`/${locale}/auth/login`);
-				return;
-			}
-			if (data.created || (data.existing && data.userExists)) {
-				router.replace(`/${locale}/my`);
-				return;
-			}
-			if (data.preProfile) {
-				router.replace(`/${locale}/auth/onboard`);
-				return;
-			}
-		} catch (e) {
-			console.error(e);
-			handledOnce.current = false;
-		}
-	};
 
 	async function handleLogin(e) {
 		e.preventDefault();
