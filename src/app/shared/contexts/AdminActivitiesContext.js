@@ -31,7 +31,6 @@ export const AdminActivitiesProvider = ({ children }) => {
         fetchActivities();
     }, [fetchActivities]);
 
-    // Helper: find activity by multiple possible identifier keys
     const getActivityById = useCallback(
         (id) => {
             if (!id) return null;
@@ -44,7 +43,6 @@ export const AdminActivitiesProvider = ({ children }) => {
         [activities]
     );
 
-    // Helper: get activity name (fallback to title if needed)
     const getActivityNameById = useCallback(
         (id) => {
             const a = getActivityById(id);

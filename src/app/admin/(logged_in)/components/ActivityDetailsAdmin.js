@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import "@/app/shared/css/ActivityDetails.css";
 import Image from "next/image";
@@ -15,22 +15,29 @@ import { FaLocationDot } from "react-icons/fa6";
 import calculateSeats from "@/utils/calculateSeats";
 import { MdEventSeat } from "react-icons/md";
 import '@/app/shared/css/public.css'
+import ShareDialog from "@/app/shared/components/ShareDialog";
 
 const ActivityDetailsAdmin = ({
     activity,
     formattedStartTime,
     formattedEndTime,
 }) => {
+    const [showShare, setShowShare] = useState(false);
     const { seatsLeft } = calculateSeats(activity);
-    console.log(activity);
 
     return (
         <div className="activityDetailsPage">
             <div className="activityDetailsContent">
                 <main className="activityDetailsMain">
-                    <h1 className="activityDetailsMainTitle">
+                    <h1 className="activityDetailsMainTitle" style={{border: 'none', marginBottom: '10px'}}>
                         {activity.title}
                     </h1>
+                    <div className="activityDetailsSidebarRow" style={{borderBottom: '1px solid #dadada', paddingBottom: '10px', marginBottom: '30px'}}>
+                        <p style={{fontSize: '18px'}}>
+                            <span>Activity Created By{' '}</span>
+                            <span style={{fontWeight: '600'}}>{activity.organizerName}</span>
+                        </p>
+                    </div>
                     <div className="activityDetailsMainDesc">
                         <div className="activityDetailsHero">
                             {activity.imageUrl && (
@@ -121,12 +128,6 @@ const ActivityDetailsAdmin = ({
                 </main>
                 <aside className="activityDetailsSidebar">
                     <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
-                        <div className="activityDetailsSidebarRow">
-                            <h3>
-                                <span>Created By:{' '}</span>
-                                <span>{activity.organizerName}</span>
-                            </h3>
-                        </div>
                         <div className="activityDetailsSidebarRow">
                             <FaCalendar className="logo logo-faded" size={22} />
                             <span>{`${formatDate(
@@ -233,10 +234,21 @@ const ActivityDetailsAdmin = ({
                         </button>
                         <button
                             className="activityDetailsShareBtn"
-                            disabled={true}
+                            onClick={() => setShowShare(true)}
                         >
                             SHARE
                         </button>
+                        {showShare && (
+                            <ShareDialog
+                                url={
+                                    typeof window !== "undefined"
+                                        ? window.location.origin +
+                                            `/activities/${activity.id}`
+                                        : `/activities/${activity.id}`
+                                }
+                                onClose={() => setShowShare(false)}
+                            />
+                        )}
                     </div>
                     {activity.mapUrl ? (
                         /^https:\/\/(www\.)?google\.(com|co\.[a-z]{2})\/maps/.test(

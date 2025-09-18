@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,13 @@ const LoginPage = () => {
     const [otpMode, setOtpMode] = useState(false);
     const [sessionId, setSessionId] = useState(null);
     const [otpCode, setOtpCode] = useState('');
+    const otpInputRef = useRef(null);
+
+    useEffect(() => {
+        if (otpMode) {
+            otpInputRef.current?.focus();
+        }
+    }, [otpMode]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -171,6 +178,7 @@ const LoginPage = () => {
                                             name="otp"
                                             placeholder="Enter the 6-digit code"
                                             className="input input-bordered w-full pl-10 bg-white text-gray-900"
+                                            ref={otpInputRef}
                                             value={otpCode}
                                             onChange={(e) => setOtpCode(e.target.value)}
                                             required

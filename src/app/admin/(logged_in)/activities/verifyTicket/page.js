@@ -7,12 +7,13 @@ import { useVerifiedAttendees } from "@/app/shared/contexts/VerifiedAttendeesCon
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import FullPageLoader from "../../components/FullPageLoader";
 
-function VerifiedAttendeesTable({ attendees, loading, error }) {
-    if (loading)
+function VerifiedAttendeesTable({ attendees, loading, ActivityLoading, error }) {
+    if (loading || ActivityLoading)
         return <FullPageLoader />
     if (error) return <div className="mt-8 text-red-600">{error}</div>;
     if (!attendees.length)
         return <div className="mt-8">No verified attendees yet.</div>;
+
     return (
         <div className="mt-8">
             <h2 className="text-lg font-semibold mb-2">Verified Attendees</h2>
@@ -20,22 +21,19 @@ function VerifiedAttendeesTable({ attendees, loading, error }) {
                 <table className="min-w-full bg-white border border-gray-200 rounded">
                     <thead>
                         <tr className="bg-gray-100">
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 whitespace-nowrap">
                                 Name
                             </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 whitespace-nowrap">
                                 Email
                             </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 whitespace-nowrap">
                                 Type
                             </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 whitespace-nowrap">
                                 Ticket Code
                             </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
-                                Activity Name
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 whitespace-nowrap">
                                 Joined At
                             </th>
                         </tr>
@@ -43,25 +41,22 @@ function VerifiedAttendeesTable({ attendees, loading, error }) {
                     <tbody>
                         {attendees.map((a) => (
                             <tr key={a.userActivityId} className="border-t">
-                                <td className="px-3 py-2">
+                                <td className="px-3 py-2 whitespace-nowrap">
                                     {a.participant?.firstname || "-"}{" "}
                                     {a.participant?.lastname || ""}
                                 </td>
-                                <td className="px-3 py-2">
+                                <td className="px-3 py-2 whitespace-nowrap">
                                     {a.participant?.email || "-"}
                                 </td>
-                                <td className="px-3 py-2">
+                                <td className="px-3 py-2 whitespace-nowrap">
                                     {a.participant?.type === "tempUser"
                                         ? "Invited User"
                                         : a.participant?.type || "-"}
                                 </td>
-                                <td className="px-3 py-2">
+                                <td className="px-3 py-2 whitespace-nowrap">
                                     {a.ticketCode || "-"}
                                 </td>
-                                <td className="px-3 py-2">
-                                    {a.activity?.name || "-"}
-                                </td>
-                                <td className="px-3 py-2 text-xs">
+                                <td className="px-3 py-2 whitespace-nowrap">
                                     {a.joinedAt
                                         ? new Date(a.joinedAt).toLocaleString()
                                         : "-"}
@@ -79,7 +74,7 @@ export default function VerifyTicketPage() {
     const router = useRouter();
     const { attendees, loading, error, setAttendees, setError, setLoading } =
         useVerifiedAttendees();
-    const { getActivityNameById } = useAdminActivities();
+    const { getActivityNameById, loading: ActivityLoading } = useAdminActivities();
 
     const [activityId, setActivityId] = useState("");
     const [ticketCode, setTicketCode] = useState("");
@@ -88,8 +83,7 @@ export default function VerifyTicketPage() {
     const [verifySuccess, setVerifySuccess] = useState(null);
     const [activityName, setActivityName] = useState("");
 
-    // State for invited user extra info flow
-    const [invitedMeta, setInvitedMeta] = useState(null); // { ticketCode }
+    const [invitedMeta, setInvitedMeta] = useState(null);
     const [invitedForm, setInvitedForm] = useState({
         email: "",
         firstname: "",
@@ -101,7 +95,7 @@ export default function VerifyTicketPage() {
     const [submittingInvited, setSubmittingInvited] = useState(false);
 
     const fetchAttendees = async () => {
-        if (!activityId) return; // guard until we have an activity id
+        if (!activityId) return;
         try {
             setLoading(true);
             const { data } = await axios.get("/api/admin/verifyTicket", {
@@ -136,13 +130,11 @@ export default function VerifyTicketPage() {
         return () => window.removeEventListener("popstate", update);
     }, []);
 
-    // Fetch attendees whenever activityId changes
     useEffect(() => {
         fetchAttendees();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activityId]);
 
-    // Derive activity name from AdminActivitiesContext by matching id
     useEffect(() => {
         if (!activityId) {
             setActivityName("");
@@ -169,19 +161,17 @@ export default function VerifyTicketPage() {
             const data = res.data;
 
             if (data?.status === "invited_needs_info") {
-                // Show extra inputs for invited user
                 setInvitedMeta({ ticketCode: data.ticketCode });
                 setInvitedForm((prev) => ({
                     ...prev,
                     email: data.email || prev.email || "",
                 }));
-                // keep tables visible, no loading toggles
                 return;
             }
 
             setVerifySuccess(data.message || "Ticket verified successfully!");
             setTicketCode("");
-            //
+            if (data?.attendee) setAttendees((prev) => [...prev, data.attendee]);
         } catch (error) {
             if (error?.response?.data?.error) {
                 setVerifyError(error.response.data.error);
@@ -217,7 +207,6 @@ export default function VerifyTicketPage() {
                 "/api/admin/verifyInvitedTicket",
                 payload
             );
-            // API will always return a temp user; after success, go back to normal and refresh list silently
             setVerifySuccess(
                 res?.data?.message || "Ticket verified successfully!"
             );
@@ -231,13 +220,14 @@ export default function VerifyTicketPage() {
                 height: "",
             });
             setTicketCode("");
-            //
+            if (res?.data?.attendee) {
+                setAttendees((prev) => [...prev, res.data.attendee]);
+            }
         } catch (error) {
             setVerifyError(
                 error?.response?.data?.error ||
                     "Failed to verify invited ticket."
             );
-            // Return to normal on error as requested
             setInvitedMeta(null);
         } finally {
             setSubmittingInvited(false);
@@ -493,6 +483,7 @@ export default function VerifyTicketPage() {
                 <VerifiedAttendeesTable
                     attendees={attendees}
                     loading={loading}
+                    ActivityLoading={ActivityLoading}
                     error={error}
                 />
             </div>
