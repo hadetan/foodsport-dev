@@ -31,15 +31,12 @@ export default function ActivitiesPage() {
 	});
 
 	useEffect(() => {
-		if (filteredActivities === null && activities) {
-			setFilteredActivities(activities);
-		}
+		setFilteredActivities(activities);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activities]);
 
 	const noActivities = !activities.length && !loading;
-	const searchNoResults = activities.length > 0 && filteredActivities !== null && filteredActivities.length === 0;
-
+	const searchNoResults = activities.length > 0 && filteredActivities && filteredActivities.length === 0;
 
 	function handleReset() {
 		const empty = { name: '', status: '', date: '', type: '' };
