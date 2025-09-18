@@ -17,12 +17,12 @@
 
 .invitePartnersDialog {
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  padding: 28px 24px 20px 24px;
-  min-width: 300px;
-  max-width: 95vw;
-  width: min(640px, 92vw);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  padding: 24px 22px 18px 22px;
+  min-width: 320px;
+  max-width: 1100px; /* hard cap on very wide screens */
+  width: min(720px, 92vw); /* default width for desktop/laptop */
   position: relative;
   display: flex;
   flex-direction: column;
@@ -41,11 +41,6 @@
   }
 }
 
-.invitePartnersDialogFormGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 16px;
-}
 .invitePartnersDialogFormGrid > div {
   width: 100%;
   min-width: 0;
@@ -74,25 +69,25 @@
 .invitePartnersDialogTabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   justify-content: flex-start;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding-bottom: 4px;
   max-width: 100%;
   scrollbar-width: thin;
 }
 .invitePartnersDialogTab {
-  padding: 8px 22px 8px 14px;
-  border-radius: 6px 6px 0 0;
+  padding: 8px 16px;
+  border-radius: 8px 8px 0 0;
   border: none;
-  background: #eee;
+  background: #efefef;
   color: #222;
   font-weight: 600;
   cursor: pointer;
-  min-width: 90px;
-  font-size: 1rem;
+  min-width: 72px;
+  font-size: 0.98rem;
   position: relative;
-  max-width: 180px;
+  max-width: 260px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -102,7 +97,7 @@
 }
 .invitePartnersDialogTab.active {
   background: #ffe600;
-  outline: 2px solid #ffe600;
+  outline: 2px solid rgba(255,230,0,0.95);
 }
 .invitePartnersDialogTabLabel {
   text-overflow: ellipsis;
@@ -143,6 +138,9 @@
 }
 .invitePartnersDialogInput:focus {
   border: 1.5px solid #ffe600;
+}
+.invitePartnersDialogFormGrid {
+  align-items: start;
 }
 .invitePartnersDialogError {
   color: #d32f2f;

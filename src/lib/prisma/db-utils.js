@@ -179,13 +179,16 @@ export async function getByIdComposite(model, where, select) {
 
 /**
  * Get all activities a user has joined, with full activity details
- * @param {string} userId
+ * Supports both registered users (userId) and temp users (tempUserId)
+ * @param {string} userIdOrTempId - id of user or temp user
+ * @param {boolean} [isTempUser=false] - if true, query by tempUserId instead of userId
  * @returns {Promise<Array<object>>}
  */
-export async function getUserJoinedActivitiesWithDetails(userId) {
+export async function getUserJoinedActivitiesWithDetails(userIdOrTempId, isTempUser = false) {
 	try {
+		const where = isTempUser ? { tempUserId: userIdOrTempId } : { userId: userIdOrTempId };
 		const userActivities = await prisma.userActivity.findMany({
-			where: { userId },
+			where,
 			include: {
 				activity: {
 					select: {

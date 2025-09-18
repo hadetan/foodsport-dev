@@ -48,6 +48,8 @@ const ActivityDetailPage = () => {
     const fileInputRef = useRef(null);
     const [importing, setImporting] = useState(false);
 
+    console.log(users);
+
     useEffect(() => {
         if (users && users.length > 0 && activityId) {
             const filteredUsers = users.filter(
@@ -396,13 +398,12 @@ const ActivityDetailPage = () => {
                                                                     user?.user
                                                                         ?.email ??
                                                                     "",
-                                                                // Registered (Yes/No based on isRegistered)
                                                                 user?.isRegistered
                                                                     ? "Yes"
                                                                     : "No",
                                                                 user?.gender ??
-                                                                    user?.sex ??
-                                                                    "",
+                                                                    user?.gender ??
+                                                                    "Not specified",
                                                                 user?.height ??
                                                                     user
                                                                         ?.profile
@@ -536,10 +537,6 @@ const ActivityDetailPage = () => {
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         Joined Date
                                                     </th>
-                                                    {/* New columns for richer details */}
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Status
-                                                    </th>
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         Activities
                                                     </th>
@@ -641,20 +638,6 @@ const ActivityDetailPage = () => {
                                                                             : "Not specified";
                                                                     })()}
                                                                 </div>
-                                                            </td>
-                                                            {/* Status */}
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                <span
-                                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                                        user.isActive
-                                                                            ? "bg-green-100 text-green-800"
-                                                                            : "bg-red-100 text-red-800"
-                                                                    }`}
-                                                                >
-                                                                    {user.isActive
-                                                                        ? "Active"
-                                                                        : "Blocked"}
-                                                                </span>
                                                             </td>
                                                             {/* Stats */}
                                                             <td className="px-6 py-4 whitespace-nowrap">

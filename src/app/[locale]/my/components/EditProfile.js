@@ -92,6 +92,33 @@ export default function EditProfile() {
 		setForm((f) => ({ ...f, [name]: value }));
 	};
 
+	// Allow only digits (no spinner UI) for some inputs. We sanitize on change and block non-digit keys on keydown.
+	const onlyDigits = (s) => (s ? String(s).replace(/\D+/g, '') : '');
+
+	const handleNumericChange = (e) => {
+		const { name, value } = e.target;
+		setForm((f) => ({ ...f, [name]: onlyDigits(value) }));
+	};
+
+	const handleNumericKeyDown = (e) => {
+		// allow control/navigation keys
+		const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Tab'];
+		if (allowed.includes(e.key)) return;
+		// allow ctrl/cmd combos
+		if (e.ctrlKey || e.metaKey) return;
+		// block non-digit
+		if (!/^[0-9]$/.test(e.key)) e.preventDefault();
+	};
+
+	const handleNumericPaste = (e) => {
+		e.preventDefault();
+		const text = e.clipboardData.getData('text') || '';
+		const digits = onlyDigits(text);
+		if (!digits) return;
+		const name = e.target.name;
+		setForm((f) => ({ ...f, [name]: digits }));
+	};
+
 	const handleDistrictChange = (e) => {
 		setForm((f) => ({ ...f, district: e.target.value }));
 	};
@@ -402,9 +429,14 @@ export default function EditProfile() {
 					<input
 						name='weight'
 						value={form.weight}
-						onChange={handleChange}
+						onChange={handleNumericChange}
+						onKeyDown={handleNumericKeyDown}
+						onPaste={handleNumericPaste}
 						placeholder={t('placeholders.weight')}
 						className='edit-profile-input'
+						inputMode='numeric'
+						pattern='[0-9]*'
+						type='text'
 					/>
 					<span className='edit-profile-input-suffix'>kg</span>
 				</div>
@@ -412,9 +444,14 @@ export default function EditProfile() {
 					<input
 						name='height'
 						value={form.height}
-						onChange={handleChange}
+						onChange={handleNumericChange}
+						onKeyDown={handleNumericKeyDown}
+						onPaste={handleNumericPaste}
 						placeholder={t('placeholders.height')}
 						className='edit-profile-input'
+						inputMode='numeric'
+						pattern='[0-9]*'
+						type='text'
 					/>
 					<span className='edit-profile-input-suffix'>cm</span>
 				</div>
@@ -464,9 +501,14 @@ export default function EditProfile() {
 				<input
 					name='phoneNumber'
 					value={form.phoneNumber}
-					onChange={handleChange}
+					onChange={handleNumericChange}
+					onKeyDown={handleNumericKeyDown}
+					onPaste={handleNumericPaste}
 					placeholder={t('placeholders.contact')}
 					className='edit-profile-fullwidth'
+					inputMode='tel'
+					pattern='[0-9]*'
+					type='text'
 				/>
 				<input
 					name='dateOfBirth'

@@ -30,11 +30,17 @@ const FilterBar = ({ setFilters, filters }) => {
                             }
                         >
                             <option value="">All</option>
-                            {ACTIVITY_TYPES?.map((type) => (
-                                <option key={type} value={type}>
-                                    {type}
-                                </option>
-                            ))}
+                            {ACTIVITY_TYPES?.map((type) => {
+                                const label = type
+                                    .split('_')
+                                    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+                                    .join(' ');
+                                return (
+                                    <option key={type} value={type}>
+                                        {label}
+                                    </option>
+                                );
+                            })}
                         </select>
                     </div>
                     <div className="flex flex-col min-w-[160px] md:flex-1">
@@ -162,7 +168,12 @@ function ActivityManagementPageContent() {
     });
 
     const filteredActivities = sortedActivities.filter((a) => {
-        if (filters.type && a.activityType !== filters.type) return false;
+        const normalizeType = (s) =>
+            (s || "")
+                .toString()
+                .replace(/[_\s]+/g, "")
+                .toLowerCase();
+        if (filters.type && normalizeType(a.activityType) !== normalizeType(filters.type)) return false;
         if (
             filters.month &&
             (!a.startDate ||
@@ -215,6 +226,15 @@ function ActivityManagementPageContent() {
 
     const handlePageChange = (page) => setCurrentPage(page);
 
+    // Ensure that when filters change we go back to page 1 so filtering works
+    const handleSetFilters = (updater) => {
+        setFilters((prev) => {
+            const next = typeof updater === 'function' ? updater(prev) : updater;
+            return next;
+        });
+        setCurrentPage(1);
+    };
+
     return (
         <>
             {" "}
@@ -233,7 +253,7 @@ function ActivityManagementPageContent() {
                 <div style={{marginBottom: '30px'}}>
                     <div className="flex flex-col  md:flex-row md:items-end md:justify-between mb-6 gap-2">
                     <div className="flex-1">
-                        <FilterBar setFilters={setFilters} filters={filters} />
+                        <FilterBar setFilters={handleSetFilters} filters={filters} />
                     </div>
 
                 </div>

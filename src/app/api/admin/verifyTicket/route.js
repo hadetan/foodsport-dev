@@ -80,7 +80,7 @@ export async function POST(request) {
 		);
 	}
 
-	await prisma.$transaction([
+	const [updatedTicket, updatedUserActivity] = await prisma.$transaction([
 		prisma.ticket.update({ where: { id: ticket.id }, data: { ticketUsed: true, status: 'used', usedAt: new Date() } }),
 		prisma.userActivity.update({ where: { id: userActivity.id }, data: { wasPresent: true } }),
 	]);
@@ -99,11 +99,17 @@ export async function POST(request) {
 		});
 	}
 
-	const responseBody = { message: 'Ticket verified and marked as present.' };
-	if (user) responseBody.user = user;
-	if (tempUser) responseBody.tempUser = tempUser;
+	const participant = user ? { type: 'user', ...user } : tempUser ? { type: 'tempUser', ...tempUser } : null;
 
-	return NextResponse.json(responseBody);
+	const attendee = {
+		userActivityId: updatedUserActivity.id,
+		ticketCode: updatedTicket.ticketCode || null,
+		wasPresent: updatedUserActivity.wasPresent,
+		joinedAt: updatedUserActivity.joinedAt,
+		participant,
+	};
+
+	return NextResponse.json({ message: 'Ticket verified and marked as present.', attendee });
 }
 
 export async function GET(request) {

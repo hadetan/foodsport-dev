@@ -69,18 +69,18 @@ export async function POST(request) {
 				},
 			});
 
-			// ONCE SUCCESSFULLY CREATED THEIR TEMP PROFILE, SEND THEM EMAIL FOR JOINING THE APP TO CONTINUE PARTICIPATING IN THE ACTIVITIES.
-			/* try {
-                const templateId = 191;
-                await serverApi.post('/admin/email/template_email', { to: email, templateId, params: { name: `${firstname} ${lastname}`, title: '' } }, { headers: { 'x-internal-api': process.env.INTERNAL_API_SECRET } });
-            } catch (e) {
-                console.log('Error while sending email from verifyInvitedTicket api: ', e);
-            } */
+			const attendee = {
+				userActivityId: userActivity.id,
+				ticketCode: ticket.ticketCode || null,
+				wasPresent: userActivity.wasPresent,
+				joinedAt: userActivity.joinedAt,
+				participant: { type: 'tempUser', ...tempUser },
+			};
 
-            return { tempUser, userActivity };
+			return { tempUser, userActivity, attendee };
 		});
 
-		return NextResponse.json({ success: true, tempUser: result.tempUser, userActivity: result.userActivity });
+	return NextResponse.json({ success: true, tempUser: result.tempUser, userActivity: result.userActivity, attendee: result.attendee });
 	} catch (err) {
 		return NextResponse.json({ error: 'Failed to verify invited ticket', details: err.message }, { status: 500 });
 	}
