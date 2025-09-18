@@ -19,6 +19,7 @@ export default function LoginPage() {
 	const [otpStep, setOtpStep] = useState(false);
 	const [sessionId, setSessionId] = useState(null);
 	const [otpCode, setOtpCode] = useState('');
+	const otpInputRef = useRef(null);
 	const router = useRouter();
 	const { login, authToken, verifyOtp, handleSession } = useAuth();
 	const subOnce = useRef(false);
@@ -104,6 +105,12 @@ export default function LoginPage() {
 			}
 		})();
 	}, [supabase]);
+
+	useEffect(() => {
+		if (otpStep) {
+			otpInputRef.current?.focus?.();
+		}
+	}, [otpStep]);
 
 
 	async function handleLogin(e) {
@@ -205,6 +212,7 @@ export default function LoginPage() {
 						<label className='block mb-1 font-medium text-black'>{t('Auth.enterOtpLabel')}</label>
 						<input
 							type='text'
+							ref={otpInputRef}
 							className='input input-bordered w-full'
 							value={otpCode}
 							onChange={(e) => setOtpCode(e.target.value)}

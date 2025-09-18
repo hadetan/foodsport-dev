@@ -1,7 +1,6 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import '@/app/globals.css';
-import LoadingBarRootClient from '@/app/LoadingBarRootClient';
 import { locales } from '@/i18n/request';
 import { getAlternateLinksMetadata } from '@/app/[locale]/LocaleAlternateLinks';
 import { ActivitiesProvider } from '../shared/contexts/ActivitiesContext';
@@ -18,9 +17,6 @@ export async function generateMetadata({ params }) {
 		title: 'Food-Sport',
 		description: 'A gamified activity tracking app where you can take participant in events with many others!',
         ...alternates,
-		icons: {
-            icon: "/running.svg",
-        },
     };
 }
 

@@ -22,6 +22,7 @@ export default function RegisterPage() {
 	const [otpStep, setOtpStep] = useState(false);
 	const [sessionId, setSessionId] = useState(null);
 	const [otpCode, setOtpCode] = useState('');
+	const otpInputRef = useRef(null);
 	const router = useRouter();
 	const { signup, authToken, verifyRegisterOtp, handleSession } = useAuth();
 	const subOnce = useRef(false);
@@ -145,6 +146,10 @@ export default function RegisterPage() {
 	}
 
 	const onGoogle = async () => {
+		setOtpStep(false);
+		setSessionId(null);
+		setOtpCode('');
+		setError('');
 		setLoading(true);
 		try {
 			const redirectTo = `${window.location.origin}/${locale}/auth/register`;
@@ -157,6 +162,12 @@ export default function RegisterPage() {
 			setLoading(false);
 		}
 	};
+
+	useEffect(() => {
+		if (otpStep) {
+			otpInputRef.current?.focus?.();
+		}
+	}, [otpStep]);
 
 	return (
 		<div className=''>
@@ -252,6 +263,7 @@ export default function RegisterPage() {
 								className='input input-bordered w-full'
 								value={otpCode}
 								onChange={(e) => setOtpCode(e.target.value)}
+								ref={otpInputRef}
 								required
 							/>
 						</div>
