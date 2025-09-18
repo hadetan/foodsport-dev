@@ -24,7 +24,6 @@ const ActivityDetailsAdmin = ({
 }) => {
     const [showShare, setShowShare] = useState(false);
     const { seatsLeft } = calculateSeats(activity);
-    console.log(activity);
 
     return (
         <div className="activityDetailsPage">

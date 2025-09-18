@@ -48,8 +48,6 @@ const ActivityDetailPage = () => {
     const fileInputRef = useRef(null);
     const [importing, setImporting] = useState(false);
 
-    console.log(users);
-
     useEffect(() => {
         if (users && users.length > 0 && activityId) {
             const filteredUsers = users.filter(

@@ -108,7 +108,7 @@ export default function LoginPage() {
 
 	useEffect(() => {
 		if (otpStep) {
-			otpInputRef.current?.focus?.();
+			otpInputRef.current?.focus();
 		}
 	}, [otpStep]);
 

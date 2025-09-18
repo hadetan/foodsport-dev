@@ -19,7 +19,7 @@ const LoginPage = () => {
 
     useEffect(() => {
         if (otpMode) {
-            otpInputRef.current?.focus?.();
+            otpInputRef.current?.focus();
         }
     }, [otpMode]);
 

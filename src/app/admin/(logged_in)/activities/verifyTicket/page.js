@@ -143,8 +143,6 @@ export default function VerifyTicketPage() {
         setActivityName(getActivityNameById(activityId));
     }, [activityId, getActivityNameById]);
 
-    console.log(attendees);
-
     async function handleVerify() {
         setVerifying(true);
         setVerifyError(null);

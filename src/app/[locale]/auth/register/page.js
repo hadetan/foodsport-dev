@@ -165,7 +165,7 @@ export default function RegisterPage() {
 
 	useEffect(() => {
 		if (otpStep) {
-			otpInputRef.current?.focus?.();
+			otpInputRef.current?.focus();
 		}
 	}, [otpStep]);
 
