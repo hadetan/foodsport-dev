@@ -49,7 +49,7 @@ export async function POST(req) {
 			);
 			if (!res?.data?.success) throw new Error('Email send failed');
 		} catch (err) {
-			console.error('Failed to send OTP email', err.message || err);
+			console.error('Failed to send OTP email', err || err);
 			await prisma.otp.updateMany({ where: { id: result.otp.id }, data: { status: 'cancelled' } });
 			return Response.json({ error: 'Failed to send OTP email' }, { status: 500 });
 		}

@@ -166,6 +166,7 @@ model AdminUser {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   activitiesOrganized   Activity[] @relation("OrganizerActivities")
+  otps                Otp[]
 
   @@map("admin_user")
 }
@@ -433,6 +434,7 @@ model Referral {
 model Otp {
   id          String   @id @default(uuid())
   userId      String?  @map("user_id")
+  adminUserId String?  @map("admin_user_id")
   tempUserId  String?  @map("temp_user_id")
   entityType  OtpEntityType @map("entity_type")
   entityName  String   @map("entity_name")
@@ -447,6 +449,7 @@ model Otp {
 
   // Relations
   user        User?    @relation(fields: [userId], references: [id])
+  adminUser   AdminUser? @relation(fields: [adminUserId], references: [id])
   tempUser    TempUser? @relation(fields: [tempUserId], references: [id])
 
   @@map("otps")

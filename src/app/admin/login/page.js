@@ -12,6 +12,9 @@ const LoginPage = () => {
         email: "",
         password: "",
     });
+    const [otpMode, setOtpMode] = useState(false);
+    const [sessionId, setSessionId] = useState(null);
+    const [otpCode, setOtpCode] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,11 +22,9 @@ const LoginPage = () => {
         setError("");
         try {
             const response = await axios.post("/api/admin/auth/login", formData);
-            if (response.data && response.data.admin && response.data.session) {
-                if (response.data.session.access_token) {
-                    localStorage.setItem('admin_auth_token', response.data.session.access_token);
-                }
-                router.push('/admin');
+            if (response.data && response.data.sessionId) {
+                setSessionId(response.data.sessionId);
+                setOtpMode(true);
             } else {
                 setError("Unexpected response from server.");
             }
@@ -32,6 +33,32 @@ const LoginPage = () => {
                 setError(err.response.data.error);
             } else {
                 setError("Login failed. Please try again.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleVerify = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        try {
+            const payload = { otpId: sessionId, code: otpCode, email: formData.email, password: formData.password };
+            const res = await axios.post('/api/admin/auth/login/otp/verify', payload, { withCredentials: true });
+            if (res.data && res.data.session) {
+                localStorage.setItem('admin_auth_token', res.data.session.access_token);
+                router.push('/admin');
+            } else if (res.data && res.data.error) {
+                setError(res.data.error);
+            } else {
+                setError('Unexpected response from verify endpoint.');
+            }
+        } catch (err) {
+            if (err.response && err.response.data && err.response.data.error) {
+                setError(err.response.data.error);
+            } else {
+                setError('OTP verification failed. Please try again.');
             }
         } finally {
             setLoading(false);
@@ -63,7 +90,7 @@ const LoginPage = () => {
                     {/* Error Alert */}
                     <ErrorAlert message={error} onClose={() => setError("")} />
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={otpMode ? handleVerify : handleSubmit} className="space-y-6">
                         {/* Email Field */}
                         <div className="form-control">
                             <label className="label">
@@ -98,7 +125,7 @@ const LoginPage = () => {
                             </div>
                         </div>
 
-                        {/* Password Field */}
+                            {/* Password Field */}
                         <div className="form-control">
                             <label className="label">
                                 <span className="label-text text-gray-700 font-medium">
@@ -131,6 +158,27 @@ const LoginPage = () => {
                                 </svg>
                             </div>
                         </div>
+
+                            {/* OTP Field - shown only after login step */}
+                            {otpMode && (
+                                <div className="form-control">
+                                    <label className="label">
+                                        <span className="label-text text-gray-700 font-medium">OTP Code</span>
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            name="otp"
+                                            placeholder="Enter the 6-digit code"
+                                            className="input input-bordered w-full pl-10 bg-white text-gray-900"
+                                            value={otpCode}
+                                            onChange={(e) => setOtpCode(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2">A one-time code was sent to your email. Enter it to continue.</p>
+                                </div>
+                            )}
 
                         {/* Submit Button */}
                         <div className="form-control mt-6">
