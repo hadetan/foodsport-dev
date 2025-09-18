@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import "../css/ActivitiesFilter.css";
 import { useSearchParams, usePathname } from "next/navigation";
 import { ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
