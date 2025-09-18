@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import axiosClient from "@/utils/axios/api";
-import ActivityStatus, { MAX_IMAGE_SIZE_MB } from "@/app/constants/constants";
+import { MAX_IMAGE_SIZE_MB } from "@/app/constants/constants";
 import { ImageUp, Pencil } from "lucide-react";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import {
@@ -110,7 +110,6 @@ const CreateActivityPage = () => {
             "status",
             "startDateTime",
             "endDateTime",
-            "tncId",
         ];
         const errors = {};
         requiredFields.forEach((field) => {
@@ -654,32 +653,6 @@ const CreateActivityPage = () => {
                                     )}
                                 </div>
 
-                                {/* Status */}
-                                <div className="form-control w-full col-span-1">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Status
-                                    </label>
-                                    <select
-                                        className="select select-bordered select-lg w-full bg-white text-black"
-                                        name="status"
-                                        value={formData.status}
-                                        onChange={handleFormChange}
-                                    >
-                                        {ActivityStatus.map((status) => (
-                                            <option key={status} value={status}>
-                                                {status
-                                                    .charAt(0)
-                                                    .toUpperCase() +
-                                                    status.slice(1)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {fieldErrors.status && (
-                                        <span className="text-error text-base">
-                                            {fieldErrors.status}
-                                        </span>
-                                    )}
-                                </div>
 
                                 {/* T&C Selection */}
                                 <div className="form-control w-full col-span-1">
@@ -692,7 +665,6 @@ const CreateActivityPage = () => {
                                         value={formData.tncId}
                                         onChange={handleFormChange}
                                         disabled={tncLoading}
-                                        required
                                     >
                                         <option value="">
                                             {tncLoading
