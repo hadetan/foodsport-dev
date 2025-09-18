@@ -162,7 +162,18 @@ function ActivityManagementPageContent() {
     });
 
     const filteredActivities = sortedActivities.filter((a) => {
-        if (filters.type && a.activityType !== filters.type) return false;
+        // Normalize strings to make type comparison resilient to case, spaces, and underscores
+        const normalize = (s) =>
+            (s || "")
+                .toString()
+                .trim()
+                .toLowerCase()
+                .replace(/[\s_-]+/g, "");
+
+        if (filters.type) {
+            const aType = a.activityType || a.activity_type || a.type || "";
+            if (normalize(aType) !== normalize(filters.type)) return false;
+        }
         if (
             filters.month &&
             (!a.startDate ||
@@ -220,7 +231,7 @@ function ActivityManagementPageContent() {
             {" "}
             <h2 className="text-2xl font-bold">Activities </h2>
             <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
-                <div style={{display: 'flex', justifyContent: 'end'}}>
+                <div style={{ display: "flex", justifyContent: "end" }}>
                     <button
                         className="btn btn-primary"
                         onClick={() =>
@@ -230,13 +241,15 @@ function ActivityManagementPageContent() {
                         Create Activity
                     </button>
                 </div>
-                <div style={{marginBottom: '30px'}}>
+                <div style={{ marginBottom: "30px" }}>
                     <div className="flex flex-col  md:flex-row md:items-end md:justify-between mb-6 gap-2">
-                    <div className="flex-1">
-                        <FilterBar setFilters={setFilters} filters={filters} />
+                        <div className="flex-1">
+                            <FilterBar
+                                setFilters={setFilters}
+                                filters={filters}
+                            />
+                        </div>
                     </div>
-
-                </div>
                 </div>
 
                 {/* Activities Table */}
