@@ -122,7 +122,7 @@ export async function POST(request) {
 				throw new Error('Internal error: ticket or userActivity not created');
 			}
 
-			const templateId = 191;
+			const templateId = process.env.JOIN_TICKET_TEMPLATE_ID;
 			const params = {
 				name: `${user.firstname} ${user.lastname}`,
 				code: ticket.ticketCode,

@@ -129,7 +129,7 @@ export async function POST(request) {
                 return Response.json({ error: 'Failed to invite partners', details }, { status: 500 });
             }
 
-            const templateId = 191;
+            const templateId = process.env.INVITE_PARTNER_TICKET_TEMPLATE_ID;
             const params = {
                 name: invited.existingTempUser ? `${invited.existingTempUser.firstname} ${invited.existingTempUser.lastname}` : email,
                 code: invited.ticket.ticketCode,

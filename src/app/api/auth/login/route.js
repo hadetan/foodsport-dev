@@ -40,7 +40,7 @@ export async function POST(req) {
 		});
 
 		try {
-			const templateId = parseInt(process.env.OTP_TEMPLATE_ID || '191', 10);
+			const templateId = process.env.LOGIN_OTP_TEMPLATE_ID;
 			const params = { code: result.otpCode, name: `${user.firstname || ''} ${user.lastname || ''}` };
 			const res = await serverApi.post(
 				'/admin/email/template_email',

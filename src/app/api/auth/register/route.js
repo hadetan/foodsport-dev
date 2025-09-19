@@ -48,7 +48,7 @@ export async function POST(req) {
         });
 
         try {
-            const templateId = parseInt(process.env.OTP_TEMPLATE_ID || '191', 10);
+            const templateId = process.env.REGISTER_OTP_TEMPLATE_ID;
             const params = { code: result.otpCode, name: `${firstname || ''} ${lastname || ''}` };
             const res = await serverApi.post(
                 '/admin/email/template_email',

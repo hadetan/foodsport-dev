@@ -80,7 +80,21 @@ export async function POST(request) {
 			return { tempUser, userActivity, attendee };
 		});
 
-	return NextResponse.json({ success: true, tempUser: result.tempUser, userActivity: result.userActivity, attendee: result.attendee });
+		try {
+			const templateId = process.env.INVITED_USER_TEMPLATE_ID;
+			const params = { name: `${result.tempUser.firstname} ${result.tempUser.lastname}` };
+			const res = await serverApi.post(
+				'/admin/email/template_email',
+				{ to: result.tempUser.email, templateId, params },
+				{ headers: { 'x-internal-api': process.env.INTERNAL_API_SECRET } }
+			);
+			if (!res?.data?.success) throw new Error('Email send failed');
+		} catch (err) {
+			console.error('Failed to send inviting email', err);
+			return NextResponse.json({ error: 'Failed to send inviting email' }, { status: 500 });
+		}
+
+		return NextResponse.json({ success: true, tempUser: result.tempUser, userActivity: result.userActivity, attendee: result.attendee });
 	} catch (err) {
 		return NextResponse.json({ error: 'Failed to verify invited ticket', details: err.message }, { status: 500 });
 	}

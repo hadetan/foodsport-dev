@@ -80,7 +80,7 @@ export async function DELETE(request) {
 			);
 		}
 
-		const templateId = 192;
+		const templateId = process.env.LEAVE_EMAIL_TEMPLATE_ID;
 		const params = {
 			name: `${user.firstname} ${user.lastname}`,
 			activity: activity.title,
