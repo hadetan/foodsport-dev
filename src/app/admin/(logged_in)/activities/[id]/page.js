@@ -4,7 +4,7 @@ import { useRouter, useParams, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import FullPageLoader from "../../components/FullPageLoader";
-import { Pencil } from "lucide-react";
+import { Pencil, ArrowLeft, Calendar, MapPin, ImageUp } from "lucide-react";
 import statusOptions from "@/app/constants/constants";
 import { ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
 import Tabs from "../../components/Tabs";
@@ -38,6 +38,12 @@ function formatForInput(iso) {
     )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+// Helper: whether a given status requires a T&C selection
+function requiresTncForStatus(status) {
+    const s = String(status || "").toLowerCase();
+    return s === "active" || s === "closed" || s === "cancelled";
+}
+
 export default function EditActivityPage() {
     const [form, setForm] = useState(null);
     const [errors, setErrors] = useState({});
@@ -64,7 +70,6 @@ export default function EditActivityPage() {
     const [activeTab, setActiveTab] = useState("details");
     const [tncOptions, setTncOptions] = useState([]);
     const [tncLoading, setTncLoading] = useState(false);
-    console.log(activities);
     useEffect(() => {
         // If the URL contains ?tab=description (or chinese), open that tab.
         try {
@@ -118,11 +123,10 @@ export default function EditActivityPage() {
             totalCaloriesBurnt: activity.totalCaloriesBurnt || "",
             caloriesPerHourMin,
             caloriesPerHourMax,
-            tncId: activity.tnc?.id,
+            tncId: activity.tnc.id,
             isFeatured: !!activity.isFeatured,
             organizationName: activity.organizationName,
         });
-        console.log(activity);
         setAudit({
             createdBy: activity.organizerName || "Unknown",
         });
@@ -191,8 +195,21 @@ export default function EditActivityPage() {
             errs.activityType = "Activity type is required.";
         if (!form.startDateTime)
             errs.startDateTime = "Start date and time are required.";
+        else {
+            const dt = new Date(form.startDateTime);
+            if (dt < new Date())
+                errs.startDateTime =
+                    "Start date and time must be in the future.";
+        }
         if (!form.endDateTime)
             errs.endDateTime = "End date and time are required.";
+        else {
+            const startDt = new Date(form.startDateTime);
+            const endDt = new Date(form.endDateTime);
+            if (endDt <= startDt)
+                errs.endDateTime =
+                    "End date and time must be after start date and time.";
+        }
         if (!form.location) errs.location = "Location is required.";
         const cap = parseInt(form.capacity, 10);
         if (!cap || cap < 1 || cap > 1000)
@@ -216,16 +233,52 @@ export default function EditActivityPage() {
             errs.image = "Only JPG/PNG allowed.";
         if (imageFile && imageFile.size && imageFile.size > 5 * 1024 * 1024)
             errs.image = "Max size 5MB.";
+
+        // Require T&C only when moving out of draft (active/closed/cancelled)
+        const requiresTnc = requiresTncForStatus(form.status);
+        if (requiresTnc && !form.tncId) {
+            errs.tncId =
+                "Please select a T&C before switching to active status";
+        }
         setErrors(errs);
+        if (errs.tncId) setError(errs.tncId);
         return Object.keys(errs).length === 0;
     };
 
     const handleInput = (e) => {
         const { name, value, type, checked } = e.target;
-        setForm((f) => ({
-            ...f,
-            [name]: type === "checkbox" ? checked : value,
-        }));
+        const newValue = type === "checkbox" ? checked : value;
+        setForm((prev) => {
+            const next = { ...prev, [name]: newValue };
+
+            if (name === "status") {
+                const requiresTnc = requiresTncForStatus(newValue);
+                if (requiresTnc && !next.tncId) {
+                    const msg =
+                        "Please select a T&C before switching to active status";
+                    setErrors((prevErrs) => ({ ...prevErrs, tncId: msg }));
+                    setError(msg);
+                } else {
+                    setErrors((prevErrs) => {
+                        const { tncId, ...rest } = prevErrs || {};
+                        return rest;
+                    });
+                    setError("");
+                }
+            }
+
+            if (name === "tncId") {
+                const requiresTnc = requiresTncForStatus(next.status);
+                if (newValue && requiresTnc) {
+                    setErrors((prevErrs) => {
+                        const { tncId, ...rest } = prevErrs || {};
+                        return rest;
+                    });
+                    setError("");
+                }
+            }
+            return next;
+        });
     };
 
     const handleImageChange = (e) => {
@@ -254,17 +307,13 @@ export default function EditActivityPage() {
                 )
                     return;
                 if (value !== "" && value !== null && value !== undefined) {
-                    if (key === "capacity") return;
+                    if (key === 'capacity') return;
                     formData.append(key, value);
                 }
             });
 
-            if (
-                form.capacity !== undefined &&
-                form.capacity !== null &&
-                form.capacity !== ""
-            ) {
-                formData.append("participantLimit", String(form.capacity));
+            if (form.capacity !== undefined && form.capacity !== null && form.capacity !== '') {
+                formData.append('participantLimit', String(form.capacity));
             }
 
             if (form.startDateTime) {
@@ -291,18 +340,8 @@ export default function EditActivityPage() {
             formData.append("mapUrl", buildEmbedMapUrl(form.mapLocation));
             formData.append("isFeatured", !!form.isFeatured);
 
-            if (form.description) {
-                formData.append("summary", form.description);
-            }
-            if (form.descriptionZh) {
-                formData.append("summaryZh", form.descriptionZh);
-            }
-
             // Ensure organizationName is included when present
-            if (
-                form.organizationName !== undefined &&
-                form.organizationName !== null
-            ) {
+            if (form.organizationName !== undefined && form.organizationName !== null) {
                 formData.append("organizationName", form.organizationName);
             }
 
@@ -359,15 +398,16 @@ export default function EditActivityPage() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center w-full h-full min-h-0 bg-white px-2 sm:px-4 md:px-8 lg:px-16 flex-1">
+        <div className="flex flex-col items-center justify-start w-full h-full min-h-0 bg-[#F9FAFB] px-2 sm:px-4 md:px-8 lg:px-16 flex-1">
             {/* Back Button */}
             <div className="w-full flex justify-start mb-4">
                 <button
-                    className="btn btn-primary"
+                    className="flex items-center gap-2 px-4 py-2 rounded-md bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 cursor-pointer"
                     onClick={() => router.push("/admin/activities")}
                     type="button"
                 >
-                    &larr; Back
+                    <ArrowLeft className="w-4 h-4" />
+                    <span className="text-sm font-medium">Back</span>
                 </button>
             </div>
             <div className="w-full  bg-white overflow-y-auto mb-2">
@@ -376,119 +416,55 @@ export default function EditActivityPage() {
                     setTab={setActiveTab}
                     activeTab={activeTab}
                     activityId={activityId}
+                    setActivities={setActivities}
                     summary={form.summary}
                     summaryZh={form.summaryZh}
                 />
                 {activeTab === "details" && (
                     <>
-                        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-black">
-                            Edit Activity
-                        </h1>
-                        {error && (
-                            <div className="alert alert-error mb-4">
-                                {error}
-                            </div>
-                        )}
-                        {success && (
-                            <div className="alert alert-success mb-4">
-                                {success}
-                            </div>
-                        )}
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                handleSave();
-                            }}
-                            className="w-full"
-                            style={{ marginLeft: 0, marginRight: 0 }}
-                        >
-                            <div
-                                className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-8 w-full"
-                                style={{ alignItems: "center" }}
+                        {/* Card */}
+                        <div className="w-full bg-white rounded-lg shadow-sm p-6 md:p-8 mb-6">
+                            <h1 className="text-2xl font-bold mb-6 text-gray-900">Edit Activity</h1>
+                            {error && <div className="alert alert-error mb-4">{error}</div>}
+                            {success && <div className="alert alert-success mb-4">{success}</div>}
+
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    handleSave();
+                                }}
                             >
-                                {/* Upload Image - full width */}
-                                <div className="col-span-1 md:col-span-3">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Upload Image
-                                    </label>
-                                    <div className="relative flex flex-col items-center justify-center bg-white border-2 border-dashed border-[#3B82F6] rounded-xl p-4 sm:p-8 min-h-[120px] sm:min-h-[180px] w-full">
-                                        <input
-                                            type="file"
-                                            className="absolute inset-0 opacity-0 cursor-pointer"
-                                            accept="image/jpeg,image/png"
-                                            multiple={false}
-                                            ref={fileInputRef}
-                                            onChange={handleImageChange}
-                                            disabled={!!imageFile}
-                                            style={{ zIndex: 2 }}
-                                        />
-                                        {!imageFile && (
-                                            <div className="flex flex-col items-center pointer-events-none select-none">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="h-12 w-12 text-[#3B82F6] mb-2"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-4 4h-4a1 1 0 01-1-1v-4h6v4a1 1 0 01-1 1z"
-                                                    />
-                                                </svg>
-                                                <span className="text-[#3B82F6] font-medium">
-                                                    Drop image or{" "}
-                                                    <span className="underline cursor-pointer text-[#3B82F6]">
-                                                        browse
-                                                    </span>
-                                                </span>
-                                                <span className="text-xs text-gray-400 mt-1">
-                                                    JPG, PNG
-                                                </span>
-                                            </div>
-                                        )}
-                                        {imageFile && (
-                                            <div className="relative w-full flex justify-center">
-                                                <div
-                                                    className="bg-white flex items-center justify-center w-full"
-                                                    style={{
-                                                        width: "100%",
-                                                        maxWidth: "100%",
-                                                        minHeight: "180px",
-                                                        maxHeight: "320px",
-                                                        aspectRatio: "16/9",
-                                                        borderRadius: "0.75rem",
-                                                        overflow: "hidden",
-                                                    }}
-                                                >
+                                {/* Main grid: left preview, right fields */}
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    {/* Left: Image + dates + location */}
+                                    <div className="lg:col-span-1">
+                                        <label className="block text-sm font-medium text-gray-600 mb-2">Upload Image</label>
+                                        <div className="relative group rounded-lg overflow-hidden bg-gray-100 border border-gray-200" style={{ aspectRatio: '16/9' }}>
+                                            <input
+                                                type="file"
+                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                                accept="image/jpeg,image/png"
+                                                multiple={false}
+                                                ref={fileInputRef}
+                                                onChange={handleImageChange}
+                                                disabled={!!imageFile}
+                                                aria-label="Upload image"
+                                                style={{ zIndex: 2 }}
+                                            />
+                                            {imageFile ? (
+                                                <>
                                                     <img
-                                                        src={
-                                                            imageFile.url
-                                                                ? imageFile.url
-                                                                : URL.createObjectURL(
-                                                                      imageFile
-                                                                  )
-                                                        }
+                                                        src={imageFile.url ? imageFile.url : URL.createObjectURL(imageFile)}
                                                         alt="Activity"
-                                                        className="w-full h-auto max-h-[320px] object-contain"
-                                                        style={{
-                                                            display: "block",
-                                                            margin: "0 auto",
-                                                        }}
+                                                        className="w-full h-full object-contain"
                                                     />
-                                                    {/* Pencil icon (lucide-react) for changing image */}
                                                     <button
                                                         type="button"
-                                                        className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+                                                        className="absolute top-2 right-2 bg-white/90 rounded-full p-1 shadow hover:bg-white cursor-pointer"
                                                         style={{ zIndex: 10 }}
                                                         onClick={() => {
-                                                            if (
-                                                                fileInputRef.current
-                                                            ) {
-                                                                fileInputRef.current.value =
-                                                                    "";
+                                                            if (fileInputRef.current) {
+                                                                fileInputRef.current.value = "";
                                                                 fileInputRef.current.disabled = false;
                                                                 fileInputRef.current.click();
                                                             }
@@ -496,361 +472,343 @@ export default function EditActivityPage() {
                                                         tabIndex={0}
                                                         aria-label="Change image"
                                                     >
-                                                        <Pencil className="text-[#3B82F6] w-5 h-5" />
+                                                        <Pencil className="text-indigo-600 w-5 h-5" />
                                                     </button>
+                                                </>
+                                            ) : (
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center text-indigo-600 select-none pointer-events-none">
+                                                    <ImageUp className="w-10 h-10 mb-2" />
+                                                    <span className="font-medium">Drop image or browse</span>
+                                                    <span className="text-xs text-gray-400 mt-1">JPG, PNG</span>
                                                 </div>
+                                            )}
+                                        </div>
+                                        {errors.images && (
+                                            <span className="text-error text-base">{errors.images}</span>
+                                        )}
+                                        {errors.image && (
+                                            <span className="text-error text-base">{errors.image}</span>
+                                        )}
+
+                                        {/* Start Date & Time */}
+                                        <div className="mt-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Start Date &amp; Time</label>
+                                            <div className="relative">
+                                                <input
+                                                    type="datetime-local"
+                                                    className="input input-bordered input-lg w-full bg-white text-black pl-12"
+                                                    name="startDateTime"
+                                                    value={form.startDateTime}
+                                                    onChange={handleInput}
+                                                    required
+                                                />
+                                                <Calendar className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                                             </div>
-                                        )}
+                                            {errors.startDateTime && (
+                                                <span className="text-error text-base">{errors.startDateTime}</span>
+                                            )}
+                                        </div>
+
+                                        {/* End Date & Time */}
+                                        <div className="mt-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">End Date &amp; Time</label>
+                                            <div className="relative">
+                                                <input
+                                                    type="datetime-local"
+                                                    className="input input-bordered input-lg w-full bg-white text-black pl-12"
+                                                    name="endDateTime"
+                                                    value={form.endDateTime}
+                                                    onChange={handleInput}
+                                                    required
+                                                />
+                                                <Calendar className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                            </div>
+                                            {errors.endDateTime && (
+                                                <span className="text-error text-base">{errors.endDateTime}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Location */}
+                                        <div className="mt-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                                            <div className="relative">
+                                                <input
+                                                    className="input input-bordered input-lg w-full bg-white text-black pl-12"
+                                                    name="location"
+                                                    value={form.location}
+                                                    onChange={handleInput}
+                                                    required
+                                                    placeholder="Enter location"
+                                                />
+                                                <MapPin className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                            </div>
+                                            {errors.location && (
+                                                <span className="text-error text-base">{errors.location}</span>
+                                            )}
+                                        </div>
                                     </div>
-                                    {errors.images && (
-                                        <span className="text-error text-base">
-                                            {errors.images}
-                                        </span>
-                                    )}
-                                    {errors.image && (
-                                        <span className="text-error text-base">
-                                            {errors.image}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Row 1: Activity Title, Chinese Title, Activity Type */}
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Activity Title
-                                    </label>
-                                    <input
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="title"
-                                        value={form.title}
-                                        onChange={handleInput}
-                                        maxLength={100}
-                                        required
-                                    />
-                                    {errors.title && (
-                                        <span className="text-error text-base">
-                                            {errors.title}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Chinese Title
-                                    </label>
-                                    <input
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="titleZh"
-                                        value={form.titleZh}
-                                        onChange={handleInput}
-                                        maxLength={100}
-                                        placeholder="输入中文标题"
-                                    />
-                                </div>
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Activity Type
-                                    </label>
-                                    <select
-                                        className="select select-bordered select-lg w-full bg-white text-black"
-                                        name="activityType"
-                                        value={form.activityType}
-                                        onChange={handleInput}
-                                        required
-                                    >
-                                        <option value="">
-                                            Select activity type
-                                        </option>
-                                        {ACTIVITY_TYPES_FORMATTED.map(
-                                            (formatted) => (
-                                                <option
-                                                    key={formatted}
-                                                    value={formatted}
-                                                >
-                                                    {formatted.replace(
-                                                        /_/g,
-                                                        " "
-                                                    )}
-                                                </option>
-                                            )
-                                        )}
-                                    </select>
-                                </div>
-                                {/* Should be featured, Summary, Chinese Summary */}
-                                {/* ? */}
-                                <div className="form-control w-full col-span-1">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Featured
-                                    </label>
-                                    <div className="flex items-center justify-between gap-4">
-                                        <p className="text-sm text-gray-600">
-                                            Feature this activity to highlight
-                                            it on the landing page.
-                                        </p>
-                                        <label className="inline-flex items-center gap-2 cursor-pointer">
+
+                                    {/* Right: Fields */}
+                                    <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* Activity Title */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Activity Title</label>
                                             <input
-                                                type="checkbox"
-                                                className="toggle toggle-primary"
-                                                name="isFeatured"
-                                                checked={!!form.isFeatured}
+                                                className="input input-bordered input-lg w-full bg-white text-black"
+                                                name="title"
+                                                value={form.title}
                                                 onChange={handleInput}
-                                                aria-label="Feature this activity"
+                                                maxLength={100}
+                                                required
                                             />
-                                        </label>
+                                            {errors.title && (
+                                                <span className="text-error text-base">{errors.title}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Chinese Title */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Chinese Title</label>
+                                            <input
+                                                className="input input-bordered input-lg w-full bg-white text-black"
+                                                name="titleZh"
+                                                value={form.titleZh}
+                                                onChange={handleInput}
+                                                maxLength={100}
+                                                placeholder="輸入中文標題"
+                                            />
+                                        </div>
+
+                                        {/* Activity Type & Featured */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Activity Type</label>
+                                            <select
+                                                className="select select-bordered select-lg w-full bg-white text-black"
+                                                name="activityType"
+                                                value={form.activityType}
+                                                onChange={handleInput}
+                                                required
+                                            >
+                                                <option value="">Select activity type</option>
+                                                {ACTIVITY_TYPES_FORMATTED.map((formatted) => (
+                                                    <option key={formatted} value={formatted}>
+                                                        {formatted.replace(/_/g, ' ')}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="flex items-center mt-4 md:mt-auto h-full">
+                                            <label className="flex items-center cursor-pointer w-full" htmlFor="featured-toggle">
+                                                <div
+                                                    className='relative'
+                                                    role='switch'
+                                                    aria-checked={!!form.isFeatured}
+                                                    tabIndex={0}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === ' ' || e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            document.getElementById('featured-toggle')?.click();
+                                                        }
+                                                    }}
+                                                >
+                                                    <input
+                                                        id='featured-toggle'
+                                                        type='checkbox'
+                                                        className='toggle toggle-primary sr-only'
+                                                        name='isFeatured'
+                                                        checked={!!form.isFeatured}
+                                                        onChange={handleInput}
+                                                        tabIndex={-1}
+                                                    />
+                                                    <div className="block bg-gray-200 w-14 h-8 rounded-full"></div>
+                                                    <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                                                </div>
+                                                <div className="ml-3">
+                                                    <p className="text-sm font-medium text-gray-900">Featured</p>
+                                                    <p className="text-xs text-gray-500">Feature this activity to highlight it on the landing page.</p>
+                                                </div>
+                                            </label>
+                                            <style>{`input#featured-toggle:checked ~ .dot { transform: translateX(100%); } input#featured-toggle:checked ~ .block { background-color: #A5B4FC; }`}</style>
+                                        </div>
+
+                                        {/* Summary */}
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Summary</label>
+                                            <textarea
+                                                className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
+                                                name="description"
+                                                value={form.description}
+                                                onChange={handleInput}
+                                                required
+                                                rows={4}
+                                                placeholder="Enter english summary..."
+                                            />
+                                            {errors.description && (
+                                                <span className="text-error text-base">{errors.description}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Chinese Summary */}
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Chinese Summary</label>
+                                            <textarea
+                                                className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
+                                                name="descriptionZh"
+                                                value={form.descriptionZh}
+                                                onChange={handleInput}
+                                                rows={4}
+                                                placeholder="請輸入中文摘要..."
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Summary
-                                    </label>
-                                    <textarea
-                                        className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
-                                        name="description"
-                                        value={form.description}
-                                        onChange={handleInput}
-                                        required
-                                        rows={3}
-                                        placeholder="Enter summary"
-                                    />
-                                    {errors.description && (
-                                        <span className="text-error text-base">
-                                            {errors.description}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Chinese Summary
-                                    </label>
-                                    <textarea
-                                        className="textarea textarea-bordered textarea-lg w-full bg-white text-black"
-                                        name="descriptionZh"
-                                        value={form.descriptionZh}
-                                        onChange={handleInput}
-                                        rows={3}
-                                        placeholder="输入中文简介"
-                                    />
-                                </div>
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Start Date & Time
-                                    </label>
-                                    <input
-                                        type="datetime-local"
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="startDateTime"
-                                        value={form.startDateTime}
-                                        onChange={handleInput}
-                                        required
-                                    />
-                                    {errors.startDateTime && (
-                                        <span className="text-error text-base">
-                                            {errors.startDateTime}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        End Date & Time
-                                    </label>
-                                    <input
-                                        type="datetime-local"
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="endDateTime"
-                                        value={form.endDateTime}
-                                        onChange={handleInput}
-                                        required
-                                    />
-                                    {errors.endDateTime && (
-                                        <span className="text-error text-base">
-                                            {errors.endDateTime}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Location
-                                    </label>
-                                    <input
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="location"
-                                        value={form.location}
-                                        onChange={handleInput}
-                                        required
-                                        placeholder="Search In Map "
-                                    />
-                                    {errors.location && (
-                                        <span className="text-error text-base">
-                                            {errors.location}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Capacity
-                                    </label>
-                                    <input
-                                        type="number"
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="capacity"
-                                        value={form.capacity}
-                                        onChange={handleInput}
-                                        min={1}
-                                        required
-                                        placeholder="Enter participant limit"
-                                    />
-                                    {errors.capacity && (
-                                        <span className="text-error text-base">
-                                            {errors.capacity}
-                                        </span>
-                                    )}
-                                </div>
-                                {/* Row 4: Calories Per Hour, End Date & Time, Status */}
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Calories Per Hour
-                                    </label>
-                                    <div className="flex gap-2">
+
+                                {/* Extra fields row (Capacity, Calories, Status, T&C, Org) */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6 pt-6 border-t border-gray-200">
+                                    {/* Capacity */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Capacity</label>
                                         <input
                                             type="number"
                                             className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="caloriesPerHourMin"
-                                            value={form.caloriesPerHourMin}
+                                            name="capacity"
+                                            value={form.capacity}
                                             onChange={handleInput}
-                                            min={0.01}
-                                            step="any"
+                                            min={1}
                                             required
-                                            placeholder="Min"
+                                            placeholder="Enter participant limit"
                                         />
-                                        <span className="self-center text-lg font-bold">
-                                            -
-                                        </span>
-                                        <input
-                                            type="number"
-                                            className="input input-bordered input-lg w-full bg-white text-black"
-                                            name="caloriesPerHourMax"
-                                            value={form.caloriesPerHourMax}
+                                        {errors.capacity && (
+                                            <span className="text-error text-base">{errors.capacity}</span>
+                                        )}
+                                    </div>
+
+                                    {/* Calories */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Calories Per Hour</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="number"
+                                                className="input input-bordered input-lg w-1/2 bg-white text-black"
+                                                name="caloriesPerHourMin"
+                                                value={form.caloriesPerHourMin}
+                                                onChange={handleInput}
+                                                min={0.01}
+                                                step="any"
+                                                required
+                                                placeholder="Min"
+                                            />
+                                            <span className="flex items-center px-1 text-lg text-gray-500">-</span>
+                                            <input
+                                                type="number"
+                                                className="input input-bordered input-lg w-1/2 bg-white text-black"
+                                                name="caloriesPerHourMax"
+                                                value={form.caloriesPerHourMax}
+                                                onChange={handleInput}
+                                                min={0.01}
+                                                step="any"
+                                                required
+                                                placeholder="Max"
+                                            />
+                                        </div>
+                                        {errors.caloriesPerHour && (
+                                            <span className="text-error text-base">{errors.caloriesPerHour}</span>
+                                        )}
+                                    </div>
+
+                                    {/* Status */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                        <select
+                                            className="select select-bordered select-lg w-full bg-white text-black"
+                                            name="status"
+                                            value={form.status}
                                             onChange={handleInput}
-                                            min={0.01}
-                                            step="any"
-                                            required
-                                            placeholder="Max"
+                                        >
+                                            {statusOptions.map((status) => (
+                                                <option key={status} value={status}>
+                                                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Organization Name */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Organization Name</label>
+                                        <input
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="organizationName"
+                                            value={form.organizationName || ''}
+                                            onChange={handleInput}
+                                            placeholder="Name of organizer"
                                         />
                                     </div>
-                                    {errors.caloriesPerHour && (
-                                        <span className="text-error text-base">
-                                            {errors.caloriesPerHour}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Status
-                                    </label>
-                                    <select
-                                        className="select select-bordered select-lg w-full bg-white text-black"
-                                        name="status"
-                                        value={form.status}
-                                        onChange={handleInput}
-                                    >
-                                        {statusOptions.map((status) => (
-                                            <option key={status} value={status}>
-                                                {status
-                                                    .charAt(0)
-                                                    .toUpperCase() +
-                                                    status.slice(1)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                {/* Row 5: Terms & Conditions, Map Location (empty for spacing) */}
-                                <div className="form-control w-full">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Terms & Conditions
-                                    </label>
-                                    <select
-                                        className="select select-bordered select-lg w-full bg-white text-black"
-                                        name="tncId"
-                                        value={form.tncId || ""}
-                                        onChange={handleInput}
-                                        disabled={tncLoading}
-                                    >
-                                        <option value="">
-                                            {tncLoading
-                                                ? "Loading..."
-                                                : "Select T&C"}
-                                        </option>
-                                        {tncOptions.map((t) => (
-                                            <option key={t.id} value={t.id}>
-                                                {t.title}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="form-control w-full col-span-1">
-                                    <label className="label text-lg font-semibold mb-2 text-black">
-                                        Organization Name
-                                    </label>
-                                    <input
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="organizationName"
-                                        value={form.organizationName || ""}
-                                        onChange={handleInput}
-                                        placeholder="Name of organizer of this activity"
-                                    />
-                                </div>
-                                <div className="col-span-full">
-                                    <div className="form-control w-full">
+
+                                    {/* T&C */}
+                                    <div className="lg:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Terms &amp; Conditions</label>
+                                        <select
+                                            className="select select-bordered select-lg w-full bg-white text-black"
+                                            name="tncId"
+                                            value={form.tncId || ''}
+                                            onChange={handleInput}
+                                            disabled={tncLoading}
+                                        >
+                                            <option value="">{tncLoading ? 'Loading...' : 'Select T&C'}</option>
+                                            {tncOptions.map((t) => (
+                                                <option key={t.id} value={t.id}>{t.title}</option>
+                                            ))}
+                                        </select>
+                                        {errors.tncId && (
+                                            <span className="text-error text-base">{errors.tncId}</span>
+                                        )}
+                                    </div>
+                                    <div className="lg:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Search In Map</label>
                                         <input
                                             className="input input-bordered input-lg w-full bg-white text-black"
                                             name="mapLocation"
                                             onChange={handleInput}
                                             value={form.mapLocation}
-                                            placeholder="Search In Map"
+                                            placeholder="Enter Map Address"
                                         />
                                         {errors.mapLocation && (
-                                            <span className="text-error text-base">
-                                                {errors.mapLocation}
-                                            </span>
+                                            <span className="text-error text-base">{errors.mapLocation}</span>
                                         )}
                                     </div>
                                 </div>
-                            </div>
-                            {/* Google Map at the bottom */}
-                            <div className="w-full mt-8 mb-4">
-                                <div className="w-full h-[320px] rounded-xl overflow-hidden border border-gray-200">
-                                    <iframe
-                                        title="Google Map"
-                                        width="100%"
-                                        height="100%"
-                                        style={{
-                                            border: 0,
-                                            width: "100%",
-                                            height: "100%",
-                                        }}
-                                        loading="lazy"
-                                        allowFullScreen
-                                        referrerPolicy="no-referrer-when-downgrade"
-                                        src={mapUrl}
-                                    ></iframe>
+
+                                {/* Search Map - full width */}
+
+                                {/* Google Map preview */}
+                                <div className="w-full mt-6">
+                                    <div className="w-full h-[320px] rounded-lg overflow-hidden border border-gray-200">
+                                        <iframe
+                                            title="Google Map"
+                                            width="100%"
+                                            height="100%"
+                                            style={{ border: 0, width: '100%', height: '100%' }}
+                                            loading="lazy"
+                                            allowFullScreen
+                                            referrerPolicy="no-referrer-when-downgrade"
+                                            src={mapUrl}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="md:col-span-3 flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 w-full">
-                                <button
-                                    type="submit"
-                                    className={`btn btn-primary btn-lg flex-1`}
-                                    disabled={loading}
-                                >
-                                    {loading ? "Saving ..." : "Save"}
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-outline btn-lg flex-1"
-                                    onClick={handleCancel}
-                                    disabled={loading}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
+
+                                {/* Actions */}
+                                <div className="flex justify-end gap-4 mt-8">
+                                    <button type="button" className="px-6 py-2 rounded-md text-sm font-medium bg-gray-200 text-gray-900 hover:bg-gray-300 cursor-pointer" onClick={handleCancel} disabled={loading}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="px-6 py-2 rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer" disabled={loading}>
+                                        {loading ? 'Saving ...' : 'Save'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                         {/* Cancel Confirmation */}
                         {showCancelConfirm && (
                             <div className="modal modal-open">

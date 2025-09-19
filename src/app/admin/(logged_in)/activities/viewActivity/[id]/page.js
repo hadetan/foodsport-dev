@@ -555,7 +555,7 @@ const ActivityDetailPage = () => {
                                                         >
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="flex items-center">
-                                                                    <div className="flex-shrink-0 h-10 w-10">
+                                                                    <div className="flex-shrink-0">
                                                                         <Avatar
                                                                             // Support both prop styles used in codebase
                                                                             src={

@@ -8,6 +8,7 @@ export default function Tabs({
     activityId,
     summary,
     summaryZh,
+    setActivities
 }) {
     return (
         <div className="w-full">
@@ -59,6 +60,7 @@ export default function Tabs({
                     setTab={setTab}
                     summary={summary}
                     summaryZh={summaryZh}
+                    setActivities={setActivities}
                 />
             )}
             {activeTab === "chinese" && (
@@ -68,6 +70,7 @@ export default function Tabs({
                     setTab={setTab}
                     summary={summary}
                     summaryZh={summaryZh}
+                    setActivities={setActivities}
                 />
             )}
         </div>

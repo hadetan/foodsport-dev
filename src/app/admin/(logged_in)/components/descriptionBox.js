@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
-import axiosClient from "@/utils/axios/api"; // import your axios client
+import axiosClient from "@/utils/axios/api";
 
 const ActivityDetailsStep = ({
     activityId,
@@ -11,12 +11,12 @@ const ActivityDetailsStep = ({
     setTab,
     summary,
     summaryZh,
+    setActivities
 }) => {
     const router = useRouter();
     const [details, setDetails] = useState(
         isChinese ? summaryZh || "" : summary || ""
     );
-    // Populate later when props arrive (avoid overwriting user edits)
     useEffect(() => {
         if (!details) {
             if (isChinese && summaryZh) setDetails(summaryZh);
@@ -27,8 +27,7 @@ const ActivityDetailsStep = ({
 
     const handleSave = async () => {
         try {
-            // Send description as JSON
-            await axiosClient.patch(
+            const { data } = await axiosClient.patch(
                 `/admin/activities/summary?id=${activityId}`,
                 isChinese ? { summaryZh: details } : { summary: details },
 
@@ -36,12 +35,20 @@ const ActivityDetailsStep = ({
                     headers: { "Content-Type": "application/json" },
                 }
             );
+            setActivities((prev) => {
+                if (!Array.isArray(prev)) return prev;
+                return prev.map((act) =>
+                    String(act.id) === String(activityId)
+                        ? { ...act, ...data }
+                        : act
+                );
+            });
             isChinese && router.push("/admin/activities");
             !isChinese && setTab("chinese");
         } catch (err) {
             alert(
                 "Error saving activity: " +
-                    (err?.response?.data?.error || err.message)
+                (err?.response?.data?.error || err.message)
             );
         }
     };
