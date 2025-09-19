@@ -19,6 +19,7 @@ export const AdminActivitiesProvider = ({ children }) => {
         setError(null);
         try {
             const response = await api.get("/admin/activities");
+            console.log('Getting all acts: ', response.data.activities)
             setActivities(response.data.activities || []);
         } catch (err) {
             setError(err.message);
@@ -50,6 +51,7 @@ export const AdminActivitiesProvider = ({ children }) => {
         },
         [getActivityById]
     );
+    console.log('Setting all acts: ', activities)
 
     return (
         <AdminActivitiesContext.Provider

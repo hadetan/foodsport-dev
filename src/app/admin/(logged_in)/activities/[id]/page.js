@@ -64,6 +64,7 @@ export default function EditActivityPage() {
     const [activeTab, setActiveTab] = useState("details");
     const [tncOptions, setTncOptions] = useState([]);
     const [tncLoading, setTncLoading] = useState(false);
+    console.log(activities);
     useEffect(() => {
         // If the URL contains ?tab=description (or chinese), open that tab.
         try {
@@ -117,10 +118,11 @@ export default function EditActivityPage() {
             totalCaloriesBurnt: activity.totalCaloriesBurnt || "",
             caloriesPerHourMin,
             caloriesPerHourMax,
-            tncId: activity.tncId,
+            tncId: activity.tnc?.id,
             isFeatured: !!activity.isFeatured,
             organizationName: activity.organizationName,
         });
+        console.log(activity);
         setAudit({
             createdBy: activity.organizerName || "Unknown",
         });
@@ -189,21 +191,8 @@ export default function EditActivityPage() {
             errs.activityType = "Activity type is required.";
         if (!form.startDateTime)
             errs.startDateTime = "Start date and time are required.";
-        else {
-            const dt = new Date(form.startDateTime);
-            if (dt < new Date())
-                errs.startDateTime =
-                    "Start date and time must be in the future.";
-        }
         if (!form.endDateTime)
             errs.endDateTime = "End date and time are required.";
-        else {
-            const startDt = new Date(form.startDateTime);
-            const endDt = new Date(form.endDateTime);
-            if (endDt <= startDt)
-                errs.endDateTime =
-                    "End date and time must be after start date and time.";
-        }
         if (!form.location) errs.location = "Location is required.";
         const cap = parseInt(form.capacity, 10);
         if (!cap || cap < 1 || cap > 1000)
@@ -265,13 +254,17 @@ export default function EditActivityPage() {
                 )
                     return;
                 if (value !== "" && value !== null && value !== undefined) {
-                    if (key === 'capacity') return;
+                    if (key === "capacity") return;
                     formData.append(key, value);
                 }
             });
 
-            if (form.capacity !== undefined && form.capacity !== null && form.capacity !== '') {
-                formData.append('participantLimit', String(form.capacity));
+            if (
+                form.capacity !== undefined &&
+                form.capacity !== null &&
+                form.capacity !== ""
+            ) {
+                formData.append("participantLimit", String(form.capacity));
             }
 
             if (form.startDateTime) {
@@ -306,7 +299,10 @@ export default function EditActivityPage() {
             }
 
             // Ensure organizationName is included when present
-            if (form.organizationName !== undefined && form.organizationName !== null) {
+            if (
+                form.organizationName !== undefined &&
+                form.organizationName !== null
+            ) {
                 formData.append("organizationName", form.organizationName);
             }
 
@@ -406,7 +402,10 @@ export default function EditActivityPage() {
                             className="w-full"
                             style={{ marginLeft: 0, marginRight: 0 }}
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-8 w-full" style={{alignItems: 'center'}}>
+                            <div
+                                className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-8 w-full"
+                                style={{ alignItems: "center" }}
+                            >
                                 {/* Upload Image - full width */}
                                 <div className="col-span-1 md:col-span-3">
                                     <label className="label text-lg font-semibold mb-2 text-black">
@@ -582,7 +581,10 @@ export default function EditActivityPage() {
                                         Featured
                                     </label>
                                     <div className="flex items-center justify-between gap-4">
-                                        <p className="text-sm text-gray-600">Feature this activity to highlight it on the landing page.</p>
+                                        <p className="text-sm text-gray-600">
+                                            Feature this activity to highlight
+                                            it on the landing page.
+                                        </p>
                                         <label className="inline-flex items-center gap-2 cursor-pointer">
                                             <input
                                                 type="checkbox"
@@ -796,20 +798,20 @@ export default function EditActivityPage() {
                                     />
                                 </div>
                                 <div className="col-span-full">
-                                <div className="form-control w-full">
-                                    <input
-                                        className="input input-bordered input-lg w-full bg-white text-black"
-                                        name="mapLocation"
-                                        onChange={handleInput}
-                                        value={form.mapLocation}
-                                        placeholder="Search In Map"
-                                    />
-                                    {errors.mapLocation && (
-                                        <span className="text-error text-base">
-                                            {errors.mapLocation}
-                                        </span>
-                                    )}
-                                </div>
+                                    <div className="form-control w-full">
+                                        <input
+                                            className="input input-bordered input-lg w-full bg-white text-black"
+                                            name="mapLocation"
+                                            onChange={handleInput}
+                                            value={form.mapLocation}
+                                            placeholder="Search In Map"
+                                        />
+                                        {errors.mapLocation && (
+                                            <span className="text-error text-base">
+                                                {errors.mapLocation}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             {/* Google Map at the bottom */}
@@ -837,7 +839,7 @@ export default function EditActivityPage() {
                                     className={`btn btn-primary btn-lg flex-1`}
                                     disabled={loading}
                                 >
-                                    {loading ? 'Saving ...' : 'Save'}
+                                    {loading ? "Saving ..." : "Save"}
                                 </button>
                                 <button
                                     type="button"
