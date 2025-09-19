@@ -13,7 +13,6 @@ import { useUser } from "@/app/shared/contexts/userContext";
 import { useActivities } from "../contexts/ActivitiesContext";
 import LocaleSwitcher from "./LocaleSwitcher";
 import { useTranslations, useLocale } from "next-intl";
-
 export default function Header() {
     const { authToken } = useAuth();
     const { user, loading } = useUser();
@@ -48,6 +47,8 @@ export default function Header() {
             label: t("Header.redeemRewards"),
             href: "/redeem",
             clickable: true,
+            href: authToken ? `/${locale}/my/redeem` : `/${locale}/redeem`,
+
         },
         !authToken && {
             id: "howDoesItWork",
