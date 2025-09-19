@@ -415,7 +415,7 @@ export default function EditActivityPage() {
                                     <div className="relative flex flex-col items-center justify-center bg-white border-2 border-dashed border-[#3B82F6] rounded-xl p-4 sm:p-8 min-h-[120px] sm:min-h-[180px] w-full">
                                         <input
                                             type="file"
-                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                            className="absolute inset-0 opacity-0"
                                             accept="image/jpeg,image/png"
                                             multiple={false}
                                             ref={fileInputRef}
@@ -482,7 +482,7 @@ export default function EditActivityPage() {
                                                     {/* Pencil icon (lucide-react) for changing image */}
                                                     <button
                                                         type="button"
-                                                        className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+                                                        className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white rounded-full p-1 shadow hover:bg-gray-100 cursor-pointer"
                                                         style={{ zIndex: 10 }}
                                                         onClick={() => {
                                                             if (

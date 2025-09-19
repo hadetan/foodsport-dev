@@ -39,6 +39,7 @@ const CreateActivityPage = () => {
     const [fieldErrors, setFieldErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const imgRef = useRef(null);
+    const fileInputRef = useRef(null);
     const [mapUrl, setMapUrl] = useState(
         "https://www.google.com/maps?q=&output=embed"
     );
@@ -304,7 +305,8 @@ const CreateActivityPage = () => {
                                         <input
                                             id="activity-image-upload"
                                             type="file"
-                                            className="absolute inset-0 opacity-0 cursor-pointer"
+                                            ref={fileInputRef}
+                                            className="absolute inset-0 opacity-0"
                                             accept="image/jpeg,image/png,image/webp"
                                             onChange={handleImageUpload}
                                             disabled={!!formData.image}
@@ -358,15 +360,17 @@ const CreateActivityPage = () => {
                                                     {/* Pencil icon for changing image */}
                                                     <button
                                                         type="button"
-                                                        className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+                                                        className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white rounded-full p-1 shadow hover:bg-gray-100 cursor-pointer"
                                                         style={{ zIndex: 10 }}
                                                         onClick={() => {
-                                                            setFormData(
-                                                                (prev) => ({
-                                                                    ...prev,
-                                                                    image: null,
-                                                                })
-                                                            );
+                                                            if (
+                                                                fileInputRef.current
+                                                            ) {
+                                                                fileInputRef.current.value =
+                                                                    "";
+                                                                fileInputRef.current.disabled = false;
+                                                                fileInputRef.current.click();
+                                                            }
                                                         }}
                                                         tabIndex={0}
                                                         aria-label="Change image"
