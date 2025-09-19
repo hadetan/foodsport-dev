@@ -123,7 +123,7 @@ export default function EditActivityPage() {
             totalCaloriesBurnt: activity.totalCaloriesBurnt || "",
             caloriesPerHourMin,
             caloriesPerHourMax,
-            tncId: activity.tncId,
+            tncId: activity.tnc.id,
             isFeatured: !!activity.isFeatured,
             organizationName: activity.organizationName,
         });
