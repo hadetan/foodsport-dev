@@ -607,8 +607,27 @@ export default function EditActivityPage() {
 
                                         <div className="flex items-center mt-4 md:mt-auto h-full">
                                             <label className="flex items-center cursor-pointer w-full" htmlFor="featured-toggle">
-                                                <div className="relative">
-                                                    <input id="featured-toggle" type="checkbox" className="toggle toggle-primary sr-only" name="isFeatured" checked={!!form.isFeatured} onChange={handleInput} />
+                                                <div
+                                                    className='relative'
+                                                    role='switch'
+                                                    aria-checked={!!form.isFeatured}
+                                                    tabIndex={0}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === ' ' || e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            document.getElementById('featured-toggle')?.click();
+                                                        }
+                                                    }}
+                                                >
+                                                    <input
+                                                        id='featured-toggle'
+                                                        type='checkbox'
+                                                        className='toggle toggle-primary sr-only'
+                                                        name='isFeatured'
+                                                        checked={!!form.isFeatured}
+                                                        onChange={handleInput}
+                                                        tabIndex={-1}
+                                                    />
                                                     <div className="block bg-gray-200 w-14 h-8 rounded-full"></div>
                                                     <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
                                                 </div>
