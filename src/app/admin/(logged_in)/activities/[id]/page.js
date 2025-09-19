@@ -234,7 +234,7 @@ export default function EditActivityPage() {
         );
         if (requiresTnc && !form.tncId) {
             errs.tncId =
-                "Please select a tnc before switching to active status";
+                "Please select a T&C before switching to active status";
         }
         setErrors(errs);
         if (errs.tncId) setError(errs.tncId);
@@ -256,7 +256,7 @@ export default function EditActivityPage() {
                 ].includes(String(newValue || "").toLowerCase());
                 if (requiresTnc && !next.tncId) {
                     const msg =
-                        "Please select a tnc before switching to active status";
+                        "Please select a T&C before switching to active status";
                     setErrors((prevErrs) => ({ ...prevErrs, tncId: msg }));
                     setError(msg);
                 } else {
