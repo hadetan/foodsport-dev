@@ -38,6 +38,12 @@ function formatForInput(iso) {
     )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+// Helper: whether a given status requires a T&C selection
+function requiresTncForStatus(status) {
+    const s = String(status || "").toLowerCase();
+    return s === "active" || s === "closed" || s === "cancelled";
+}
+
 export default function EditActivityPage() {
     const [form, setForm] = useState(null);
     const [errors, setErrors] = useState({});
@@ -229,9 +235,7 @@ export default function EditActivityPage() {
             errs.image = "Max size 5MB.";
 
         // Require T&C only when moving out of draft (active/closed/cancelled)
-        const requiresTnc = ["active", "closed", "cancelled"].includes(
-            String(form.status || "").toLowerCase()
-        );
+        const requiresTnc = requiresTncForStatus(form.status);
         if (requiresTnc && !form.tncId) {
             errs.tncId =
                 "Please select a T&C before switching to active status";
@@ -247,20 +251,14 @@ export default function EditActivityPage() {
         setForm((prev) => {
             const next = { ...prev, [name]: newValue };
 
-            // Prompt for T&C when switching to non-draft statuses without a T&C selected
             if (name === "status") {
-                const requiresTnc = [
-                    "active",
-                    "closed",
-                    "cancelled",
-                ].includes(String(newValue || "").toLowerCase());
+                const requiresTnc = requiresTncForStatus(newValue);
                 if (requiresTnc && !next.tncId) {
                     const msg =
                         "Please select a T&C before switching to active status";
                     setErrors((prevErrs) => ({ ...prevErrs, tncId: msg }));
                     setError(msg);
                 } else {
-                    // Clear T&C-related errors when status doesn't require it or once provided
                     setErrors((prevErrs) => {
                         const { tncId, ...rest } = prevErrs || {};
                         return rest;
@@ -269,13 +267,8 @@ export default function EditActivityPage() {
                 }
             }
 
-            // If a T&C is selected while status requires it, clear any prior error
             if (name === "tncId") {
-                const requiresTnc = [
-                    "active",
-                    "closed",
-                    "cancelled",
-                ].includes(String(next.status || "").toLowerCase());
+                const requiresTnc = requiresTncForStatus(next.status);
                 if (newValue && requiresTnc) {
                     setErrors((prevErrs) => {
                         const { tncId, ...rest } = prevErrs || {};
