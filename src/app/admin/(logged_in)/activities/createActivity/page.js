@@ -177,56 +177,26 @@ const CreateActivityPage = () => {
 		}));
 	};
 
-	const handleImageUpload = (e) => {
-		const file = e.target.files[0];
-		if (!file) return;
-		if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-			setFieldErrors((prev) => ({
-				...prev,
-				image: `Selected image cannot exceed ${MAX_IMAGE_SIZE_MB} MB.`,
-			}));
-			return;
-		}
-
-		const objectUrl = URL.createObjectURL(file);
-		const img = new Image();
-		img.onload = () => {
-			try {
-				const TARGET = 16 / 9;
-				const ratio = img.width / img.height;
-				const TOLERANCE = 0.03;
-				if (Math.abs(ratio - TARGET) > TOLERANCE) {
-					setFieldErrors((prev) => ({
-						...prev,
-						image:
-							'Image must be 16:9 aspect ratio (e.g., 1920x1080, 1280x720).',
-					}));
-					if (fileInputRef.current) fileInputRef.current.value = '';
-					return;
-				}
-
-				setFieldErrors((prev) => ({
-					...prev,
-					image: undefined,
-				}));
-				setError('');
-				setFormData((prev) => ({
-					...prev,
-					image: file,
-				}));
-			} finally {
-				URL.revokeObjectURL(objectUrl);
-			}
-		};
-		img.onerror = () => {
-			setFieldErrors((prev) => ({
-				...prev,
-				image: 'Unable to read image. Please try a different file.',
-			}));
-			URL.revokeObjectURL(objectUrl);
-		};
-		img.src = objectUrl;
-	};
+	    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                image: `Selected image cannot exceed ${MAX_IMAGE_SIZE_MB} MB.`,
+            }));
+            return;
+        }
+        setFieldErrors((prev) => ({
+            ...prev,
+            image: undefined,
+        }));
+        setError("");
+        setFormData((prev) => ({
+            ...prev,
+            image: file,
+        }));
+    };
 
 	const handleCreateActivity = async () => {
 		if (!validateFields()) {
@@ -389,7 +359,7 @@ const CreateActivityPage = () => {
 							)}
                             {/* Start Date & Time with icon */}
 						<div>
-							<label className='block text-sm font-medium text-gray-700 mb-2 mt-4'>Start Date &amp; Time</label>
+							<label className='block text-sm font-medium text-gray-700 mb-2 mt-2'>Start Date &amp; Time</label>
 							<div className='relative'>
 								<input
 									type='datetime-local'
@@ -408,7 +378,7 @@ const CreateActivityPage = () => {
 
 						{/* End Date & Time with icon */}
 						<div>
-							<label className='block text-sm font-medium text-gray-700 mb-2 mt-4'>End Date &amp; Time</label>
+							<label className='block text-sm font-medium text-gray-700 mb-2 mt-2'>End Date &amp; Time</label>
 							<div className='relative'>
 								<input
 									type='datetime-local'
@@ -427,7 +397,7 @@ const CreateActivityPage = () => {
 
 						{/* Location with icon */}
 						<div>
-							<label className='block text-sm font-medium text-gray-700 mb-2 mt-4'>Location</label>
+							<label className='block text-sm font-medium text-gray-700 mb-2 mt-2'>Location</label>
 							<div className='relative'>
 								<input
 									className='input input-bordered input-lg w-full bg-white text-black pl-12'

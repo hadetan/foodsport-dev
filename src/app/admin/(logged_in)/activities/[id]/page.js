@@ -498,7 +498,7 @@ export default function EditActivityPage() {
                                         )}
 
                                         {/* Start Date & Time */}
-                                        <div className="mt-4">
+                                        <div className="mt-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Start Date &amp; Time</label>
                                             <div className="relative">
                                                 <input
@@ -517,7 +517,7 @@ export default function EditActivityPage() {
                                         </div>
 
                                         {/* End Date & Time */}
-                                        <div className="mt-4">
+                                        <div className="mt-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-2">End Date &amp; Time</label>
                                             <div className="relative">
                                                 <input
@@ -536,7 +536,7 @@ export default function EditActivityPage() {
                                         </div>
 
                                         {/* Location */}
-                                        <div className="mt-4">
+                                        <div className="mt-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
                                             <div className="relative">
                                                 <input
