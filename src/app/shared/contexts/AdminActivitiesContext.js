@@ -50,7 +50,6 @@ export const AdminActivitiesProvider = ({ children }) => {
         },
         [getActivityById]
     );
-    console.log('Setting all acts: ', activities)
 
     return (
         <AdminActivitiesContext.Provider
