@@ -71,7 +71,6 @@ export default function EditActivityPage() {
     const [tncOptions, setTncOptions] = useState([]);
     const [tncLoading, setTncLoading] = useState(false);
     useEffect(() => {
-        // If the URL contains ?tab=description (or chinese), open that tab.
         try {
             const tabFromUrl = searchParams?.get("tab");
             if (tabFromUrl === "description" || tabFromUrl === "chinese") {
@@ -80,6 +79,9 @@ export default function EditActivityPage() {
         } catch (e) {
             // ignore if searchParams not available
         }
+    }, [searchParams]);
+
+    useEffect(() => {
         if (!activities || !activityId) return;
         const found =
             activities.find((a) => String(a.id) === String(activityId)) || null;
