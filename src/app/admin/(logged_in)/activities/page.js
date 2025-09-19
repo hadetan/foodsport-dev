@@ -226,7 +226,6 @@ function ActivityManagementPageContent() {
 
     const handlePageChange = (page) => setCurrentPage(page);
 
-    // Ensure that when filters change we go back to page 1 so filtering works
     const handleSetFilters = (updater) => {
         setFilters((prev) => {
             const next = typeof updater === 'function' ? updater(prev) : updater;
@@ -237,7 +236,6 @@ function ActivityManagementPageContent() {
 
     return (
         <>
-            {" "}
             <h2 className="text-2xl font-bold">Activities </h2>
             <div className="min-h-screen w-full overflow-y-auto p-4 lg:p-6">
                 <div style={{ display: "flex", justifyContent: "end" }}>
@@ -252,8 +250,9 @@ function ActivityManagementPageContent() {
                 </div>
                 <div style={{ marginBottom: "30px" }}>
                     <div className="flex flex-col  md:flex-row md:items-end md:justify-between mb-6 gap-2">
-                    <div className="flex-1">
-                        <FilterBar setFilters={handleSetFilters} filters={filters} />
+                        <div className="flex-1">
+                            <FilterBar setFilters={handleSetFilters} filters={filters} />
+                        </div>
                     </div>
                 </div>
 

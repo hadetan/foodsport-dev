@@ -236,6 +236,14 @@ export default function EditProfile() {
 		setSaving(false);
 	};
 
+	const isFormDirty = () => {
+		if (croppedImg) return true;
+		for (const key of Object.keys(form)) {
+			if (form[key] !== initialValues[key]) return true;
+		}
+		return false;
+	};
+
 	const handleLinkGoogle = async () => {
 		try {
 			setLinking(true);
@@ -557,7 +565,7 @@ export default function EditProfile() {
 				<button
 					type='submit'
 					className='edit-profile-save-btn'
-					disabled={saving || initialValues === form}
+					disabled={saving || !isFormDirty()}
 				>
 					{saving ? t('saving') : t('saveProfile')}
 				</button>
