@@ -1,19 +1,4 @@
 /* Add background image with 1920x720 ratio */
-.coming-soon-bg {
-    background-image: url("/coming.png");
-    background-size: cover;
-    background-position: center;
-    width: 100%;
-        height: 70vh; /* desktop large view */
-        min-height: 470px; /* align with Activity initial min height */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 0;
-    background-color: #f8f8f8;
-    margin: 0;
-    overflow: hidden;
-}
 
 /* Large tablets / small desktop */
 @media (max-width: 900px) {
