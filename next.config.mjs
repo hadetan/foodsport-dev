@@ -3,7 +3,24 @@ import createNextIntlPlugin from 'next-intl/plugin';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: ['lckahydtijozvxsqrqxb.supabase.co', 'ydkwwytomdhrheykxmxl.supabase.co', 'lh3.googleusercontent.com' ],
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'lckahydtijozvxsqrqxb.supabase.co',
+                // allow any path
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'ydkwwytomdhrheykxmxl.supabase.co',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'lh3.googleusercontent.com',
+                pathname: '/**',
+            },
+        ],
     },
     experimental: {
         serverActions: {

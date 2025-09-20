@@ -19,14 +19,6 @@ export default function HowPage() {
         </section>
 
             <div className="bg-gray-100 py-12 sm:py-14 px-4 sm:px-6 lg:px-8 flex flex-col items-center font-inter">
-                <div className="mb-8 text-center">
-                    <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-800 tracking-tight leading-none relative inline-block">
-                        <span className="relative z-10">{t("heading")}</span>
-                        <span className="block mx-auto mt-2 h-2 w-2/3 sm:w-4/5 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-full opacity-75"></span>
-                    </h1>
-                </div>
-
-
                 <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                     <div className="h-full">
                         <StepCard

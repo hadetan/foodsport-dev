@@ -70,7 +70,6 @@ export default function ActivitiesFilter({ activities, setFilteredActivities, ha
             });
         }
         setFilteredActivities(filtered);
-        console.log(filtered);
     }
 
     useEffect(() => {

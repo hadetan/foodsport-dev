@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import React from "react";
+import Image from "next/image";
 
 const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=false, size='8' }) => {
     const first = firstName?.[0]?.toUpperCase() || '';
@@ -22,9 +23,8 @@ const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=fal
 
     const normalizeGoogle = (url) => {
         if (!url.includes('googleusercontent.com')) return url;
-        // Ensure a size parameter to avoid Google dynamic resizing delays; keep existing size if present.
         if (/=[swh]\d+/.test(url)) return url;
-        if (url.includes('=')) return url + '-c'; // already has a param base, append crop
+        if (url.includes('=')) return url + '-c';
         return url + '=s128-c';
     };
 
@@ -48,13 +48,16 @@ const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=fal
             ) : (
                 <div className="avatar">
                     <div className={imgMaskClass}>
-                        <img
+                        <Image
                             src={avatarUrl}
                             alt={`${firstName} ${lastName} avatar`}
+                            width={100}
+                            height={100}
                             referrerPolicy="no-referrer"
                             loading={isNav ? 'eager' : 'lazy'}
                             decoding="async"
                             onError={() => setBroken(true)}
+                            priority
                         />
                     </div>
                 </div>

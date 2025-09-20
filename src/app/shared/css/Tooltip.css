@@ -29,7 +29,7 @@
 		calc(var(--tooltip-padding-x) + 4px);
 	font-size: var(--tooltip-font-size);
 	line-height: 1.2;
-    text-align: center;
+	text-align: center;
 	border-radius: var(--tooltip-radius);
 	box-shadow: var(--tooltip-shadow);
 	white-space: normal;
@@ -39,7 +39,7 @@
 	font-weight: 500;
 	letter-spacing: 0.2px;
 	transition: opacity var(--tooltip-transition),
-		transform var(--tooltip-transition);
+	transform var(--tooltip-transition);
 }
 
 .tooltip-content[data-visible='true'] {

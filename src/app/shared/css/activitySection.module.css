@@ -30,7 +30,7 @@
 	gap: 32px;
 	border-bottom: 1px solid #dadada;
 	padding-bottom: 1.5rem;
-	padding: 0 50px;
+	padding: 0 50px 1.5rem 50px;
 }
 
 @media (max-width: 480px) {
