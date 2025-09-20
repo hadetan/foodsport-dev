@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import RewardCards from "../Components/rewardCards";
+import RewardCards from "@/app/[locale]/(landing)/Components/rewardCards";
 import redeemTitle from "@/app/shared/components/redeemTitle";
 
 const categories = [
