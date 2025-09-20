@@ -36,6 +36,7 @@ const ActivityDetailPage = () => {
     const [activity, setActivity] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showZh, setShowZh] = useState(false);
     const { users } = useUsers();
     const [participatingUsers, setParticipatingUsers] = useState([]);
     const params = useParams();
@@ -188,7 +189,7 @@ const ActivityDetailPage = () => {
             <div className="container mx-auto px-4 pt-6 flex justify-between items-center">
                 <div className="flex items-center gap-4">
                     <button
-                        className="flex items-center bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors mb-4"
+                        className="flex items-center bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors mb-4 cursor-pointer"
                         onClick={() => router.push("/admin/activities")}
                     >
                         <svg
@@ -212,15 +213,26 @@ const ActivityDetailPage = () => {
                 </div>
                 {/* Show Edit Activity button only in details tab, top right */}
                 {activeTab === "details" && (
-                    <button
-                        className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors"
-                        onClick={() =>
-                            router.push(`/admin/activities/${activity?.id}`)
-                        }
-                    >
-                        <Pencil className="w-5 h-5 mr-2" />
-                        Edit Activity
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            className="flex items-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-4 py-2 rounded-lg shadow transition-colors cursor-pointer"
+                            onClick={() => setShowZh((s) => !s)}
+                            title="Toggle Chinese view"
+                        >
+                            {/* simple label - not using i18n here as requested */}
+                            {showZh ? "Show EN" : "Show ZH"}
+                        </button>
+
+                        <button
+                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors cursor-pointer"
+                            onClick={() =>
+                                router.push(`/admin/activities/${activity?.id}`)
+                            }
+                        >
+                            <Pencil className="w-5 h-5 mr-2" />
+                            Edit Activity
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -262,6 +274,7 @@ const ActivityDetailPage = () => {
                         activity={activity}
                         formattedStartTime={formattedStartTime}
                         formattedEndTime={formattedEndTime}
+                        showZh={showZh}
                     />
                 </div>
             )}
