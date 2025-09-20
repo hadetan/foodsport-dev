@@ -54,7 +54,7 @@ const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=fal
                             width={100}
                             height={100}
                             referrerPolicy="no-referrer"
-                            loading={isNav ? 'eager' : 'lazy'}
+                            loading={'eager'}
                             decoding="async"
                             onError={() => setBroken(true)}
                             priority

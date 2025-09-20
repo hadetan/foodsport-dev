@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import api from "axios";
+import api from '@/utils/axios/api';
 
 const DashboardContext = createContext();
 
@@ -13,7 +13,7 @@ export const DashboardProvider = ({ children }) => {
 		setLoading(true);
 		setError(null);
 		try {
-			const res = await api.get(`/api/admin/dashboard?dateRange=${range}`);
+			const res = await api.get(`/admin/dashboard?dateRange=${range}`);
 			setDashboardData(res.data);
 			setLoading(false);
 			return res.data;

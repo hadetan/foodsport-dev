@@ -125,7 +125,7 @@ export async function POST(request) {
 			const templateId = process.env.JOIN_TICKET_TEMPLATE_ID;
 			const params = {
 				name: `${user.firstname} ${user.lastname}`,
-				code: ticket.ticketCode,
+				code: ticket.ticketCode.toUpperCase(),
 				title: activity.title,
 			};
 			let emailRes;

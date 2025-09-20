@@ -1,5 +1,5 @@
 import Link from "next/link";
-import axios from "axios";
+import axios from '@/utils/axios/api';
 import { useRouter } from "next/navigation";
 
 export default function SidebarItem({
@@ -13,26 +13,21 @@ export default function SidebarItem({
 }) {
     const router = useRouter();
 
-    // Check if current path is a child of this sidebar item
     const isParentActive = (itemHref, currentPath) => {
         if (!itemHref || !currentPath) return false;
 
-        // For admin activities - highlight when on any activity-related page
         if (itemHref === "/admin/activities") {
             return currentPath.startsWith("/admin/activities");
         }
 
-        // For admin users - highlight when on any user-related page
         if (itemHref === "/admin/users") {
             return currentPath.startsWith("/admin/users");
         }
 
-        // For other admin routes
         if (currentPath.startsWith(itemHref) && itemHref !== "/admin") {
             return true;
         }
 
-        // Exact match for dashboard
         return currentPath === itemHref;
     };
 
@@ -41,9 +36,8 @@ export default function SidebarItem({
     const handleLogout = async (e) => {
         if (onClick) onClick(e);
         try {
-            await axios.delete("/api/admin/auth/logout");
+            await axios.delete("/admin/auth/logout");
             localStorage.removeItem('admin_auth_token')
-            // Redirect to login page or home page after successful logout
             router.push("/admin/login");
         } catch (error) {
             console.error("Logout failed:", error);

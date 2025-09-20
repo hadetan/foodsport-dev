@@ -7,6 +7,7 @@
   max-width: 900px;
   margin: 0 auto;
   padding-top: 48px;
+  padding-bottom: 48px;
 }
 
 .tncDetailsTitle {
@@ -24,4 +25,65 @@
 
 .tncDetailsDescription {
   width: 100%;
+}
+
+/* Improve typography for content inside description */
+.tncDetailsDescription p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #111827; /* dark gray for better contrast */
+  margin-bottom: 1rem;
+}
+
+/* Smaller heading inside the content (if any) */
+.tncDetailsDescription h2,
+.tncDetailsDescription h3 {
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 900px) {
+  .tncDetails {
+    padding-left: 20px;
+    padding-right: 20px;
+    max-width: 640px;
+  }
+
+  .tncDetailsTitle {
+    font-size: 1.75rem;
+  }
+
+  .tncDetailsDescription p {
+    font-size: 0.98rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tncDetails {
+    padding-top: 28px;
+    padding-bottom: 28px;
+    padding-left: 14px;
+    padding-right: 14px;
+    max-width: 360px;
+    justify-content: flex-start;
+  }
+
+  .tncDetailsTitle {
+    font-size: 1.4rem;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+
+  .tncDetailsDescription p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  /* Avoid extremely long words overflowing */
+  .tncDetailsDescription,
+  .tncDetailsDescription * {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
 }

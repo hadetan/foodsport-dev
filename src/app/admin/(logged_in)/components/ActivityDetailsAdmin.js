@@ -21,6 +21,7 @@ const ActivityDetailsAdmin = ({
     activity,
     formattedStartTime,
     formattedEndTime,
+    showZh = false,
 }) => {
     const [showShare, setShowShare] = useState(false);
     const { seatsLeft } = calculateSeats(activity);
@@ -30,7 +31,7 @@ const ActivityDetailsAdmin = ({
             <div className="activityDetailsContent">
                 <main className="activityDetailsMain">
                     <h1 className="activityDetailsMainTitle" style={{border: 'none', marginBottom: '10px'}}>
-                        {activity.title}
+                        {showZh ? (activity.titleZh || activity.title) : activity.title}
                     </h1>
                     <div className="activityDetailsSidebarRow" style={{borderBottom: '1px solid #dadada', paddingBottom: '10px', marginBottom: '30px'}}>
                         <p style={{fontSize: '18px'}}>
@@ -54,7 +55,7 @@ const ActivityDetailsAdmin = ({
                             )}
                         </div>
                         <section className="desc-section">
-                            <p>{activity.description}</p>
+                            <p>{showZh ? (activity.descriptionZh || activity.description) : activity.description}</p>
                         </section>
                     </div>
                     <div className="activityDetailsDetailsSection">
@@ -122,8 +123,8 @@ const ActivityDetailsAdmin = ({
                             </div>
                         </div>
                     </div>
-                    {activity.summary && (
-                        <ActivitySummary summary={activity.summary} />
+                    { (showZh ? (activity.summaryZh || activity.summary) : activity.summary) && (
+                        <ActivitySummary summary={ showZh ? (activity.summaryZh || activity.summary) : activity.summary } />
                     )}
                 </main>
                 <aside className="activityDetailsSidebar">

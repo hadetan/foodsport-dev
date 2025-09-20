@@ -5,7 +5,7 @@ import UsersDropdown from "../components/UsersDropdown";
 import EmailPreview from "../components/EmailPreview";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import UserPicker from "../components/UserPicker";
-import axios from "axios";
+import axios from '@/utils/axios/api';
 import Field from "@/app/shared/components/Field";
 
 function TemplatePreviewModal({ open, onClose, templateId, params }) {
@@ -27,7 +27,7 @@ function TemplatePreviewModal({ open, onClose, templateId, params }) {
         (async () => {
             try {
                 const res = await axios.post(
-                    "/api/admin/email/template_preview",
+                    "/admin/email/template_preview",
                     {
                         templateId,
                         ...(Object.keys(filteredParams).length > 0
@@ -114,7 +114,7 @@ export default function AdminEmailPage() {
             (async () => {
                 try {
                     const res = await axios.get(
-                        "/api/admin/email/all_templates"
+                        "/admin/email/all_templates"
                     );
                     setTemplates(res.data.templates || []);
                 } catch (err) {
@@ -137,7 +137,7 @@ export default function AdminEmailPage() {
             (async () => {
                 try {
                     const res = await axios.post(
-                        "/api/admin/email/template_vars",
+                        "/admin/email/template_vars",
                         {
                             templateId: selectedTemplateId,
                         }
@@ -222,7 +222,7 @@ export default function AdminEmailPage() {
 
         try {
             // Call the backend API to send the email using axios
-            const response = await axios.post("/api/admin/email/custom_email", {
+            const response = await axios.post("/admin/email/custom_email", {
                 to: selectedUsers.map((u) => u.email),
                 subject,
                 html: content,
@@ -291,8 +291,8 @@ export default function AdminEmailPage() {
         }
         setIsTemplateSending(true);
         try {
-            const response = await axios.post(
-                "/api/admin/email/template_email",
+            await axios.post(
+                "/admin/email/template_email",
                 {
                     to: selectedUsers.map((u) => u.email),
                     templateId: selectedTemplateId,

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import axios from "axios";
+import axios from '@/utils/axios/api';
 
 const RegisterPage = () => {
     const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -23,7 +23,7 @@ const RegisterPage = () => {
         };
 
         try {
-            const res = await axios.post("/api/admin/auth/register", payload);
+            const res = await axios.post("/admin/auth/register", payload);
             setMessage({
                 type: "success",
                 text: res.data.message || "Registration successful.",

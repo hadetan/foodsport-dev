@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
-import axios from "axios";
+import axios from '@/utils/axios/api';
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import FullPageLoader from "../../components/FullPageLoader";
 import { Pencil, ArrowLeft, Calendar, MapPin, ImageUp } from "lucide-react";
@@ -158,7 +158,7 @@ export default function EditActivityPage() {
         const fetchTncs = async () => {
             try {
                 setTncLoading(true);
-                const { data } = await axios.get("/api/admin/tnc");
+                const { data } = await axios.get("/admin/tnc");
                 if (Array.isArray(data)) {
                     setTncOptions(data);
                 } else if (Array.isArray(data?.data)) {
@@ -357,7 +357,7 @@ export default function EditActivityPage() {
             }
 
             const { data } = await axios.patch(
-                `/api/admin/activities?activityId=${activityId}`,
+                `/admin/activities?activityId=${activityId}`,
                 formData,
                 {
                     headers: {

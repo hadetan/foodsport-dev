@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import ErrorAlert from "@/app/shared/components/ErrorAlert";
-import axios from "axios";
+import axios from '@/utils/axios/api';
 import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
@@ -28,7 +28,7 @@ const LoginPage = () => {
         setLoading(true);
         setError("");
         try {
-            const response = await axios.post("/api/admin/auth/login", formData);
+            const response = await axios.post("/admin/auth/login", formData);
             if (response.data && response.data.sessionId) {
                 setSessionId(response.data.sessionId);
                 setOtpMode(true);
@@ -52,7 +52,7 @@ const LoginPage = () => {
         setError('');
         try {
             const payload = { otpId: sessionId, code: otpCode, email: formData.email, password: formData.password };
-            const res = await axios.post('/api/admin/auth/login/otp/verify', payload, { withCredentials: true });
+            const res = await axios.post('/admin/auth/login/otp/verify', payload, { withCredentials: true });
             if (res.data && res.data.session) {
                 localStorage.setItem('admin_auth_token', res.data.session.access_token);
                 router.push('/admin');

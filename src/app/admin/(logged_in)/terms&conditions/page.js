@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import { X } from "lucide-react"; // add lucide X icon
-import axios from "axios";
+import axios from '@/utils/axios/api';
 import FullPageLoader from "../components/FullPageLoader";
 
 // Reusable close button using lucide-react X icon
@@ -107,7 +107,7 @@ export default function TermsAndConditionsPage() {
         setLoading(true);
         setError("");
         try {
-            const res = await axios.get("/api/admin/tnc");
+            const res = await axios.get("/admin/tnc");
             const data = res.data;
             setTncs(data.tncs || []);
         } catch (e) {
@@ -127,8 +127,8 @@ export default function TermsAndConditionsPage() {
             const isEdit = !!editTnc;
             const method = isEdit ? "patch" : "post";
             const url = isEdit
-                ? `/api/admin/tnc?id=${encodeURIComponent(editTnc.id)}`
-                : "/api/admin/tnc";
+                ? `/admin/tnc?id=${encodeURIComponent(editTnc.id)}`
+                : "/admin/tnc";
 
             const res = await axios({
                 method,

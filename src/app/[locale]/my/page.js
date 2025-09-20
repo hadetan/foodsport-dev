@@ -12,6 +12,7 @@ import Button from '../../shared/components/Button';
 import { useRouter } from 'next/navigation';
 import ActivityItemSkeleton from '../../shared/components/skeletons/ActivityItemSkeleton';
 import { useTranslations } from 'next-intl';
+import ComingSoon from '../(landing)/Components/ComingSoon';
 
 export default function Home() {
 	const { activities, setActivities } = useActivities();
@@ -53,6 +54,7 @@ export default function Home() {
 					{t('Activity.Landing.exploreMoreActivities')}
 				</Button>
 			</div>
+			<ComingSoon />
 		</>
 	);
 }
