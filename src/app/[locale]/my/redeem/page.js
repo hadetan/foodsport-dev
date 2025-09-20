@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import RewardCards from "@/app/[locale]/(landing)/Components/rewardCards";
-import Image from "next/image";
+import RewardCards from "../Components/rewardCards";
 import redeemTitle from "@/app/shared/components/redeemTitle";
 
 const categories = [
@@ -81,24 +80,16 @@ export default function RedeemPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#E5E1DB]">
+        <div className="min-h-screen bg-[#fff]">
             {/* Rewards banner image */}
-            <div className="w-full px-0 ">{redeemTitle()}</div>
-
-            {/* Header watermark */}
-            <div className="relative overflow-hidden">
-                <div className="container mx-auto px-4 pt-10 pb-6 flex justify-center">
-                    <h1 className="uppercase font-extrabold tracking-[0.25em] text-[10vw] leading-none text-white  sm:text-7xl lg:text-8xl select-none text-center">
-                        Redeem Rewards
-                    </h1>
-                </div>
-                <div className="h-px bg-[#C9C3BB]/70" />
+            <div className="w-full px-0 ">
+                {redeemTitle()}
             </div>
 
             {/* Filters row */}
             <div className="container mx-auto px-4">
                 <div className="mt-6 flex flex-col gap-4">
-                    <div className="flex w-full flex-col gap-3 rounded-2xl bg-[#E0DBD5] p-3 shadow-[inset_0_-6px_12px_rgba(0,0,0,0.04)]">
+                    <div className="flex w-full flex-col gap-3 rounded-2xl bg-[#fff] p-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
                                 {categories.map((c) => {
@@ -107,11 +98,11 @@ export default function RedeemPage() {
                                         <button
                                             key={c.key}
                                             onClick={() => setActive(c.key)}
-                                            className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm transition ${
-                                                isActive
-                                                    ? "bg-[#E8E1D7] border-amber-400 text-gray-900 shadow"
-                                                    : "bg-white/70 border-gray-200 text-gray-600 hover:text-gray-900"
-                                            }`}
+                                            disabled={true}
+                                            className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm transition cursor-not-allowed  ${isActive
+                                                ? "bg-[#E8E1D7] border-amber-400 text-gray-900 shadow"
+                                                : "bg-[#dadada] border-gray-200 text-gray-600 hover:text-gray-900"
+                                                }`}
                                         >
                                             {c.label}
                                         </button>

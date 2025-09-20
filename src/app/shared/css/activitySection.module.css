@@ -1,32 +1,48 @@
 /* Section styling for activities page */
 .activitySection {
-    margin-bottom: 40px;
+	margin-bottom: 40px;
 }
 
 .activitySectionHeading {
-    margin: 0 50px;
-	font-size: 2rem;
+	font-size: 2.5rem;
 	font-weight: 600;
-	margin-bottom: 18px;
-	border-bottom: 2px solid #dadada;
-	padding-bottom: 6px;
-	letter-spacing: 0.5px;
-    text-align: center;
+	letter-spacing: 6px;
+	text-align: center;
+	text-transform: uppercase;
+	text-wrap: nowrap;
+	color: #666;
+}
+
+.line {
+	display: inline-block;
+	height: 4px;
+	width: 100%;
+	background: #2bbfb0;
+	opacity: 0.85;
+	border-radius: 0px;
+}
+
+.centerContent {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 32px;
+	border-bottom: 1px solid #dadada;
+	padding-bottom: 1.5rem;
+	padding: 0 50px;
 }
 
 @media (max-width: 480px) {
-  .activitySection {
-    margin-bottom: 24px;
-  }
+	.activitySection {
+		margin-bottom: 24px;
+	}
 
-  .activitySectionHeading {
-    margin: 0 16px;
-    font-size: 1.25rem; /* smaller on mobile */
-    font-weight: 600;
-    margin-bottom: 12px;
-    border-bottom: 1px solid #dadada;
-    padding-bottom: 4px;
-    letter-spacing: 0.3px;
-    text-align: center;
-  }
+	.activitySectionHeading {
+		font-size: 1.25rem; /* smaller on mobile */
+		font-weight: 600;
+		letter-spacing: 0.3px;
+		text-align: center;
+		text-wrap: nowrap;
+	}
 }

@@ -6,7 +6,7 @@ export default function redeemTitle() {
             <div className={styles.overlay}>
                 <div className={styles.centerContent}>
                     <span className={styles.line}></span>
-                    <h1 className={styles.title}>Rewards</h1>
+                    <h1 className={styles.title}>Redeem</h1>
                     <span className={styles.line}></span>
                 </div>
             </div>
