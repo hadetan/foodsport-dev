@@ -13,6 +13,7 @@ import { useUser } from "@/app/shared/contexts/userContext";
 import { useActivities } from "../contexts/ActivitiesContext";
 import LocaleSwitcher from "./LocaleSwitcher";
 import { useTranslations, useLocale } from "next-intl";
+
 export default function Header() {
     const { authToken } = useAuth();
     const { user, loading } = useUser();
@@ -22,6 +23,7 @@ export default function Header() {
     const { activities } = useActivities();
     const t = useTranslations();
     const locale = useLocale();
+
     //#region This fixed the hydration error of mismatched authToken. The authToken is populated only after the mounting, so we wait to be mounted first before using the authToken.
     useEffect(() => {
         setMounted(true);
@@ -90,7 +92,6 @@ export default function Header() {
     ];
 
     const filteredNavLinks = navLinks.filter(Boolean);
-
     const navLinksLeft = filteredNavLinks.filter((link) => !link.isButton);
 
     const strippedPath = (() => {
@@ -118,6 +119,8 @@ export default function Header() {
         activeIdx = navLinksLeft.findIndex((l) => l.id === "joinActivities");
     } else if (strippedPath === "/redeem") {
         activeIdx = navLinksLeft.findIndex((l) => l.id === "redeemRewards");
+    } else if (strippedPath === "/my/redeem") {
+        activeIdx = navLinksLeft.findIndex((l) => l.id === "redeemRewards");
     } else {
         activeIdx = -1;
     }
@@ -138,65 +141,90 @@ export default function Header() {
                     {filteredNavLinks
                         .filter((link) => link.isButton)
                         .map((link, idx) => (
-                            <span
-                                key={`${link.label}-${idx}`}
-                                className={`${styles.navButtonRight} ${
-                                    link.className || ""
-                                }`}
-                                style={{
-                                    cursor: "pointer",
-                                    marginLeft: "24px",
-                                }}
-                            >
-                                {link.href ? (
-                                    <Link
-                                        href={link.href}
-                                        style={{
-                                            textDecoration: "none",
-                                            color: "inherit",
-                                        }}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                ) : (
-                                    link.label
-                                )}
-                            </span>
-                        ))}
-                </div>
-            </div>
-            <nav className={styles.navBar}>
-                <ul className={styles.navList}>
-                    {navLinksLeft.map((link, idx) => (
-                        <li
-                            key={`${link.label}-${idx}`}
-                            className={[
-                                idx === activeIdx ? styles.active : "",
-                                idx === hoveredIdx ? styles.navHover : "",
-                            ].join(" ")}
-                            onMouseEnter={() => setHoveredIdx(idx)}
-                            onMouseLeave={() => setHoveredIdx(null)}
-                            style={{
-                                cursor:
-                                    link.clickable || link.href
-                                        ? "pointer"
-                                        : "default",
-                            }}
-                        >
-                            {link.href ? (
+                            link.href ? (
                                 <Link
+                                    key={`${link.label}-${idx}`}
                                     href={link.href}
                                     style={{
                                         textDecoration: "none",
                                         color: "inherit",
                                     }}
                                 >
-                                    {link.label}
+                                    <span
+                                        className={`${styles.navButtonRight} ${link.className || ""
+                                            }`}
+                                        style={{
+                                            cursor: link.href ? "pointer" : "default",
+                                            marginLeft: "24px",
+                                        }}
+                                    >
+                                        {link.label}
+                                    </span>
                                 </Link>
                             ) : (
-                                link.label
-                            )}
-                        </li>
+                                <span
+                                    key={`${link.label}-${idx}`}
+                                    className={`${styles.navButtonRight} ${link.className || ""
+                                        }`}
+                                    style={{
+                                        cursor: link.href ? "pointer" : "default",
+                                        marginLeft: "24px",
+                                    }}
+                                >
+                                    {link.label}
+                                </span>
+                            )
+                        ))}
+                </div>
+            </div>
+            <nav className={styles.navBar}>
+                <ul className={styles.navList}>
+                    {navLinksLeft.map((link, idx) => (
+                        link.href ? (
+                            <Link
+                                key={`${link.label}-${idx}`}
+                                href={link.href}
+                                style={{
+                                    textDecoration: "none",
+                                    color: "inherit",
+                                }}
+                            >
+                                <li
+                                    className={[
+                                        idx === activeIdx ? styles.active : "",
+                                        idx === hoveredIdx ? styles.navHover : "",
+                                    ].join(" ")}
+                                    onMouseEnter={() => setHoveredIdx(idx)}
+                                    onMouseLeave={() => setHoveredIdx(null)}
+                                    style={{
+                                        cursor:
+                                            link.clickable || link.href
+                                                ? "pointer"
+                                                : "default",
+                                    }}
+                                >
+                                    {link.label}
+                                </li>
+                            </Link>
+                        ) : (
+                            <li
+                                key={`${link.label}-${idx}`}
+                                className={[
+                                    idx === activeIdx ? styles.active : "",
+                                    idx === hoveredIdx ? styles.navHover : "",
+                                ].join(" ")}
+                                onMouseEnter={() => setHoveredIdx(idx)}
+                                onMouseLeave={() => setHoveredIdx(null)}
+                                style={{
+                                    cursor:
+                                        link.clickable || link.href
+                                            ? "pointer"
+                                            : "default",
+                                }}
+                            >
+                                {link.label}
+                            </li>
+                        )
                     ))}
                 </ul>
             </nav>
