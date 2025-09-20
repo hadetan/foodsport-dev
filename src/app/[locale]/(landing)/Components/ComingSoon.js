@@ -40,19 +40,47 @@ export default function ComingSoon() {
     return (
         <>
             <div className="coming-soon-bg w-full"></div>
+            <section className={styles.activityHero}>
+                <div className={styles.overlay}>
+                    <div className={styles.centerContent}>
+                        <span className={styles.line}></span>
+                        <h1 className={styles.title}>
+                            {t("ComingSoon.title")}
+                        </h1>
+                        <span className={styles.line}></span>
+                    </div>
+                </div>
+            </section>
 
             <div className="light-grey-overlay-wrap">
-                <section className={styles.activityHero}>
-                    <div className={styles.overlay}>
-                        <div className={styles.centerContent}>
-                            <span className={styles.line}></span>
-                            <h1 className={styles.title}>
-                                {t("ComingSoon.title")}
-                            </h1>
-                            <span className={styles.line}></span>
-                        </div>
+                <div className="fade-overlay" />
+
+                <div className="sponsor-section">
+                    <h2 className="sponsor-title">{t('ComingSoon.trustedBy')}</h2>
+                    <div className="brand-grid">
+                        {brands.map((brand) => (
+                            <div key={brand.id} className="brand-card">
+                                {brand.logo ? (
+                                    <Image
+                                        src={brand.logo}
+                                        alt={brand.name}
+                                        width={
+                                            brand.name === "APPLE" ? 60 : 100
+                                        }
+                                        height={
+                                            brand.name === "APPLE" ? 80 : 50
+                                        }
+                                        className="brand-logo"
+                                    />
+                                ) : (
+                                    <div className="brand-name">
+                                        {brand.name}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
-                </section>
+                </div>
 
                 <section className="mt-12 popular-rewards-section">
                     <h2 className="sponsor-title">
