@@ -19,7 +19,6 @@
     justify-content: flex-start;
     background: rgba(0, 0, 0, 0.10);
     padding-left: 5vw;
-    /* subtle overlay for text readability */
 }
 
 .title {
@@ -31,6 +30,7 @@
     letter-spacing: 0.05em;
     text-align: left;
     text-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
+    user-select: none;
 }
 
 /* Tablet and smaller desktop screens */

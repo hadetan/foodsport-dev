@@ -87,7 +87,7 @@ export default function RewardCards({ items = [] }) {
                     <div className="border-t border-gray-200 px-4 py-3 flex items-stretch bg-gray-50">
                         <button
                             type="button"
-                            className="flex-1 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition"
+                            className="flex-1 flex items-center justify-center gap-2 text-gray-400 cursor-not-allowed"
                         >
                             {/* Share icon */}
                             <svg

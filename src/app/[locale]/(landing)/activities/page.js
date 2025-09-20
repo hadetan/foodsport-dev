@@ -82,7 +82,11 @@ export default function ActivitiesPage() {
                 <>
                     {sortedUpcomingOngoing.length > 0 && (
                         <div className={sectionStyles.activitySection}>
-                            <h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.upcomingOngoing')}</h2>
+                            <div className={sectionStyles.centerContent}>
+                                <span className={sectionStyles.line}></span>
+                                <h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.upcomingOngoing')}</h2>
+                                <span className={sectionStyles.line}></span>
+                            </div>
                             <div className={styles.grid3}>
                                 {sortedUpcomingOngoing.map((a) => (
                                     <ActivityItem key={a.id} activity={a} />
@@ -92,7 +96,11 @@ export default function ActivitiesPage() {
                     )}
                     {finished.length > 0 && (
                         <div className={sectionStyles.activitySection}>
-                            <h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.finished')}</h2>
+                            <div className={sectionStyles.centerContent}>
+                                <span className={sectionStyles.line}></span>
+                                <h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.finished')}</h2>
+                                <span className={sectionStyles.line}></span>
+                            </div>
                             <div className={styles.grid3}>
                                 {finished.map((a) => (
                                     <ActivityItem key={a.id} activity={a} />

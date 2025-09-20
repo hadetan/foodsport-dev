@@ -18,7 +18,7 @@ function LoadingBarConsumerWrapper({ children }) {
 
   return (
     <>
-      <LoadingBar color="rgba(251, 255, 0, 1)" ref={loadingBarRef} height={3} shadow={true} />
+      <LoadingBar color="#2bbfb0" ref={loadingBarRef} height={3} shadow={true} />
       {children}
     </>
   );
