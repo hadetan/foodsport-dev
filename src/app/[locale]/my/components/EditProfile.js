@@ -526,16 +526,6 @@ export default function EditProfile() {
 					placeholder={t('placeholders.dateOfBirth')}
 					className='edit-profile-fullwidth'
 				/>
-				<div className='edit-profile-link-google-container'>
-					<button
-						type='button'
-						onClick={handleLinkGoogle}
-						disabled={linking || !!user.googleId}
-						className='edit-profile-link-google-btn'
-					>
-						{user.googleId ? t('google.linked') : linking ? t('google.starting') : t('google.link')}
-					</button>
-				</div>
 				<div className='edit-profile-district-bio-row'>
 					<div>
 						<select
@@ -561,6 +551,16 @@ export default function EditProfile() {
 							className='edit-profile-bio-textarea'
 						/>
 					</div>
+				</div>
+				<div className='edit-profile-link-google-container'>
+					<button
+						type='button'
+						onClick={handleLinkGoogle}
+						disabled={linking || !!user.googleId}
+						className='edit-profile-link-google-btn'
+					>
+						{user.googleId ? t('google.linked') : linking ? t('google.starting') : t('google.link')}
+					</button>
 				</div>
 				<button
 					type='submit'

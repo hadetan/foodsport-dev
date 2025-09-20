@@ -24,7 +24,7 @@ export default function ProfilePage() {
 	const badges = user.userBadges.length;
 
 	return (
-		<div>
+		<div style={{overflow: 'hidden'}}>
 			<div className='profile-page-container'>
 				<div className='profile-main-row'>
 					<div className='profile-left'>

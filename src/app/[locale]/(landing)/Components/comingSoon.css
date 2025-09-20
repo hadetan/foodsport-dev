@@ -2,118 +2,118 @@
 
 /* Large tablets / small desktop */
 @media (max-width: 900px) {
-    .coming-soon-bg {
-        min-height: 350px;
-        height: 500px; /* mirrors Activity 500px */
-    }
+	.coming-soon-bg {
+		min-height: 350px;
+		height: 500px; /* mirrors Activity 500px */
+	}
 }
 
 /* Tablet */
 @media (max-width: 768px) {
-    .coming-soon-bg {
-        min-height: 120px !important;
-        height: 200px !important; /* mirror Activity tablet heights */
-        padding: 1.5rem 0;
-    }
+	.coming-soon-bg {
+		min-height: 120px !important;
+		height: 200px !important; /* mirror Activity tablet heights */
+		padding: 1.5rem 0;
+	}
 }
 
 /* Mobile */
 @media (max-width: 480px) {
-    .coming-soon-bg {
-        min-height: 120px !important;
-        height: 145px !important; /* mirror Activity mobile heights */
-        padding: 1.25rem 0;
-    }
+	.coming-soon-bg {
+		min-height: 120px !important;
+		height: 145px !important; /* mirror Activity mobile heights */
+		padding: 1.25rem 0;
+	}
 }
 
 /* Small mobile */
 @media (max-width: 360px) {
-    .coming-soon-bg {
-        min-height: 200px; /* matches small mobile Activity adjustments */
-        height: 280px;
-        padding: 1rem 0;
-    }
+	.coming-soon-bg {
+		min-height: 200px; /* matches small mobile Activity adjustments */
+		height: 280px;
+		padding: 1rem 0;
+	}
 }
 
 .sponsor-section {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 2rem 1rem;
 }
 
 .sponsor-title {
-    text-align: center;
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin-bottom: 2.5rem;
-    color: #333;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #dadada;
+	text-align: center;
+	font-size: 1.75rem;
+	font-weight: 600;
+	margin-bottom: 2.5rem;
+	color: #333;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #dadada;
 }
 
 .brand-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 1.5rem;
 }
 
 @media (max-width: 1024px) {
-    .brand-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
+	.brand-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
 }
 
 @media (max-width: 768px) {
-    .brand-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+	.brand-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
 }
 
 @media (max-width: 480px) {
-    .brand-grid {
-        grid-template-columns: 1fr;
-    }
+	.brand-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 .brand-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #fff;
-    border: 1px solid #eaeaea;
-    border-radius: 8px;
-    height: 120px;
-    padding: 1rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #fff;
+	border: 1px solid #eaeaea;
+	border-radius: 8px;
+	height: 120px;
+	padding: 1rem;
+	transition: all 0.3s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .brand-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+	transform: translateY(-5px);
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .brand-name {
-    font-size: 1.25rem;
-    font-weight: 600;
-    text-align: center;
-    color: #333;
+	font-size: 1.25rem;
+	font-weight: 600;
+	text-align: center;
+	color: #333;
 }
 
 .fade-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(220, 220, 220, 0.7); /* light grey with fade */
-    z-index: 10;
-    pointer-events: none;
+	position: absolute;
+	inset: 0;
+	background: rgba(220, 220, 220, 0.7); /* light grey with fade */
+	z-index: 10;
+	pointer-events: none;
 }
 
 /* Make the Popular rewards section a containing block for the overlay */
 .popular-rewards-section {
-    position: relative;
+	position: relative;
 }
 
 /* Container for the full-section grey overlay */
 .light-grey-overlay-wrap {
-    position: relative;
+	position: relative;
 }
