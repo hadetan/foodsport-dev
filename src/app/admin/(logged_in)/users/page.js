@@ -7,7 +7,6 @@ import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import FullPageLoader from "../components/FullPageLoader";
-import { DISTRICTS } from "@/app/constants/constants";
 import Pagination from "@/app/admin/(logged_in)/components/Pagination";
 
 const UserManagementPage = () => {
@@ -19,11 +18,6 @@ const UserManagementPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
     const totalPages = Math.ceil(filteredUsers.length / pageSize);
-
-    const formatDistrict = (district) =>
-        district.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-
-    const hongKongRegions = ["All", ...DISTRICTS.map(formatDistrict)];
 
     useEffect(() => {
         if (!Array.isArray(users) || loading) {
@@ -105,12 +99,6 @@ const UserManagementPage = () => {
                                   statusFilter.slice(1)
                         }
                         onSelect={handleStatusChange}
-                    />
-
-                    <Dropdown
-                        items={hongKongRegions}
-                        name="All Districts"
-                        searchable={true}
                     />
                 </div>
             </div>

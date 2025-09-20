@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import axios from '@/utils/axios/api';
 import { useVerifiedAttendees } from "@/app/shared/contexts/VerifiedAttendeesContext";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import FullPageLoader from "../../components/FullPageLoader";
@@ -54,7 +54,7 @@ function VerifiedAttendeesTable({ attendees, loading, ActivityLoading, error }) 
                                         : a.participant?.type || "-"}
                                 </td>
                                 <td className="px-3 py-2 whitespace-nowrap">
-                                    {a.ticketCode || "-"}
+                                    {a.ticketCode.toUpperCase() || "-"}
                                 </td>
                                 <td className="px-3 py-2 whitespace-nowrap">
                                     {a.joinedAt
@@ -98,7 +98,7 @@ export default function VerifyTicketPage() {
         if (!activityId) return;
         try {
             setLoading(true);
-            const { data } = await axios.get("/api/admin/verifyTicket", {
+            const { data } = await axios.get("/admin/verifyTicket", {
                 params: { activityId },
             });
             setAttendees(data.attendees || []);
@@ -154,14 +154,14 @@ export default function VerifyTicketPage() {
                 );
                 return;
             }
-            const res = await axios.post("/api/admin/verifyTicket", {
+            const res = await axios.post("/admin/verifyTicket", {
                 activityId,
-                ticketCode: ticketCode.trim(),
+                ticketCode: ticketCode.trim().toUpperCase(),
             });
             const data = res.data;
 
             if (data?.status === "invited_needs_info") {
-                setInvitedMeta({ ticketCode: data.ticketCode });
+                setInvitedMeta({ ticketCode: (data.ticketCode || '').toUpperCase() });
                 setInvitedForm((prev) => ({
                     ...prev,
                     email: data.email || prev.email || "",
@@ -195,7 +195,7 @@ export default function VerifyTicketPage() {
         try {
             const payload = {
                 activityId,
-                ticketCode: invitedMeta.ticketCode,
+                ticketCode: (invitedMeta.ticketCode || '').toUpperCase(),
                 email: invitedForm.email?.trim() || "",
                 firstname: invitedForm.firstname?.trim() || "",
                 lastname: invitedForm.lastname?.trim() || "",
@@ -204,7 +204,7 @@ export default function VerifyTicketPage() {
                 height: invitedForm.height || "",
             };
             const res = await axios.post(
-                "/api/admin/verifyInvitedTicket",
+                "/admin/verifyInvitedTicket",
                 payload
             );
             setVerifySuccess(
@@ -308,9 +308,7 @@ export default function VerifyTicketPage() {
                                                 placeholder="Enter ticket code"
                                                 value={ticketCode}
                                                 onChange={(e) =>
-                                                    setTicketCode(
-                                                        e.target.value
-                                                    )
+                                                    setTicketCode(e.target.value.toUpperCase())
                                                 }
                                                 onKeyDown={(e) => {
                                                     if (e.key === "Enter")

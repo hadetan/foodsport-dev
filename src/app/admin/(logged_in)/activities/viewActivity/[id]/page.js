@@ -7,7 +7,7 @@ import Avatar from "@/app/shared/components/avatar";
 import FullPageLoader from "../../../components/FullPageLoader";
 import { Download, Upload, Pencil } from "lucide-react";
 import { toast } from "@/utils/Toast";
-import axios from "axios";
+import axios from '@/utils/axios/api';
 import parseUsersFromCsv from "@/utils/parseCsv";
 import ActivityDetailsAdmin from "../../../components/ActivityDetailsAdmin";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
@@ -109,7 +109,7 @@ const ActivityDetailPage = () => {
             }));
 
             const res = await axios.post(
-                "/api/admin/users/rewardCalories",
+                "/admin/users/rewardCalories",
                 { activityId, users: payloadUsers },
                 { withCredentials: true }
             );

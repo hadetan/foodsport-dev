@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import axios from "axios";
 import api from "@/utils/axios/api";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import Avatar from "@/app/shared/components/avatar";
@@ -74,7 +73,7 @@ const UserDetailPage = () => {
         if (!user) return;
         setEmailLoading(true);
         try {
-            const { data } = await axios.patch("/api/admin/users", {
+            const { data } = await api.patch("/admin/users", {
                 userId: user.id,
                 email,
             });
