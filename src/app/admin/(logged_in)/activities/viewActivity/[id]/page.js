@@ -155,12 +155,6 @@ const ActivityDetailPage = () => {
         return new Date(dateString).toLocaleDateString("en-US", options);
     };
 
-    const formatTime = (dateString) => {
-        if (!dateString) return "Not specified";
-        const options = { hour: "2-digit", minute: "2-digit", hour12: false };
-        return new Date(dateString).toLocaleTimeString("en-US", options);
-    };
-
     const canImportExport =
         activity?.status === "cancelled" || activity?.status === "closed";
 
@@ -174,7 +168,12 @@ const ActivityDetailPage = () => {
             toast.error("No activity data to export");
             return;
         }
-        if (!participatingUsers || participatingUsers.length === 0) {
+        
+        const presentParticipants = participatingUsers.filter((user) => user.joinedActivities.some((a) => {
+            return a.wasPresent === true;
+        }));
+
+        if (!presentParticipants || presentParticipants.length === 0) {
             toast.error("No participating users to export");
             return;
         }
@@ -185,23 +184,12 @@ const ActivityDetailPage = () => {
             return `"${s.replace(/"/g, '""')}"`;
         };
 
-        const matchId = (val) => {
-            if (!val) return false;
-            const id = activityId?.toString();
-            return (val === activityId || val?.toString?.() === id || val?.id?.toString?.() === id || val?.activityId?.toString?.() === id || val?.activity?.id?.toString?.() === id);
-        };
-
-        const findActivityJoin = (user) => {
-            const arr = Array.isArray(user?.joinedActivities) ? user.joinedActivities : [];
-            return (arr.find(matchId) || {});
-        };
-
-        const headers = ["firstname", "lastname", "email", "Registered", "gender", "height", "weight", "dob", "totalDuration", "totalCaloriesBurned"];
+        const headers = ["userId", "firstname", "lastname", "email", "Registered", "gender", "height", "weight", "dob", "totalDuration", "totalCaloriesBurned"];
         const userHeader = headers.map((h) => `"${h}"`).join(",");
 
-        const userRows = participatingUsers.map((user) => {
+        const userRows = presentParticipants.map((user) => {
             const values = [
-                user?.firstname ?? "", user?.lastname ?? "", user?.email ?? "", user?.isRegistered ? "Yes" : "No",
+                user.id ,user?.firstname ?? "", user?.lastname ?? "", user?.email ?? "", user?.isRegistered ? "Yes" : "No",
                 user?.gender ?? "Not specified", user?.height ?? "", user?.weight ?? "", user?.dateOfBirth ?? "", "", "",
             ];
             return values.map(escapeCsv).join(",");
@@ -227,6 +215,10 @@ const ActivityDetailPage = () => {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+    }
+
+    const isUserVerified = (idx) => {
+        return participatingUsers[idx].joinedActivities.some((a) => a.id === activityId && a.wasPresent)
     }
 
     return (
@@ -397,13 +389,16 @@ const ActivityDetailPage = () => {
                                                         Register Date
                                                     </th>
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Activities
+                                                        Total Activities Joined
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Ticket Verified
                                                     </th>
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
                                                 {participatingUsers.map(
-                                                    (user) => (
+                                                    (user, i) => (
                                                         <tr
                                                             key={user.id}
                                                             className="hover:bg-gray-50"
@@ -412,102 +407,59 @@ const ActivityDetailPage = () => {
                                                                 <div className="flex items-center">
                                                                     <div className="flex-shrink-0">
                                                                         <Avatar
-                                                                            src={
-                                                                                user.profilePicture ||
-                                                                                user.profilePictureUrl ||
-                                                                                null
-                                                                            }
-                                                                            srcAvatar={
-                                                                                user.profilePicture ||
-                                                                                user.profilePictureUrl ||
-                                                                                null
-                                                                            }
-                                                                            firstName={
-                                                                                user.firstname ||
-                                                                                ""
-                                                                            }
-                                                                            lastName={
-                                                                                user.lastname ||
-                                                                                ""
-                                                                            }
-                                                                            alt={`${user.firstname ||
-                                                                                "User"
-                                                                                } ${user.lastname ||
-                                                                                ""
-                                                                                }`}
+                                                                            srcAvatar={user.profilePictureUrl}
+                                                                            firstName={user.firstname}
+                                                                            lastName={user.lastname}
+                                                                            alt={`${user.firstname} ${user.lastname}`}
                                                                             size="40"
                                                                         />
                                                                     </div>
                                                                     <div className="ml-4">
                                                                         <div className="text-sm font-medium text-gray-900">
-                                                                            {(user.firstname ||
-                                                                                "") +
-                                                                                (user.lastname
-                                                                                    ? ` ${user.lastname}`
-                                                                                    : user.firstname
-                                                                                        ? ""
-                                                                                        : "N/A")}
+                                                                            {user.firstname + user.lastname}
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {user.email ||
-                                                                        "N/A"}
+                                                                    {user.email}
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {user.gender ||
-                                                                        "Not specified"}
+                                                                    {user.gender || "Not specified"}
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {user.height
-                                                                        ? `${user.height} CM`
-                                                                        : "N/A"}{" "}
+                                                                    {`${user.height} CM`}{" "}
                                                                     /{" "}
-                                                                    {user.weight
-                                                                        ? `${user.weight} KG`
-                                                                        : "N/A"}
+                                                                    {`${user.weight} KG`}
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {(() => {
-                                                                        const dt =
-                                                                            user.joinedDate ||
-                                                                            user.joinDate ||
-                                                                            user.createdAt;
-                                                                        return dt
-                                                                            ? formatDate(
-                                                                                dt
-                                                                            )
-                                                                            : "Not specified";
-                                                                    })()}
+                                                                    {formatDate(user.joinDate)}
                                                                 </div>
                                                             </td>
-                                                            {/* Stats */}
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {user.stats
-                                                                        ?.totalActivities ??
-                                                                        user.totalActivities ??
-                                                                        0}
+                                                                    {user.totalActivities}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="text-sm text-gray-900">
+                                                                    {isUserVerified(i) ? "Yes" : "No"}
                                                                 </div>
                                                             </td>
                                                         </tr>
-                                                    )
-                                                )}
+                                                    ))}
                                             </tbody>
                                         </table>
                                     </div>
                                 )}
                             </div>
-
-                            {/* Removed participating users list to match the image */}
                         </div>
                     )}
                 </div>

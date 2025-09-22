@@ -14,7 +14,7 @@ export async function GET() {
     let User = await prisma.user.findUnique({
       where: { id: user.id },
       include: {
-        userActivities: { select: { activityId: true, wasPresent: true } },
+        userActivities: { select: { activityId: true, wasPresent: true, totalDuration: true } },
         calorieSubmissions: true,
         calorieDonations: true,
         userBadges: true,
@@ -24,15 +24,13 @@ export async function GET() {
     if (!User) {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
-    // Opportunistic cache of Google avatar to our storage to avoid 429 rate limiting from Google.
     if (User.profilePictureUrl?.includes('googleusercontent.com')) {
       const cachedUrl = await cacheGoogleAvatar(User.id, User.profilePictureUrl);
       if (cachedUrl !== User.profilePictureUrl) {
-        // Re-fetch user to include updated URL & keep relation includes consistent.
         User = await prisma.user.findUnique({
           where: { id: user.id },
           include: {
-            userActivities: { select: { activityId: true, wasPresent: true } },
+            userActivities: { select: { activityId: true, wasPresent: true, totalDuration: true } },
             calorieSubmissions: true,
             calorieDonations: true,
             userBadges: true,

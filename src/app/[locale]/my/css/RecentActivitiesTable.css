@@ -126,6 +126,42 @@
 	cursor: not-allowed;
 }
 
+/* Pagination controls below the table */
+.recent-activities-pagination {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 0 4px;
+	color: #4b5563; /* slate-600 */
+}
+
+.recent-activities-page-indicator {
+	font-size: 14px;
+	color: #6b7280; /* gray-500 */
+}
+
+.recent-activities-page-btn {
+	border: 1px solid #d1d5db; /* gray-300 */
+	background: #ffffff;
+	color: #374151; /* gray-700 */
+	padding: 6px 12px;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.recent-activities-page-btn:hover {
+	background: #f3f4f6; /* gray-100 */
+	border-color: #9ca3af; /* gray-400 */
+}
+
+.recent-activities-page-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	background: #f9fafb; /* gray-50 */
+	border-color: #e5e7eb; /* gray-200 */
+}
+
 @media (max-width: 900px) {
 	/* Tablet tweaks: tighten spacing, allow exercise text to wrap and reduce column min-widths
 		 Keep the table layout but make it resilient at ~720-900px widths. */
@@ -186,6 +222,11 @@
 		max-height: none;
 		height: auto;
 		overflow: visible;
+	}
+
+	.recent-activities-pagination {
+		justify-content: center;
+		padding: 16px 0 0;
 	}
 }
 
@@ -248,5 +289,10 @@
 		max-height: none;
 		height: auto;
 		overflow: visible;
+	}
+
+	.recent-activities-pagination {
+		justify-content: center;
+		padding: 16px 0 0;
 	}
 }

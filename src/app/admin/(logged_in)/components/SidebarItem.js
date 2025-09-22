@@ -50,11 +50,11 @@ export default function SidebarItem({
                 <button
                     type="button"
                     onClick={handleLogout}
-                    className={`w-full text-left flex items-center px-4 py-2 rounded-lg transition-colors text-red-500
+                    className={`transition-colors text-red-500
      ${
          isActive
-             ? "bg-primary text-primary-content"
-             : "text-base-content hover:bg-base-200"
+             ? "bg-primary text-primary-content rounded-lg flex content whitespace-nowrap "
+             : "text-base-content flex content whitespace-nowrap"
      }
  `}
                 >

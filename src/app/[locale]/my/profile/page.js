@@ -18,8 +18,8 @@ export default function ProfilePage() {
 
 	const displayName = `${user.firstname} ${user.lastname}`;
 	const userId = `# ${user.id}`;
-	const caloriesDonated = user.totalCaloriesDonated;
-	const fsPoints = Math.floor(user.totalCaloriesDonated / 500);
+	const caloriesDonated = user.totalCaloriesBurned;
+	const fsPoints = Math.floor(user.totalCaloriesBurned / 500);
 	const activitiesJoined = user.joinedActivityIds.length;
 	const badges = user.userBadges.length;
 
