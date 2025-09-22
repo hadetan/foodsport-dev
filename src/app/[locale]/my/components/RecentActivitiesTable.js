@@ -73,7 +73,7 @@ export default function RecentActivitiesTable() {
       return ua.activityId === actId && ua.totalDuration
     });
     if (!!found.length) {
-      return found[0].totalDuration;
+      return `${found[0].totalDuration} Minutes`;
     } else {
       return t('na');
     }
@@ -90,7 +90,7 @@ export default function RecentActivitiesTable() {
               <th className="recent-activities-th">{t('headers.date')}</th>
               <th className="recent-activities-th">{t('headers.time')}</th>
               <th className="recent-activities-th">{t('headers.kcal')}</th>
-              <th className="recent-activities-th">{t('headers.caloriesBurnt')}</th>
+              <th className="recent-activities-th">{t('headers.totalWorkoutDuration')}</th>
               <th className="recent-activities-th">{t('headers.invite')}</th>
             </tr>
           </thead>
@@ -109,7 +109,7 @@ export default function RecentActivitiesTable() {
                   <td className="recent-activities-td no-wrap" data-label={t('headers.date')}>{formatDate(act.startDate)}</td>
                   <td className="recent-activities-td no-wrap" data-label={t('headers.time')}>{getDuration(act.startTime, act.endTime)}</td>
                   <td className="recent-activities-td no-wrap" data-label={t('headers.kcal')}>{act.caloriesPerHour ? `${act.caloriesPerHour}kcal` : t('na')}</td>
-                  <td className="recent-activities-td" data-label={t('headers.caloriesBurnt')}>{getMyActivityWorkoutDuration(act.id)}</td>
+                  <td className="recent-activities-td" data-label={t('headers.totalWorkoutDuration')}>{getMyActivityWorkoutDuration(act.id)}</td>
                   <td className="recent-activities-td no-wrap" data-label={t('headers.invite')}>
                     <button
                       type="button"

@@ -64,6 +64,7 @@ export async function GET(req) {
 				   updatedAt: true,
 				   height: true,
 				   weight: true,
+				   totalCaloriesBurned: true,
 			},
 			options
 		);

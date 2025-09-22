@@ -201,7 +201,7 @@
             "exercise": "運動",
             "time": "時間",
             "kcal": "卡路里",
-            "caloriesBurnt": "總捐贈卡路里",
+            "totalWorkoutDuration": "總運動時間",
             "invite": "邀請"
         },
         "noActivities": "未找到活動。",

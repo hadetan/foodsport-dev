@@ -191,6 +191,7 @@ export async function getUserJoinedActivitiesWithDetails(userIdOrTempId, isTempU
 			where,
 			select: {
 				wasPresent: true,
+				totalDuration: true,
 				activity: {
 					select: {
 						id: true,
@@ -214,7 +215,7 @@ export async function getUserJoinedActivitiesWithDetails(userIdOrTempId, isTempU
 				},
 			},
 		});
-		return userActivities.filter((ua) => ua.activity).map((ua) => ({ ...ua.activity, wasPresent: ua.wasPresent }));
+		return userActivities.filter((ua) => ua.activity).map((ua) => ({ ...ua.activity, wasPresent: ua.wasPresent, totalDuration: ua.totalDuration }));
 	} catch (error) {
 		return handlePrismaError(error);
 	}
