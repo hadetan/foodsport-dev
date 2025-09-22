@@ -132,7 +132,7 @@ export async function POST(request) {
             const templateId = process.env.INVITE_PARTNER_TICKET_TEMPLATE_ID;
             const params = {
                 name: invited.existingTempUser ? `${invited.existingTempUser.firstname} ${invited.existingTempUser.lastname}` : email,
-                code: invited.ticket.ticketCode,
+                code: invited.ticket.ticketCode.toUpperCase(),
                 title: activity.title,
             };
             const emailRes = await serverApi.post(
