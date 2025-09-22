@@ -177,26 +177,26 @@ const CreateActivityPage = () => {
 		}));
 	};
 
-	    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                image: `Selected image cannot exceed ${MAX_IMAGE_SIZE_MB} MB.`,
-            }));
-            return;
-        }
-        setFieldErrors((prev) => ({
-            ...prev,
-            image: undefined,
-        }));
-        setError("");
-        setFormData((prev) => ({
-            ...prev,
-            image: file,
-        }));
-    };
+	const handleImageUpload = (e) => {
+		const file = e.target.files[0];
+		if (!file) return;
+		if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+			setFieldErrors((prev) => ({
+				...prev,
+				image: `Selected image cannot exceed ${MAX_IMAGE_SIZE_MB} MB.`,
+			}));
+			return;
+		}
+		setFieldErrors((prev) => ({
+			...prev,
+			image: undefined,
+		}));
+		setError("");
+		setFormData((prev) => ({
+			...prev,
+			image: file,
+		}));
+	};
 
 	const handleCreateActivity = async () => {
 		if (!validateFields()) {
@@ -357,61 +357,77 @@ const CreateActivityPage = () => {
 							{fieldErrors.image && (
 								<span className='text-error text-base'>{fieldErrors.image}</span>
 							)}
-                            {/* Start Date & Time with icon */}
-						<div>
-							<label className='block text-sm font-medium text-gray-700 mb-2 mt-2'>Start Date &amp; Time</label>
-							<div className='relative'>
-								<input
-									type='datetime-local'
-									className='input input-bordered input-lg w-full bg-white text-black pl-12'
-									name='startDateTime'
-									value={formData.startDateTime}
-									onChange={handleFormChange}
-									required
-								/>
-								<Calendar className='w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none' />
+							{/* Featured */}
+							<div className='mt-4 mb-10'>
+								<label className='flex items-center cursor-pointer w-full' style={{justifyContent: "space-between"}} htmlFor='featured-toggle'>
+									<div className=''>
+										<p className='text-sm font-medium text-gray-900'>Featured</p>
+										<p className='text-xs text-gray-500'>Feature this activity to highlight it on the landing page.</p>
+									</div>
+									<div
+										className='relative'
+										role='switch'
+										aria-checked={!!formData.isFeatured}
+										tabIndex={0}
+										onKeyDown={(e) => {
+											if (e.key === ' ' || e.key === 'Enter') {
+												e.preventDefault();
+												document.getElementById('featured-toggle')?.click();
+											}
+										}}
+									>
+										<input
+											id='featured-toggle'
+											type='checkbox'
+											className='toggle toggle-primary sr-only'
+											name='isFeatured'
+											checked={!!formData.isFeatured}
+											onChange={handleFormChange}
+											tabIndex={-1}
+										/>
+										<div className='block bg-gray-200 w-14 h-8 rounded-full'></div>
+										<div className='dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition'></div>
+									</div>
+								</label>
+								<style>{`input#featured-toggle:checked ~ .dot { transform: translateX(100%); } input#featured-toggle:checked ~ .block { background-color: #A5B4FC; }`}</style>
 							</div>
-							{fieldErrors.startDateTime && (
-								<span className='text-error text-base'>{fieldErrors.startDateTime}</span>
-							)}
-						</div>
+							{/* Start Date & Time with icon */}
+							<div>
+								<label className='block text-sm font-medium text-gray-700 mb-2 mt-2'>Start Date &amp; Time</label>
+								<div className='relative'>
+									<input
+										type='datetime-local'
+										className='input input-bordered input-lg w-full bg-white text-black pl-12'
+										name='startDateTime'
+										value={formData.startDateTime}
+										onChange={handleFormChange}
+										required
+									/>
+									<Calendar className='w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none' />
+								</div>
+								{fieldErrors.startDateTime && (
+									<span className='text-error text-base'>{fieldErrors.startDateTime}</span>
+								)}
+							</div>
 
-						{/* End Date & Time with icon */}
-						<div>
-							<label className='block text-sm font-medium text-gray-700 mb-2 mt-2'>End Date &amp; Time</label>
-							<div className='relative'>
-								<input
-									type='datetime-local'
-									className='input input-bordered input-lg w-full bg-white text-black pl-12'
-									name='endDateTime'
-									value={formData.endDateTime}
-									onChange={handleFormChange}
-									required
-								/>
-								<Calendar className='w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none' />
+							{/* End Date & Time with icon */}
+							<div>
+								<label className='block text-sm font-medium text-gray-700 mb-2 mt-2'>End Date &amp; Time</label>
+								<div className='relative'>
+									<input
+										type='datetime-local'
+										className='input input-bordered input-lg w-full bg-white text-black pl-12'
+										name='endDateTime'
+										value={formData.endDateTime}
+										onChange={handleFormChange}
+										required
+									/>
+									<Calendar className='w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none' />
+								</div>
+								{fieldErrors.endDateTime && (
+									<span className='text-error text-base'>{fieldErrors.endDateTime}</span>
+								)}
 							</div>
-							{fieldErrors.endDateTime && (
-								<span className='text-error text-base'>{fieldErrors.endDateTime}</span>
-							)}
-						</div>
-
-						{/* Location with icon */}
-						<div>
-							<label className='block text-sm font-medium text-gray-700 mb-2 mt-2'>Location</label>
-							<div className='relative'>
-								<input
-									className='input input-bordered input-lg w-full bg-white text-black pl-12'
-									name='location'
-									value={formData.location || ''}
-									onChange={handleFormChange}
-									placeholder='Enter location'
-								/>
-								<MapPin className='w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none' />
-							</div>
-							{fieldErrors.location && (
-								<span className='text-error text-base'>{fieldErrors.location}</span>
-							)}
-						</div>
 						</div>
 
 						{/* Right: Fields */}
@@ -449,63 +465,45 @@ const CreateActivityPage = () => {
 							</div>
 
 							<div className='lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 center'>
-                                {/* Activity Type */}
-                                <div>
-                                    <label className='block text-sm font-medium text-gray-700 mb-2'>Activity Type</label>
-                                    <select
-                                        className='select select-bordered select-lg w-full bg-white text-black'
-                                        name='activityType'
-                                        value={formData.activityType}
-                                        onChange={handleFormChange}
-                                        required
-                                    >
-                                        <option value=''>Select activity type</option>
-                                        {ACTIVITY_TYPES_FORMATTED.map((formatted, idx) => (
-                                            <option key={formatted} value={formatted}>
-                                                {ACTIVITY_TYPES[idx].charAt(0).toUpperCase() + ACTIVITY_TYPES[idx].slice(1)}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {fieldErrors.activityType && (
-                                        <span className='text-error text-base'>{fieldErrors.activityType}</span>
-                                    )}
-                                </div>
-
-                                {/* Featured */}
-                                <div className='flex items-center mt-4 md:mt-auto h-full'>
-                                    <label className='flex items-center cursor-pointer w-full' htmlFor='featured-toggle'>
-                                        <div
-                                            className='relative'
-                                            role='switch'
-                                            aria-checked={!!formData.isFeatured}
-                                            tabIndex={0}
-                                            onKeyDown={(e) => {
-                                                if (e.key === ' ' || e.key === 'Enter') {
-                                                    e.preventDefault();
-                                                    document.getElementById('featured-toggle')?.click();
-                                                }
-                                            }}
-                                        >
-                                            <input
-                                                id='featured-toggle'
-                                                type='checkbox'
-                                                className='toggle toggle-primary sr-only'
-                                                name='isFeatured'
-                                                checked={!!formData.isFeatured}
-                                                onChange={handleFormChange}
-                                                tabIndex={-1}
-                                            />
-                                            <div className='block bg-gray-200 w-14 h-8 rounded-full'></div>
-                                            <div className='dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition'></div>
-                                        </div>
-                                        <div className='ml-3'>
-                                            <p className='text-sm font-medium text-gray-900'>Featured</p>
-                                            <p className='text-xs text-gray-500'>Feature this activity to highlight it on the landing page.</p>
-                                        </div>
-                                    </label>
-                                    <style>{`input#featured-toggle:checked ~ .dot { transform: translateX(100%); } input#featured-toggle:checked ~ .block { background-color: #A5B4FC; }`}</style>
-                                </div>
-                            </div>
+								{/* Activity Type */}
+								<div>
+									<label className='block text-sm font-medium text-gray-700 mb-2'>Activity Type</label>
+									<select
+										className='select select-bordered select-lg w-full bg-white text-black'
+										name='activityType'
+										value={formData.activityType}
+										onChange={handleFormChange}
+										required
+									>
+										<option value=''>Select activity type</option>
+										{ACTIVITY_TYPES_FORMATTED.map((formatted, idx) => (
+											<option key={formatted} value={formatted}>
+												{ACTIVITY_TYPES[idx].charAt(0).toUpperCase() + ACTIVITY_TYPES[idx].slice(1)}
+											</option>
+										))}
+									</select>
+									{fieldErrors.activityType && (
+										<span className='text-error text-base'>{fieldErrors.activityType}</span>
+									)}
+								</div>
+								{/* Location with icon */}
+								<div>
+									<label className='block text-sm font-medium text-gray-700 mb-2'>Location</label>
+									<div className='relative'>
+										<input
+											className='input input-bordered input-lg w-full bg-white text-black pl-12'
+											name='location'
+											value={formData.location || ''}
+											onChange={handleFormChange}
+											placeholder='Enter location'
+										/>
+										<MapPin className='w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none' />
+									</div>
+									{fieldErrors.location && (
+										<span className='text-error text-base'>{fieldErrors.location}</span>
+									)}
+								</div>
+							</div>
 
 							{/* Summary */}
 							<div className='md:col-span-2'>

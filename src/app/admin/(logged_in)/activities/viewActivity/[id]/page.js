@@ -13,23 +13,10 @@ import ActivityDetailsAdmin from "../../../components/ActivityDetailsAdmin";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 
 function formatDateTime(startTime, endTime) {
-    const formattedStartTime = startTime
-        ? new Date(startTime).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-          })
-        : "";
-    const formattedEndTime = endTime
-        ? new Date(endTime).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-          })
-        : "";
+    const formattedStartTime = startTime ? new Date(startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+    const formattedEndTime = endTime ? new Date(endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 
-    return {
-        formattedStartTime,
-        formattedEndTime,
-    };
+    return { formattedStartTime, formattedEndTime };
 }
 
 const ActivityDetailPage = () => {
@@ -122,8 +109,7 @@ const ActivityDetailPage = () => {
             const totalProcessed = results.length;
 
             toast.success(
-                `Import complete. Rewarded ${successCount}/${totalProcessed}. Skipped ${
-                    failCount + skippedCount
+                `Import complete. Rewarded ${successCount}/${totalProcessed}. Skipped ${failCount + skippedCount
                 }.`
             );
         } catch (err) {
@@ -182,6 +168,66 @@ const ActivityDetailPage = () => {
         activity.startTime,
         activity.endTime
     );
+
+    const handleExportUsers = () => {
+        if (!activity) {
+            toast.error("No activity data to export");
+            return;
+        }
+        if (!participatingUsers || participatingUsers.length === 0) {
+            toast.error("No participating users to export");
+            return;
+        }
+
+        const escapeCsv = (value) => {
+            if (value === null || value === undefined) return '""';
+            const s = String(value);
+            return `"${s.replace(/"/g, '""')}"`;
+        };
+
+        const matchId = (val) => {
+            if (!val) return false;
+            const id = activityId?.toString();
+            return (val === activityId || val?.toString?.() === id || val?.id?.toString?.() === id || val?.activityId?.toString?.() === id || val?.activity?.id?.toString?.() === id);
+        };
+
+        const findActivityJoin = (user) => {
+            const arr = Array.isArray(user?.joinedActivities) ? user.joinedActivities : [];
+            return (arr.find(matchId) || {});
+        };
+
+        const headers = ["firstname", "lastname", "email", "Registered", "gender", "height", "weight", "dob", "totalDuration", "totalCaloriesBurned"];
+        const userHeader = headers.map((h) => `"${h}"`).join(",");
+
+        const userRows = participatingUsers.map((user) => {
+            const values = [
+                user?.firstname ?? "", user?.lastname ?? "", user?.email ?? "", user?.isRegistered ? "Yes" : "No",
+                user?.gender ?? "Not specified", user?.height ?? "", user?.weight ?? "", user?.dateOfBirth ?? "", "", "",
+            ];
+            return values.map(escapeCsv).join(",");
+        }
+        );
+
+        const activityHeader = `"id","title"`;
+        const activityRow = [activity?.id ?? "", activity?.title ?? ""].map(escapeCsv).join(",");
+
+        let usersSection = "";
+        if (userRows.length > 0) {
+            usersSection = "\r\n\r\nParticipating Users\r\n" + userHeader + "\r\n" + userRows.join("\r\n");
+        }
+
+        const csvContent = activityHeader + "\r\n" + activityRow + usersSection;
+
+        const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `activity_${activityId}_users.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
 
     return (
         <div className="w-full min-h-screen bg-white">
@@ -244,22 +290,20 @@ const ActivityDetailPage = () => {
                 >
                     <a
                         role="tab"
-                        className={`tab ${
-                            activeTab === "details"
-                                ? "tab-active text-blue-600"
-                                : "text-gray-500 hover:text-blue-600"
-                        }`}
+                        className={`tab ${activeTab === "details"
+                            ? "tab-active text-blue-600"
+                            : "text-gray-500 hover:text-blue-600"
+                            }`}
                         onClick={() => setActiveTab("details")}
                     >
                         Activity Details
                     </a>
                     <a
                         role="tab"
-                        className={`tab ${
-                            activeTab === "users"
-                                ? "tab-active text-blue-600"
-                                : "text-gray-500 hover:text-blue-600"
-                        }`}
+                        className={`tab ${activeTab === "users"
+                            ? "tab-active text-blue-600"
+                            : "text-gray-500 hover:text-blue-600"
+                            }`}
                         onClick={() => setActiveTab("users")}
                     >
                         Users Joined
@@ -294,7 +338,7 @@ const ActivityDetailPage = () => {
                                             disabled={importing}
                                             title="Import"
                                         >
-                                            <Upload className="w-5 h-5 mr-2" />
+                                            <Download className="w-5 h-5 mr-2" />
                                             {importing
                                                 ? "Importing..."
                                                 : "Import"}
@@ -308,205 +352,10 @@ const ActivityDetailPage = () => {
                                         />
                                         <button
                                             className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
-                                            onClick={() => {
-                                                // Export activity info and user details, merging per-activity joined data
-                                                if (!activity) {
-                                                    toast.error(
-                                                        "No activity data to export"
-                                                    );
-                                                    return;
-                                                }
-                                                if (
-                                                    !participatingUsers ||
-                                                    participatingUsers.length ===
-                                                        0
-                                                ) {
-                                                    toast.error(
-                                                        "No participating users to export"
-                                                    );
-                                                    return;
-                                                }
-
-                                                const escapeCsv = (value) => {
-                                                    if (
-                                                        value === null ||
-                                                        value === undefined
-                                                    )
-                                                        return '""';
-                                                    const s = String(value);
-                                                    return `"${s.replace(
-                                                        /"/g,
-                                                        '""'
-                                                    )}"`;
-                                                };
-
-                                                const matchId = (val) => {
-                                                    if (!val) return false;
-                                                    const id =
-                                                        activityId?.toString();
-                                                    // support primitive id, object with id/activityId, or nested activity.id
-                                                    return (
-                                                        val === activityId ||
-                                                        val?.toString?.() ===
-                                                            id ||
-                                                        val?.id?.toString?.() ===
-                                                            id ||
-                                                        val?.activityId?.toString?.() ===
-                                                            id ||
-                                                        val?.activity?.id?.toString?.() ===
-                                                            id
-                                                    );
-                                                };
-
-                                                const findActivityJoin = (
-                                                    user
-                                                ) => {
-                                                    const arr = Array.isArray(
-                                                        user?.joinedActivities
-                                                    )
-                                                        ? user.joinedActivities
-                                                        : [];
-                                                    return (
-                                                        arr.find(matchId) || {}
-                                                    );
-                                                };
-
-                                                // Columns we will export (aligned with DB naming)
-                                                const headers = [
-                                                    "firstname",
-                                                    "lastname",
-                                                    "email",
-                                                    "Registered",
-                                                    "gender",
-                                                    "height",
-                                                    "weight",
-                                                    "dob",
-                                                    "joinedDate",
-                                                    "totalDuration",
-                                                    "totalCaloriesBurned",
-                                                ];
-                                                const userHeader = headers
-                                                    .map((h) => `"${h}"`)
-                                                    .join(",");
-
-                                                const userRows =
-                                                    participatingUsers.map(
-                                                        (user) => {
-                                                            const join =
-                                                                findActivityJoin(
-                                                                    user
-                                                                );
-
-                                                            const values = [
-                                                                user?.firstname ??
-                                                                    user?.firstName ??
-                                                                    "",
-                                                                user?.lastname ??
-                                                                    user?.lastName ??
-                                                                    "",
-                                                                user?.email ??
-                                                                    user?.user_email ??
-                                                                    user?.user
-                                                                        ?.email ??
-                                                                    "",
-                                                                user?.isRegistered
-                                                                    ? "Yes"
-                                                                    : "No",
-                                                                user?.gender ??
-                                                                    user?.gender ??
-                                                                    "Not specified",
-                                                                user?.height ??
-                                                                    user
-                                                                        ?.profile
-                                                                        ?.height ??
-                                                                    "",
-                                                                user?.weight ??
-                                                                    user
-                                                                        ?.profile
-                                                                        ?.weight ??
-                                                                    "",
-                                                                user?.dob ??
-                                                                    user?.dateOfBirth ??
-                                                                    user
-                                                                        ?.profile
-                                                                        ?.dob ??
-                                                                    "",
-                                                                join?.joinedDate ??
-                                                                    join?.joinDate ??
-                                                                    join?.createdAt ??
-                                                                    user?.joinedDate ??
-                                                                    user?.joinDate ??
-                                                                    user?.createdAt ??
-                                                                    "",
-                                                                // totalDuration
-                                                                join?.totalDuration ??
-                                                                    join?.duration ??
-                                                                    join?.activityDuration ??
-                                                                    join?.minutes ??
-                                                                    join?.timeSpent ??
-                                                                    "",
-                                                                // totalCaloriesBurned
-                                                                join?.totalCaloriesBurned ??
-                                                                    join?.calories ??
-                                                                    join?.totalCalories ??
-                                                                    join?.kcal ??
-                                                                    "",
-                                                            ];
-
-                                                            return values
-                                                                .map(escapeCsv)
-                                                                .join(",");
-                                                        }
-                                                    );
-
-                                                // Only id and title for activity
-                                                const activityHeader = `"id","title"`;
-                                                const activityRow = [
-                                                    activity?.id ?? "",
-                                                    activity?.title ?? "",
-                                                ]
-                                                    .map(escapeCsv)
-                                                    .join(",");
-
-                                                let usersSection = "";
-                                                if (userRows.length > 0) {
-                                                    usersSection =
-                                                        "\r\n\r\nParticipating Users\r\n" +
-                                                        userHeader +
-                                                        "\r\n" +
-                                                        userRows.join("\r\n");
-                                                }
-
-                                                const csvContent =
-                                                    activityHeader +
-                                                    "\r\n" +
-                                                    activityRow +
-                                                    usersSection;
-
-                                                // Add BOM for Excel compatibility
-                                                const blob = new Blob(
-                                                    ["\uFEFF" + csvContent],
-                                                    {
-                                                        type: "text/csv;charset=utf-8;",
-                                                    }
-                                                );
-                                                const url =
-                                                    URL.createObjectURL(blob);
-                                                const link =
-                                                    document.createElement("a");
-                                                link.href = url;
-                                                link.setAttribute(
-                                                    "download",
-                                                    `activity_${activityId}_users.csv`
-                                                );
-                                                document.body.appendChild(link);
-                                                link.click();
-                                                document.body.removeChild(link);
-                                                URL.revokeObjectURL(url);
-                                            }}
+                                            onClick={handleExportUsers}
                                             title="Export Users"
                                         >
-                                            <Download className="w-5 h-5 mr-2" />
+                                            <Upload className="w-5 h-5 mr-2" />
                                             Export Users
                                         </button>
                                     </>
@@ -524,8 +373,7 @@ const ActivityDetailPage = () => {
                                 {participatingUsers.length === 0 ? (
                                     <div className="px-6 py-8 text-center">
                                         <p className="text-gray-500 text-lg">
-                                            No users have joined this activity
-                                            yet.
+                                            No users have joined this activity yet.
                                         </p>
                                     </div>
                                 ) : (
@@ -546,16 +394,10 @@ const ActivityDetailPage = () => {
                                                         Height/Weight
                                                     </th>
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Joined Date
+                                                        Register Date
                                                     </th>
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                         Activities
-                                                    </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Donations
-                                                    </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Badges
                                                     </th>
                                                 </tr>
                                             </thead>
@@ -570,7 +412,6 @@ const ActivityDetailPage = () => {
                                                                 <div className="flex items-center">
                                                                     <div className="flex-shrink-0">
                                                                         <Avatar
-                                                                            // Support both prop styles used in codebase
                                                                             src={
                                                                                 user.profilePicture ||
                                                                                 user.profilePictureUrl ||
@@ -589,13 +430,11 @@ const ActivityDetailPage = () => {
                                                                                 user.lastname ||
                                                                                 ""
                                                                             }
-                                                                            alt={`${
-                                                                                user.firstname ||
+                                                                            alt={`${user.firstname ||
                                                                                 "User"
-                                                                            } ${
-                                                                                user.lastname ||
+                                                                                } ${user.lastname ||
                                                                                 ""
-                                                                            }`}
+                                                                                }`}
                                                                             size="40"
                                                                         />
                                                                     </div>
@@ -606,8 +445,8 @@ const ActivityDetailPage = () => {
                                                                                 (user.lastname
                                                                                     ? ` ${user.lastname}`
                                                                                     : user.firstname
-                                                                                    ? ""
-                                                                                    : "N/A")}
+                                                                                        ? ""
+                                                                                        : "N/A")}
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -644,8 +483,8 @@ const ActivityDetailPage = () => {
                                                                             user.createdAt;
                                                                         return dt
                                                                             ? formatDate(
-                                                                                  dt
-                                                                              )
+                                                                                dt
+                                                                            )
                                                                             : "Not specified";
                                                                     })()}
                                                                 </div>
@@ -656,22 +495,6 @@ const ActivityDetailPage = () => {
                                                                     {user.stats
                                                                         ?.totalActivities ??
                                                                         user.totalActivities ??
-                                                                        0}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                <div className="text-sm text-gray-900">
-                                                                    {user.stats
-                                                                        ?.totalDonations ??
-                                                                        user.totalDonations ??
-                                                                        0}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                <div className="text-sm text-gray-900">
-                                                                    {user.stats
-                                                                        ?.badgeCount ??
-                                                                        user.badgeCount ??
                                                                         0}
                                                                 </div>
                                                             </td>

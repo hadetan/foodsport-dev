@@ -492,6 +492,39 @@ export default function EditActivityPage() {
                                             <span className="text-error text-base">{errors.image}</span>
                                         )}
 
+                                        <div className="mt-4 mb-10">
+                                            <label className="flex items-center cursor-pointer w-full" style={{justifyContent: "space-between"}} htmlFor="featured-toggle">
+                                                <div className="">
+                                                    <p className="text-sm font-medium text-gray-900">Featured</p>
+                                                    <p className="text-xs text-gray-500">Feature this activity to highlight it on the landing page.</p>
+                                                </div>
+                                                <div
+                                                    className='relative'
+                                                    role='switch'
+                                                    aria-checked={!!form.isFeatured}
+                                                    tabIndex={0}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === ' ' || e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            document.getElementById('featured-toggle')?.click();
+                                                        }
+                                                    }}
+                                                >
+                                                    <input
+                                                        id='featured-toggle'
+                                                        type='checkbox'
+                                                        className='toggle toggle-primary sr-only'
+                                                        name='isFeatured'
+                                                        checked={!!form.isFeatured}
+                                                        onChange={handleInput}
+                                                        tabIndex={-1}
+                                                    />
+                                                    <div className="block bg-gray-200 w-14 h-8 rounded-full"></div>
+                                                    <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                                                </div>
+                                            </label>
+                                            <style>{`input#featured-toggle:checked ~ .dot { transform: translateX(100%); } input#featured-toggle:checked ~ .block { background-color: #A5B4FC; }`}</style>
+                                        </div>
                                         {/* Start Date & Time */}
                                         <div className="mt-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Start Date &amp; Time</label>
@@ -527,25 +560,6 @@ export default function EditActivityPage() {
                                             </div>
                                             {errors.endDateTime && (
                                                 <span className="text-error text-base">{errors.endDateTime}</span>
-                                            )}
-                                        </div>
-
-                                        {/* Location */}
-                                        <div className="mt-2">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                                            <div className="relative">
-                                                <input
-                                                    className="input input-bordered input-lg w-full bg-white text-black pl-12"
-                                                    name="location"
-                                                    value={form.location}
-                                                    onChange={handleInput}
-                                                    required
-                                                    placeholder="Enter location"
-                                                />
-                                                <MapPin className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                                            </div>
-                                            {errors.location && (
-                                                <span className="text-error text-base">{errors.location}</span>
                                             )}
                                         </div>
                                     </div>
@@ -600,38 +614,23 @@ export default function EditActivityPage() {
                                             </select>
                                         </div>
 
-                                        <div className="flex items-center mt-4 md:mt-auto h-full">
-                                            <label className="flex items-center cursor-pointer w-full" htmlFor="featured-toggle">
-                                                <div
-                                                    className='relative'
-                                                    role='switch'
-                                                    aria-checked={!!form.isFeatured}
-                                                    tabIndex={0}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === ' ' || e.key === 'Enter') {
-                                                            e.preventDefault();
-                                                            document.getElementById('featured-toggle')?.click();
-                                                        }
-                                                    }}
-                                                >
-                                                    <input
-                                                        id='featured-toggle'
-                                                        type='checkbox'
-                                                        className='toggle toggle-primary sr-only'
-                                                        name='isFeatured'
-                                                        checked={!!form.isFeatured}
-                                                        onChange={handleInput}
-                                                        tabIndex={-1}
-                                                    />
-                                                    <div className="block bg-gray-200 w-14 h-8 rounded-full"></div>
-                                                    <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-                                                </div>
-                                                <div className="ml-3">
-                                                    <p className="text-sm font-medium text-gray-900">Featured</p>
-                                                    <p className="text-xs text-gray-500">Feature this activity to highlight it on the landing page.</p>
-                                                </div>
-                                            </label>
-                                            <style>{`input#featured-toggle:checked ~ .dot { transform: translateX(100%); } input#featured-toggle:checked ~ .block { background-color: #A5B4FC; }`}</style>
+                                        {/* Location */}
+                                        <div className="">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                                            <div className="relative">
+                                                <input
+                                                    className="input input-bordered input-lg w-full bg-white text-black pl-12"
+                                                    name="location"
+                                                    value={form.location}
+                                                    onChange={handleInput}
+                                                    required
+                                                    placeholder="Enter location"
+                                                />
+                                                <MapPin className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                            </div>
+                                            {errors.location && (
+                                                <span className="text-error text-base">{errors.location}</span>
+                                            )}
                                         </div>
 
                                         {/* Summary */}

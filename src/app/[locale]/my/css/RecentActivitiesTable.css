@@ -116,6 +116,16 @@
 	color: #fff;
 }
 
+.recent-activities-invite-btn:disabled {
+	background-color: #7c7c7c4d;
+	border: 1px solid transparent;
+}
+
+.recent-activities-invite-btn:hover:disabled {
+	background-color: #888;
+	cursor: not-allowed;
+}
+
 @media (max-width: 900px) {
 	/* Tablet tweaks: tighten spacing, allow exercise text to wrap and reduce column min-widths
 		 Keep the table layout but make it resilient at ~720-900px widths. */

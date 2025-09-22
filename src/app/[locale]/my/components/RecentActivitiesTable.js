@@ -5,6 +5,7 @@ import ActivityIcon from '@/app/shared/components/ActivityIcon';
 import InvitePartnersDialog from '@/app/shared/components/InvitePartnersDialog';
 import '@/app/[locale]/my/css/RecentActivitiesTable.css'
 import { useTranslations } from 'next-intl';
+import getActivityStatus from '@/utils/getActivityStatus';
 
 function formatDate(dateStr) {
   const date = new Date(dateStr);
@@ -41,6 +42,11 @@ export default function RecentActivitiesTable() {
   }, [activities]);
 
   const joinedActivities = user?.joinedActivityIds?.map(id => activitiesMap[id]).filter(Boolean).slice(0, 10) || [];
+  const getActStatus = (idx) => {
+    const { status } = getActivityStatus(joinedActivities[idx]);
+    const isCancelledOrClosed = joinedActivities[idx].status === 'cancelled' || joinedActivities[idx].status === 'closed';
+    return status === 'completed' || isCancelledOrClosed
+  }
 
   return (
     <div className="recent-activities-card">
@@ -61,7 +67,7 @@ export default function RecentActivitiesTable() {
             {joinedActivities.length === 0 ? (
               <tr><td colSpan={7} className="recent-activities-empty">{t('noActivities')}</td></tr>
             ) : (
-              joinedActivities.map((act) => (
+              joinedActivities.map((act, i) => (
                 <tr key={act.id} className="recent-activities-row">
                   <td className=" no-wrap recent-activities-td recent-activities-exercise" data-label={t('headers.exercise')}>{act.title}</td>
                   <td className="recent-activities-td" data-label={t('headers.type')}>
@@ -78,7 +84,10 @@ export default function RecentActivitiesTable() {
                       type="button"
                       onClick={() => { setSelectedActivityId(act.id); setInviteOpen(true); }}
                       className="recent-activities-invite-btn"
-                    >{t('invite')}</button>
+                      disabled={getActStatus(i)}
+                    >
+                      {t('invite')}
+                    </button>
                   </td>
                 </tr>
               ))
