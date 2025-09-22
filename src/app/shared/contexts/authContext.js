@@ -8,11 +8,6 @@ function getToken() {
 	return !!localStorage.getItem('auth_token');
 }
 
-function getPreToken() {
-	if (typeof window === 'undefined') return null;
-	return !!localStorage.getItem('pre_auth_token');
-}
-
 function setToken(token) {
 	if (typeof window === 'undefined') return;
 	localStorage.setItem('auth_token', token);
@@ -33,7 +28,6 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
 	const [authToken, setAuthToken] = useState(getToken());
-	const [preAuthToken, setPreAuthToken] = useState(getPreToken());
 
 	useEffect(() => {
 		setAuthToken(getToken());
@@ -119,7 +113,6 @@ export function AuthProvider({ children }) {
 				try {
 					localStorage.setItem('pre_auth_token', session.access_token);
 				} catch {}
-				setPreAuthToken(session.access_token);
 				setPreToken(session.access_token);
 			}
 
