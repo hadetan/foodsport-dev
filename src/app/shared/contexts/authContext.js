@@ -74,12 +74,14 @@ export function AuthProvider({ children }) {
 	const onboard = async ({ payload }) => {
 		try {
 			await api.post('/auth/complete-onboarding', payload);
+			let latestPreAuthToken;
 			try {
+				latestPreAuthToken = localStorage.getItem('pre_auth_token');
 				localStorage.removeItem('pre_auth_token');
-				localStorage.setItem('auth_token', preAuthToken);
+				localStorage.setItem('auth_token', latestPreAuthToken);
 			} catch { }
-			setAuthToken(preAuthToken);
-			setToken(preAuthToken);
+			setAuthToken(latestPreAuthToken);
+			setToken(latestPreAuthToken);
 		} catch (error) {
 			throw new Error(`Onboard failed: ${error?.message}`)
 		}
