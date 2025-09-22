@@ -76,12 +76,12 @@ export function AuthProvider({ children }) {
 			await api.post('/auth/complete-onboarding', payload);
 			try {
 				localStorage.removeItem('pre_auth_token');
-				localStorage.setItem('auth_token', preAuthToken)
+				localStorage.setItem('auth_token', preAuthToken);
 			} catch { }
 			setAuthToken(preAuthToken);
 			setToken(preAuthToken);
 		} catch (error) {
-			throw new Error(`Onboard failed: ${err?.message}`)
+			throw new Error(`Onboard failed: ${error?.message}`)
 		}
 	}
 
