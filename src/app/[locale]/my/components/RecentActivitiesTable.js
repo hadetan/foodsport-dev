@@ -44,7 +44,7 @@ export default function RecentActivitiesTable() {
     return map;
   }, [activities]);
 
-  const joinedActivities = user?.joinedActivityIds?.map(id => activitiesMap[id]).filter(Boolean).slice(0, 10) || [];
+  const joinedActivities = user?.joinedActivityIds?.map(id => activitiesMap[id]).filter(Boolean) || [];
   const getActStatus = (act) => {
     if (!act) return false;
     const { status } = getActivityStatus(act);
@@ -100,7 +100,7 @@ export default function RecentActivitiesTable() {
             ) : (
               visibleActivities.map((act) => (
                 <tr key={act.id} className="recent-activities-row">
-                  <td className=" no-wrap recent-activities-td recent-activities-exercise" data-label={t('headers.exercise')}>{act.title}</td>
+                  <td className="no-wrap recent-activities-td recent-activities-exercise" data-label={t('headers.exercise')}>{act.title}</td>
                   <td className="recent-activities-td" data-label={t('headers.type')}>
                     <span className="recent-activities-type-icon">
                       <ActivityIcon type={act.activityType} size={20} />

@@ -189,7 +189,7 @@ const ActivityDetailPage = () => {
 
         const userRows = presentParticipants.map((user) => {
             const values = [
-                user.id ,user?.firstname ?? "", user?.lastname ?? "", user?.email ?? "", user?.isRegistered ? "Yes" : "No",
+                user.id, user?.firstname ?? "", user?.lastname ?? "", user?.email ?? "", user?.isRegistered ? "Yes" : "No",
                 user?.gender ?? "Not specified", user?.height ?? "", user?.weight ?? "", user?.dateOfBirth ?? "", "", "",
             ];
             return values.map(escapeCsv).join(",");
@@ -416,7 +416,7 @@ const ActivityDetailPage = () => {
                                                                     </div>
                                                                     <div className="ml-4">
                                                                         <div className="text-sm font-medium text-gray-900">
-                                                                            {user.firstname + user.lastname}
+                                                                            {user.firstname + " " + user.lastname}
                                                                         </div>
                                                                     </div>
                                                                 </div>
