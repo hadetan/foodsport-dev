@@ -200,7 +200,7 @@
 			"exercise": "EXERCISE",
 			"time": "TIME",
 			"kcal": "KCAL",
-			"fsPoints": "FS POINTS",
+			"totalWorkoutDuration": "Total Workout Duration",
 			"invite": "INVITE"
 		},
 		"noActivities": "No activities found.",

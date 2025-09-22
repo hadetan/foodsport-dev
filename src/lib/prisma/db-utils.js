@@ -189,7 +189,9 @@ export async function getUserJoinedActivitiesWithDetails(userIdOrTempId, isTempU
 		const where = isTempUser ? { tempUserId: userIdOrTempId } : { userId: userIdOrTempId };
 		const userActivities = await prisma.userActivity.findMany({
 			where,
-			include: {
+			select: {
+				wasPresent: true,
+				totalDuration: true,
 				activity: {
 					select: {
 						id: true,
@@ -213,7 +215,7 @@ export async function getUserJoinedActivitiesWithDetails(userIdOrTempId, isTempU
 				},
 			},
 		});
-		return userActivities.map((ua) => ua.activity).filter(Boolean);
+		return userActivities.filter((ua) => ua.activity).map((ua) => ({ ...ua.activity, wasPresent: ua.wasPresent, totalDuration: ua.totalDuration }));
 	} catch (error) {
 		return handlePrismaError(error);
 	}

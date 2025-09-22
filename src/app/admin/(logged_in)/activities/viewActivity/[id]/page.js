@@ -155,12 +155,6 @@ const ActivityDetailPage = () => {
         return new Date(dateString).toLocaleDateString("en-US", options);
     };
 
-    const formatTime = (dateString) => {
-        if (!dateString) return "Not specified";
-        const options = { hour: "2-digit", minute: "2-digit", hour12: false };
-        return new Date(dateString).toLocaleTimeString("en-US", options);
-    };
-
     const canImportExport =
         activity?.status === "cancelled" || activity?.status === "closed";
 
@@ -174,7 +168,12 @@ const ActivityDetailPage = () => {
             toast.error("No activity data to export");
             return;
         }
-        if (!participatingUsers || participatingUsers.length === 0) {
+        
+        const presentParticipants = participatingUsers.filter((user) => user.joinedActivities.some((a) => {
+            return a.wasPresent === true;
+        }));
+
+        if (!presentParticipants || presentParticipants.length === 0) {
             toast.error("No participating users to export");
             return;
         }
@@ -185,23 +184,12 @@ const ActivityDetailPage = () => {
             return `"${s.replace(/"/g, '""')}"`;
         };
 
-        const matchId = (val) => {
-            if (!val) return false;
-            const id = activityId?.toString();
-            return (val === activityId || val?.toString?.() === id || val?.id?.toString?.() === id || val?.activityId?.toString?.() === id || val?.activity?.id?.toString?.() === id);
-        };
-
-        const findActivityJoin = (user) => {
-            const arr = Array.isArray(user?.joinedActivities) ? user.joinedActivities : [];
-            return (arr.find(matchId) || {});
-        };
-
-        const headers = ["firstname", "lastname", "email", "Registered", "gender", "height", "weight", "dob", "totalDuration", "totalCaloriesBurned"];
+        const headers = ["userId", "firstname", "lastname", "email", "Registered", "gender", "height", "weight", "dob", "totalDuration", "totalCaloriesBurned"];
         const userHeader = headers.map((h) => `"${h}"`).join(",");
 
-        const userRows = participatingUsers.map((user) => {
+        const userRows = presentParticipants.map((user) => {
             const values = [
-                user?.firstname ?? "", user?.lastname ?? "", user?.email ?? "", user?.isRegistered ? "Yes" : "No",
+                user.id, user?.firstname ?? "", user?.lastname ?? "", user?.email ?? "", user?.isRegistered ? "Yes" : "No",
                 user?.gender ?? "Not specified", user?.height ?? "", user?.weight ?? "", user?.dateOfBirth ?? "", "", "",
             ];
             return values.map(escapeCsv).join(",");
@@ -229,10 +217,23 @@ const ActivityDetailPage = () => {
         URL.revokeObjectURL(url);
     }
 
+    const isUserVerified = (idx) => {
+        return participatingUsers[idx].joinedActivities.some((a) => a.id === activityId && a.wasPresent);
+    }
+
+    const getTotalDuration = (idx) => {
+        const found = participatingUsers[idx].joinedActivities.filter((a) => a.id === activityId && a.totalDuration)
+        if (!!found.length) {
+            return `${found?.[0]?.totalDuration} Minutes`;
+        } else {
+            return false;
+        }
+    }
+
     return (
         <div className="w-full min-h-screen bg-white">
             {/* Heading and Navigation Buttons */}
-            <div className="container mx-auto px-4 pt-6 flex justify-between items-center">
+            <div className="container mx-auto pt-6 flex justify-between items-center">
                 <div className="flex items-center gap-4">
                     <button
                         className="flex items-center bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors mb-4 cursor-pointer"
@@ -261,7 +262,7 @@ const ActivityDetailPage = () => {
                 {activeTab === "details" && (
                     <div className="flex items-center gap-2">
                         <button
-                            className="flex items-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-4 py-2 rounded-lg shadow transition-colors cursor-pointer"
+                            className="flex items-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 rounded-lg shadow transition-colors cursor-pointer"
                             onClick={() => setShowZh((s) => !s)}
                             title="Toggle Chinese view"
                         >
@@ -283,7 +284,7 @@ const ActivityDetailPage = () => {
             </div>
 
             {/* Tabs - just below navigation */}
-            <div className="container mx-auto px-4 mt-4 mb-8">
+            <div className="container mx-auto mt-4 mb-8">
                 <div
                     role="tablist"
                     className="tabs tabs-border border-b border-blue-200"
@@ -324,7 +325,7 @@ const ActivityDetailPage = () => {
             )}
 
             {/* Tab Panels */}
-            <div className="container mx-auto px-4">
+            <div className="container mx-auto">
                 <div className="w-full">
                     {activeTab === "users" && (
                         <div>
@@ -333,7 +334,7 @@ const ActivityDetailPage = () => {
                                 {canImportExport && (
                                     <>
                                         <button
-                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors disabled:opacity-60"
+                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg shadow transition-colors disabled:opacity-60"
                                             onClick={handleImportClick}
                                             disabled={importing}
                                             title="Import"
@@ -351,7 +352,7 @@ const ActivityDetailPage = () => {
                                             onChange={handleFileChange}
                                         />
                                         <button
-                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-lg shadow transition-colors"
+                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg shadow transition-colors"
                                             onClick={handleExportUsers}
                                             title="Export Users"
                                         >
@@ -381,29 +382,38 @@ const ActivityDetailPage = () => {
                                         <table className="min-w-full divide-y divide-gray-200">
                                             <thead className="bg-gray-50">
                                                 <tr>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
                                                         User
                                                     </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
                                                         Email
                                                     </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
                                                         Gender
                                                     </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
                                                         Height/Weight
                                                     </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
+                                                        Exercised Duration
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
+                                                        Total Calories Burned
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
                                                         Register Date
                                                     </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Activities
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
+                                                        Total Activities Joined
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
+                                                        Ticket Verified
                                                     </th>
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
                                                 {participatingUsers.map(
-                                                    (user) => (
+                                                    (user, i) => (
                                                         <tr
                                                             key={user.id}
                                                             className="hover:bg-gray-50"
@@ -412,102 +422,69 @@ const ActivityDetailPage = () => {
                                                                 <div className="flex items-center">
                                                                     <div className="flex-shrink-0">
                                                                         <Avatar
-                                                                            src={
-                                                                                user.profilePicture ||
-                                                                                user.profilePictureUrl ||
-                                                                                null
-                                                                            }
-                                                                            srcAvatar={
-                                                                                user.profilePicture ||
-                                                                                user.profilePictureUrl ||
-                                                                                null
-                                                                            }
-                                                                            firstName={
-                                                                                user.firstname ||
-                                                                                ""
-                                                                            }
-                                                                            lastName={
-                                                                                user.lastname ||
-                                                                                ""
-                                                                            }
-                                                                            alt={`${user.firstname ||
-                                                                                "User"
-                                                                                } ${user.lastname ||
-                                                                                ""
-                                                                                }`}
+                                                                            srcAvatar={user.profilePictureUrl}
+                                                                            firstName={user.firstname}
+                                                                            lastName={user.lastname}
+                                                                            alt={`${user.firstname} ${user.lastname}`}
                                                                             size="40"
                                                                         />
                                                                     </div>
                                                                     <div className="ml-4">
                                                                         <div className="text-sm font-medium text-gray-900">
-                                                                            {(user.firstname ||
-                                                                                "") +
-                                                                                (user.lastname
-                                                                                    ? ` ${user.lastname}`
-                                                                                    : user.firstname
-                                                                                        ? ""
-                                                                                        : "N/A")}
+                                                                            {user.firstname + " " + user.lastname}
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {user.email ||
-                                                                        "N/A"}
+                                                                    {user.email}
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {user.gender ||
-                                                                        "Not specified"}
+                                                                    {user.gender || "Not specified"}
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {user.height
-                                                                        ? `${user.height} CM`
-                                                                        : "N/A"}{" "}
+                                                                    {`${user.height} CM`}{" "}
                                                                     /{" "}
-                                                                    {user.weight
-                                                                        ? `${user.weight} KG`
-                                                                        : "N/A"}
+                                                                    {`${user.weight} KG`}
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {(() => {
-                                                                        const dt =
-                                                                            user.joinedDate ||
-                                                                            user.joinDate ||
-                                                                            user.createdAt;
-                                                                        return dt
-                                                                            ? formatDate(
-                                                                                dt
-                                                                            )
-                                                                            : "Not specified";
-                                                                    })()}
+                                                                    {getTotalDuration(i) || 0}
                                                                 </div>
                                                             </td>
-                                                            {/* Stats */}
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {user.stats
-                                                                        ?.totalActivities ??
-                                                                        user.totalActivities ??
-                                                                        0}
+                                                                    {user.totalCaloriesBurned || 0}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="text-sm text-gray-900">
+                                                                    {formatDate(user.joinDate)}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="text-sm text-gray-900">
+                                                                    {user.totalActivities}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                <div className="text-sm text-gray-900">
+                                                                    {isUserVerified(i) ? "Yes" : "No"}
                                                                 </div>
                                                             </td>
                                                         </tr>
-                                                    )
-                                                )}
+                                                    ))}
                                             </tbody>
                                         </table>
                                     </div>
                                 )}
                             </div>
-
-                            {/* Removed participating users list to match the image */}
                         </div>
                     )}
                 </div>
