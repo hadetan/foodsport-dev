@@ -8,9 +8,19 @@ function getToken() {
 	return !!localStorage.getItem('auth_token');
 }
 
+function getPreToken() {
+	if (typeof window === 'undefined') return null;
+	return !!localStorage.getItem('pre_auth_token');
+}
+
 function setToken(token) {
 	if (typeof window === 'undefined') return;
 	localStorage.setItem('auth_token', token);
+}
+
+function setPreToken(token) {
+	if (typeof window === 'undefined') return;
+	localStorage.setItem('pre_auth_token', token);
 }
 
 async function removeToken() {
@@ -23,6 +33,7 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
 	const [authToken, setAuthToken] = useState(getToken());
+	const [preAuthToken, setPreAuthToken] = useState(getPreToken());
 
 	useEffect(() => {
 		setAuthToken(getToken());
@@ -60,6 +71,22 @@ export function AuthProvider({ children }) {
 		}
 	};
 
+	const onboard = async ({ payload }) => {
+		try {
+			await api.post('/auth/complete-onboarding', payload);
+			let latestPreAuthToken;
+			try {
+				latestPreAuthToken = localStorage.getItem('pre_auth_token');
+				localStorage.removeItem('pre_auth_token');
+				localStorage.setItem('auth_token', latestPreAuthToken);
+			} catch { }
+			setAuthToken(latestPreAuthToken);
+			setToken(latestPreAuthToken);
+		} catch (error) {
+			throw new Error(`Onboard failed: ${error?.message}`)
+		}
+	}
+
 	const verifyRegisterOtp = async ({ otpId, code, email, password, firstname, lastname, dateOfBirth }) => {
 		try {
 			const { data } = await api.post('/auth/register/otp/verify', { otpId, code, email, password, firstname, lastname, dateOfBirth });
@@ -81,13 +108,22 @@ export function AuthProvider({ children }) {
 				access_token: session.access_token,
 				refresh_token: session.refresh_token,
 			});
-			try {
-				localStorage.setItem('auth_token', session.access_token);
-			} catch {}
-			setAuthToken(session.access_token);
-			setToken(session.access_token);
-			const res = await api.post('/auth/pre-profile');
-			return res.data || {};
+			const { data } = await api.post('/auth/pre-profile');
+			if (data.existing && data.userExists && !data.preProfile) {
+				try {
+					localStorage.setItem('auth_token', session.access_token);
+				} catch { }
+				setAuthToken(session.access_token);
+				setToken(session.access_token);
+			} else if (!data.existing && !data.userExists && data.preProfile) {
+				try {
+					localStorage.setItem('pre_auth_token', session.access_token);
+				} catch {}
+				setPreAuthToken(session.access_token);
+				setPreToken(session.access_token);
+			}
+
+			return data || {};
 		} catch (e) {
 			console.error('handleSession error', e);
 			throw e;
@@ -100,7 +136,7 @@ export function AuthProvider({ children }) {
 	};
 
 	return (
-		<AuthContext.Provider value={{ authToken, login, logout, signup, verifyOtp, verifyRegisterOtp, handleSession }}>
+		<AuthContext.Provider value={{ authToken, login, logout, signup, verifyOtp, verifyRegisterOtp, handleSession, onboard }}>
 			{children}
 		</AuthContext.Provider>
 	);

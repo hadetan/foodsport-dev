@@ -4,9 +4,11 @@ import { useTranslations, useLocale } from 'next-intl';
 import api from '@/utils/axios/api';
 import { DISTRICTS } from '@/app/constants/constants';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/shared/contexts/authContext';
 
 export default function OnboardPage() {
 	const [loading, setLoading] = useState(true);
+	const { onboard } = useAuth();
 	const [form, setForm] = useState({
 		dateOfBirth: '',
 		weight: '',
@@ -39,7 +41,7 @@ export default function OnboardPage() {
 		e.preventDefault();
 		try {
 			const payload = { ...form };
-			const res = await api.post('/auth/complete-onboarding', payload);
+			await onboard({ payload })
 			router.replace(`/${locale}/my`);
 		} catch (e) {
 			setError(
