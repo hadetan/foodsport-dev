@@ -16,18 +16,6 @@ function formatDate(dateStr) {
   });
 }
 
-function getDuration(start, end) {
-  if (!start || !end) return 'N/A';
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  const diffMs = endDate - startDate;
-  if (diffMs <= 0) return 'N/A';
-  const diffMins = Math.floor(diffMs / 60000);
-  const hours = Math.floor(diffMins / 60);
-  const mins = diffMins % 60;
-  return `${hours}h ${mins.toString().padStart(2, '0')}m`;
-}
-
 export default function RecentActivitiesTable() {
   const { activities } = useActivities();
   const { user } = useUser();
@@ -88,7 +76,6 @@ export default function RecentActivitiesTable() {
               <th className="recent-activities-th">{t('headers.exercise')}</th>
               <th className="recent-activities-th">{t('headers.type')}</th>
               <th className="recent-activities-th">{t('headers.date')}</th>
-              <th className="recent-activities-th">{t('headers.time')}</th>
               <th className="recent-activities-th">{t('headers.kcal')}</th>
               <th className="recent-activities-th">{t('headers.totalWorkoutDuration')}</th>
               <th className="recent-activities-th">{t('headers.invite')}</th>
@@ -107,7 +94,6 @@ export default function RecentActivitiesTable() {
                     </span>
                   </td>
                   <td className="recent-activities-td no-wrap" data-label={t('headers.date')}>{formatDate(act.startDate)}</td>
-                  <td className="recent-activities-td no-wrap" data-label={t('headers.time')}>{getDuration(act.startTime, act.endTime)}</td>
                   <td className="recent-activities-td no-wrap" data-label={t('headers.kcal')}>{act.caloriesPerHour ? `${act.caloriesPerHour}kcal` : t('na')}</td>
                   <td className="recent-activities-td" data-label={t('headers.totalWorkoutDuration')}>{getMyActivityWorkoutDuration(act.id)}</td>
                   <td className="recent-activities-td no-wrap" data-label={t('headers.invite')}>

@@ -198,7 +198,6 @@
 			"type": "TYPE",
 			"date": "DATE",
 			"exercise": "EXERCISE",
-			"time": "TIME",
 			"kcal": "KCAL",
 			"totalWorkoutDuration": "Total Workout Duration",
 			"invite": "INVITE"
