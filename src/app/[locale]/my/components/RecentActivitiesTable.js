@@ -96,7 +96,7 @@ export default function RecentActivitiesTable() {
           </thead>
           <tbody>
             {joinedActivities.length === 0 ? (
-              <tr><td colSpan={7} className="recent-activities-empty">{t('noActivities')}</td></tr>
+              <tr><td colSpan={6} className="recent-activities-empty">{t('noActivities')}</td></tr>
             ) : (
               visibleActivities.map((act) => (
                 <tr key={act.id} className="recent-activities-row">
