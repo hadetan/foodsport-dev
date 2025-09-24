@@ -43,20 +43,20 @@ export function middleware(request) {
 	const { pathname } = url;
 
 	// CORS for API routes (temporary permissive wildcard for local/ngrok testing)
-	// if (pathname.startsWith('/api')) {
-	// 	const reqHeaders = request.headers.get('access-control-request-headers');
-	// 	const corsHeaders = {
-	// 		'Access-Control-Allow-Origin': '*',
-	// 		'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-	// 		'Access-Control-Allow-Headers': reqHeaders || 'Content-Type, Authorization, X-Requested-With',
-	// 	};
-	// 	if (request.method === 'OPTIONS') {
-	// 		return new NextResponse(null, { status: 204, headers: corsHeaders });
-	// 	}
-	// 	const res = NextResponse.next();
-	// 	Object.entries(corsHeaders).forEach(([k, v]) => res.headers.set(k, v));
-	// 	return res;
-	// }
+	if (pathname.startsWith('/api')) {
+		const reqHeaders = request.headers.get('access-control-request-headers');
+		const corsHeaders = {
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+			'Access-Control-Allow-Headers': reqHeaders || 'Content-Type, Authorization, X-Requested-With',
+		};
+		if (request.method === 'OPTIONS') {
+			return new NextResponse(null, { status: 204, headers: corsHeaders });
+		}
+		const res = NextResponse.next();
+		Object.entries(corsHeaders).forEach(([k, v]) => res.headers.set(k, v));
+		return res;
+	}
 
 	const localeAdminMatch = pathname.match(new RegExp(`^\\/(${LOCALE_PATTERN})\\/(admin(?:\\/.*)?)`));
 	if (localeAdminMatch) {
