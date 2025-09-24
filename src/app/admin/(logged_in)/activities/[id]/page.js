@@ -195,23 +195,6 @@ export default function EditActivityPage() {
         if (!form.description) errs.description = "Summary is required.";
         if (!form.activityType)
             errs.activityType = "Activity type is required.";
-        if (!form.startDateTime)
-            errs.startDateTime = "Start date and time are required.";
-        else {
-            const dt = new Date(form.startDateTime);
-            if (dt < new Date())
-                errs.startDateTime =
-                    "Start date and time must be in the future.";
-        }
-        if (!form.endDateTime)
-            errs.endDateTime = "End date and time are required.";
-        else {
-            const startDt = new Date(form.startDateTime);
-            const endDt = new Date(form.endDateTime);
-            if (endDt <= startDt)
-                errs.endDateTime =
-                    "End date and time must be after start date and time.";
-        }
         if (!form.location) errs.location = "Location is required.";
         const cap = parseInt(form.capacity, 10);
         if (!cap || cap < 1 || cap > 1000)
@@ -535,7 +518,6 @@ export default function EditActivityPage() {
                                                     name="startDateTime"
                                                     value={form.startDateTime}
                                                     onChange={handleInput}
-                                                    required
                                                 />
                                                 <Calendar className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                                             </div>
@@ -554,7 +536,6 @@ export default function EditActivityPage() {
                                                     name="endDateTime"
                                                     value={form.endDateTime}
                                                     onChange={handleInput}
-                                                    required
                                                 />
                                                 <Calendar className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                                             </div>

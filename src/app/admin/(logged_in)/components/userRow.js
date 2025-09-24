@@ -1,7 +1,7 @@
 import React from "react";
 import Status from "@/app/admin/(logged_in)/components/status";
 import Avatar from "@/app/shared/components/avatar";
-import { Pencil, Eye } from "lucide-react";
+import { Pencil } from "lucide-react";
 import formatDate from "@/utils/formatDate";
 import { useRouter } from "next/navigation";
 
@@ -45,7 +45,7 @@ export const UserRow = ({ user, onRowClick }) => {
                 </div>
             </td>
             <td>
-                <Status statusOfUser={user.isActive} />
+                <Status statusOfUser={user.isActive} isRegistered={user.isRegistered} />
             </td>
             <td>
                 <div className="text-sm">

@@ -2,12 +2,53 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma/db';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { requireAdmin } from '@/lib/prisma/require-admin';
+import serverApi from '@/utils/axios/serverApi';
+
+async function sendInvitationEmailsToTempUsers(tempUserEmailsWithNames) {
+	if (!tempUserEmailsWithNames || tempUserEmailsWithNames.length === 0) {
+		return;
+	}
+
+	const templateId = process.env.INVITE_INVITED_USER_TEMPLATE_ID;
+	if (!templateId) {
+		console.error('INVITE_INVITED_USER_TEMPLATE_ID environment variable not configured');
+		return;
+	}
+
+	for (const { email, name } of tempUserEmailsWithNames) {
+		setImmediate(async () => {
+			try {
+				const params = {
+					name: name || email
+				};
+
+				await serverApi.post(
+					'/admin/email/template_email',
+					{
+						to: email,
+						templateId,
+						params,
+					},
+					{
+						headers: {
+							'x-internal-api': process.env.INTERNAL_API_SECRET,
+						},
+					}
+				);
+
+				console.log(`Successfully sent invitation email to temp user: ${email}`);
+			} catch (error) {
+				console.error(`Failed to send invitation email to temp user ${email}:`, error.message);
+			}
+		});
+	}
+}
 
 // POST: Reward calories to users and temp users from imported activity data
 export async function POST(req) {
-    const supabase = await createServerClient();
-    const { error } = await requireAdmin(supabase, NextResponse);
-    if (error) return error;
+	const supabase = await createServerClient();
+	const { error } = await requireAdmin(supabase, NextResponse);
+	if (error) return error;
 
 	let body;
 	try {
@@ -25,6 +66,7 @@ export async function POST(req) {
 	}
 
 	const results = [];
+	const successfulTempUsersWithNames = [];
 
 	for (const userRow of users) {
 		const { email, calories, duration } = userRow;
@@ -87,9 +129,22 @@ export async function POST(req) {
 				}
 			});
 			results.push({ email, success: true, userType });
+
+			if (userType === 'tempUser' && tempUser) {
+				const userName = tempUser.firstname && tempUser.lastname
+					? `${tempUser.firstname} ${tempUser.lastname}`
+					: tempUser.firstname || tempUser.lastname || email;
+				successfulTempUsersWithNames.push({ email, name: userName });
+			}
 		} catch (err) {
 			results.push({ email, success: false, error: err.message });
 		}
+	}
+
+	if (successfulTempUsersWithNames.length > 0) {
+		setImmediate(() => {
+			sendInvitationEmailsToTempUsers(successfulTempUsersWithNames);
+		});
 	}
 
 	return NextResponse.json({ results });

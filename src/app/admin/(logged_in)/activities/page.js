@@ -15,6 +15,23 @@ const FilterBar = ({ setFilters, filters }) => {
         <div className="w-full mb-6">
             <div className="flex flex-col md:flex-row md:flex-wrap md:gap-4 lg:flex-nowrap lg:gap-4">
                 <div className="flex flex-col md:flex-row md:w-full md:gap-4">
+                    <div className="flex flex-col min-w-[180px] md:flex-1">
+                        <label className="text-xs font-semibold mb-1">
+                            Activity Name
+                        </label>
+                        <input
+                            type="text"
+                            className="input input-bordered min-w-[180px]"
+                            placeholder="Search activity name"
+                            value={filters.activityName || ""}
+                            onChange={(e) =>
+                                setFilters((f) => ({
+                                    ...f,
+                                    activityName: e.target.value,
+                                }))
+                            }
+                        />
+                    </div>
                     <div className="flex flex-col min-w-[160px] md:flex-1">
                         <label className="text-xs font-semibold mb-1">
                             Type
@@ -105,23 +122,6 @@ const FilterBar = ({ setFilters, filters }) => {
                                 </option>
                             ))}
                         </select>
-                    </div>
-                    <div className="flex flex-col min-w-[180px] md:flex-1">
-                        <label className="text-xs font-semibold mb-1">
-                            Activity Name
-                        </label>
-                        <input
-                            type="text"
-                            className="input input-bordered min-w-[180px]"
-                            placeholder="Search activity name"
-                            value={filters.activityName || ""}
-                            onChange={(e) =>
-                                setFilters((f) => ({
-                                    ...f,
-                                    activityName: e.target.value,
-                                }))
-                            }
-                        />
                     </div>
                     <div className="flex items-end md:flex-1">
                         <button

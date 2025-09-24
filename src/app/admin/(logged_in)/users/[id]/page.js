@@ -189,21 +189,29 @@ const UserDetailPage = () => {
                                     </>
                                 )}
                             </div>
-                            <div className="mt-3 flex flex-col md:flex-row gap-2 items-center md:items-start">
+                            <div className="mt-3 flex flex-col md:flex-row gap-2 items-center">
                                 <span
                                     className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                                        user.isActive
+                                        user.isRegistered === false
+                                            ? "bg-yellow-100 text-yellow-700"
+                                            : user.isActive
                                             ? "bg-green-100 text-green-700"
                                             : "bg-red-100 text-red-700"
                                     }`}
                                 >
-                                    {user.isActive ? "Active" : "Blocked"}
+                                    {user.isRegistered === false 
+                                        ? "Unregistered" 
+                                        : user.isActive 
+                                        ? "Active" 
+                                        : "Blocked"}
                                 </span>
                                 <button
                                     onClick={handleUserStatus}
-                                    disabled={statusLoading}
+                                    disabled={statusLoading || user.isRegistered === false}
                                     className={`relative inline-flex items-center h-7 rounded-full w-14 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-300 ${
-                                        user.isActive
+                                        user.isRegistered === false
+                                            ? "bg-gray-300 cursor-not-allowed"
+                                            : user.isActive
                                             ? "bg-green-500"
                                             : "bg-red-500"
                                     } ml-0 md:ml-4 mt-2 md:mt-0`}

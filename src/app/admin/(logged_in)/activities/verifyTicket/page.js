@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import axios from '@/utils/axios/api';
 import { useVerifiedAttendees } from "@/app/shared/contexts/VerifiedAttendeesContext";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
+import { useUsers } from "@/app/shared/contexts/usersContext";
 import FullPageLoader from "../../components/FullPageLoader";
 
 function VerifiedAttendeesTable({ attendees, loading, ActivityLoading, error }) {
@@ -72,9 +73,9 @@ function VerifiedAttendeesTable({ attendees, loading, ActivityLoading, error }) 
 
 export default function VerifyTicketPage() {
     const router = useRouter();
-    const { attendees, loading, error, setAttendees, setError, setLoading } =
-        useVerifiedAttendees();
+    const { attendees, loading, error, setAttendees, setError, setLoading } = useVerifiedAttendees();
     const { getActivityNameById, loading: ActivityLoading } = useAdminActivities();
+    const { setUsers } = useUsers();
 
     const [activityId, setActivityId] = useState("");
     const [ticketCode, setTicketCode] = useState("");
@@ -93,6 +94,26 @@ export default function VerifyTicketPage() {
         height: "",
     });
     const [submittingInvited, setSubmittingInvited] = useState(false);
+
+    const updateUserPresentStatus = (userEmail, activityId) => {
+        if (!userEmail || !activityId) return;
+
+        setUsers(prevUsers => {
+            return prevUsers.map(user => {
+                if (user.email === userEmail) {
+                    return {
+                        ...user, joinedActivities: user.joinedActivities.map(activity => {
+                            if (activity.id === activityId) {
+                                return { ...activity, wasPresent: true };
+                            }
+                            return activity;
+                        })
+                    };
+                }
+                return user;
+            });
+        });
+    };
 
     const fetchAttendees = async () => {
         if (!activityId) return;
@@ -171,7 +192,13 @@ export default function VerifyTicketPage() {
 
             setVerifySuccess(data.message || "Ticket verified successfully!");
             setTicketCode("");
-            if (data?.attendee) setAttendees((prev) => [...prev, data.attendee]);
+            if (data?.attendee) {
+                setAttendees((prev) => [...prev, data.attendee]);
+                const userEmail = data.attendee?.participant?.email;
+                if (userEmail) {
+                    updateUserPresentStatus(userEmail, activityId);
+                }
+            }
         } catch (error) {
             if (error?.response?.data?.error) {
                 setVerifyError(error.response.data.error);
@@ -222,11 +249,15 @@ export default function VerifyTicketPage() {
             setTicketCode("");
             if (res?.data?.attendee) {
                 setAttendees((prev) => [...prev, res.data.attendee]);
+                const userEmail = res.data.attendee?.participant?.email || invitedForm.email;
+                if (userEmail) {
+                    updateUserPresentStatus(userEmail, activityId);
+                }
             }
         } catch (error) {
             setVerifyError(
                 error?.response?.data?.error ||
-                    "Failed to verify invited ticket."
+                "Failed to verify invited ticket."
             );
             setInvitedMeta(null);
         } finally {

@@ -77,18 +77,22 @@ function TncModal({ open, onClose, onSave, initial, loading }) {
 function TncReadModal({ open, onClose, tnc }) {
     if (!open || !tnc) return null;
     return (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg relative">
-                <CloseIconButton onClick={onClose} />
-                <h2 className="text-xl font-bold mb-2">{tnc.title}</h2>
-                <div className="text-xs text-gray-500 mb-2">
-                    Created by: {tnc.createdBy || "N/A"} | Updated by:{" "}
-                    {tnc.updatedBy || "N/A"}
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg w-full max-w-4xl shadow-lg relative flex flex-col max-h-[90vh]">
+                <div className="p-6 border-b border-gray-200 flex-shrink-0">
+                    <CloseIconButton onClick={onClose} />
+                    <h2 className="text-xl font-bold mb-2 pr-8">{tnc.title}</h2>
+                    <div className="text-xs text-gray-500">
+                        Created by: {tnc.createdBy || "N/A"} | Updated by:{" "}
+                        {tnc.updatedBy || "N/A"}
+                    </div>
                 </div>
-                <div
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: tnc.description }}
-                />
+                <div className="p-6 overflow-y-auto flex-1">
+                    <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{ __html: tnc.description }}
+                    />
+                </div>
             </div>
         </div>
     );
