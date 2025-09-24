@@ -262,7 +262,7 @@ const ActivityDetailPage = () => {
                 {activeTab === "details" && (
                     <div className="flex items-center gap-2">
                         <button
-                            className="flex items-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 rounded-lg shadow transition-colors cursor-pointer"
+                            className="flex items-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg shadow transition-colors cursor-pointer"
                             onClick={() => setShowZh((s) => !s)}
                             title="Toggle Chinese view"
                         >
@@ -334,7 +334,7 @@ const ActivityDetailPage = () => {
                                 {canImportExport && (
                                     <>
                                         <button
-                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg shadow transition-colors disabled:opacity-60"
+                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-colors disabled:opacity-60 cursor-pointer"
                                             onClick={handleImportClick}
                                             disabled={importing}
                                             title="Import"
@@ -352,7 +352,7 @@ const ActivityDetailPage = () => {
                                             onChange={handleFileChange}
                                         />
                                         <button
-                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-lg shadow transition-colors"
+                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-colors cursor-pointer"
                                             onClick={handleExportUsers}
                                             title="Export Users"
                                         >

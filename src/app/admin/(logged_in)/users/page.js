@@ -40,8 +40,9 @@ const UserManagementPage = () => {
 
             const matchesStatus =
                 statusFilter === "all" ||
-                (statusFilter === "active" && user.isActive) ||
-                (statusFilter === "inactive" && !user.isActive);
+                (statusFilter === "active" && user.isActive && user.isRegistered !== false) ||
+                (statusFilter === "inactive" && !user.isActive && user.isRegistered !== false) ||
+                (statusFilter === "unregistered" && user.isRegistered === false);
 
             return matchesSearch && matchesStatus;
         });
@@ -55,7 +56,7 @@ const UserManagementPage = () => {
         router.push(`/admin/users/${userId}`);
     };
 
-    const statusOfUser = ["All", "Active", "Inactive"];
+    const statusOfUser = ["All", "Active", "Inactive", "Unregistered"];
     const tableHeading = [
         "User Info",
         "Registered At",
