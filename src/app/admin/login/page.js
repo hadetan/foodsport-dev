@@ -5,7 +5,8 @@ import axios from '@/utils/axios/api';
 import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
-    const router =useRouter();
+    const router = useRouter();
+    const otpDisabled = process.env.NEXT_PUBLIC_ADMIN_LOGIN_DISABLE_OTP === "true";
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [formData, setFormData] = useState({
@@ -16,6 +17,18 @@ const LoginPage = () => {
     const [sessionId, setSessionId] = useState(null);
     const [otpCode, setOtpCode] = useState('');
     const otpInputRef = useRef(null);
+
+    const persistSessionAndRedirect = (session) => {
+        if (!session || !session.access_token) {
+            return false;
+        }
+        localStorage.setItem('admin_auth_token', session.access_token);
+        if (session.refresh_token) {
+            localStorage.setItem('admin_refresh_token', session.refresh_token);
+        }
+        router.push('/admin');
+        return true;
+    };
 
     useEffect(() => {
         if (otpMode) {
@@ -28,8 +41,13 @@ const LoginPage = () => {
         setLoading(true);
         setError("");
         try {
-            const response = await axios.post("/admin/auth/login", formData);
-            if (response.data && response.data.sessionId) {
+            const response = await axios.post("/admin/auth/login", formData, { withCredentials: true });
+            if (response.data && response.data.session) {
+                const redirected = persistSessionAndRedirect(response.data.session);
+                if (!redirected) {
+                    setError('Unexpected response from server.');
+                }
+            } else if (response.data && response.data.sessionId) {
                 setSessionId(response.data.sessionId);
                 setOtpMode(true);
             } else {
@@ -54,8 +72,10 @@ const LoginPage = () => {
             const payload = { otpId: sessionId, code: otpCode, email: formData.email, password: formData.password };
             const res = await axios.post('/admin/auth/login/otp/verify', payload, { withCredentials: true });
             if (res.data && res.data.session) {
-                localStorage.setItem('admin_auth_token', res.data.session.access_token);
-                router.push('/admin');
+                const redirected = persistSessionAndRedirect(res.data.session);
+                if (!redirected) {
+                    setError('Unexpected response from verify endpoint.');
+                }
             } else if (res.data && res.data.error) {
                 setError(res.data.error);
             } else {
@@ -167,7 +187,7 @@ const LoginPage = () => {
                         </div>
 
                             {/* OTP Field - shown only after login step */}
-                            {otpMode && (
+                            {otpMode && !otpDisabled && (
                                 <div className="form-control">
                                     <label className="label">
                                         <span className="label-text text-gray-700 font-medium">OTP Code</span>

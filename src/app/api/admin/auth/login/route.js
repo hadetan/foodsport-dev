@@ -3,6 +3,8 @@ import serverApi from '@/utils/axios/serverApi';
 import bcrypt from 'bcryptjs';
 import { generateOtp } from '@/utils/generateOtp';
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@/lib/supabase/server-only';
 
 // POST /api/admin/login
 export async function POST(req) {
@@ -13,14 +15,37 @@ export async function POST(req) {
 		}
 
 		const admin = await prisma.adminUser.findUnique({ where: { email } });
-		const otpCode = generateOtp(6);
-		const hashed = await bcrypt.hash(otpCode, 10);
-		const ttlMinutes = parseInt(process.env.OTP_TTL_MINUTES || '5', 10);
-		const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
 		if (!admin) {
 			await new Promise((resolve) => setTimeout(resolve, 500));
 			return NextResponse.json({ error: 'Invalid credentials.' }, { status: 400 });
 		}
+
+		const otpDisabled = process.env.ADMIN_LOGIN_DISABLE_OTP === 'true';
+		if (otpDisabled) {
+			const supabase = await createServerClient();
+			const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+			if (signInError || !data?.session) {
+				console.error('Admin login dev bypass failed to sign in', signInError?.message || signInError);
+				return NextResponse.json({ error: 'Invalid credentials.' }, { status: 401 });
+			}
+
+			const cookieStore = await cookies();
+			if (data.session.access_token) {
+				cookieStore.set('admin_auth_token', data.session.access_token, { httpOnly: true, path: '/', sameSite: 'lax', maxAge: 3600 });
+			}
+			if (data.session.refresh_token) {
+				cookieStore.set('admin_refresh_token', data.session.refresh_token, { httpOnly: true, path: '/', sameSite: 'lax', maxAge: 60 * 60 * 24 * 30 });
+			}
+
+			return NextResponse.json({
+				session: data.session,
+				admin: { id: admin.id, name: admin.name, email: admin.email }
+			});
+		}
+		const otpCode = generateOtp(6);
+		const hashed = await bcrypt.hash(otpCode, 10);
+		const ttlMinutes = parseInt(process.env.OTP_TTL_MINUTES || '5', 10);
+		const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
 
 		const result = await prisma.$transaction(async (tx) => {
 			await tx.otp.updateMany({ where: { adminUserId: admin.id, status: 'active' }, data: { status: 'cancelled' } });
