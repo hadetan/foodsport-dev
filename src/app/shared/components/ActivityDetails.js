@@ -247,7 +247,7 @@ const ActivityDetails = ({
                                         {t('Activity.DetailsPage.totalCaloriesLabel')}
                                     </div>
                                     <div className="activityDetailsDetailsValue">
-                                        {activity.totalCaloriesBurnt || "—"}{" "}
+                                        {activity.totalCaloriesBurnt}{" "}
                                         calories burnt
                                     </div>
                                 </div>
@@ -337,7 +337,6 @@ const ActivityDetails = ({
                                             srcAvatar={p.profilePictureUrl}
                                             firstName={first}
                                             lastName={last}
-                                            className="activityDetailsAvatar"
                                             title={alt}
                                             isNav={true}
                                         />

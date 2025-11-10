@@ -93,7 +93,7 @@
 		},
 		"ActivitiesPage": {
 			"upcomingOngoing": "Upcoming & Ongoing",
-			"finished": "Finished"
+			"completed": "Completed"
 		},
 		"DetailsPage": {
 			"noActivityTitle": "No Activity Found",
