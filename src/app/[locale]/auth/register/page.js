@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/app/shared/contexts/authContext';
 import DobPickerClient from '@/app/shared/components/DobPickerClient';
+import PasswordInputClient from '@/app/shared/components/PasswordInputClient';
 import { getSupabaseClient } from '@/lib/supabase';
 import toast from '@/utils/Toast';
 import api from '@/utils/axios/api';
@@ -232,12 +233,11 @@ export default function RegisterPage() {
 							<label className='block mb-1 font-medium text-black'>
 								{t('RegisterPage.password')}
 							</label>
-							<input
-								type='password'
-								className='input input-bordered w-full text-black'
+							<PasswordInputClient
 								value={password}
 								onChange={(e) => setPassword(e.target.value)}
 								required
+								placeholder={t('RegisterPage.password')}
 							/>
 						</div>
 						<button
