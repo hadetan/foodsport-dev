@@ -237,7 +237,6 @@ export default function RegisterPage() {
 								value={password}
 								onChange={(e) => setPassword(e.target.value)}
 								required
-								placeholder={t('RegisterPage.password')}
 							/>
 						</div>
 						<button
