@@ -5,6 +5,7 @@ import api from '@/utils/axios/api';
 import { DISTRICTS } from '@/app/constants/constants';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/shared/contexts/authContext';
+import DobPickerClient from '@/app/shared/components/DobPickerClient';
 
 export default function OnboardPage() {
 	const [loading, setLoading] = useState(true);
@@ -60,22 +61,11 @@ export default function OnboardPage() {
 			{error && <div className='alert alert-error mb-4'>{error}</div>}
 			<form onSubmit={onSubmit} className='space-y-3'>
 				<div>
-					<label className='label'>
-						<span className='label-text'>
-							{t('OnboardPage.dateOfBirth')}
-						</span>
-					</label>
-					<input
-						type='date'
-						className='input input-bordered w-full'
-						required
+					<DobPickerClient
 						value={form.dateOfBirth}
-						onChange={(e) =>
-							setForm((f) => ({
-								...f,
-								dateOfBirth: e.target.value,
-							}))
-						}
+						onChange={(val) => setForm((f) => ({ ...f, dateOfBirth: val }))}
+						required
+						label={t('OnboardPage.dateOfBirth')}
 					/>
 				</div>
 				<div className='grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2'>
