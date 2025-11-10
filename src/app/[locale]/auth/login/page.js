@@ -3,6 +3,7 @@ import '@/app/[locale]/auth/css/loginAndRegister.css';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ErrorAlert from '@/app/shared/components/ErrorAlert';
+import PasswordInputClient from '@/app/shared/components/PasswordInputClient';
 import Link from 'next/link';
 import { useAuth } from '@/app/shared/contexts/authContext';
 import { getSupabaseClient } from '@/lib/supabase';
@@ -187,9 +188,7 @@ export default function LoginPage() {
 						<label className='block mb-1 font-medium text-black'>
 							{t('LoginPage.password')}
 						</label>
-						<input
-							type='password'
-							className='input input-bordered w-full text-black'
+						<PasswordInputClient
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 							required

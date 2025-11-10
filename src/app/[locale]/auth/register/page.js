@@ -6,6 +6,8 @@ import ErrorAlert from '@/app/shared/components/ErrorAlert';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/app/shared/contexts/authContext';
+import DobPickerClient from '@/app/shared/components/DobPickerClient';
+import PasswordInputClient from '@/app/shared/components/PasswordInputClient';
 import { getSupabaseClient } from '@/lib/supabase';
 import toast from '@/utils/Toast';
 import api from '@/utils/axios/api';
@@ -208,15 +210,11 @@ export default function RegisterPage() {
 							/>
 						</div>
 						<div>
-							<label className='block mb-1 font-medium text-black'>
-								{t('RegisterPage.dateOfBirth')}
-							</label>
-							<input
-								type='date'
-								className='input input-bordered w-full'
+							<DobPickerClient
 								value={dateOfBirth}
-								onChange={(e) => setDateOfBirth(e.target.value)}
+								onChange={(val) => setDateOfBirth(val)}
 								required
+								label={t('RegisterPage.dateOfBirth')}
 							/>
 						</div>
 						<div>
@@ -235,9 +233,7 @@ export default function RegisterPage() {
 							<label className='block mb-1 font-medium text-black'>
 								{t('RegisterPage.password')}
 							</label>
-							<input
-								type='password'
-								className='input input-bordered w-full text-black'
+							<PasswordInputClient
 								value={password}
 								onChange={(e) => setPassword(e.target.value)}
 								required
