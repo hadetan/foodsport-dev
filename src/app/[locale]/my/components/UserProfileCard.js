@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import RecentActivitiesTable from './RecentActivitiesTable';
@@ -21,17 +23,28 @@ export default function UserProfileCard() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const t = useTranslations('ProfilePage');
-  let menuKey = 'allActivities';
-  try {
-    if (searchParams && typeof searchParams.has === 'function' && searchParams.has('editProfile')) {
-      menuKey = 'editProfile';
-    } else {
-      const first = searchParams.keys().next().value;
-      if (first) menuKey = first;
+
+  const [menuKey, setMenuKey] = useState('allActivities');
+
+  useEffect(() => {
+    try {
+      if (searchParams && typeof searchParams.has === 'function') {
+        const keys = ['editProfile', 'earnedBadges', 'allActivities'];
+        for (const key of keys) {
+          if (searchParams.has(key)) {
+            setMenuKey(key);
+            return;
+          }
+        }
+
+        const first = searchParams.keys().next().value;
+        if (first) setMenuKey(first);
+      }
+    } catch (e) {
+      setMenuKey('allActivities');
     }
-  } catch (e) {
-    menuKey = 'allActivities';
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const contentRef = useRef(null);
 
@@ -43,7 +56,11 @@ export default function UserProfileCard() {
   }, []);
 
   const handleMenuClick = (key) => {
-    router.replace(`/my/profile?${key}`);
+    setMenuKey(key);
+
+    const pathname = typeof window !== 'undefined' ? window.location.pathname : '/my/profile';
+    const query = key ? `?${encodeURIComponent(key)}` : '';
+    router.replace(`${pathname}${query}`);
   };
 
   async function handleLogout() {
