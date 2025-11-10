@@ -20,9 +20,28 @@ export default function LoginPage() {
 	const [otpStep, setOtpStep] = useState(false);
 	const [sessionId, setSessionId] = useState(null);
 	const [otpCode, setOtpCode] = useState('');
+	const [forgotMode, setForgotMode] = useState(false);
+	const [forgotStep, setForgotStep] = useState('email');
+	const [forgotEmail, setForgotEmail] = useState('');
+	const [forgotOtpId, setForgotOtpId] = useState(null);
+	const [forgotOtpCode, setForgotOtpCode] = useState('');
+	const [resetToken, setResetToken] = useState('');
+	const [newPassword, setNewPassword] = useState('');
+	const [confirmPassword, setConfirmPassword] = useState('');
+	const [forgotError, setForgotError] = useState('');
+	const [attemptsLeft, setAttemptsLeft] = useState(null);
 	const otpInputRef = useRef(null);
+	const forgotOtpInputRef = useRef(null);
 	const router = useRouter();
-	const { login, authToken, verifyOtp, handleSession } = useAuth();
+	const {
+		login,
+		authToken,
+		verifyOtp,
+		handleSession,
+		requestPasswordReset,
+		verifyPasswordResetOtp,
+		resetPasswordWithToken,
+	} = useAuth();
 	const subOnce = useRef(false);
 	const handledOnce = useRef(false);
 	const t = useTranslations();
@@ -113,6 +132,146 @@ export default function LoginPage() {
 		}
 	}, [otpStep]);
 
+	useEffect(() => {
+		if (forgotMode && forgotStep === 'otp') {
+			forgotOtpInputRef.current?.focus();
+		}
+}, [forgotMode, forgotStep]);
+
+	function openForgotPassword() {
+		const normalizedEmail = String(email || '').trim().toLowerCase();
+		setForgotMode(true);
+		setForgotStep('email');
+		setForgotEmail(normalizedEmail);
+		setForgotOtpId(null);
+		setForgotOtpCode('');
+		setResetToken('');
+		setNewPassword('');
+		setConfirmPassword('');
+		setForgotError('');
+		setAttemptsLeft(null);
+		setOtpStep(false);
+		setSessionId(null);
+		setOtpCode('');
+		setError('');
+	}
+
+	function backToLogin(preserveEmail = false) {
+		const currentEmail = forgotEmail;
+		setForgotMode(false);
+		setForgotStep('email');
+		setForgotEmail('');
+		setForgotOtpId(null);
+		setForgotOtpCode('');
+		setResetToken('');
+		setNewPassword('');
+		setConfirmPassword('');
+		setForgotError('');
+		setAttemptsLeft(null);
+		setLoading(false);
+		if (preserveEmail && currentEmail) {
+			setEmail(currentEmail);
+		}
+	}
+
+	async function handleForgotRequest(e) {
+		e.preventDefault();
+		setLoading(true);
+		setForgotError('');
+		setAttemptsLeft(null);
+		try {
+			const normalizedEmail = String(forgotEmail || email || '')
+				.trim()
+				.toLowerCase();
+			if (!normalizedEmail) {
+				setForgotError(t('LoginPage.genericError'));
+				setLoading(false);
+				return;
+			}
+			setForgotEmail(normalizedEmail);
+			const data = await requestPasswordReset({ email: normalizedEmail });
+			if (data?.otpId) {
+				setForgotOtpId(data.otpId);
+				setForgotStep('otp');
+				setForgotOtpCode('');
+			}
+		} catch (err) {
+			const message =
+				err?.response?.data?.error ||
+				err?.message ||
+				t('Auth.genericTryAgain');
+			setForgotError(message);
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	async function handleForgotOtpVerify(e) {
+		e.preventDefault();
+		setLoading(true);
+		setForgotError('');
+		setAttemptsLeft(null);
+		if (!forgotOtpId) {
+			setForgotError(t('Auth.genericTryAgain'));
+			setLoading(false);
+			return;
+		}
+		try {
+			const data = await verifyPasswordResetOtp({
+				otpId: forgotOtpId,
+				code: forgotOtpCode,
+				email: forgotEmail,
+			});
+			if (data?.resetToken) {
+				setResetToken(data.resetToken);
+				setForgotStep('reset');
+				setForgotOtpCode('');
+			}
+		} catch (err) {
+			const response = err?.response?.data;
+			setForgotError(response?.error || t('Auth.otpFailed'));
+			if (typeof response?.attemptsLeft === 'number') {
+				setAttemptsLeft(response.attemptsLeft);
+			}
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	async function handleForgotReset(e) {
+		e.preventDefault();
+		setForgotError('');
+		if (newPassword !== confirmPassword) {
+			setForgotError(t('ForgotPassword.passwordMismatch'));
+			return;
+		}
+		if (!resetToken) {
+			setForgotError(t('Auth.genericTryAgain'));
+			return;
+		}
+		setLoading(true);
+		try {
+			await resetPasswordWithToken({
+				email: forgotEmail,
+				token: resetToken,
+				password: newPassword,
+			});
+			toast.success(t('ForgotPassword.success'));
+			setForgotStep('success');
+			setNewPassword('');
+			setConfirmPassword('');
+			setResetToken('');
+			setPassword('');
+		} catch (err) {
+			const message =
+				err?.response?.data?.error ||
+				err?.message ||
+				t('Auth.genericTryAgain');
+			setForgotError(message);
+		} finally {
+			setLoading(false);
+		}
+	}
 
 	async function handleLogin(e) {
 		e.preventDefault();
@@ -165,77 +324,227 @@ export default function LoginPage() {
 		<div className=''>
 			<div className='w-full max-w-md p-6 bg-base-100 rounded responsive-form'>
 				<h1 className='text-2xl font-semibold mb-4 text-center'>
-					{t('LoginPage.title')}
+					{forgotMode ? t('ForgotPassword.title') : t('LoginPage.title')}
 				</h1>
-				{error && (
-					<ErrorAlert message={error} onClose={() => setError('')} />
+				{!forgotMode ? (
+					<>
+						{error && (
+							<ErrorAlert message={error} onClose={() => setError('')} />
+						)}
+						{!otpStep ? (
+							<form className='space-y-6' onSubmit={handleLogin}>
+								<div>
+									<label className='block mb-1 font-medium text-black'>
+										{t('LoginPage.email')}
+									</label>
+									<input
+										type='email'
+										className='input input-bordered w-full'
+										value={email}
+										onChange={(e) => setEmail(e.target.value)}
+										required
+									/>
+								</div>
+								<div>
+									<label className='block mb-1 font-medium text-black'>
+										{t('LoginPage.password')}
+									</label>
+									<PasswordInputClient
+										value={password}
+										onChange={(e) => setPassword(e.target.value)}
+										required
+									/>
+								</div>
+								<div className='text-right text-sm'>
+									<button
+										type='button'
+										onClick={openForgotPassword}
+										className='link link-hover'
+									>
+										{t('LoginPage.forgotPassword')}
+									</button>
+								</div>
+								<button
+									type='submit'
+									className='submit-button w-full'
+									disabled={loading}
+								>
+									{loading
+										? t('LoginPage.loggingIn')
+										: t('LoginPage.login')}
+								</button>
+							</form>
+						) : (
+							<form className='space-y-6' onSubmit={handleVerify}>
+								<div>
+									<label className='block mb-1 font-medium text-black'>
+										{t('Auth.enterOtpLabel')}
+									</label>
+									<input
+										type='text'
+										ref={otpInputRef}
+										className='input input-bordered w-full'
+										value={otpCode}
+										onChange={(e) => setOtpCode(e.target.value)}
+										required
+									/>
+								</div>
+								<button
+									type='submit'
+									className='submit-button w-full'
+									disabled={loading}
+								>
+									{loading ? t('Auth.verifying') : t('Auth.verifyOtp')}
+								</button>
+							</form>
+						)}
+						<button
+							onClick={onGoogle}
+							disabled={loading}
+							className='btn btn-outline w-full mt-4'
+						>
+							{t('LoginPage.continueWithGoogle')}
+						</button>
+						<div className='mt-4 text-sm text-center'>
+							{t('LoginPage.dontHaveAccount')}{' '}
+							<Link href={`/${locale}/auth/register`} className='link'>
+								{t('LoginPage.register')}
+							</Link>
+						</div>
+					</>
+				) : (
+					<div className='space-y-6'>
+						{forgotError && (
+							<ErrorAlert
+								message={forgotError}
+								onClose={() => setForgotError('')}
+							/>
+						)}
+						{forgotStep === 'email' && (
+							<form className='space-y-6' onSubmit={handleForgotRequest}>
+								<p className='text-sm text-center text-gray-600'>
+									{t('ForgotPassword.description')}
+								</p>
+								<div>
+									<label className='block mb-1 font-medium text-black'>
+										{t('LoginPage.email')}
+									</label>
+									<input
+										type='email'
+										className='input input-bordered w-full'
+										value={forgotEmail}
+										onChange={(e) => setForgotEmail(e.target.value)}
+										required
+									/>
+								</div>
+								<button
+									type='submit'
+									className='submit-button w-full'
+									disabled={loading}
+								>
+									{loading
+										? t('ForgotPassword.sendingOtp')
+										: t('ForgotPassword.sendOtp')}
+								</button>
+							</form>
+						)}
+						{forgotStep === 'otp' && (
+							<form className='space-y-6' onSubmit={handleForgotOtpVerify}>
+								<p className='text-sm text-center text-gray-600'>
+									{t('ForgotPassword.otpInstructions', { email: forgotEmail })}
+								</p>
+								<div>
+									<label className='block mb-1 font-medium text-black'>
+										{t('Auth.enterOtpLabel')}
+									</label>
+									<input
+										type='text'
+										ref={forgotOtpInputRef}
+										className='input input-bordered w-full'
+										value={forgotOtpCode}
+										onChange={(e) => setForgotOtpCode(e.target.value)}
+										required
+									/>
+								</div>
+								{typeof attemptsLeft === 'number' && (
+									<p className='text-sm text-right text-error'>
+										{t('ForgotPassword.attemptsLeft', {
+											count: attemptsLeft,
+										})}
+									</p>
+								)}
+								<button
+									type='submit'
+									className='submit-button w-full'
+									disabled={loading}
+								>
+									{loading
+										? t('ForgotPassword.verifyingOtp')
+										: t('ForgotPassword.verifyOtp')}
+								</button>
+							</form>
+						)}
+						{forgotStep === 'reset' && (
+							<form className='space-y-6' onSubmit={handleForgotReset}>
+								<div>
+									<label className='block mb-1 font-medium text-black'>
+										{t('ForgotPassword.newPassword')}
+									</label>
+									<PasswordInputClient
+										id='new_password'
+										name='new_password'
+										value={newPassword}
+										onChange={(e) => setNewPassword(e.target.value)}
+										required
+									/>
+								</div>
+								<div>
+									<label className='block mb-1 font-medium text-black'>
+										{t('ForgotPassword.confirmPassword')}
+									</label>
+									<PasswordInputClient
+										id='confirm_password'
+										name='confirm_password'
+										value={confirmPassword}
+										onChange={(e) => setConfirmPassword(e.target.value)}
+										required
+									/>
+								</div>
+								<button
+									type='submit'
+									className='submit-button w-full'
+									disabled={loading}
+								>
+									{loading
+										? t('ForgotPassword.resetting')
+										: t('ForgotPassword.reset')}
+								</button>
+							</form>
+						)}
+						{forgotStep === 'success' && (
+							<div className='space-y-4 text-center'>
+								<p>{t('ForgotPassword.success')}</p>
+								<button
+									type='button'
+									className='submit-button w-full'
+									onClick={() => backToLogin(true)}
+								>
+									{t('ForgotPassword.backToLogin')}
+								</button>
+							</div>
+						)}
+						{forgotStep !== 'success' && (
+							<button
+								type='button'
+								className='btn btn-outline w-full'
+								onClick={() => backToLogin()}
+								disabled={loading}
+							>
+								{t('ForgotPassword.backToLogin')}
+							</button>
+						)}
+					</div>
 				)}
-				{!otpStep && (
-					<form className='space-y-6' onSubmit={handleLogin}>
-					<div>
-						<label className='block mb-1 font-medium text-black'>
-							{t('LoginPage.email')}
-						</label>
-						<input
-							type='email'
-							className='input input-bordered w-full'
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							required
-						/>
-					</div>
-					<div>
-						<label className='block mb-1 font-medium text-black'>
-							{t('LoginPage.password')}
-						</label>
-						<PasswordInputClient
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							required
-						/>
-					</div>
-					<button
-						type='submit'
-						className='submit-button w-full'
-						disabled={loading}
-					>
-						{loading
-							? t('LoginPage.loggingIn')
-							: t('LoginPage.login')}
-					</button>
-				</form>
-			)}
-			{otpStep && (
-				<form className='space-y-6' onSubmit={handleVerify}>
-					<div>
-						<label className='block mb-1 font-medium text-black'>{t('Auth.enterOtpLabel')}</label>
-						<input
-							type='text'
-							ref={otpInputRef}
-							className='input input-bordered w-full'
-							value={otpCode}
-							onChange={(e) => setOtpCode(e.target.value)}
-							required
-						/>
-					</div>
-					<button type='submit' className='submit-button w-full' disabled={loading}>
-						{loading ? t('Auth.verifying') : t('Auth.verifyOtp')}
-					</button>
-				</form>
-			)}
-				<button
-					onClick={onGoogle}
-					disabled={loading}
-					className='btn btn-outline w-full mt-4'
-				>
-					{t('LoginPage.continueWithGoogle')}
-				</button>
-				<div className='mt-4 text-sm text-center'>
-					{t('LoginPage.dontHaveAccount')}{' '}
-					<Link href={`/${locale}/auth/register`} className='link'>
-						{t('LoginPage.register')}
-					</Link>
-				</div>
 			</div>
 		</div>
 	);

@@ -56,6 +56,41 @@ export function AuthProvider({ children }) {
 		}
 	};
 
+	const requestPasswordReset = async ({ email }) => {
+		try {
+			const { data } = await api.post('/auth/login/forgot-password/request', { email });
+			return data;
+		} catch (err) {
+			throw err;
+		}
+	};
+
+	const verifyPasswordResetOtp = async ({ otpId, code, email }) => {
+		try {
+			const { data } = await api.post('/auth/login/forgot-password/verify', {
+				otpId,
+				code,
+				email,
+			});
+			return data;
+		} catch (err) {
+			throw err;
+		}
+	};
+
+	const resetPasswordWithToken = async ({ email, token, password }) => {
+		try {
+			const { data } = await api.post('/auth/login/forgot-password/reset', {
+				email,
+				token,
+				password,
+			});
+			return data;
+		} catch (err) {
+			throw err;
+		}
+	};
+
 	const signup = async ({ email, password, firstname, lastname, dateOfBirth, }) => {
 		try {
 			const { data } = await api.post('/auth/register', { email, password, firstname, lastname, dateOfBirth });
@@ -129,7 +164,21 @@ export function AuthProvider({ children }) {
 	};
 
 	return (
-		<AuthContext.Provider value={{ authToken, login, logout, signup, verifyOtp, verifyRegisterOtp, handleSession, onboard }}>
+		<AuthContext.Provider
+			value={{
+				authToken,
+				login,
+				logout,
+				signup,
+				verifyOtp,
+				verifyRegisterOtp,
+				handleSession,
+				onboard,
+				requestPasswordReset,
+				verifyPasswordResetOtp,
+				resetPasswordWithToken,
+			}}
+		>
 			{children}
 		</AuthContext.Provider>
 	);
