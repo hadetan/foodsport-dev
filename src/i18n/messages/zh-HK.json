@@ -95,7 +95,7 @@
         },
         "ActivitiesPage": {
             "upcomingOngoing": "即將及進行中",
-            "finished": "已完結"
+            "completed": "已完成"
         },
         "DetailsPage": {
             "noActivityTitle": "找不到活動",

@@ -98,7 +98,7 @@ export default function ActivitiesPage() {
                         <div className={sectionStyles.activitySection}>
                             <div className={sectionStyles.centerContent}>
                                 <span className={sectionStyles.line}></span>
-                                <h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.finished')}</h2>
+                                <h2 className={sectionStyles.activitySectionHeading}>{t('Activity.ActivitiesPage.completed')}</h2>
                                 <span className={sectionStyles.line}></span>
                             </div>
                             <div className={styles.grid3}>

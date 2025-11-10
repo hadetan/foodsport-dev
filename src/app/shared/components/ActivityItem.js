@@ -12,6 +12,7 @@ import { MdEventSeat } from 'react-icons/md';
 import getActivityStatus from '@/utils/getActivityStatus';
 import calculateSeats from '@/utils/calculateSeats';
 import { FaLocationDot } from 'react-icons/fa6';
+import { FaBurn } from 'react-icons/fa';
 import calculateTimer from '@/utils/calculateTimer';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/authContext';
@@ -236,12 +237,19 @@ export default function ActivityItem({ activity, user }) {
 								<span>{t('Activity.ActivityItem.expired')}</span>
 							</div>
 						)}
-                        {seatsLeft !== null && (
-							<div className={styles.rightRow}>
-								<span className={styles.icon}><MdEventSeat size={23}/></span>
-								<span>{t('Activity.ActivityItem.seatsLeft', { count: seatsLeft })}</span>
-							</div>
-						)}
+                        {((activityStatus === 'completed') || isCancelledOrClosed) ? (
+                            <div className={styles.rightRow}>
+                                <span className={styles.icon}><FaBurn size={20} /></span>
+                                <span>{activity.totalCaloriesBurnt && `${activity.totalCaloriesBurnt} kcal`}</span>
+                            </div>
+                        ) : (
+                            seatsLeft !== null && (
+                                <div className={styles.rightRow}>
+                                    <span className={styles.icon}><MdEventSeat size={23}/></span>
+                                    <span>{t('Activity.ActivityItem.seatsLeft', { count: seatsLeft })}</span>
+                                </div>
+                            )
+                        )}
                     </div>
                 </div>
             </div>

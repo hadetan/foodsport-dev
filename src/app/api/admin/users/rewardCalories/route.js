@@ -117,6 +117,11 @@ export async function POST(req) {
 						where: { userId: user.id, activityId },
 						data: { wasPresent: true, totalDuration: validDuration },
 					});
+
+					await tx.activity.updateMany({
+						where: { id: activityId },
+						data: { totalCaloriesBurnt: { increment: calories } },
+					});
 				} else if (tempUser) {
 					await tx.tempUser.update({
 						where: { email },
@@ -125,6 +130,11 @@ export async function POST(req) {
 					await tx.userActivity.updateMany({
 						where: { tempUserId: tempUser.id, activityId },
 						data: { wasPresent: true, totalDuration: validDuration },
+					});
+
+					await tx.activity.updateMany({
+						where: { id: activityId },
+						data: { totalCaloriesBurnt: { increment: calories } },
 					});
 				}
 			});
