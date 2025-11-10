@@ -37,7 +37,8 @@
         "dontHaveAccount": "沒有帳戶？",
         "register": "註冊",
         "emailExistsToast": "此電郵已註冊。請登入並在個人檔案中綁定 Google。",
-        "genericError": "請檢查你的電郵和密碼，然後再試一次"
+        "genericError": "請檢查你的電郵和密碼，然後再試一次",
+        "forgotPassword": "忘記密碼？"
     },
     "Auth": {
         "loginFailed": "登入失敗",
@@ -49,6 +50,23 @@
         "verifyOtp": "驗證 OTP",
         "verifying": "驗證中...",
         "otpFailed": "OTP 驗證失敗"
+    },
+    "ForgotPassword": {
+        "title": "重設密碼",
+        "description": "輸入你的電郵以接收重設驗證碼。",
+        "sendOtp": "發送 OTP",
+        "sendingOtp": "傳送中...",
+        "otpInstructions": "輸入發送至 {email} 的一次性密碼。",
+        "attemptsLeft": "{count, plural, one {尚餘 # 次機會} other {尚餘 # 次機會}}",
+        "verifyOtp": "驗證 OTP",
+        "verifyingOtp": "驗證中...",
+        "newPassword": "新密碼",
+        "confirmPassword": "確認新密碼",
+        "reset": "重設密碼",
+        "resetting": "重設中...",
+        "success": "密碼已更新。請使用新密碼登入。",
+        "backToLogin": "返回登入",
+        "passwordMismatch": "兩次輸入的密碼不相同。"
     },
     "Header": {
         "home": "主頁",

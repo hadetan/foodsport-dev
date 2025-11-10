@@ -19,6 +19,7 @@ export default function RegisterPage() {
 	const [lastname, setLastname] = useState('');
 	const [dateOfBirth, setDateOfBirth] = useState('');
 	const [password, setPassword] = useState('');
+	const [confirmPassword, setConfirmPassword] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 	const [otpStep, setOtpStep] = useState(false);
@@ -115,6 +116,11 @@ export default function RegisterPage() {
 		setLoading(true);
 		setError('');
 		try {
+			if (password !== confirmPassword) {
+				setError(t('ForgotPassword.passwordMismatch'));
+				setLoading(false);
+				return;
+			}
 			const data = await signup({ email, password, firstname, lastname, dateOfBirth });
 			if (data?.sessionId) {
 				setSessionId(data.sessionId);
@@ -236,6 +242,16 @@ export default function RegisterPage() {
 							<PasswordInputClient
 								value={password}
 								onChange={(e) => setPassword(e.target.value)}
+								required
+							/>
+						</div>
+						<div>
+							<label className='block mb-1 font-medium text-black'>
+								{t('ForgotPassword.confirmPassword')}
+							</label>
+							<PasswordInputClient
+								value={confirmPassword}
+								onChange={(e) => setConfirmPassword(e.target.value)}
 								required
 							/>
 						</div>

@@ -37,7 +37,8 @@
 		"dontHaveAccount": "Don't have an account?",
 		"register": "Register",
 		"emailExistsToast": "Account with this email already exists. Please login and link Google from your profile",
-		"genericError": "Please check your email and password, and try again"
+		"genericError": "Please check your email and password, and try again",
+		"forgotPassword": "Forgot password?"
 	},
 	"Auth": {
 		"loginFailed": "Login failed",
@@ -49,6 +50,23 @@
 		"verifyOtp": "Verify OTP",
 		"verifying": "Verifying...",
 		"otpFailed": "OTP verification failed"
+	},
+	"ForgotPassword": {
+		"title": "Reset password",
+		"description": "Enter your email to receive a reset code.",
+		"sendOtp": "Send OTP",
+		"sendingOtp": "Sending...",
+		"otpInstructions": "Enter the OTP sent to {email}.",
+		"attemptsLeft": "{count, plural, one {# attempt left} other {# attempts left}}",
+		"verifyOtp": "Verify OTP",
+		"verifyingOtp": "Verifying...",
+		"newPassword": "New password",
+		"confirmPassword": "Confirm password",
+		"reset": "Reset password",
+		"resetting": "Resetting...",
+		"success": "Password updated successfully. Please log in with your new password.",
+		"backToLogin": "Back to login",
+		"passwordMismatch": "Passwords do not match."
 	},
 	"Header": {
 		"home": "HOME",
