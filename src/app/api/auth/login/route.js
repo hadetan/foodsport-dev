@@ -12,7 +12,9 @@ export async function POST(req) {
 		}
 
 		const user = await prisma.user.findUnique({ where: { email } });
-		const otpCode = generateOtp(6);
+		const disableOtp = (process.env.USER_DISABLE_OTP === 'true' || process.env.NEXT_PUBLIC_USER_DISABLE_OTP === 'true');
+		const useDevOtp = disableOtp && !!process.env.DEV_OTP;
+		const otpCode = useDevOtp ? process.env.DEV_OTP : generateOtp(6);
 		const hashed = await bcrypt.hash(otpCode, 10);
 		const ttlMinutes = parseInt(process.env.OTP_TTL_MINUTES || '5', 10);
 		const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
@@ -39,19 +41,23 @@ export async function POST(req) {
 			return { otp, otpCode };
 		});
 
-		try {
-			const templateId = process.env.LOGIN_OTP_TEMPLATE_ID;
-			const params = { code: result.otpCode, name: `${user.firstname || ''} ${user.lastname || ''}` };
-			const res = await serverApi.post(
-				'/admin/email/template_email',
-				{ to: user.email, templateId, params },
-				{ headers: { 'x-internal-api': process.env.INTERNAL_API_SECRET } }
-			);
-			if (!res?.data?.success) throw new Error('Email send failed');
-		} catch (err) {
-			console.error('Failed to send OTP email', err || err);
-			await prisma.otp.updateMany({ where: { id: result.otp.id }, data: { status: 'cancelled' } });
-			return Response.json({ error: 'Failed to send OTP email' }, { status: 500 });
+		if (!useDevOtp) {
+			try {
+				const templateId = process.env.LOGIN_OTP_TEMPLATE_ID;
+				const params = { code: result.otpCode, name: `${user.firstname || ''} ${user.lastname || ''}` };
+				const res = await serverApi.post(
+					'/admin/email/template_email',
+					{ to: user.email, templateId, params },
+					{ headers: { 'x-internal-api': process.env.INTERNAL_API_SECRET } }
+				);
+				if (!res?.data?.success) throw new Error('Email send failed');
+			} catch (err) {
+				console.error('Failed to send OTP email', err || err);
+				await prisma.otp.updateMany({ where: { id: result.otp.id }, data: { status: 'cancelled' } });
+				return Response.json({ error: 'Failed to send OTP email' }, { status: 500 });
+			}
+		} else {
+			console.info('DEV_OTP enabled - skipped sending OTP email to', user.email);
 		}
 
 		return Response.json({ sessionId: result.otp.id });

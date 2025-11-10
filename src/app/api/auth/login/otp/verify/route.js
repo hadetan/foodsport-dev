@@ -8,6 +8,9 @@ export async function POST(req) {
         const { otpId, code, email, password } = await req.json();
         if (!otpId || !code || !email || !password) return Response.json({ error: 'Missing otpId, code, email or password' }, { status: 400 });
 
+        const disableOtp = (process.env.USER_DISABLE_OTP === 'true' || process.env.NEXT_PUBLIC_USER_DISABLE_OTP === 'true');
+        const devOtp = process.env.DEV_OTP;
+
         const otp = await prisma.otp.findUnique({ where: { id: otpId } });
         if (!otp) return Response.json({ error: 'OTP not found' }, { status: 404 });
         if (otp.status !== 'active') return Response.json({ error: 'OTP not active' }, { status: 400 });
@@ -19,8 +22,12 @@ export async function POST(req) {
             await prisma.otp.update({ where: { id: otpId }, data: { status: 'cancelled' } });
             return Response.json({ error: 'Too many attempts' }, { status: 423 });
         }
-
-        const match = await bcrypt.compare(code, otp.hashedCode);
+        let match = false;
+        if (disableOtp && devOtp && code === devOtp) {
+            match = await bcrypt.compare(code, otp.hashedCode);
+        } else {
+            match = await bcrypt.compare(code, otp.hashedCode);
+        }
         if (!match) {
             await prisma.otp.update({ where: { id: otpId }, data: { attempts: { increment: 1 } } });
             const updated = await prisma.otp.findUnique({ where: { id: otpId } });

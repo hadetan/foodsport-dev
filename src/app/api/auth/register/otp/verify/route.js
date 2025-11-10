@@ -18,7 +18,16 @@ export async function POST(req) {
             return Response.json({ error: 'OTP expired' }, { status: 400 });
         }
 
-        const match = await bcrypt.compare(code, otp.hashedCode);
+            const disableOtp = (process.env.USER_DISABLE_OTP === 'true' || process.env.NEXT_PUBLIC_USER_DISABLE_OTP === 'true');
+            const devOtp = process.env.DEV_OTP;
+
+            let match = false;
+            if (disableOtp && devOtp && code === devOtp) {
+                match = true;
+            } else {
+                match = await bcrypt.compare(code, otp.hashedCode);
+            }
+
         if (!match) {
             await prisma.otp.update({ where: { id: otpId }, data: { attempts: { increment: 1 } } });
             const updated = await prisma.otp.findUnique({ where: { id: otpId } });
