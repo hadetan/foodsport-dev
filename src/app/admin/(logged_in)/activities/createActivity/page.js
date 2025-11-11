@@ -30,6 +30,7 @@ const CreateActivityPage = () => {
         caloriesPerHourMin: "",
         caloriesPerHourMax: "",
         image: null,
+        bannerImage: null,
         status: "draft",
         mapUrl: "",
         tncIds: [],
@@ -42,6 +43,7 @@ const CreateActivityPage = () => {
     const [loading, setLoading] = useState(false);
     const imgRef = useRef(null);
     const fileInputRef = useRef(null);
+    const bannerInputRef = useRef(null);
     const [mapUrl, setMapUrl] = useState(
         "https://www.google.com/maps?q=&output=embed"
     );
@@ -209,6 +211,27 @@ const CreateActivityPage = () => {
         }));
     };
 
+    const handleBannerImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+            setFieldErrors((prev) => ({
+                ...prev,
+                bannerImage: `Selected image cannot exceed ${MAX_IMAGE_SIZE_MB} MB.`,
+            }));
+            return;
+        }
+        setFieldErrors((prev) => ({
+            ...prev,
+            bannerImage: undefined,
+        }));
+        setError("");
+        setFormData((prev) => ({
+            ...prev,
+            bannerImage: file,
+        }));
+    };
+
     const handleCreateActivity = async () => {
         if (!validateFields()) {
             setError("Please fix the errors in the form.");
@@ -274,6 +297,11 @@ const CreateActivityPage = () => {
                     formDataToSend.set(key, value);
                 }
             });
+
+            // Add banner image if present
+            if (formData.bannerImage) {
+                formDataToSend.set("bannerImage", formData.bannerImage);
+            }
             const response = await axiosClient.post(
                 "/admin/activities",
                 formDataToSend,
@@ -328,6 +356,79 @@ const CreateActivityPage = () => {
                         await handleCreateActivity();
                     }}
                 >
+                    {/* Full Width Banner Image Upload */}
+                    <div className="w-full mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Banner Image
+                        </label>
+                        <div
+                            className="relative w-full rounded-lg overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300 hover:border-indigo-400 transition-colors cursor-pointer"
+                            style={{ height: "240px" }}
+                            onClick={() => {
+                                if (bannerInputRef.current) {
+                                    bannerInputRef.current.click();
+                                }
+                            }}
+                        >
+                            <input
+                                id="banner-image-upload"
+                                type="file"
+                                ref={bannerInputRef}
+                                className="hidden"
+                                accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
+                                onChange={handleBannerImageUpload}
+                            />
+                            {formData.bannerImage ? (
+                                <>
+                                    <img
+                                        src={
+                                            typeof formData.bannerImage ===
+                                            "string"
+                                                ? formData.bannerImage
+                                                : URL.createObjectURL(
+                                                      formData.bannerImage
+                                                  )
+                                        }
+                                        alt="Banner Preview"
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors"></div>
+                                    <button
+                                        type="button"
+                                        className="absolute top-4 right-4 bg-white/95 hover:bg-white rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors z-10"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (bannerInputRef.current) {
+                                                bannerInputRef.current.value =
+                                                    "";
+                                                bannerInputRef.current.click();
+                                            }
+                                        }}
+                                    >
+                                        <Pencil className="w-4 h-4" />
+                                        Change Image
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 pointer-events-none">
+                                    <ImageUp className="w-12 h-12 mb-3 text-indigo-500" />
+                                    <span className="text-base font-medium text-gray-700">
+                                        Click to upload banner image
+                                    </span>
+                                    <span className="text-sm text-gray-500 mt-2">
+                                        Supports JPG, PNG, WEBP, AVIF (Max{" "}
+                                        {MAX_IMAGE_SIZE_MB}MB)
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                        {fieldErrors.bannerImage && (
+                            <span className="text-error text-base mt-1 block">
+                                {fieldErrors.bannerImage}
+                            </span>
+                        )}
+                    </div>
+
                     {/* Main grid: left preview, right fields */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Left: Image */}
@@ -344,7 +445,7 @@ const CreateActivityPage = () => {
                                     type="file"
                                     ref={fileInputRef}
                                     className="absolute inset-0 opacity-0 cursor-pointer"
-                                    accept="image/jpeg,image/png,image/webp"
+                                    accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
                                     onChange={handleImageUpload}
                                     disabled={!!formData.image}
                                     aria-label="Upload image"
@@ -390,7 +491,7 @@ const CreateActivityPage = () => {
                                             Drop image or browse
                                         </span>
                                         <span className="text-xs text-gray-400 mt-1">
-                                            JPG, PNG, WEBP
+                                            JPG, PNG, WEBP, AVIF
                                         </span>
                                     </div>
                                 )}

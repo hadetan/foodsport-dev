@@ -10,8 +10,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => (
             >
                 <ChevronLeft size={18} />
             </button>
-            <button className="btn btn-outline cursor-default" disabled>
-                Page {currentPage}
+            <button className="btn btn-outline cursor-default" >
+                Page {currentPage} of {totalPages || 1}
             </button>
             <button
                 className="btn btn-outline"
