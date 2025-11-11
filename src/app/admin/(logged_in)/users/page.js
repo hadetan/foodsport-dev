@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
@@ -11,12 +11,15 @@ import Pagination from "@/app/admin/(logged_in)/components/Pagination";
 
 const UserManagementPage = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { users, loading } = useUsers();
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
-    const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
+
+    // Get current page from URL, default to 1
+    const currentPage = parseInt(searchParams.get("page")) || 1;
     const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
     useEffect(() => {
@@ -25,10 +28,14 @@ const UserManagementPage = () => {
             return;
         }
 
-        const q = String(searchQuery || "").trim().toLowerCase();
+        const q = String(searchQuery || "")
+            .trim()
+            .toLowerCase();
 
         const filtered = users.filter((user) => {
-            const fullName = `${user.firstname || ""} ${user.lastname || ""}`.toLowerCase();
+            const fullName = `${user.firstname || ""} ${
+                user.lastname || ""
+            }`.toLowerCase();
             const email = (user.email || "").toLowerCase();
             const id = String(user.id || user.userId || "").toLowerCase();
 
@@ -40,20 +47,31 @@ const UserManagementPage = () => {
 
             const matchesStatus =
                 statusFilter === "all" ||
-                (statusFilter === "active" && user.isActive && user.isRegistered !== false) ||
-                (statusFilter === "inactive" && !user.isActive && user.isRegistered !== false) ||
-                (statusFilter === "unregistered" && user.isRegistered === false);
+                (statusFilter === "active" &&
+                    user.isActive &&
+                    user.isRegistered !== false) ||
+                (statusFilter === "inactive" &&
+                    !user.isActive &&
+                    user.isRegistered !== false) ||
+                (statusFilter === "unregistered" &&
+                    user.isRegistered === false);
 
             return matchesSearch && matchesStatus;
         });
 
-        setCurrentPage(1);
         setFilteredUsers(filtered);
-    }, [searchQuery, users, statusFilter, loading]);
+
+        // Reset to page 1 when filters change
+        if (searchQuery || statusFilter !== "all") {
+            const params = new URLSearchParams();
+            params.set("page", "1");
+            router.replace(`?${params.toString()}`, { scroll: false });
+        }
+    }, [searchQuery, users, statusFilter, loading, router]);
 
     // Add handler for row click
     const handleRowClick = (userId) => {
-        router.push(`/admin/users/${userId}`);
+        router.push(`/admin/users/${userId}?returnPage=${currentPage}`);
     };
 
     const statusOfUser = ["All", "Active", "Inactive", "Unregistered"];
@@ -75,7 +93,12 @@ const UserManagementPage = () => {
         currentPage * pageSize
     );
 
-    const handlePageChange = (page) => setCurrentPage(page);
+    const handlePageChange = (page) => {
+        // Update URL with new page number
+        const params = new URLSearchParams();
+        params.set("page", page.toString());
+        router.push(`?${params.toString()}`, { scroll: false });
+    };
 
     return (
         <>
