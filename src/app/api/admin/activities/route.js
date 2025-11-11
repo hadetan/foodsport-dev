@@ -66,6 +66,7 @@ export async function GET(req) {
 				organizerId: true,
 				organizationName: true,
 				imageUrl: true,
+				bannerImageUrl: true,
 				caloriesPerHour: true,
 				isFeatured: true,
 				totalCaloriesBurnt: true,
@@ -143,6 +144,7 @@ export async function GET(req) {
 				organizerName: a.organizerId ? organizerNameMap[a.organizerId] : 'unknown',
 				organizationName: a.organizationName,
 				imageUrl: a.imageUrl,
+				bannerImageUrl: a.bannerImageUrl,
 				caloriesPerHour: a.caloriesPerHour,
 				isFeatured: a.isFeatured,
 				totalCaloriesBurnt: a.totalCaloriesBurnt,
@@ -207,6 +209,7 @@ async function buildActivityResponse(id) {
 		organizerId: true,
 		organizationName: true,
 		imageUrl: true,
+		bannerImageUrl: true,
 		caloriesPerHour: true,
 		isFeatured: true,
 		totalCaloriesBurnt: true,
@@ -269,6 +272,7 @@ async function buildActivityResponse(id) {
 		organizerName,
 		organizationName: activity.organizationName,
 		imageUrl: activity.imageUrl,
+		bannerImageUrl: activity.bannerImageUrl,
 		caloriesPerHour: activity.caloriesPerHour,
 		isFeatured: activity.isFeatured,
 		totalCaloriesBurnt: activity.totalCaloriesBurnt,
@@ -321,6 +325,7 @@ export async function POST(req) {
 			'startTime',
 			'endTime',
 			'image',
+			'bannerImage',
 			'mapUrl',
 		];
 		const missingFields = requiredFields.filter(
@@ -341,10 +346,18 @@ export async function POST(req) {
 			);
 		}
 
-		if (file) {
-			const allowedTypes = ['image/jpeg', 'image/png'];
-			const maxSize = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+		const bannerFile = formData.get('bannerImage');
+		if (!bannerFile || typeof bannerFile === 'string') {
+			return NextResponse.json(
+				{ error: 'Banner image file is required' },
+				{ status: 400 }
+			);
+		}
 
+		const allowedTypes = ['image/jpeg', 'image/png'];
+		const maxSize = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
+		if (file) {
 			if (!allowedTypes.includes(file.type)) {
 				return NextResponse.json(
 					{ error: 'Invalid image type. Only JPEG and PNG are allowed.' },
@@ -360,15 +373,32 @@ export async function POST(req) {
 			}
 		}
 
-		const ext = file.name.split('.').pop();
-		const fileName = `activity_${Date.now()}_${Math.random()
-			.toString(36)
-			.substring(2, 8)}.${ext}`;
+		if (bannerFile) {
+			if (!allowedTypes.includes(bannerFile.type)) {
+				return NextResponse.json(
+					{ error: 'Invalid banner image type. Only JPEG and PNG are allowed.' },
+					{ status: 400 }
+				);
+			}
+
+			if (bannerFile.size > maxSize) {
+				return NextResponse.json(
+					{ error: 'Banner image size exceeds the maximum limit of 5MB.' },
+					{ status: 400 }
+				);
+			}
+		}
+
 		const bucket = 'activities-images';
+
+		const imageExt = file.name.split('.').pop();
+		const imageFileName = `activity_${Date.now()}_${Math.random()
+			.toString(36)
+			.substring(2, 8)}.${imageExt}`;
 
 		const { error: uploadError } = await supabase.storage
 			.from(bucket)
-			.upload(fileName, file, {
+			.upload(imageFileName, file, {
 				cacheControl: '3600',
 				upsert: false,
 				contentType: file.type,
@@ -382,11 +412,41 @@ export async function POST(req) {
 
 		const { data: publicUrlData } = supabase.storage
 			.from(bucket)
-			.getPublicUrl(fileName);
+			.getPublicUrl(imageFileName);
 		const imageUrl = publicUrlData?.publicUrl;
 		if (!imageUrl) {
 			return NextResponse.json(
 				{ error: 'Failed to get image URL' },
+				{ status: 500 }
+			);
+		}
+
+		const bannerExt = bannerFile.name.split('.').pop();
+		const bannerFileName = `activity_${Date.now()}_${Math.random()
+			.toString(36)
+			.substring(2, 8)}.${bannerExt}`;
+
+		const { error: bannerUploadError } = await supabase.storage
+			.from(bucket)
+			.upload(bannerFileName, bannerFile, {
+				cacheControl: '3600',
+				upsert: false,
+				contentType: bannerFile.type,
+			});
+		if (bannerUploadError) {
+			return NextResponse.json(
+				{ error: 'Failed to upload banner image', details: bannerUploadError.message },
+				{ status: 500 }
+			);
+		}
+
+		const { data: bannerPublicUrlData } = supabase.storage
+			.from(bucket)
+			.getPublicUrl(bannerFileName);
+		const bannerImageUrl = bannerPublicUrlData?.publicUrl;
+		if (!bannerImageUrl) {
+			return NextResponse.json(
+				{ error: 'Failed to get banner image URL' },
 				{ status: 500 }
 			);
 		}
@@ -407,6 +467,7 @@ export async function POST(req) {
 			'caloriesPerHour',
 			'isFeatured',
 			'imageUrl',
+			'bannerImageUrl',
 			'mapUrl',
 			'tncIds',
 		];
@@ -422,6 +483,7 @@ export async function POST(req) {
 			}
 		}
 		activityData.imageUrl = imageUrl;
+		activityData.bannerImageUrl = bannerImageUrl;
 
 		let adminId = null;
 		if (user && user.email) {
@@ -629,33 +691,42 @@ export async function PATCH(req) {
 			}
 		}
 
+		const bucket = 'activities-images';
+        const file = formData.get('image');
+		const bannerFile = formData.get('bannerImage');
+
         let newImageUrl = null;
         let oldImageUrl = null;
-        let oldFilePath = null;
-        const file = formData.get('image');
-        if (file && typeof file !== 'string') {
-            const current = await getMany(
-                'activity',
-                { id: activityId },
-                { imageUrl: true }
-            );
-            oldImageUrl = current && current[0]?.imageUrl;
+        let oldImageFilePath = null;
+		let newBannerImageUrl = null;
+		let oldBannerImageUrl = null;
+		let oldBannerFilePath = null;
 
+		if ((file && typeof file !== 'string') || (bannerFile && typeof bannerFile !== 'string')) {
+			const current = await getMany(
+				'activity',
+				{ id: activityId },
+				{ imageUrl: true, bannerImageUrl: true }
+			);
+			const currentActivity = current && current[0] ? current[0] : null;
+			if (currentActivity) {
+				oldImageUrl = currentActivity.imageUrl || null;
+				oldBannerImageUrl = currentActivity.bannerImageUrl || null;
+			}
+		}
+
+        if (file && typeof file !== 'string') {
             if (oldImageUrl) {
                 const urlObj = new URL(oldImageUrl);
                 const pathParts = urlObj.pathname.split('/');
-                // Find the index of the bucket and get everything after
-                const bucketIndex = pathParts.findIndex((p) => p === 'activities-images');
+                const bucketIndex = pathParts.findIndex((p) => p === bucket);
                 if (bucketIndex !== -1) {
-                    oldFilePath = pathParts.slice(bucketIndex + 1).join('/');
+                    oldImageFilePath = pathParts.slice(bucketIndex + 1).join('/');
                 }
             }
 
             const ext = file.name.split('.').pop();
-            const fileName = `activity_${Date.now()}_${Math.random()
-                .toString(36)
-                .substring(2, 8)}.${ext}`;
-            const bucket = 'activities-images';
+            const fileName = `activity_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
             const { error: uploadError } = await supabase.storage
                 .from(bucket)
                 .upload(fileName, file, {
@@ -683,17 +754,55 @@ export async function PATCH(req) {
             updates.imageUrl = newImageUrl;
         }
 
+		if (bannerFile && typeof bannerFile !== 'string') {
+			if (oldBannerImageUrl) {
+				const urlObj = new URL(oldBannerImageUrl);
+				const pathParts = urlObj.pathname.split('/');
+				const bucketIndex = pathParts.findIndex((p) => p === bucket);
+				if (bucketIndex !== -1) {
+					oldBannerFilePath = pathParts.slice(bucketIndex + 1).join('/');
+				}
+			}
+
+			const bannerExt = bannerFile.name.split('.').pop();
+			const bannerFileName = `activity_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${bannerExt}`;
+			const { error: bannerUploadError } = await supabase.storage
+				.from(bucket)
+				.upload(bannerFileName, bannerFile, {
+					cacheControl: '3600',
+					upsert: false,
+					contentType: bannerFile.type,
+				});
+			if (bannerUploadError)
+				return NextResponse.json(
+					{
+						error: 'Failed to upload banner image',
+						details: bannerUploadError.message,
+					},
+					{ status: 500 }
+				);
+			const { data: bannerPublicUrlData } = supabase.storage
+				.from(bucket)
+				.getPublicUrl(bannerFileName);
+			newBannerImageUrl = bannerPublicUrlData?.publicUrl;
+			if (!newBannerImageUrl)
+				return NextResponse.json(
+					{ error: 'Failed to get banner image URL' },
+					{ status: 500 }
+				);
+			updates.bannerImageUrl = newBannerImageUrl;
+		}
+
         if (Object.keys(updates).length === 0)
             return NextResponse.json(
                 { error: 'No valid fields to update' },
                 { status: 400 }
             );
 
-        if (newImageUrl && oldFilePath) {
-            const bucket = 'activities-images';
+        if (newImageUrl && oldImageFilePath) {
             const { error: removeError } = await supabase.storage
                 .from(bucket)
-                .remove([oldFilePath]);
+                .remove([oldImageFilePath]);
             if (removeError) {
                 console.error('Failed to remove old image:', removeError.message);
                 return NextResponse.json(
@@ -702,6 +811,19 @@ export async function PATCH(req) {
                 );
             }
         }
+
+		if (newBannerImageUrl && oldBannerFilePath) {
+			const { error: removeBannerError } = await supabase.storage
+				.from(bucket)
+				.remove([oldBannerFilePath]);
+			if (removeBannerError) {
+				console.error('Failed to remove old banner image:', removeBannerError.message);
+				return NextResponse.json(
+					{ error: 'Failed to remove old banner image', details: removeBannerError.message },
+					{ status: 500 }
+				);
+			}
+		}
 
 		const updatedActivity = await updateById('activity', activityId, updates);
 		if (updatedActivity && updatedActivity.error)

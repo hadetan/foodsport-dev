@@ -227,14 +227,5 @@ export async function getUserJoinedActivitiesWithDetails(userIdOrTempId, isTempU
  * @returns {object}
  */
 function handlePrismaError(error) {
-	if (error.code === 'P2002') {
-		return { error: 'Unique constraint failed', details: error.meta };
-	}
-	if (error.code === 'P2003') {
-		return { error: 'Foreign key constraint failed', details: error.meta };
-	}
-	if (error.code === 'P2004') {
-		return { error: 'Not null constraint failed', details: error.meta };
-	}
-	return { error: error.message, details: error };
+	return { error };
 }

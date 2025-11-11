@@ -135,9 +135,9 @@ export default function ActivityItem({ activity, user }) {
     return (
         <div className={styles.card}>
             <div className={styles.imageWrapper}>
-                {activity.imageUrl && (
+                {activity.bannerImageUrl && (
 					<Image
-						src={activity.imageUrl}
+						src={activity.bannerImageUrl}
 						alt={activity.activityType}
 						fill
 						className={styles.cardImage}

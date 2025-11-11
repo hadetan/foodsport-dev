@@ -191,6 +191,7 @@ model Activity {
   organizerId          String?       @map("organizer_id") // Get organizer name from the id
   organizationName     String?       @map("organization_name")
   imageUrl             String?       @map("image_url")
+  bannerImageUrl       String?       @map("banner_image_url")
   mapUrl               String?       @map("map_url")
   totalCaloriesBurnt   Int           @default(0) @map("total_calories_burnt")
   caloriesPerHour      String        @map("calories_per_hour")
