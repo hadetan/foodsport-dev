@@ -295,8 +295,8 @@ async function buildActivityResponse(id) {
 export async function POST(req) {
 	try {
 		const supabase = await createServerClient();
-		// const { error, user } = await requireAdmin(supabase, NextResponse);
-		// if (error) return error;
+		const { error, user } = await requireAdmin(supabase, NextResponse);
+		if (error) return error;
 
 		const contentType = req.headers.get('content-type') || '';
 		if (!contentType.includes('multipart/form-data')) {
@@ -488,12 +488,12 @@ export async function POST(req) {
 		if (bannerImageUrl) activityData.bannerImageUrl = bannerImageUrl;
 
 		let adminId = null;
-		// if (user && user.email) {
-		// 	const adminRows = await getMany('adminUser', { email: user.email }, { id: true });
-		// 	if (adminRows && adminRows.length > 0) {
-		// 		adminId = adminRows[0].id;
-		// 	}
-		// }
+		if (user && user.email) {
+			const adminRows = await getMany('adminUser', { email: user.email }, { id: true });
+			if (adminRows && adminRows.length > 0) {
+				adminId = adminRows[0].id;
+			}
+		}
 
 		if (activityData.participantLimit) {
 			activityData.participantLimit = Number(activityData.participantLimit);
