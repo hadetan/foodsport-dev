@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef } from "react";
 import ActivityDetailsStep from "./descriptionBox";
 
 export default function Tabs({
@@ -8,8 +9,49 @@ export default function Tabs({
     activityId,
     summary,
     summaryZh,
-    setActivities
+    setActivities,
 }) {
+    const [hasUnsavedEnglishChanges, setHasUnsavedEnglishChanges] =
+        useState(false);
+    const [hasUnsavedChineseChanges, setHasUnsavedChineseChanges] =
+        useState(false);
+    const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+    const pendingTabRef = useRef(null);
+
+    const handleTabSwitch = (targetTab) => {
+        // Check if switching away from description (English) with unsaved changes
+        if (
+            activeTab === "description" &&
+            targetTab !== "description" &&
+            hasUnsavedEnglishChanges
+        ) {
+            pendingTabRef.current = targetTab;
+            setShowUnsavedWarning(true);
+            return;
+        }
+
+        // Check if switching away from chinese description with unsaved changes
+        if (
+            activeTab === "chinese" &&
+            targetTab !== "chinese" &&
+            hasUnsavedChineseChanges
+        ) {
+            pendingTabRef.current = targetTab;
+            setShowUnsavedWarning(true);
+            return;
+        }
+
+        setTab(targetTab);
+    };
+
+    const handleUnsavedEnglishChange = (hasChanges) => {
+        setHasUnsavedEnglishChanges(hasChanges);
+    };
+
+    const handleUnsavedChineseChange = (hasChanges) => {
+        setHasUnsavedChineseChanges(hasChanges);
+    };
+
     return (
         <div className="w-full">
             <div role="tablist" className="tabs tabs-border  gap-2 mb-6">
@@ -21,7 +63,7 @@ export default function Tabs({
                     }`}
                     onClick={(e) => {
                         e.preventDefault();
-                        setTab("details");
+                        handleTabSwitch("details");
                     }}
                 >
                     Activity Details
@@ -34,7 +76,7 @@ export default function Tabs({
                     }`}
                     onClick={(e) => {
                         e.preventDefault();
-                        setTab("description");
+                        handleTabSwitch("description");
                     }}
                 >
                     Description
@@ -47,7 +89,7 @@ export default function Tabs({
                     }`}
                     onClick={(e) => {
                         e.preventDefault();
-                        setTab("chinese");
+                        handleTabSwitch("chinese");
                     }}
                 >
                     Chinese Description
@@ -61,6 +103,7 @@ export default function Tabs({
                     summary={summary}
                     summaryZh={summaryZh}
                     setActivities={setActivities}
+                    onUnsavedChange={handleUnsavedEnglishChange}
                 />
             )}
             {activeTab === "chinese" && (
@@ -71,7 +114,30 @@ export default function Tabs({
                     summary={summary}
                     summaryZh={summaryZh}
                     setActivities={setActivities}
+                    onUnsavedChange={handleUnsavedChineseChange}
                 />
+            )}
+
+            {/* Unsaved Changes Warning Popup */}
+            {showUnsavedWarning && (
+                <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-md shadow-lg rounded-lg p-6">
+                        <h2 className="text-xl font-bold mb-4 text-gray-900">
+                            Unsaved Changes
+                        </h2>
+                        <p className="text-gray-700 mb-6">
+                            Please save otherwise you will lose all contents.
+                        </p>
+                        <div className="flex justify-end">
+                            <button
+                                className="btn btn-primary px-8"
+                                onClick={() => setShowUnsavedWarning(false)}
+                            >
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
