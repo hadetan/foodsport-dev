@@ -14,7 +14,13 @@ export default function TncPage({ params }) {
 
   if (!activity) return < TncDetailsSkeleton />;
 
-  const tnc = activity?.tnc && activity.tnc?.title.replace(/\s+/g, '-') === tncTitle ? activity.tnc : null;
+  const tnc = Array.isArray(activity?.tncs)
+    ? activity.tncs.find(t =>
+        String(t?.title || '')
+          .trim()
+          .replace(/\s+/g, '-') === String(tncTitle)
+      )
+    : null;
   
   if (!tnc) return notFound();
 

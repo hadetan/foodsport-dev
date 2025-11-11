@@ -20,6 +20,7 @@ import calculateSeats from "@/utils/calculateSeats";
 import { MdEventSeat } from "react-icons/md";
 import Tooltip from "./Tooltip";
 import { useTranslations } from "next-intl";
+import { useAuth } from "../contexts/authContext";
 
 const ActivityDetails = ({
     activity,
@@ -35,6 +36,7 @@ const ActivityDetails = ({
     const [tncChecked, setTncChecked] = useState(false);
     const t = useTranslations();
 
+    const { authToken } = useAuth();
     const { status: activityStatus } = getActivityStatus(activity);
     let hideJoin = false;
     let wasPresent = false;
@@ -81,8 +83,61 @@ const ActivityDetails = ({
 
     const { seatsLeft } = calculateSeats(activity);
 
+    const hasTncs =
+        Array.isArray(activity?.tncs) && activity.tncs.length > 0;
+
+    function renderTncLinks() {
+        if (!hasTncs) return null;
+        const andText = t('Activity.DetailsPage.and');
+        const links = activity.tncs.map((tnc) => {
+            const slug =
+                typeof tnc.title === 'string'
+                    ? tnc.title.replace(/\s+/g, '-')
+                    : '';
+            return (
+                <Link
+                    key={tnc.id}
+                    href={`/activities/${activity.id}/${slug}`}
+                    style={{
+                        color: '#0099c4',
+                        textDecoration: 'underline',
+                        margin: '0 4px',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'normal',
+                    }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {tnc.title}
+                </Link>
+            );
+        });
+        if (links.length === 1) return links[0];
+        if (links.length === 2)
+            return (
+                <>
+                    {links[0]} {andText} {links[1]}
+                </>
+            );
+        return (
+            <>
+                {links.slice(0, -1).map((node, idx) => (
+                    <React.Fragment key={idx}>
+                        {node}
+                        {idx < links.length - 2 ? ', ' : ''}
+                    </React.Fragment>
+                ))}{' '}
+                {andText} {links[links.length - 1]}
+            </>
+        );
+    }
+
     async function handleJoin() {
-        if (!tncChecked) {
+        if (!authToken) {
+            window.location.href = "/auth/login";
+            return;
+        }
+        if (hasTncs && !tncChecked) {
             toast.warning(t('Activity.DetailsPage.agreeTncWarning'));
             return;
         }
@@ -111,10 +166,7 @@ const ActivityDetails = ({
             setActivities((prevActivities) =>
                 prevActivities.map((act) =>
                     act.id === activity.id
-                        ? {
-                              ...act,
-                              participantCount: (act.participantCount || 0) + 1,
-                          }
+                        ? { ...act, participantCount: (act.participantCount || 0) + 1 }
                         : act
                 )
             );
@@ -162,13 +214,7 @@ const ActivityDetails = ({
             setActivities((prevActivities) =>
                 prevActivities.map((act) =>
                     act.id === activity.id
-                        ? {
-                              ...act,
-                              participantCount: Math.max(
-                                  0,
-                                  (act.participantCount || 1) - 1
-                              ),
-                          }
+                        ? { ...act, participantCount: Math.max(0, (act.participantCount || 1) - 1) }
                         : act
                 )
             );
@@ -287,7 +333,7 @@ const ActivityDetails = ({
                 </main>
                 <aside className="activityDetailsSidebar">
                     <Tooltip content={tooltipText} width={'16rem'}>
-                        <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <div className="activityDetailsSidebarRow">
                                 <FaCalendar className="logo logo-faded" size={22} />
                                 <span>{`${formatDate(
@@ -352,7 +398,7 @@ const ActivityDetails = ({
                         {/* Disable join/share if completed or <6h left */}
                         {/* TNC Checkbox for joining */}
                         {!user?.joinedActivityIds?.includes(activity.id) &&
-                            activity.tnc && (
+                            hasTncs && (
                                 <div
                                     className="activityDetailsTncCheckbox"
                                     style={{ marginBottom: "12px" }}
@@ -376,25 +422,9 @@ const ActivityDetails = ({
                                             }}
                                             disabled={hideJoin}
                                         />
-                                        <span style={{display: 'inline', wordBreak: 'break-word', whiteSpace: 'normal'}}>
-                                            {t.rich('Activity.DetailsPage.acceptTnc', {
-                                                link: (chunks) => (
-                                                    <Link
-                                                        href={`/activities/${activity.id}/${activity.tnc.title.replace(/\s+/g, '-')}`}
-                                                        style={{
-                                                            color: '#0099c4',
-                                                            textDecoration: 'underline',
-                                                            margin: '0 4px',
-                                                            wordBreak: 'break-word',
-                                                            whiteSpace: 'normal'
-                                                        }}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                    >
-                                                        {chunks}
-                                                    </Link>
-                                                )
-                                            })}
+                                        <span style={{ display: 'inline', wordBreak: 'break-word', whiteSpace: 'normal' }}>
+                                            {t('Activity.DetailsPage.acceptTncsPrefix')}{' '}
+                                            {renderTncLinks()}
                                         </span>
                                     </label>
                                 </div>
@@ -432,7 +462,7 @@ const ActivityDetails = ({
                                 url={
                                     typeof window !== "undefined"
                                         ? window.location.origin +
-                                          `/activities/${activity.id}`
+                                        `/activities/${activity.id}`
                                         : `/activities/${activity.id}`
                                 }
                                 onClose={() => setShowShare(false)}
