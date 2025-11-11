@@ -66,6 +66,7 @@ export async function GET(req) {
 				organizerId: true,
 				organizationName: true,
 				imageUrl: true,
+				bannerImageUrl: true,
 				caloriesPerHour: true,
 				isFeatured: true,
 				totalCaloriesBurnt: true,
@@ -143,6 +144,7 @@ export async function GET(req) {
 				organizerName: a.organizerId ? organizerNameMap[a.organizerId] : 'unknown',
 				organizationName: a.organizationName,
 				imageUrl: a.imageUrl,
+				bannerImageUrl: a.bannerImageUrl,
 				caloriesPerHour: a.caloriesPerHour,
 				isFeatured: a.isFeatured,
 				totalCaloriesBurnt: a.totalCaloriesBurnt,
@@ -207,6 +209,7 @@ async function buildActivityResponse(id) {
 		organizerId: true,
 		organizationName: true,
 		imageUrl: true,
+		bannerImageUrl: true,
 		caloriesPerHour: true,
 		isFeatured: true,
 		totalCaloriesBurnt: true,
@@ -269,6 +272,7 @@ async function buildActivityResponse(id) {
 		organizerName,
 		organizationName: activity.organizationName,
 		imageUrl: activity.imageUrl,
+		bannerImageUrl: activity.bannerImageUrl,
 		caloriesPerHour: activity.caloriesPerHour,
 		isFeatured: activity.isFeatured,
 		totalCaloriesBurnt: activity.totalCaloriesBurnt,
@@ -341,10 +345,18 @@ export async function POST(req) {
 			);
 		}
 
-		if (file) {
-			const allowedTypes = ['image/jpeg', 'image/png'];
-			const maxSize = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+		const bannerFile = formData.get('bannerImage');
+		if (bannerFile && typeof bannerFile === 'string') {
+			return NextResponse.json(
+				{ error: 'Banner image must be provided as a file upload.' },
+				{ status: 400 }
+			);
+		}
 
+		const allowedTypes = ['image/jpeg', 'image/png'];
+		const maxSize = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+
+		if (file) {
 			if (!allowedTypes.includes(file.type)) {
 				return NextResponse.json(
 					{ error: 'Invalid image type. Only JPEG and PNG are allowed.' },
@@ -360,15 +372,32 @@ export async function POST(req) {
 			}
 		}
 
-		const ext = file.name.split('.').pop();
-		const fileName = `activity_${Date.now()}_${Math.random()
-			.toString(36)
-			.substring(2, 8)}.${ext}`;
+		if (bannerFile && typeof bannerFile !== 'string') {
+			if (!allowedTypes.includes(bannerFile.type)) {
+				return NextResponse.json(
+					{ error: 'Invalid banner image type. Only JPEG and PNG are allowed.' },
+					{ status: 400 }
+				);
+			}
+
+			if (bannerFile.size > maxSize) {
+				return NextResponse.json(
+					{ error: 'Banner image size exceeds the maximum limit of 5MB.' },
+					{ status: 400 }
+				);
+			}
+		}
+
 		const bucket = 'activities-images';
+
+		const imageExt = file.name.split('.').pop();
+		const imageFileName = `activity_${Date.now()}_${Math.random()
+			.toString(36)
+			.substring(2, 8)}.${imageExt}`;
 
 		const { error: uploadError } = await supabase.storage
 			.from(bucket)
-			.upload(fileName, file, {
+			.upload(imageFileName, file, {
 				cacheControl: '3600',
 				upsert: false,
 				contentType: file.type,
@@ -382,13 +411,46 @@ export async function POST(req) {
 
 		const { data: publicUrlData } = supabase.storage
 			.from(bucket)
-			.getPublicUrl(fileName);
+			.getPublicUrl(imageFileName);
 		const imageUrl = publicUrlData?.publicUrl;
 		if (!imageUrl) {
 			return NextResponse.json(
 				{ error: 'Failed to get image URL' },
 				{ status: 500 }
 			);
+		}
+
+		let bannerImageUrl = null;
+		if (bannerFile && typeof bannerFile !== 'string') {
+			const bannerExt = bannerFile.name.split('.').pop();
+			const bannerFileName = `activity_${Date.now()}_${Math.random()
+				.toString(36)
+				.substring(2, 8)}.${bannerExt}`;
+
+			const { error: bannerUploadError } = await supabase.storage
+				.from(bucket)
+				.upload(bannerFileName, bannerFile, {
+					cacheControl: '3600',
+					upsert: false,
+					contentType: bannerFile.type,
+				});
+			if (bannerUploadError) {
+				return NextResponse.json(
+					{ error: 'Failed to upload banner image', details: bannerUploadError.message },
+					{ status: 500 }
+				);
+			}
+
+			const { data: bannerPublicUrlData } = supabase.storage
+				.from(bucket)
+				.getPublicUrl(bannerFileName);
+			bannerImageUrl = bannerPublicUrlData?.publicUrl || null;
+			if (!bannerImageUrl) {
+				return NextResponse.json(
+					{ error: 'Failed to get banner image URL' },
+					{ status: 500 }
+				);
+			}
 		}
 		const allowedFields = [
 			'title',
@@ -407,6 +469,7 @@ export async function POST(req) {
 			'caloriesPerHour',
 			'isFeatured',
 			'imageUrl',
+			'bannerImageUrl',
 			'mapUrl',
 			'tncIds',
 		];
@@ -422,6 +485,7 @@ export async function POST(req) {
 			}
 		}
 		activityData.imageUrl = imageUrl;
+		if (bannerImageUrl) activityData.bannerImageUrl = bannerImageUrl;
 
 		let adminId = null;
 		if (user && user.email) {
@@ -469,7 +533,7 @@ export async function POST(req) {
 				{ status: 400 }
 			);
 		}
-		
+
 		const sanitizedData = sanitizeData(activityData, allowedFields);
 		let tncIds = [];
 		if (sanitizedData.tncIds && typeof sanitizedData.tncIds === 'string') {
@@ -481,7 +545,7 @@ export async function POST(req) {
 						if (Array.isArray(arr)) {
 							tncIds = arr.filter(id => typeof id === 'string' && id.trim()).map(id => id.trim());
 						}
-					} catch {}
+					} catch { }
 				}
 				if (tncIds.length === 0) {
 					tncIds = trimmed.split(',').map(s => s.trim()).filter(Boolean);
@@ -518,29 +582,29 @@ export async function POST(req) {
 
 // PATCH /api/admin/activities
 export async function PATCH(req) {
-    try {
-        const supabase = await createServerClient();
-        const { error, user } = await requireAdmin(supabase, NextResponse);
-        if (error) return error;
+	try {
+		const supabase = await createServerClient();
+		const { error, user } = await requireAdmin(supabase, NextResponse);
+		if (error) return error;
 
-        const url = new URL(req.url);
-        const activityId = url.searchParams.get('activityId');
-        if (!activityId) {
-            return NextResponse.json(
-                { error: 'Missing activityId' },
-                { status: 400 }
-            );
-        }
+		const url = new URL(req.url);
+		const activityId = url.searchParams.get('activityId');
+		if (!activityId) {
+			return NextResponse.json(
+				{ error: 'Missing activityId' },
+				{ status: 400 }
+			);
+		}
 
-        let formData;
-        try {
-            formData = await req.formData();
-        } catch {
-            return NextResponse.json(
-                { error: 'Invalid form data' },
-                { status: 400 }
-            );
-        }
+		let formData;
+		try {
+			formData = await req.formData();
+		} catch {
+			return NextResponse.json(
+				{ error: 'Invalid form data' },
+				{ status: 400 }
+			);
+		}
 
 		const allowedFields = [
 			'title',
@@ -564,17 +628,17 @@ export async function PATCH(req) {
 			'mapUrl',
 			'tncIds',
 		];
-        let updates = {};
-        for (const field of allowedFields) {
-            if (formData.has(field)) {
-                if (field === 'isFeatured') {
-                    const val = formData.get(field);
-                    updates.isFeatured = val === 'true' || val === '1';
-                } else {
-                    updates[field] = formData.get(field);
-                }
-            }
-        }
+		let updates = {};
+		for (const field of allowedFields) {
+			if (formData.has(field)) {
+				if (field === 'isFeatured') {
+					const val = formData.get(field);
+					updates.isFeatured = val === 'true' || val === '1';
+				} else {
+					updates[field] = formData.get(field);
+				}
+			}
+		}
 		let tncIds = [];
 		if (updates.tncIds && typeof updates.tncIds === 'string') {
 			const trimmed = updates.tncIds.trim();
@@ -585,7 +649,7 @@ export async function PATCH(req) {
 						if (Array.isArray(arr)) {
 							tncIds = arr.filter(id => typeof id === 'string' && id.trim()).map(id => id.trim());
 						}
-					} catch {}
+					} catch { }
 				}
 				if (tncIds.length === 0) {
 					tncIds = trimmed.split(',').map(s => s.trim()).filter(Boolean);
@@ -607,15 +671,15 @@ export async function PATCH(req) {
 			}
 		}
 
-        if (updates.participantLimit) {
-            updates.participantLimit = Number(updates.participantLimit);
-            if (isNaN(updates.participantLimit)) {
-                return NextResponse.json(
-                    { error: 'participantLimit must be a number' },
-                    { status: 400 }
-                );
-            }
-        }
+		if (updates.participantLimit) {
+			updates.participantLimit = Number(updates.participantLimit);
+			if (isNaN(updates.participantLimit)) {
+				return NextResponse.json(
+					{ error: 'participantLimit must be a number' },
+					{ status: 400 }
+				);
+			}
+		}
 
 
 
@@ -629,79 +693,145 @@ export async function PATCH(req) {
 			}
 		}
 
-        let newImageUrl = null;
-        let oldImageUrl = null;
-        let oldFilePath = null;
-        const file = formData.get('image');
-        if (file && typeof file !== 'string') {
-            const current = await getMany(
-                'activity',
-                { id: activityId },
-                { imageUrl: true }
-            );
-            oldImageUrl = current && current[0]?.imageUrl;
+		const bucket = 'activities-images';
+		const file = formData.get('image');
+		const bannerFile = formData.get('bannerImage');
+		if (bannerFile && typeof bannerFile === 'string') {
+			return NextResponse.json(
+				{ error: 'Banner image must be provided as a file upload.' },
+				{ status: 400 }
+			);
+		}
 
-            if (oldImageUrl) {
-                const urlObj = new URL(oldImageUrl);
-                const pathParts = urlObj.pathname.split('/');
-                // Find the index of the bucket and get everything after
-                const bucketIndex = pathParts.findIndex((p) => p === 'activities-images');
-                if (bucketIndex !== -1) {
-                    oldFilePath = pathParts.slice(bucketIndex + 1).join('/');
-                }
-            }
+		let newImageUrl = null;
+		let oldImageUrl = null;
+		let oldImageFilePath = null;
+		let newBannerImageUrl = null;
+		let oldBannerImageUrl = null;
+		let oldBannerFilePath = null;
 
-            const ext = file.name.split('.').pop();
-            const fileName = `activity_${Date.now()}_${Math.random()
-                .toString(36)
-                .substring(2, 8)}.${ext}`;
-            const bucket = 'activities-images';
-            const { error: uploadError } = await supabase.storage
-                .from(bucket)
-                .upload(fileName, file, {
-                    cacheControl: '3600',
-                    upsert: false,
-                    contentType: file.type,
-                });
-            if (uploadError)
-                return NextResponse.json(
-                    {
-                        error: 'Failed to upload image',
-                        details: uploadError.message,
-                    },
-                    { status: 500 }
-                );
-            const { data: publicUrlData } = supabase.storage
-                .from(bucket)
-                .getPublicUrl(fileName);
-            newImageUrl = publicUrlData?.publicUrl;
-            if (!newImageUrl)
-                return NextResponse.json(
-                    { error: 'Failed to get image URL' },
-                    { status: 500 }
-                );
-            updates.imageUrl = newImageUrl;
-        }
+		if ((file && typeof file !== 'string') || (bannerFile && typeof bannerFile !== 'string')) {
+			const current = await getMany(
+				'activity',
+				{ id: activityId },
+				{ imageUrl: true, bannerImageUrl: true }
+			);
+			const currentActivity = current && current[0] ? current[0] : null;
+			if (currentActivity) {
+				oldImageUrl = currentActivity.imageUrl || null;
+				oldBannerImageUrl = currentActivity.bannerImageUrl || null;
+			}
+		}
 
-        if (Object.keys(updates).length === 0)
-            return NextResponse.json(
-                { error: 'No valid fields to update' },
-                { status: 400 }
-            );
+		if (file && typeof file !== 'string') {
+			if (oldImageUrl) {
+				const urlObj = new URL(oldImageUrl);
+				const pathParts = urlObj.pathname.split('/');
+				const bucketIndex = pathParts.findIndex((p) => p === bucket);
+				if (bucketIndex !== -1) {
+					oldImageFilePath = pathParts.slice(bucketIndex + 1).join('/');
+				}
+			}
 
-        if (newImageUrl && oldFilePath) {
-            const bucket = 'activities-images';
-            const { error: removeError } = await supabase.storage
-                .from(bucket)
-                .remove([oldFilePath]);
-            if (removeError) {
-                console.error('Failed to remove old image:', removeError.message);
-                return NextResponse.json(
-                    { error: 'Failed to remove old image', details: removeError.message },
-                    { status: 500 }
-                );
-            }
-        }
+			const ext = file.name.split('.').pop();
+			const fileName = `activity_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+			const { error: uploadError } = await supabase.storage
+				.from(bucket)
+				.upload(fileName, file, {
+					cacheControl: '3600',
+					upsert: false,
+					contentType: file.type,
+				});
+			if (uploadError)
+				return NextResponse.json(
+					{
+						error: 'Failed to upload image',
+						details: uploadError.message,
+					},
+					{ status: 500 }
+				);
+			const { data: publicUrlData } = supabase.storage
+				.from(bucket)
+				.getPublicUrl(fileName);
+			newImageUrl = publicUrlData?.publicUrl;
+			if (!newImageUrl)
+				return NextResponse.json(
+					{ error: 'Failed to get image URL' },
+					{ status: 500 }
+				);
+			updates.imageUrl = newImageUrl;
+		}
+
+		if (bannerFile && typeof bannerFile !== 'string') {
+			if (oldBannerImageUrl) {
+				const urlObj = new URL(oldBannerImageUrl);
+				const pathParts = urlObj.pathname.split('/');
+				const bucketIndex = pathParts.findIndex((p) => p === bucket);
+				if (bucketIndex !== -1) {
+					oldBannerFilePath = pathParts.slice(bucketIndex + 1).join('/');
+				}
+			}
+
+			const bannerExt = bannerFile.name.split('.').pop();
+			const bannerFileName = `activity_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${bannerExt}`;
+			const { error: bannerUploadError } = await supabase.storage
+				.from(bucket)
+				.upload(bannerFileName, bannerFile, {
+					cacheControl: '3600',
+					upsert: false,
+					contentType: bannerFile.type,
+				});
+			if (bannerUploadError)
+				return NextResponse.json(
+					{
+						error: 'Failed to upload banner image',
+						details: bannerUploadError.message,
+					},
+					{ status: 500 }
+				);
+			const { data: bannerPublicUrlData } = supabase.storage
+				.from(bucket)
+				.getPublicUrl(bannerFileName);
+			newBannerImageUrl = bannerPublicUrlData?.publicUrl;
+			if (!newBannerImageUrl)
+				return NextResponse.json(
+					{ error: 'Failed to get banner image URL' },
+					{ status: 500 }
+				);
+			updates.bannerImageUrl = newBannerImageUrl;
+		}
+
+		if (Object.keys(updates).length === 0)
+			return NextResponse.json(
+				{ error: 'No valid fields to update' },
+				{ status: 400 }
+			);
+
+		if (newImageUrl && oldImageFilePath) {
+			const { error: removeError } = await supabase.storage
+				.from(bucket)
+				.remove([oldImageFilePath]);
+			if (removeError) {
+				console.error('Failed to remove old image:', removeError.message);
+				return NextResponse.json(
+					{ error: 'Failed to remove old image', details: removeError.message },
+					{ status: 500 }
+				);
+			}
+		}
+
+		if (newBannerImageUrl && oldBannerFilePath) {
+			const { error: removeBannerError } = await supabase.storage
+				.from(bucket)
+				.remove([oldBannerFilePath]);
+			if (removeBannerError) {
+				console.error('Failed to remove old banner image:', removeBannerError.message);
+				return NextResponse.json(
+					{ error: 'Failed to remove old banner image', details: removeBannerError.message },
+					{ status: 500 }
+				);
+			}
+		}
 
 		const updatedActivity = await updateById('activity', activityId, updates);
 		if (updatedActivity && updatedActivity.error)
@@ -712,14 +842,14 @@ export async function PATCH(req) {
 
 		const canonical = await buildActivityResponse(activityId);
 		return NextResponse.json(canonical || updatedActivity, { status: 200 });
-    } catch (error) {
-        console.error('Error in PATCH /api/admin/activities:', error);
-        return new NextResponse(
-            JSON.stringify({ error: 'Failed to update activity. Please try again later.', message: error.message }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
-    }
+	} catch (error) {
+		console.error('Error in PATCH /api/admin/activities:', error);
+		return new NextResponse(
+			JSON.stringify({ error: 'Failed to update activity. Please try again later.', message: error.message }),
+			{
+				status: 500,
+				headers: { 'Content-Type': 'application/json' },
+			}
+		);
+	}
 }
