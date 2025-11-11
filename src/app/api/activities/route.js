@@ -64,7 +64,9 @@ export async function GET(req) {
 				totalCaloriesBurnt: true,
 				isFeatured: true,
 				mapUrl: true,
-				tncId: true,
+				tncs: {
+					select: { id: true, title: true, description: true },
+				},
 				status: true,
 				organizationName: true,
 			},
@@ -120,20 +122,6 @@ export async function GET(req) {
 			}
 		}
 
-		const tncIds = Array.from(new Set((activities || []).map(a => a.tncId).filter(Boolean)));
-		let tncMap = {};
-		if (tncIds.length > 0) {
-			const tncs = await getMany('tnc', { id: { in: tncIds } }, {
-				id: true,
-				title: true,
-				description: true,
-			});
-			tncMap = tncs.reduce((acc, tnc) => {
-				acc[tnc.id] = tnc;
-				return acc;
-			}, {});
-		}
-
 		const activitiesList = (activities || []).map((a) => ({
 			id: a.id,
 			title: a.title,
@@ -161,7 +149,7 @@ export async function GET(req) {
 			totalCaloriesBurnt: a.totalCaloriesBurnt,
 			isFeatured: a.isFeatured,
 			mapUrl: a.mapUrl,
-			tnc: a.tncId ? tncMap[a.tncId] || null : null,
+			tncs: a.tncs || [],
 			status: a.status,
 			organizationName: a.organizationName,
 		}));

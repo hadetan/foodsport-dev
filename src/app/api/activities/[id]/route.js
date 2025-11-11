@@ -34,7 +34,9 @@ export async function GET(_req, { params }) {
       totalCaloriesBurnt: true,
       isFeatured: true,
       mapUrl: true,
-      tncId: true,
+      tncs: {
+        select: { id: true, title: true, description: true },
+      },
     });
 
     if (!activity || activity.status === 'draft') {
@@ -82,19 +84,6 @@ export async function GET(_req, { params }) {
       }
     }
 
-    // tnc mapping
-    let tnc = null;
-    if (activity.tncId) {
-      const tncRaw = await getById('tnc', activity.tncId, { id: true, title: true, description: true });
-      if (tncRaw) {
-        tnc = {
-          id: tncRaw.id,
-          title: tncRaw.title,
-          description: tncRaw.description,
-        };
-      }
-    }
-
     const responseActivity = {
       id: activity.id,
       title: activity.title,
@@ -119,7 +108,7 @@ export async function GET(_req, { params }) {
       totalCaloriesBurnt: activity.totalCaloriesBurnt,
       isFeatured: activity.isFeatured,
       mapUrl: activity.mapUrl,
-      tnc,
+      tncs: activity.tncs || [],
     };
 
     return new NextResponse(

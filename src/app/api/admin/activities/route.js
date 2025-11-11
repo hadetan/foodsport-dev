@@ -70,7 +70,17 @@ export async function GET(req) {
 				isFeatured: true,
 				totalCaloriesBurnt: true,
 				mapUrl: true,
-				tncId: true,
+				tncs: {
+					select: {
+						id: true,
+						title: true,
+						description: true,
+						adminUserId: true,
+						updatedBy: true,
+						createdAt: true,
+						updatedAt: true,
+					},
+				},
 				createdAt: true,
 				updatedAt: true,
 			},
@@ -94,30 +104,15 @@ export async function GET(req) {
 			}, {});
 		}
 
-		const tncIds = Array.from(new Set((activities || []).map(a => a.tncId).filter(Boolean)));
-		let tncMap = {};
-		let adminIds = [
-			...organizerIds,
-			...tncIds,
-			...((activities || []).map(a => a.tncId).filter(Boolean)),
-		];
-		if (tncIds.length > 0) {
-			const tncs = await getMany('tnc', { id: { in: tncIds } }, {
-				id: true,
-				title: true,
-				description: true,
-				adminUserId: true,
-				updatedBy: true,
-				createdAt: true,
-				updatedAt: true,
-			});
-			const updatedByIds = tncs.map(tnc => tnc.updatedBy).filter(Boolean);
-			adminIds = [...new Set([...adminIds, ...updatedByIds])];
-			tncMap = tncs.reduce((acc, tnc) => {
-				acc[tnc.id] = tnc;
-				return acc;
-			}, {});
+		// resolve admin names for tncs created/updated by
+		let adminIds = [...organizerIds];
+		for (const a of activities || []) {
+			for (const t of (a.tncs || [])) {
+				if (t.adminUserId) adminIds.push(t.adminUserId);
+				if (t.updatedBy) adminIds.push(t.updatedBy);
+			}
 		}
+		adminIds = Array.from(new Set(adminIds.filter(Boolean)));
 		let adminMap = {};
 		if (adminIds.length > 0) {
 			const admins = await getMany('adminUser', { id: { in: adminIds } }, { id: true, name: true });
@@ -128,19 +123,6 @@ export async function GET(req) {
 		}
 
 		const activitiesList = (activities || []).map((a) => {
-			let tnc = null;
-			if (a.tncId && tncMap[a.tncId]) {
-				const tncRaw = tncMap[a.tncId];
-				tnc = {
-					id: tncRaw.id,
-					title: tncRaw.title,
-					description: tncRaw.description,
-					createdBy: tncRaw.adminUserId ? adminMap[tncRaw.adminUserId] || null : null,
-					updatedBy: tncRaw.updatedBy ? adminMap[tncRaw.updatedBy] || null : null,
-					createdAt: tncRaw.createdAt,
-					updatedAt: tncRaw.updatedAt,
-				};
-			}
 			return {
 				id: a.id,
 				title: a.title,
@@ -165,7 +147,15 @@ export async function GET(req) {
 				isFeatured: a.isFeatured,
 				totalCaloriesBurnt: a.totalCaloriesBurnt,
 				mapUrl: a.mapUrl,
-				tnc,
+				tncs: (a.tncs || []).map(t => ({
+					id: t.id,
+					title: t.title,
+					description: t.description,
+					createdBy: t.adminUserId ? adminMap[t.adminUserId] || null : null,
+					updatedBy: t.updatedBy ? adminMap[t.updatedBy] || null : null,
+					createdAt: t.createdAt,
+					updatedAt: t.updatedAt,
+				})),
 				createdAt: a.createdAt,
 				updatedAt: a.updatedAt,
 			};
@@ -221,7 +211,17 @@ async function buildActivityResponse(id) {
 		isFeatured: true,
 		totalCaloriesBurnt: true,
 		mapUrl: true,
-		tncId: true,
+		tncs: {
+			select: {
+				id: true,
+				title: true,
+				description: true,
+				adminUserId: true,
+				updatedBy: true,
+				createdAt: true,
+				updatedAt: true,
+			},
+		},
 		createdAt: true,
 		updatedAt: true,
 	});
@@ -238,40 +238,15 @@ async function buildActivityResponse(id) {
 		if (Array.isArray(admins) && admins.length > 0) organizerName = admins[0].name || organizerName;
 	}
 
-	// tnc mapping
-	let tnc = null;
-	if (activity.tncId) {
-		const tncRaw = await getById('tnc', activity.tncId, {
-			id: true,
-			title: true,
-			description: true,
-			adminUserId: true,
-			updatedBy: true,
-			createdAt: true,
-			updatedAt: true,
-		});
-		if (tncRaw) {
-			// get admin names if available
-			let createdBy = null;
-			let updatedBy = null;
-			if (tncRaw.adminUserId) {
-				const adm = await getMany('adminUser', { id: tncRaw.adminUserId }, { id: true, name: true });
-				if (Array.isArray(adm) && adm.length > 0) createdBy = adm[0].name || null;
-			}
-			if (tncRaw.updatedBy) {
-				const adm2 = await getMany('adminUser', { id: tncRaw.updatedBy }, { id: true, name: true });
-				if (Array.isArray(adm2) && adm2.length > 0) updatedBy = adm2[0].name || null;
-			}
-			tnc = {
-				id: tncRaw.id,
-				title: tncRaw.title,
-				description: tncRaw.description,
-				createdBy,
-				updatedBy,
-				createdAt: tncRaw.createdAt,
-				updatedAt: tncRaw.updatedAt,
-			};
-		}
+	const tncsRaw = Array.isArray(activity.tncs) ? activity.tncs : [];
+	const adminIds = Array.from(new Set(tncsRaw.flatMap(t => [t.adminUserId, t.updatedBy]).filter(Boolean)));
+	let adminMap = {};
+	if (adminIds.length > 0) {
+		const admins = await getMany('adminUser', { id: { in: adminIds } }, { id: true, name: true });
+		adminMap = (admins || []).reduce((acc, a) => {
+			acc[a.id] = a.name;
+			return acc;
+		}, {});
 	}
 
 	return {
@@ -298,7 +273,15 @@ async function buildActivityResponse(id) {
 		isFeatured: activity.isFeatured,
 		totalCaloriesBurnt: activity.totalCaloriesBurnt,
 		mapUrl: activity.mapUrl,
-		tnc,
+		tncs: tncsRaw.map(t => ({
+			id: t.id,
+			title: t.title,
+			description: t.description,
+			createdBy: t.adminUserId ? adminMap[t.adminUserId] || null : null,
+			updatedBy: t.updatedBy ? adminMap[t.updatedBy] || null : null,
+			createdAt: t.createdAt,
+			updatedAt: t.updatedAt,
+		})),
 		createdAt: activity.createdAt,
 		updatedAt: activity.updatedAt,
 	};
@@ -425,7 +408,7 @@ export async function POST(req) {
 			'isFeatured',
 			'imageUrl',
 			'mapUrl',
-			'tncId',
+			'tncIds',
 		];
 		const activityData = {};
 		for (const field of allowedFields) {
@@ -488,7 +471,29 @@ export async function POST(req) {
 		}
 		
 		const sanitizedData = sanitizeData(activityData, allowedFields);
+		let tncIds = [];
+		if (sanitizedData.tncIds && typeof sanitizedData.tncIds === 'string') {
+			const trimmed = sanitizedData.tncIds.trim();
+			if (trimmed) {
+				if (trimmed.startsWith('[')) {
+					try {
+						const arr = JSON.parse(trimmed);
+						if (Array.isArray(arr)) {
+							tncIds = arr.filter(id => typeof id === 'string' && id.trim()).map(id => id.trim());
+						}
+					} catch {}
+				}
+				if (tncIds.length === 0) {
+					tncIds = trimmed.split(',').map(s => s.trim()).filter(Boolean);
+				}
+				tncIds = Array.from(new Set(tncIds));
+			}
+		}
+		delete sanitizedData.tncIds;
 		if (adminId) sanitizedData.organizerId = adminId;
+		if (Array.isArray(tncIds) && tncIds.length > 0) {
+			sanitizedData.tncs = { connect: tncIds.map(id => ({ id })) };
+		}
 		const activity = await insert('activity', sanitizedData);
 		if (activity && activity.error) {
 			return NextResponse.json(
@@ -497,8 +502,6 @@ export async function POST(req) {
 			);
 		}
 
-		// Build canonical response so the client receives the same shape
-		// as the GET endpoint (participantCount, organizerName, tnc mapping, etc.)
 		const canonical = await buildActivityResponse(activity.id || activity?.[0]?.id || activity?.id);
 		return NextResponse.json(canonical || activity, { status: 201 });
 	} catch (error) {
@@ -559,7 +562,7 @@ export async function PATCH(req) {
 			'isFeatured',
 			'totalCaloriesBurnt',
 			'mapUrl',
-			'tncId',
+			'tncIds',
 		];
         let updates = {};
         for (const field of allowedFields) {
@@ -572,6 +575,28 @@ export async function PATCH(req) {
                 }
             }
         }
+		let tncIds = [];
+		if (updates.tncIds && typeof updates.tncIds === 'string') {
+			const trimmed = updates.tncIds.trim();
+			if (trimmed) {
+				if (trimmed.startsWith('[')) {
+					try {
+						const arr = JSON.parse(trimmed);
+						if (Array.isArray(arr)) {
+							tncIds = arr.filter(id => typeof id === 'string' && id.trim()).map(id => id.trim());
+						}
+					} catch {}
+				}
+				if (tncIds.length === 0) {
+					tncIds = trimmed.split(',').map(s => s.trim()).filter(Boolean);
+				}
+				tncIds = Array.from(new Set(tncIds));
+			}
+		}
+		delete updates.tncIds;
+		if (tncIds.length > 0) {
+			updates.tncs = { set: tncIds.map(id => ({ id })) };
+		}
 
 		let adminId = null;
 		if (user && user.email) {
