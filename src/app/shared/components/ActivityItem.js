@@ -135,9 +135,17 @@ export default function ActivityItem({ activity, user }) {
     return (
         <div className={styles.card}>
             <div className={styles.imageWrapper}>
-                {activity.bannerImageUrl && (
+                {activity.bannerImageUrl ? (
 					<Image
 						src={activity.bannerImageUrl}
+						alt={activity.activityType}
+						fill
+						className={styles.cardImage}
+						onClick={() => router.push(redirectUrl)}
+					/>
+				) : (
+					<Image
+						src={activity.imageUrl}
 						alt={activity.activityType}
 						fill
 						className={styles.cardImage}
