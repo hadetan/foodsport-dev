@@ -120,7 +120,10 @@ export default function EditActivityPage() {
             ? endDateTimeFormatted.split("T")
             : ["", ""];
 
-        const initialTncIds = Array.isArray(activity.tncIds)
+        // Extract T&C IDs from the tncs array
+        const initialTncIds = Array.isArray(activity.tncs)
+            ? activity.tncs.map((tnc) => tnc.id)
+            : Array.isArray(activity.tncIds)
             ? activity.tncIds
             : activity.tnc?.id
             ? [activity.tnc.id]
