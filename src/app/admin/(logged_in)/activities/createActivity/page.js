@@ -249,6 +249,7 @@ const CreateActivityPage = () => {
                 image: formData.image,
                 mapUrl: formData.mapUrl,
                 tncId: formData.tncIds.length > 0 ? formData.tncIds[0] : "",
+                tncIds: formData.tncIds,
                 organizationName: formData.organizationName || "",
                 isFeatured: !!formData.isFeatured,
             };
@@ -256,6 +257,15 @@ const CreateActivityPage = () => {
             Object.entries(payload).forEach(([key, value]) => {
                 if (key === "image" && value) {
                     formDataToSend.set("image", value);
+                } else if (Array.isArray(value)) {
+                    if (value.length > 0) {
+                        value.forEach((item) => {
+                            formDataToSend.append(`${key}[]`, item);
+                        });
+                        formDataToSend.set(key, JSON.stringify(value));
+                    } else {
+                        formDataToSend.set(key, JSON.stringify([]));
+                    }
                 } else if (
                     value !== undefined &&
                     value !== null &&
@@ -264,12 +274,6 @@ const CreateActivityPage = () => {
                     formDataToSend.set(key, value);
                 }
             });
-            // Add all tncIds as separate form data entries
-            if (formData.tncIds && formData.tncIds.length > 0) {
-                formData.tncIds.forEach((id) => {
-                    formDataToSend.append("tncIds[]", id);
-                });
-            }
             const response = await axiosClient.post(
                 "/admin/activities",
                 formDataToSend,
@@ -770,7 +774,7 @@ const CreateActivityPage = () => {
                     {/* Terms & Conditions - Multi Select */}
                     <div className="mt-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Skills
+                            Terms & Conditions
                         </label>
                         <div className="relative">
                             <div className="border border-gray-300 rounded-lg p-3 bg-white min-h-[60px] flex flex-wrap gap-2 items-center">
@@ -826,7 +830,7 @@ const CreateActivityPage = () => {
                                     <option value="">
                                         {tncLoading
                                             ? "Loading..."
-                                            : "Select skills"}
+                                            : "Select T&Cs"}
                                     </option>
                                     {tncOptions
                                         .filter(

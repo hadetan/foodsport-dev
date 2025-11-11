@@ -120,6 +120,11 @@ export default function EditActivityPage() {
             ? endDateTimeFormatted.split("T")
             : ["", ""];
 
+        const initialTncIds = Array.isArray(activity.tncIds)
+            ? activity.tncIds
+            : activity.tnc?.id
+            ? [activity.tnc.id]
+            : [];
         setForm({
             title: activity.title || "",
             titleZh: activity.titleZh || "",
@@ -139,7 +144,7 @@ export default function EditActivityPage() {
             totalCaloriesBurnt: activity.totalCaloriesBurnt || "",
             caloriesPerHourMin,
             caloriesPerHourMax,
-            tncIds: activity.tnc?.id ? [activity.tnc.id] : [],
+            tncIds: initialTncIds,
             isFeatured: !!activity.isFeatured,
             organizationName: activity.organizationName,
         });
@@ -234,8 +239,9 @@ export default function EditActivityPage() {
             errs.image = "Max size 5MB.";
 
         // Require T&C only when moving out of draft (active/closed/cancelled)
+        const currentTncIds = Array.isArray(form.tncIds) ? form.tncIds : [];
         const requiresTnc = requiresTncForStatus(form.status);
-        if (requiresTnc && (!form.tncIds || form.tncIds.length === 0)) {
+        if (requiresTnc && currentTncIds.length === 0) {
             errs.tncIds =
                 "Please select at least one T&C before switching to active status";
         }
@@ -252,7 +258,10 @@ export default function EditActivityPage() {
 
             if (name === "status") {
                 const requiresTnc = requiresTncForStatus(newValue);
-                if (requiresTnc && (!next.tncIds || next.tncIds.length === 0)) {
+                const selectedIds = Array.isArray(next.tncIds)
+                    ? next.tncIds
+                    : [];
+                if (requiresTnc && selectedIds.length === 0) {
                     const msg =
                         "Please select at least one T&C before switching to active status";
                     setErrors((prevErrs) => ({ ...prevErrs, tncIds: msg }));
@@ -345,16 +354,20 @@ export default function EditActivityPage() {
             }
 
             // Add all tncIds as separate form data entries
-            if (form.tncIds && form.tncIds.length > 0) {
+            const selectedTncIds = Array.isArray(form.tncIds)
+                ? form.tncIds
+                : [];
+            if (selectedTncIds.length > 0) {
                 // Send first one as tncId for backward compatibility
-                formData.append("tncId", form.tncIds[0]);
-                // Send all as array
-                form.tncIds.forEach((id) => {
+                formData.append("tncId", selectedTncIds[0]);
+                // Send all as array entries for easier parsing
+                selectedTncIds.forEach((id) => {
                     formData.append("tncIds[]", id);
                 });
             } else {
                 formData.append("tncId", "");
             }
+            formData.append("tncIds", JSON.stringify(selectedTncIds));
 
             if (imageFile && imageFile.url === undefined) {
                 formData.append("image", imageFile);
@@ -909,11 +922,11 @@ export default function EditActivityPage() {
                                 {/* Terms & Conditions - Multi Select */}
                                 <div className="mt-6">
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Skills
+                                        Terms & Conditions
                                     </label>
                                     <div className="relative">
                                         <div className="border border-gray-300 rounded-lg p-3 bg-white min-h-[60px] flex flex-wrap gap-2 items-center">
-                                            {form.tncIds &&
+                                            {Array.isArray(form.tncIds) &&
                                                 form.tncIds.map((tncId) => {
                                                     const tnc = tncOptions.find(
                                                         (t) => t.id === tncId
@@ -932,16 +945,24 @@ export default function EditActivityPage() {
                                                                     setForm(
                                                                         (
                                                                             prev
-                                                                        ) => ({
-                                                                            ...prev,
-                                                                            tncIds: prev.tncIds.filter(
-                                                                                (
-                                                                                    id
-                                                                                ) =>
-                                                                                    id !==
-                                                                                    tncId
-                                                                            ),
-                                                                        })
+                                                                        ) => {
+                                                                            const prevIds =
+                                                                                Array.isArray(
+                                                                                    prev.tncIds
+                                                                                )
+                                                                                    ? prev.tncIds
+                                                                                    : [];
+                                                                            return {
+                                                                                ...prev,
+                                                                                tncIds: prevIds.filter(
+                                                                                    (
+                                                                                        id
+                                                                                    ) =>
+                                                                                        id !==
+                                                                                        tncId
+                                                                                ),
+                                                                            };
+                                                                        }
                                                                     );
                                                                 }}
                                                                 className="text-gray-500 hover:text-gray-700"
@@ -957,16 +978,22 @@ export default function EditActivityPage() {
                                                 onChange={(e) => {
                                                     const selectedId =
                                                         e.target.value;
+                                                    const prevIds =
+                                                        Array.isArray(
+                                                            form.tncIds
+                                                        )
+                                                            ? form.tncIds
+                                                            : [];
                                                     if (
                                                         selectedId &&
-                                                        !form.tncIds.includes(
+                                                        !prevIds.includes(
                                                             selectedId
                                                         )
                                                     ) {
                                                         setForm((prev) => ({
                                                             ...prev,
                                                             tncIds: [
-                                                                ...prev.tncIds,
+                                                                ...prevIds,
                                                                 selectedId,
                                                             ],
                                                         }));
@@ -977,15 +1004,20 @@ export default function EditActivityPage() {
                                                 <option value="">
                                                     {tncLoading
                                                         ? "Loading..."
-                                                        : "Select skills"}
+                                                        : "Select T&Cs"}
                                                 </option>
                                                 {tncOptions
-                                                    .filter(
-                                                        (t) =>
-                                                            !form.tncIds.includes(
-                                                                t.id
+                                                    .filter((t) => {
+                                                        const currentIds =
+                                                            Array.isArray(
+                                                                form.tncIds
                                                             )
-                                                    )
+                                                                ? form.tncIds
+                                                                : [];
+                                                        return !currentIds.includes(
+                                                            t.id
+                                                        );
+                                                    })
                                                     .map((t) => (
                                                         <option
                                                             key={t.id}
