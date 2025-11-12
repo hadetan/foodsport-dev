@@ -246,9 +246,17 @@ const ActivityDetails = ({
                     </h1>
                     <div className="activityDetailsMainDesc">
                         <div className="activityDetailsHero">
-                            {activity.bannerImageUrl && (
+                            {activity.bannerImageUrl ? (
                                 <Image
                                     src={activity.bannerImageUrl}
+                                    alt={activity.activityType}
+                                    fill={true}
+                                    className="activityDetailsImage"
+                                    priority
+                                />
+                            ) : (
+                                <Image
+                                    src={activity.imageUrl}
                                     alt={activity.activityType}
                                     fill={true}
                                     className="activityDetailsImage"
