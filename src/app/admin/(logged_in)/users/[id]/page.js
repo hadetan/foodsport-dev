@@ -13,6 +13,10 @@ import FullPageLoader from "../../components/FullPageLoader";
 const UserDetailPage = () => {
     const { id } = useParams();
     const router = useRouter();
+    const searchParams = new URLSearchParams(
+        typeof window !== "undefined" ? window.location.search : ""
+    );
+    const returnPage = searchParams.get("returnPage") || "1";
     const { users, loading: usersLoading, setUsers } = useUsers();
     const [user, setUser] = useState(null);
     const [statusLoading, setStatusLoading] = useState(false);
@@ -24,12 +28,42 @@ const UserDetailPage = () => {
     const [activitiesLoading, setActivitiesLoading] = useState(true);
     const [activitiesError, setActivitiesError] = useState(null);
 
+    // Edit states for additional fields
+    const [isEditingGender, setIsEditingGender] = useState(false);
+    const [gender, setGender] = useState("");
+    const [genderLoading, setGenderLoading] = useState(false);
+
+    const [isEditingHeight, setIsEditingHeight] = useState(false);
+    const [height, setHeight] = useState("");
+    const [heightLoading, setHeightLoading] = useState(false);
+
+    const [isEditingDateOfBirth, setIsEditingDateOfBirth] = useState(false);
+    const [dateOfBirth, setDateOfBirth] = useState("");
+    const [dateOfBirthLoading, setDateOfBirthLoading] = useState(false);
+
+    const [isEditingPhoneNumber, setIsEditingPhoneNumber] = useState(false);
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [phoneNumberLoading, setPhoneNumberLoading] = useState(false);
+
+    const [isEditingWeight, setIsEditingWeight] = useState(false);
+    const [weight, setWeight] = useState("");
+    const [weightLoading, setWeightLoading] = useState(false);
+
     useEffect(() => {
         if (users && users.length > 0) {
             const filtered = users.filter((u) => String(u.id) === String(id));
             setUser(filtered.length > 0 ? filtered[0] : null);
             if (filtered.length > 0) {
                 setEmail(filtered[0].email || "");
+                setGender(filtered[0].gender || "");
+                setHeight(filtered[0].height || "");
+                setDateOfBirth(
+                    filtered[0].dateOfBirth
+                        ? filtered[0].dateOfBirth.split("T")[0]
+                        : ""
+                );
+                setPhoneNumber(filtered[0].phoneNumber || "");
+                setWeight(filtered[0].weight || "");
                 // Extract activities from user data
                 const activitiesList = filtered[0].joinedActivities ?? [];
                 setActivities(
@@ -94,6 +128,144 @@ const UserDetailPage = () => {
         }
     };
 
+    const handleGenderSave = async () => {
+        if (!user) return;
+        setGenderLoading(true);
+        try {
+            const { data } = await api.patch("/admin/users", {
+                userId: user.id,
+                gender,
+            });
+            if (data && !data.error) {
+                setUser({ ...user, gender });
+                setUsers(
+                    users.map((u) => (u.id === user.id ? { ...u, gender } : u))
+                );
+                setIsEditingGender(false);
+            } else {
+                alert(data?.error || "Failed to update gender.");
+            }
+        } catch (err) {
+            console.error("Gender update error:", err);
+            alert("Failed to update gender.");
+        } finally {
+            setGenderLoading(false);
+        }
+    };
+
+    const handleHeightSave = async () => {
+        if (!user) return;
+        setHeightLoading(true);
+        try {
+            const { data } = await api.patch("/admin/users", {
+                userId: user.id,
+                height: parseFloat(height),
+            });
+            if (data && !data.error) {
+                const updatedHeight = parseFloat(height);
+                setUser({ ...user, height: updatedHeight });
+                setUsers(
+                    users.map((u) =>
+                        u.id === user.id ? { ...u, height: updatedHeight } : u
+                    )
+                );
+                setIsEditingHeight(false);
+            } else {
+                alert(data?.error || "Failed to update height.");
+            }
+        } catch (err) {
+            console.error("Height update error:", err);
+            alert("Failed to update height.");
+        } finally {
+            setHeightLoading(false);
+        }
+    };
+
+    const handleDateOfBirthSave = async () => {
+        if (!user) return;
+        setDateOfBirthLoading(true);
+        try {
+            const { data } = await api.patch("/admin/users", {
+                userId: user.id,
+                dateOfBirth: new Date(dateOfBirth).toISOString(),
+            });
+            if (data && !data.error) {
+                const updatedDateOfBirth = new Date(dateOfBirth).toISOString();
+                setUser({ ...user, dateOfBirth: updatedDateOfBirth });
+                setUsers(
+                    users.map((u) =>
+                        u.id === user.id
+                            ? { ...u, dateOfBirth: updatedDateOfBirth }
+                            : u
+                    )
+                );
+                setIsEditingDateOfBirth(false);
+            } else {
+                alert(data?.error || "Failed to update date of birth.");
+            }
+        } catch (err) {
+            console.error("Date of birth update error:", err);
+            alert("Failed to update date of birth.");
+        } finally {
+            setDateOfBirthLoading(false);
+        }
+    };
+
+    const handlePhoneNumberSave = async () => {
+        if (!user) return;
+        setPhoneNumberLoading(true);
+        try {
+            const { data } = await api.patch("/admin/users", {
+                userId: user.id,
+                phoneNumber,
+            });
+            if (data && !data.error) {
+                setUser({ ...user, phoneNumber });
+                setUsers(
+                    users.map((u) =>
+                        u.id === user.id ? { ...u, phoneNumber } : u
+                    )
+                );
+                setIsEditingPhoneNumber(false);
+            } else {
+                alert(data?.error || "Failed to update phone number.");
+            }
+        } catch (err) {
+            console.error("Phone number update error:", err);
+            alert("Failed to update phone number.");
+        } finally {
+            setPhoneNumberLoading(false);
+        }
+    };
+
+    const handleWeightSave = async () => {
+        if (!user) return;
+        setWeightLoading(true);
+        try {
+            const { data } = await api.patch("/admin/users", {
+                userId: user.id,
+                weight: parseFloat(weight),
+            });
+            if (data && !data.error) {
+                const updatedWeight = parseFloat(weight);
+                setUser({ ...user, weight: updatedWeight });
+                setUsers(
+                    users.map((u) =>
+                        u.id === user.id ? { ...u, weight: updatedWeight } : u
+                    )
+                );
+                setIsEditingWeight(false);
+            } else {
+                alert(data?.error || "Failed to update weight.");
+            }
+        } catch (err) {
+            console.error("Weight update error:", err);
+            alert("Failed to update weight.");
+        } finally {
+            setWeightLoading(false);
+        }
+    };
+
     const handleCopyId = () => {
         if (!user?.id) return;
         navigator.clipboard.writeText(user.id);
@@ -121,7 +293,9 @@ const UserDetailPage = () => {
             <div>
                 <div className="flex items-center mb-8">
                     <button
-                        onClick={() => router.back()}
+                        onClick={() =>
+                            router.push(`/admin/users?page=${returnPage}`)
+                        }
                         className="flex items-center text-base-content/60 hover:text-primary transition-colors duration-200 mr-4 cursor-pointer"
                     >
                         <IoIosArrowBack className="w-5 h-5 mr-1" />
@@ -199,15 +373,18 @@ const UserDetailPage = () => {
                                             : "bg-red-100 text-red-700"
                                     }`}
                                 >
-                                    {user.isRegistered === false 
-                                        ? "Unregistered" 
-                                        : user.isActive 
-                                        ? "Active" 
+                                    {user.isRegistered === false
+                                        ? "Unregistered"
+                                        : user.isActive
+                                        ? "Active"
                                         : "Blocked"}
                                 </span>
                                 <button
                                     onClick={handleUserStatus}
-                                    disabled={statusLoading || user.isRegistered === false}
+                                    disabled={
+                                        statusLoading ||
+                                        user.isRegistered === false
+                                    }
                                     className={`relative inline-flex items-center h-7 rounded-full w-14 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-300 ${
                                         user.isRegistered === false
                                             ? "bg-gray-300 cursor-not-allowed"
@@ -262,61 +439,281 @@ const UserDetailPage = () => {
                         <Detail
                             label="Date of Birth"
                             value={
-                                user.dateOfBirth ? (
-                                    formatDate(user.dateOfBirth.split("T")[0])
+                                isEditingDateOfBirth ? (
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            className="input input-bordered input-sm"
+                                            type="date"
+                                            value={dateOfBirth}
+                                            onChange={(e) =>
+                                                setDateOfBirth(e.target.value)
+                                            }
+                                            autoFocus
+                                            disabled={dateOfBirthLoading}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={handleDateOfBirthSave}
+                                            aria-label="Save Date of Birth"
+                                            disabled={dateOfBirthLoading}
+                                        >
+                                            {dateOfBirthLoading ? (
+                                                <span className="loading loading-spinner loading-xs text-success" />
+                                            ) : (
+                                                <Check className="w-4 h-4 text-success" />
+                                            )}
+                                        </button>
+                                    </div>
                                 ) : (
-                                    <span className="italic text-base-content/50">
-                                        Empty
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        {user.dateOfBirth ? (
+                                            <span>
+                                                {formatDate(
+                                                    user.dateOfBirth.split(
+                                                        "T"
+                                                    )[0]
+                                                )}
+                                            </span>
+                                        ) : (
+                                            <span className="italic text-base-content/50">
+                                                Empty
+                                            </span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={() =>
+                                                setIsEditingDateOfBirth(true)
+                                            }
+                                            aria-label="Edit Date of Birth"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 )
                             }
                         />
                         <Detail
                             label="Gender"
                             value={
-                                user.gender ? (
-                                    user.gender.charAt(0).toUpperCase() +
-                                    user.gender.slice(1)
+                                isEditingGender ? (
+                                    <div className="flex items-center gap-2">
+                                        <select
+                                            className="select select-bordered select-sm"
+                                            value={gender}
+                                            onChange={(e) =>
+                                                setGender(e.target.value)
+                                            }
+                                            autoFocus
+                                            disabled={genderLoading}
+                                        >
+                                            <option value="">
+                                                Select Gender
+                                            </option>
+                                            <option value="male">Male</option>
+                                            <option value="female">
+                                                Female
+                                            </option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={handleGenderSave}
+                                            aria-label="Save Gender"
+                                            disabled={genderLoading}
+                                        >
+                                            {genderLoading ? (
+                                                <span className="loading loading-spinner loading-xs text-success" />
+                                            ) : (
+                                                <Check className="w-4 h-4 text-success" />
+                                            )}
+                                        </button>
+                                    </div>
                                 ) : (
-                                    <span className="italic text-base-content/50">
-                                        Empty
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        {user.gender ? (
+                                            <span>
+                                                {user.gender
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                    user.gender.slice(1)}
+                                            </span>
+                                        ) : (
+                                            <span className="italic text-base-content/50">
+                                                Empty
+                                            </span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={() =>
+                                                setIsEditingGender(true)
+                                            }
+                                            aria-label="Edit Gender"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 )
                             }
                         />
                         <Detail
                             label="Phone Number"
                             value={
-                                user.phoneNumber ? (
-                                    user.phoneNumber
+                                isEditingPhoneNumber ? (
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            className="input input-bordered input-sm"
+                                            type="tel"
+                                            value={phoneNumber}
+                                            onChange={(e) =>
+                                                setPhoneNumber(e.target.value)
+                                            }
+                                            autoFocus
+                                            disabled={phoneNumberLoading}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={handlePhoneNumberSave}
+                                            aria-label="Save Phone Number"
+                                            disabled={phoneNumberLoading}
+                                        >
+                                            {phoneNumberLoading ? (
+                                                <span className="loading loading-spinner loading-xs text-success" />
+                                            ) : (
+                                                <Check className="w-4 h-4 text-success" />
+                                            )}
+                                        </button>
+                                    </div>
                                 ) : (
-                                    <span className="italic text-base-content/50">
-                                        Empty
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        {user.phoneNumber ? (
+                                            <span>{user.phoneNumber}</span>
+                                        ) : (
+                                            <span className="italic text-base-content/50">
+                                                Empty
+                                            </span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={() =>
+                                                setIsEditingPhoneNumber(true)
+                                            }
+                                            aria-label="Edit Phone Number"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 )
                             }
                         />
                         <Detail
                             label="Height"
                             value={
-                                user.height ? (
-                                    `${user.height} cm`
+                                isEditingHeight ? (
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            className="input input-bordered input-sm"
+                                            type="number"
+                                            value={height}
+                                            onChange={(e) =>
+                                                setHeight(e.target.value)
+                                            }
+                                            placeholder="cm"
+                                            autoFocus
+                                            disabled={heightLoading}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={handleHeightSave}
+                                            aria-label="Save Height"
+                                            disabled={heightLoading}
+                                        >
+                                            {heightLoading ? (
+                                                <span className="loading loading-spinner loading-xs text-success" />
+                                            ) : (
+                                                <Check className="w-4 h-4 text-success" />
+                                            )}
+                                        </button>
+                                    </div>
                                 ) : (
-                                    <span className="italic text-base-content/50">
-                                        Empty
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        {user.height ? (
+                                            <span>{user.height} cm</span>
+                                        ) : (
+                                            <span className="italic text-base-content/50">
+                                                Empty
+                                            </span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={() =>
+                                                setIsEditingHeight(true)
+                                            }
+                                            aria-label="Edit Height"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 )
                             }
                         />
                         <Detail
                             label="Weight"
                             value={
-                                user.weight ? (
-                                    `${user.weight} kg`
+                                isEditingWeight ? (
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            className="input input-bordered input-sm"
+                                            type="number"
+                                            value={weight}
+                                            onChange={(e) =>
+                                                setWeight(e.target.value)
+                                            }
+                                            placeholder="kg"
+                                            autoFocus
+                                            disabled={weightLoading}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={handleWeightSave}
+                                            aria-label="Save Weight"
+                                            disabled={weightLoading}
+                                        >
+                                            {weightLoading ? (
+                                                <span className="loading loading-spinner loading-xs text-success" />
+                                            ) : (
+                                                <Check className="w-4 h-4 text-success" />
+                                            )}
+                                        </button>
+                                    </div>
                                 ) : (
-                                    <span className="italic text-base-content/50">
-                                        Empty
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        {user.weight ? (
+                                            <span>{user.weight} kg</span>
+                                        ) : (
+                                            <span className="italic text-base-content/50">
+                                                Empty
+                                            </span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost btn-xs"
+                                            onClick={() =>
+                                                setIsEditingWeight(true)
+                                            }
+                                            aria-label="Edit Weight"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 )
                             }
                         />
@@ -452,7 +849,7 @@ const UserDetailPage = () => {
                                                     </span>
                                                 </td>
                                                 <td className="text-sm text-base-content/80">
-                                                {calories || 0}
+                                                    {calories || 0}
                                                 </td>
                                             </tr>
                                         );

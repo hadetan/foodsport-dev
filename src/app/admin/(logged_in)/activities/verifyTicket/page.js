@@ -7,67 +7,118 @@ import { useVerifiedAttendees } from "@/app/shared/contexts/VerifiedAttendeesCon
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 import { useUsers } from "@/app/shared/contexts/usersContext";
 import FullPageLoader from "../../components/FullPageLoader";
+import InviteParticipantsDialogAdmin from "../components/InviteParticipantsDialogAdmin";
 
-function VerifiedAttendeesTable({ attendees, loading, ActivityLoading, error }) {
-    if (loading || ActivityLoading)
-        return <FullPageLoader />
-    if (error) return <div className="mt-8 text-red-600">{error}</div>;
-    if (!attendees.length)
-        return <div className="mt-8">No verified attendees yet.</div>;
+function VerifiedAttendeesTable({
+    attendees,
+    loading,
+    ActivityLoading,
+    error,
+}) {
+    if (loading || ActivityLoading) return <FullPageLoader />;
+
+    const hasAttendees = attendees.length > 0;
 
     return (
-        <div className="mt-8">
-            <h2 className="text-lg font-semibold mb-2">Verified Attendees</h2>
-            <div className="overflow-x-auto">
-                <table className="min-w-full bg-white border border-gray-200 rounded">
-                    <thead>
-                        <tr className="bg-gray-100">
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 whitespace-nowrap">
-                                Name
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 whitespace-nowrap">
-                                Email
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 whitespace-nowrap">
-                                Type
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 whitespace-nowrap">
-                                Ticket Code
-                            </th>
-                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-600 whitespace-nowrap">
-                                Joined At
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {attendees.map((a) => (
-                            <tr key={a.userActivityId} className="border-t">
-                                <td className="px-3 py-2 whitespace-nowrap">
-                                    {a.participant?.firstname || "-"}{" "}
-                                    {a.participant?.lastname || ""}
-                                </td>
-                                <td className="px-3 py-2 whitespace-nowrap">
-                                    {a.participant?.email || "-"}
-                                </td>
-                                <td className="px-3 py-2 whitespace-nowrap">
-                                    {a.participant?.type === "tempUser"
-                                        ? "Invited User"
-                                        : a.participant?.type || "-"}
-                                </td>
-                                <td className="px-3 py-2 whitespace-nowrap">
-                                    {a.ticketCode.toUpperCase() || "-"}
-                                </td>
-                                <td className="px-3 py-2 whitespace-nowrap">
-                                    {a.joinedAt
-                                        ? new Date(a.joinedAt).toLocaleString()
-                                        : "-"}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+        <section className="mt-12">
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Attendance
+                        </p>
+                        <h2 className="mt-1 text-xl font-semibold text-slate-900">
+                            Verified attendees
+                        </h2>
+                    </div>
+                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-4 py-1 text-sm font-semibold text-indigo-600">
+                        {attendees.length}
+                    </span>
+                </div>
+
+                {error ? (
+                    <div className="px-6 py-5 text-sm text-red-600">{error}</div>
+                ) : hasAttendees ? (
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-slate-200">
+                            <thead className="bg-slate-50 whitespace-nowrap">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                        Name
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                        Email
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                        Type
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                        Ticket code
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                        Joined at
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 bg-white">
+                                {attendees.map((attendee) => {
+                                    const fullName = [
+                                        attendee.participant?.firstname,
+                                        attendee.participant?.lastname,
+                                    ]
+                                        .filter(Boolean)
+                                        .join(" ");
+                                    const type =
+                                        attendee.participant?.type === "tempUser"
+                                            ? "Invited guest"
+                                            : attendee.participant?.type ||
+                                              "-";
+                                    const ticketCode =
+                                        attendee.ticketCode?.toUpperCase() ||
+                                        "-";
+                                    const joinedAt = attendee.joinedAt
+                                        ? new Date(
+                                              attendee.joinedAt
+                                          ).toLocaleString()
+                                        : "-";
+
+                                    return (
+                                        <tr
+                                            key={attendee.userActivityId}
+                                            className="transition hover:bg-slate-50/60"
+                                        >
+                                            <td className="whitespace-nowrap px-6 py-3 text-sm font-medium text-slate-800">
+                                                {fullName || "—"}
+                                            </td>
+                                            <td className="whitespace-nowrap px-6 py-3 text-sm text-slate-600">
+                                                {attendee.participant?.email ||
+                                                    "—"}
+                                            </td>
+                                            <td className="whitespace-nowrap px-6 py-3 text-sm text-slate-600">
+                                                <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                                                    {type}
+                                                </span>
+                                            </td>
+                                            <td className="whitespace-nowrap px-6 py-3 text-sm font-mono font-semibold uppercase tracking-wider text-slate-700">
+                                                {ticketCode}
+                                            </td>
+                                            <td className="whitespace-nowrap px-6 py-3 text-sm text-slate-600">
+                                                {joinedAt}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="px-6 py-12 text-center text-sm text-slate-500">
+                        No verified attendees yet. Verified users will appear
+                        here once their tickets are marked as present.
+                    </div>
+                )}
             </div>
-        </div>
+        </section>
     );
 }
 
@@ -83,6 +134,7 @@ export default function VerifyTicketPage() {
     const [verifyError, setVerifyError] = useState(null);
     const [verifySuccess, setVerifySuccess] = useState(null);
     const [activityName, setActivityName] = useState("");
+    const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
     const [invitedMeta, setInvitedMeta] = useState(null);
     const [invitedForm, setInvitedForm] = useState({
@@ -265,24 +317,41 @@ export default function VerifyTicketPage() {
         }
     }
 
+    const handleInviteSuccess = (message) => {
+        setVerifySuccess(message);
+        setVerifyError(null);
+    };
+
     const canGoBackToActivity = !!activityId;
+    const verifiedCount = attendees.length;
+    const lastAttendee =
+        attendees.length > 0 ? attendees[attendees.length - 1] : null;
+    const lastVerifiedAt = lastAttendee?.joinedAt
+        ? new Date(lastAttendee.joinedAt).toLocaleString()
+        : null;
+    const lastVerifiedName = lastAttendee?.participant
+        ? [
+              lastAttendee.participant.firstname,
+              lastAttendee.participant.lastname,
+          ]
+              .filter(Boolean)
+              .join(" ")
+        : "";
 
     return (
-        <div className="w-full min-h-screen bg-white">
-            <div className="container mx-auto px-4 pt-6">
-                <div className="flex items-center justify-between mb-6">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+            <div className="mx-auto px-4 py-8">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                     <button
-                        className="flex items-center bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-5 py-2 rounded-lg shadow transition-colors"
-                        onClick={() => {
-                            if (canGoBackToActivity) {
-                                router.push(`/admin/activities`);
-                            } else {
-                                router.push("/admin/activities");
-                            }
-                        }}
+                        className="inline-flex items-center rounded-xl border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-600 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50"
+                        onClick={() =>
+                            canGoBackToActivity
+                                ? router.push("/admin/activities")
+                                : router.push("/admin/activities")
+                        }
                     >
                         <svg
-                            className="w-5 h-5 mr-2"
+                            className="mr-2 h-4 w-4"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth={2}
@@ -294,228 +363,325 @@ export default function VerifyTicketPage() {
                                 d="M15 19l-7-7 7-7"
                             />
                         </svg>
-                        Back
+                        Back to activities
                     </button>
-
-                    <h1 className="text-xl font-bold text-gray-800">
-                        Verify Tickets
-                    </h1>
-
-                    <div />
-                </div>
-
-                <div className="max-w-xl">
-                    <div className="bg-white rounded-lg shadow border border-gray-200">
-                        <div className="px-6 py-4 border-b border-gray-200">
-                            <span className="text-lg font-semibold text-gray-800">
-                                Verify ticket
-                            </span>
-                            {/* Show activity name big in h1 */}
-                            {activityId && activityName && (
-                                <h1 className="text-2xl font-bold text-indigo-700 mt-2">
-                                    {activityName}
-                                </h1>
-                            )}
-                        </div>
-
-                        <div className="px-6 pb-6 pt-4">
-                            {verifyError && (
-                                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4 text-sm">
-                                    {verifyError}
-                                </div>
-                            )}
-
-                            {/* Ticket code form - hidden when invitedMeta is present */}
-                            {!invitedMeta && (
-                                <>
-                                    <div className="grid grid-cols-1 gap-3 mb-3">
-                                        <div className="flex-1">
-                                            <label className="block text-sm text-gray-600 mb-1">
-                                                Ticket Code
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                                                placeholder="Enter ticket code"
-                                                value={ticketCode}
-                                                onChange={(e) =>
-                                                    setTicketCode(e.target.value.toUpperCase())
-                                                }
-                                                onKeyDown={(e) => {
-                                                    if (e.key === "Enter")
-                                                        handleVerify();
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded shadow disabled:opacity-60"
-                                        onClick={handleVerify}
-                                        disabled={verifying}
-                                    >
-                                        {verifying ? "Verifying..." : "Verify"}
-                                    </button>
-                                </>
-                            )}
-
-                            {/* Success message shows for both flows */}
-                            {verifySuccess && (
-                                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded mt-4 text-sm">
-                                    {verifySuccess}
-                                </div>
-                            )}
-
-                            {/* Invited attendee extra info form */}
-                            {invitedMeta && (
-                                <div className="mt-6 border-t border-gray-200 pt-4">
-                                    <div className="text-sm font-semibold text-gray-800 mb-3">
-                                        Invited attendee detected. Please fill
-                                        in their details to complete
-                                        verification.
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="block text-sm text-gray-600 mb-1">
-                                                Email
-                                            </label>
-                                            <input
-                                                type="email"
-                                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                                                value={invitedForm.email}
-                                                onChange={(e) =>
-                                                    setInvitedForm({
-                                                        ...invitedForm,
-                                                        email: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-gray-600 mb-1">
-                                                First name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                                                value={invitedForm.firstname}
-                                                onChange={(e) =>
-                                                    setInvitedForm({
-                                                        ...invitedForm,
-                                                        firstname:
-                                                            e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-gray-600 mb-1">
-                                                Last name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                                                value={invitedForm.lastname}
-                                                onChange={(e) =>
-                                                    setInvitedForm({
-                                                        ...invitedForm,
-                                                        lastname:
-                                                            e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-gray-600 mb-1">
-                                                Date of birth
-                                            </label>
-                                            <input
-                                                type="date"
-                                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                                                value={invitedForm.dateOfBirth}
-                                                onChange={(e) =>
-                                                    setInvitedForm({
-                                                        ...invitedForm,
-                                                        dateOfBirth:
-                                                            e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-gray-600 mb-1">
-                                                Weight
-                                            </label>
-                                            <input
-                                                type="number"
-                                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                                                value={invitedForm.weight}
-                                                onChange={(e) =>
-                                                    setInvitedForm({
-                                                        ...invitedForm,
-                                                        weight: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-gray-600 mb-1">
-                                                Height
-                                            </label>
-                                            <input
-                                                type="number"
-                                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50"
-                                                value={invitedForm.height}
-                                                onChange={(e) =>
-                                                    setInvitedForm({
-                                                        ...invitedForm,
-                                                        height: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 flex items-center gap-3">
-                                        <button
-                                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded shadow disabled:opacity-60"
-                                            onClick={handleSubmitInvitedInfo}
-                                            disabled={submittingInvited}
-                                        >
-                                            {submittingInvited
-                                                ? "Submitting..."
-                                                : "Submit invited info"}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
-                                            onClick={() => {
-                                                setInvitedMeta(null);
-                                                setInvitedForm({
-                                                    email: "",
-                                                    firstname: "",
-                                                    lastname: "",
-                                                    dateOfBirth: "",
-                                                    weight: "",
-                                                    height: "",
-                                                });
-                                            }}
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                    <div className="text-right">
+                        <h1 className="text-2xl font-semibold text-slate-900">
+                            Verify tickets
+                        </h1>
                     </div>
                 </div>
 
-                <VerifiedAttendeesTable
-                    attendees={attendees}
-                    loading={loading}
-                    ActivityLoading={ActivityLoading}
-                    error={error}
-                />
+                <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+                    <div className="space-y-6 min-w-0">
+                        <div className="rounded-2xl border border-slate-200 bg-white/90 px-6 py-6 shadow-sm backdrop-blur">
+                            <div className="flex flex-wrap items-start justify-between gap-4">
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                        Ticket verification
+                                    </p>
+                                    <h2 className="mt-1 text-2xl font-semibold text-slate-900">
+                                        {activityName || "Select an activity"}
+                                    </h2>
+                                </div>
+                                {activityId && (
+                                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-right">
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                            Activity ID
+                                        </p>
+                                        <p className="font-mono text-sm font-semibold text-slate-700">
+                                            {activityId}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-6 space-y-4">
+                                {verifyError && (
+                                    <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                        {verifyError}
+                                    </div>
+                                )}
+
+                                {verifySuccess && (
+                                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                                        {verifySuccess}
+                                    </div>
+                                )}
+
+                                {!invitedMeta && (
+                                    <>
+                                        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                                            <div className="flex-1">
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                                    Ticket code
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-slate-700 shadow-inner transition focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                                                    placeholder="ABC-123"
+                                                    value={ticketCode}
+                                                    onChange={(e) =>
+                                                        setTicketCode(
+                                                            e.target.value.toUpperCase()
+                                                        )
+                                                    }
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === "Enter")
+                                                            handleVerify();
+                                                    }}
+                                                />
+                                            </div>
+                                            <button
+                                                className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                                onClick={handleVerify}
+                                                disabled={verifying}
+                                            >
+                                                {verifying
+                                                    ? "Verifying..."
+                                                    : "Verify ticket"}
+                                            </button>
+                                        </div>
+                                        <p className="text-xs text-slate-400">
+                                            Tip: press Enter to submit faster.
+                                        </p>
+                                    </>
+                                )}
+
+                                {invitedMeta && (
+                                    <div className="rounded-2xl border border-indigo-200 bg-indigo-50/70 px-5 py-5">
+                                        <div className="flex flex-wrap items-center justify-between gap-3">
+                                            <div>
+                                                <h3 className="text-base font-semibold text-indigo-800">
+                                                    Invited attendee detected
+                                                </h3>
+                                                <p className="mt-1 text-sm text-indigo-700/90">
+                                                    Complete their profile to
+                                                    finalise the check-in.
+                                                </p>
+                                            </div>
+                                            <span className="inline-flex items-center rounded-full bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                                                Ticket{" "}
+                                                {(invitedMeta.ticketCode || "").toUpperCase()}
+                                            </span>
+                                        </div>
+                                        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                                            <div>
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                                                    Email
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    className="mt-1 w-full rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm text-indigo-900 shadow-sm transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                                                    value={invitedForm.email}
+                                                    onChange={(e) =>
+                                                        setInvitedForm({
+                                                            ...invitedForm,
+                                                            email: e.target.value,
+                                                        })
+                                                    }
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                                                    First name
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="mt-1 w-full rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm text-indigo-900 shadow-sm transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                                                    value={invitedForm.firstname}
+                                                    onChange={(e) =>
+                                                        setInvitedForm({
+                                                            ...invitedForm,
+                                                            firstname:
+                                                                e.target.value,
+                                                        })
+                                                    }
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                                                    Last name
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="mt-1 w-full rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm text-indigo-900 shadow-sm transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                                                    value={invitedForm.lastname}
+                                                    onChange={(e) =>
+                                                        setInvitedForm({
+                                                            ...invitedForm,
+                                                            lastname:
+                                                                e.target.value,
+                                                        })
+                                                    }
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                                                    Date of birth
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    className="mt-1 w-full rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm text-indigo-900 shadow-sm transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                                                    value={invitedForm.dateOfBirth}
+                                                    onChange={(e) =>
+                                                        setInvitedForm({
+                                                            ...invitedForm,
+                                                            dateOfBirth:
+                                                                e.target.value,
+                                                        })
+                                                    }
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                                                    Weight (kg)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    className="mt-1 w-full rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm text-indigo-900 shadow-sm transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                                                    value={invitedForm.weight}
+                                                    onChange={(e) =>
+                                                        setInvitedForm({
+                                                            ...invitedForm,
+                                                            weight: e.target.value,
+                                                        })
+                                                    }
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-indigo-700">
+                                                    Height (cm)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    className="mt-1 w-full rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm text-indigo-900 shadow-sm transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                                                    value={invitedForm.height}
+                                                    onChange={(e) =>
+                                                        setInvitedForm({
+                                                            ...invitedForm,
+                                                            height: e.target.value,
+                                                        })
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-5 flex flex-wrap items-center gap-3">
+                                            <button
+                                                className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                                onClick={handleSubmitInvitedInfo}
+                                                disabled={submittingInvited}
+                                            >
+                                                {submittingInvited
+                                                    ? "Submitting..."
+                                                    : "Complete check-in"}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm font-semibold text-indigo-600 transition hover:border-indigo-300 hover:bg-indigo-50"
+                                                onClick={() => {
+                                                    setInvitedMeta(null);
+                                                    setInvitedForm({
+                                                        email: "",
+                                                        firstname: "",
+                                                        lastname: "",
+                                                        dateOfBirth: "",
+                                                        weight: "",
+                                                        height: "",
+                                                    });
+                                                }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <VerifiedAttendeesTable
+                            attendees={attendees}
+                            loading={loading}
+                            ActivityLoading={ActivityLoading}
+                            error={error}
+                        />
+                    </div>
+
+                    <aside className="space-y-6">
+                        <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur">
+                            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                Activity snapshot
+                            </h3>
+                            <div className="mt-4 space-y-4 text-sm text-slate-600">
+                                <div className="flex items-start justify-between gap-3">
+                                    <span>Activity</span>
+                                    <span className="text-right font-medium text-slate-900">
+                                        {activityName || "Not available"}
+                                    </span>
+                                </div>
+                                <div className="flex items-start justify-between gap-3">
+                                    <span>Verified attendees</span>
+                                    <span className="text-right font-semibold text-slate-900">
+                                        {verifiedCount}
+                                    </span>
+                                </div>
+                                <div className="flex items-start justify-between gap-3">
+                                    <span>Last check-in</span>
+                                    <span className="text-right text-slate-700">
+                                        {lastVerifiedAt
+                                            ? `${lastVerifiedAt}${
+                                                  lastVerifiedName
+                                                      ? ` • ${lastVerifiedName}`
+                                                      : ""
+                                              }`
+                                            : "Waiting for first check-in"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-6 shadow-sm">
+                            <h3 className="text-lg font-semibold text-indigo-800">
+                                Quick invitation
+                            </h3>
+                            <p className="mt-2 text-sm text-indigo-700">
+                                Send or Re-send tickets to participants.
+                            </p>
+                            <ul className="mt-4 space-y-1 text-xs text-indigo-700/90">
+                                <li>• Invite un-registered participants.</li>
+                                <li>• Regenerate and send new tickets.</li>
+                            </ul>
+                            <button
+                                type="button"
+                                className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                onClick={() => {
+                                    if (!activityId) return;
+                                    setVerifyError(null);
+                                    setVerifySuccess(null);
+                                    setInviteDialogOpen(true);
+                                }}
+                                disabled={!activityId}
+                            >
+                                Send invitations
+                            </button>
+                            {!activityId && (
+                                <p className="mt-3 text-xs text-indigo-600/80">
+                                    Open this page from an activity to enable
+                                    invitations.
+                                </p>
+                            )}
+                        </div>
+                    </aside>
+                </div>
             </div>
+
+            <InviteParticipantsDialogAdmin
+                open={inviteDialogOpen}
+                onClose={() => setInviteDialogOpen(false)}
+                activityId={activityId}
+                onSuccess={handleInviteSuccess}
+            />
         </div>
     );
 }
