@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import axios from '@/utils/axios/api';
+import PasswordInputClient from "@/app/shared/components/PasswordInputClient";
 
 const RegisterPage = () => {
     const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -47,11 +48,10 @@ const RegisterPage = () => {
             <h1 className="text-2xl font-bold mb-4">Register New Admin</h1>
             {message && (
                 <div
-                    className={`alert mb-4 ${
-                        message.type === "error"
+                    className={`alert mb-4 ${message.type === "error"
                             ? "alert-error"
                             : "alert-success"
-                    }`}
+                        }`}
                 >
                     {message.text}
                 </div>
@@ -92,11 +92,8 @@ const RegisterPage = () => {
                     >
                         Password
                     </label>
-                    <input
+                    <PasswordInputClient
                         className="input input-bordered w-full"
-                        type="password"
-                        id="password"
-                        name="password"
                         value={form.password}
                         onChange={handleChange}
                         required

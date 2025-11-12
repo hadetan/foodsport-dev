@@ -369,7 +369,7 @@ const UserDetailPage = () => {
                         User Details
                     </h2>
                 </div>
-                <div className="bg-base-100 border border-base-300 rounded-2xl shadow-lg">
+                <div className="bg-base-100 border border-base-300 rounded-2xl shadow-lg overflow-hidden">
                     <div className="flex flex-col md:flex-row items-center gap-6 p-8 bg-gradient-to-r from-primary/10 to-base-100 border-b border-base-300">
                         <div className="flex-shrink-0">
                             <Avatar
