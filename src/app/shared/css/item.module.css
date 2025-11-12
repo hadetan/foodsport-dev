@@ -10,6 +10,7 @@
 	transition: box-shadow 0.2s;
 	position: relative;
 	margin-bottom: 1rem;
+	overflow: hidden;
 }
 
 .card:hover {
@@ -64,6 +65,7 @@
 	align-items: flex-start;
 	justify-content: space-between;
 	width: 100%;
+	min-width: 0;
 	font-size: 1.25rem;
 	font-weight: 700;
 	color: #222;
@@ -75,6 +77,8 @@
 	cursor: pointer;
 	flex: 1;
 	min-width: 0;
+	overflow: hidden;
+	word-break: break-word;
 }
 .cardTitleText:hover {
 	color: teal;
