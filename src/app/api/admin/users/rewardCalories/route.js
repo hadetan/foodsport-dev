@@ -138,7 +138,7 @@ export async function POST(req) {
 					});
 				}
 			});
-			results.push({ email, success: true, userType });
+			results.push({ email, success: true, userType, calories, duration });
 
 			if (userType === 'tempUser' && tempUser) {
 				const userName = tempUser.firstname && tempUser.lastname

@@ -39,7 +39,6 @@ export default function ComingSoon() {
 
     return (
         <>
-            <div className="coming-soon-bg w-full"></div>
             <section className={styles.activityHero}>
                 <div className={styles.overlay}>
                     <div className={styles.centerContent}>

@@ -24,7 +24,7 @@ const ActivityDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showZh, setShowZh] = useState(false);
-    const { users } = useUsers();
+    const { users, setUsers } = useUsers();
     const [participatingUsers, setParticipatingUsers] = useState([]);
     const params = useParams();
     const router = useRouter();
@@ -72,6 +72,49 @@ const ActivityDetailPage = () => {
 
     const handleImportClick = () => fileInputRef.current?.click();
 
+    const updateUsersAfterImport = (successfulResults) => {
+        if (!successfulResults || successfulResults.length === 0) return;
+
+        const updatedUsers = users.map(user => {
+            const result = successfulResults.find(r => r.email === user.email);
+            
+            if (!result) return user;
+
+            const updatedCalories = (user.totalCaloriesBurned || 0) + (result.calories || 0);
+
+            const updatedJoinedActivities = user.joinedActivities?.map(activity => {
+                if (activity.id === activityId) {
+                    return {
+                        ...activity,
+                        wasPresent: true,
+                        totalDuration: result.duration !== undefined ? result.duration : activity.totalDuration
+                    };
+                }
+                return activity;
+            }) || [];
+
+            return {
+                ...user,
+                totalCaloriesBurned: updatedCalories,
+                joinedActivities: updatedJoinedActivities
+            };
+        });
+
+        setUsers(updatedUsers);
+
+        const updatedParticipating = updatedUsers.filter(
+            (user) =>
+                user.joinedActivities &&
+                Array.isArray(user.joinedActivities) &&
+                user.joinedActivities.some(
+                    (activity) =>
+                        activity === activityId ||
+                        activity.id === activityId
+                )
+        );
+        setParticipatingUsers(updatedParticipating);
+    };
+
     const handleFileChange = async (e) => {
         const file = e.target.files?.[0];
         e.target.value = "";
@@ -107,6 +150,9 @@ const ActivityDetailPage = () => {
             const failCount = results.length - successCount;
             const skippedCount = skipped.length;
             const totalProcessed = results.length;
+
+            const successfulResults = results.filter((r) => r.success);
+            updateUsersAfterImport(successfulResults);
 
             toast.success(
                 `Import complete. Rewarded ${successCount}/${totalProcessed}. Skipped ${failCount + skippedCount
