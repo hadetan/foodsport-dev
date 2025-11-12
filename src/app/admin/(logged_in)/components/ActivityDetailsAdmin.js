@@ -41,9 +41,9 @@ const ActivityDetailsAdmin = ({
                     </div>
                     <div className="activityDetailsMainDesc">
                         <div className="activityDetailsHero">
-                            {activity.imageUrl && (
+                            {activity.bannerImageUrl && (
                                 <Image
-                                    src={activity.imageUrl}
+                                    src={activity.bannerImageUrl}
                                     alt={activity.activityType}
                                     fill={true}
                                     className="activityDetailsImage"
