@@ -155,9 +155,6 @@ const ActivityDetailPage = () => {
         return new Date(dateString).toLocaleDateString("en-US", options);
     };
 
-    const canImportExport =
-        activity?.status === "cancelled" || activity?.status === "closed";
-
     const { formattedStartTime, formattedEndTime } = formatDateTime(
         activity.startTime,
         activity.endTime
@@ -329,38 +326,34 @@ const ActivityDetailPage = () => {
                 <div className="w-full">
                     {activeTab === "users" && (
                         <div>
-                            {/* Import/Export buttons only when status is cancelled or closed */}
+                            {/* Import/Export buttons */}
                             <div className="flex items-center justify-end gap-2 mb-6">
-                                {canImportExport && (
-                                    <>
-                                        <button
-                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-colors disabled:opacity-60 cursor-pointer"
-                                            onClick={handleImportClick}
-                                            disabled={importing}
-                                            title="Import"
-                                        >
-                                            <Download className="w-5 h-5 mr-2" />
-                                            {importing
-                                                ? "Importing..."
-                                                : "Import"}
-                                        </button>
-                                        <input
-                                            ref={fileInputRef}
-                                            type="file"
-                                            accept=".csv,text/csv"
-                                            className="hidden"
-                                            onChange={handleFileChange}
-                                        />
-                                        <button
-                                            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-colors cursor-pointer"
-                                            onClick={handleExportUsers}
-                                            title="Export Users"
-                                        >
-                                            <Upload className="w-5 h-5 mr-2" />
-                                            Export Users
-                                        </button>
-                                    </>
-                                )}
+                                <button
+                                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-colors disabled:opacity-60 cursor-pointer"
+                                    onClick={handleImportClick}
+                                    disabled={importing}
+                                    title="Import"
+                                >
+                                    <Download className="w-5 h-5 mr-2" />
+                                    {importing
+                                        ? "Importing..."
+                                        : "Import"}
+                                </button>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".csv,text/csv"
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                />
+                                <button
+                                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow transition-colors cursor-pointer"
+                                    onClick={handleExportUsers}
+                                    title="Export Users"
+                                >
+                                    <Upload className="w-5 h-5 mr-2" />
+                                    Export Users
+                                </button>
                             </div>
                             {/* Participating Users Table */}
                             <div className="bg-white rounded-lg shadow-md overflow-hidden">

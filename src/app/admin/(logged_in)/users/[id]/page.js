@@ -49,6 +49,14 @@ const UserDetailPage = () => {
     const [weight, setWeight] = useState("");
     const [weightLoading, setWeightLoading] = useState(false);
 
+    // Store original values when entering edit mode
+    const [originalEmail, setOriginalEmail] = useState("");
+    const [originalGender, setOriginalGender] = useState("");
+    const [originalHeight, setOriginalHeight] = useState("");
+    const [originalDateOfBirth, setOriginalDateOfBirth] = useState("");
+    const [originalPhoneNumber, setOriginalPhoneNumber] = useState("");
+    const [originalWeight, setOriginalWeight] = useState("");
+
     useEffect(() => {
         if (users && users.length > 0) {
             const filtered = users.filter((u) => String(u.id) === String(id));
@@ -105,6 +113,15 @@ const UserDetailPage = () => {
 
     const handleEmailSave = async () => {
         if (!user) return;
+        
+        // Check if value has changed
+        const currentEmail = originalEmail || "";
+        const newEmail = email || "";
+        if (currentEmail === newEmail) {
+            setIsEditingEmail(false);
+            return;
+        }
+        
         setEmailLoading(true);
         try {
             const { data } = await api.patch("/admin/users", {
@@ -130,6 +147,15 @@ const UserDetailPage = () => {
 
     const handleGenderSave = async () => {
         if (!user) return;
+        
+        // Check if value has changed
+        const currentGender = originalGender || "";
+        const newGender = gender || "";
+        if (currentGender === newGender) {
+            setIsEditingGender(false);
+            return;
+        }
+        
         setGenderLoading(true);
         try {
             const { data } = await api.patch("/admin/users", {
@@ -155,6 +181,15 @@ const UserDetailPage = () => {
 
     const handleHeightSave = async () => {
         if (!user) return;
+        
+        // Check if value has changed
+        const currentHeight = parseFloat(originalHeight) || 0;
+        const newHeight = parseFloat(height) || 0;
+        if (currentHeight === newHeight) {
+            setIsEditingHeight(false);
+            return;
+        }
+        
         setHeightLoading(true);
         try {
             const { data } = await api.patch("/admin/users", {
@@ -183,6 +218,15 @@ const UserDetailPage = () => {
 
     const handleDateOfBirthSave = async () => {
         if (!user) return;
+        
+        // Check if value has changed
+        const currentDateOfBirth = originalDateOfBirth || "";
+        const newDateOfBirth = dateOfBirth || "";
+        if (currentDateOfBirth === newDateOfBirth) {
+            setIsEditingDateOfBirth(false);
+            return;
+        }
+        
         setDateOfBirthLoading(true);
         try {
             const { data } = await api.patch("/admin/users", {
@@ -213,6 +257,15 @@ const UserDetailPage = () => {
 
     const handlePhoneNumberSave = async () => {
         if (!user) return;
+        
+        // Check if value has changed
+        const currentPhoneNumber = originalPhoneNumber || "";
+        const newPhoneNumber = phoneNumber || "";
+        if (currentPhoneNumber === newPhoneNumber) {
+            setIsEditingPhoneNumber(false);
+            return;
+        }
+        
         setPhoneNumberLoading(true);
         try {
             const { data } = await api.patch("/admin/users", {
@@ -240,6 +293,15 @@ const UserDetailPage = () => {
 
     const handleWeightSave = async () => {
         if (!user) return;
+        
+        // Check if value has changed
+        const currentWeight = parseFloat(originalWeight) || 0;
+        const newWeight = parseFloat(weight) || 0;
+        if (currentWeight === newWeight) {
+            setIsEditingWeight(false);
+            return;
+        }
+        
         setWeightLoading(true);
         try {
             const { data } = await api.patch("/admin/users", {
@@ -353,9 +415,10 @@ const UserDetailPage = () => {
                                         <button
                                             type="button"
                                             className="btn btn-ghost btn-xs"
-                                            onClick={() =>
-                                                setIsEditingEmail(true)
-                                            }
+                                            onClick={() => {
+                                                setOriginalEmail(email);
+                                                setIsEditingEmail(true);
+                                            }}
                                             aria-label="Edit Email"
                                         >
                                             <Pencil className="w-4 h-4" />
@@ -483,9 +546,10 @@ const UserDetailPage = () => {
                                         <button
                                             type="button"
                                             className="btn btn-ghost btn-xs"
-                                            onClick={() =>
-                                                setIsEditingDateOfBirth(true)
-                                            }
+                                            onClick={() => {
+                                                setOriginalDateOfBirth(dateOfBirth);
+                                                setIsEditingDateOfBirth(true);
+                                            }}
                                             aria-label="Edit Date of Birth"
                                         >
                                             <Pencil className="w-4 h-4" />
@@ -512,10 +576,7 @@ const UserDetailPage = () => {
                                                 Select Gender
                                             </option>
                                             <option value="male">Male</option>
-                                            <option value="female">
-                                                Female
-                                            </option>
-                                            <option value="other">Other</option>
+                                            <option value="female">Female</option>
                                         </select>
                                         <button
                                             type="button"
@@ -548,9 +609,10 @@ const UserDetailPage = () => {
                                         <button
                                             type="button"
                                             className="btn btn-ghost btn-xs"
-                                            onClick={() =>
-                                                setIsEditingGender(true)
-                                            }
+                                            onClick={() => {
+                                                setOriginalGender(gender);
+                                                setIsEditingGender(true);
+                                            }}
                                             aria-label="Edit Gender"
                                         >
                                             <Pencil className="w-4 h-4" />
@@ -600,9 +662,10 @@ const UserDetailPage = () => {
                                         <button
                                             type="button"
                                             className="btn btn-ghost btn-xs"
-                                            onClick={() =>
-                                                setIsEditingPhoneNumber(true)
-                                            }
+                                            onClick={() => {
+                                                setOriginalPhoneNumber(phoneNumber);
+                                                setIsEditingPhoneNumber(true);
+                                            }}
                                             aria-label="Edit Phone Number"
                                         >
                                             <Pencil className="w-4 h-4" />
@@ -653,9 +716,10 @@ const UserDetailPage = () => {
                                         <button
                                             type="button"
                                             className="btn btn-ghost btn-xs"
-                                            onClick={() =>
-                                                setIsEditingHeight(true)
-                                            }
+                                            onClick={() => {
+                                                setOriginalHeight(height);
+                                                setIsEditingHeight(true);
+                                            }}
                                             aria-label="Edit Height"
                                         >
                                             <Pencil className="w-4 h-4" />
@@ -706,9 +770,10 @@ const UserDetailPage = () => {
                                         <button
                                             type="button"
                                             className="btn btn-ghost btn-xs"
-                                            onClick={() =>
-                                                setIsEditingWeight(true)
-                                            }
+                                            onClick={() => {
+                                                setOriginalWeight(weight);
+                                                setIsEditingWeight(true);
+                                            }}
                                             aria-label="Edit Weight"
                                         >
                                             <Pencil className="w-4 h-4" />
