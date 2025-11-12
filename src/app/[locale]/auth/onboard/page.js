@@ -6,6 +6,7 @@ import { DISTRICTS } from '@/app/constants/constants';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/shared/contexts/authContext';
 import DobPickerClient from '@/app/shared/components/DobPickerClient';
+import convertDDMMYYYYToYYYYMMDD from '@/utils/convertDate';
 
 export default function OnboardPage() {
 	const [loading, setLoading] = useState(true);
@@ -63,7 +64,7 @@ export default function OnboardPage() {
 				<div>
 					<DobPickerClient
 						value={form.dateOfBirth}
-						onChange={(val) => setForm((f) => ({ ...f, dateOfBirth: val }))}
+						onChange={(val) => setForm((f) => ({ ...f, dateOfBirth: convertDDMMYYYYToYYYYMMDD(val) }))}
 						required
 						label={t('OnboardPage.dateOfBirth')}
 					/>

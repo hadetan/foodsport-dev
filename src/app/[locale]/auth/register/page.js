@@ -11,6 +11,7 @@ import PasswordInputClient from '@/app/shared/components/PasswordInputClient';
 import { getSupabaseClient } from '@/lib/supabase';
 import toast from '@/utils/Toast';
 import api from '@/utils/axios/api';
+import convertDDMMYYYYToYYYYMMDD from '@/utils/convertDate';
 
 export default function RegisterPage() {
 	const supabase = getSupabaseClient();
@@ -218,7 +219,7 @@ export default function RegisterPage() {
 						<div>
 							<DobPickerClient
 								value={dateOfBirth}
-								onChange={(val) => setDateOfBirth(val)}
+								onChange={(val) => setDateOfBirth(convertDDMMYYYYToYYYYMMDD(val))}
 								required
 								label={t('RegisterPage.dateOfBirth')}
 							/>

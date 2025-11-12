@@ -10,13 +10,7 @@ import { Pencil, Check, Copy } from "lucide-react";
 import formatDate from "@/utils/formatDate";
 import FullPageLoader from "../../components/FullPageLoader";
 import DobPickerClient from "@/app/shared/components/DobPickerClient";
-
-function convertDDMMYYYYToYYYYMMDD(ddMmyyyy) {
-    if (!ddMmyyyy) return "";
-    const parts = ddMmyyyy.split("-");
-    if (parts.length !== 3) return "";
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
-}
+import convertDDMMYYYYToYYYYMMDD from "@/utils/convertDate";
 
 const UserDetailPage = () => {
     const { id } = useParams();

@@ -9,11 +9,11 @@ import 'react-image-crop/dist/ReactCrop.css';
 import '@/app/[locale]/my/css/EditProfile.css';
 import { LiaUserEditSolid } from 'react-icons/lia';
 import { IoIosFemale, IoIosMale } from 'react-icons/io';
-import { FaMountainSun } from 'react-icons/fa6';
 import { DISTRICTS } from '@/app/constants/constants';
 import { useTranslations } from 'next-intl';
 import Tooltip from '@/app/shared/components/Tooltip';
 import DobPickerClient from '@/app/shared/components/DobPickerClient';
+import convertDDMMYYYYToYYYYMMDD from '@/utils/convertDate';
 
 export default function EditProfile() {
 	const { user, setUser } = useUser();
@@ -521,9 +521,11 @@ export default function EditProfile() {
 				/>
 				<DobPickerClient
 					value={form.dateOfBirth}
-					onChange={(val) => setForm((f) => ({ ...f, dateOfBirth: val }))}
+					onChange={(val) => setForm((f) => ({ ...f, dateOfBirth: convertDDMMYYYYToYYYYMMDD(val) }))}
 					label={t('placeholders.dateOfBirth')}
 					id="dateOfBirth"
+					disableLabel
+					hFull
 				/>
 				<div className='edit-profile-district-bio-row'>
 					<div>
