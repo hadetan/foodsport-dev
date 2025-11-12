@@ -242,14 +242,14 @@ const CreateActivityPage = () => {
             const startISO =
                 formData.startDate && formData.startTime
                     ? new Date(
-                          `${formData.startDate}T${formData.startTime}`
-                      ).toISOString()
+                        `${formData.startDate}T${formData.startTime}`
+                    ).toISOString()
                     : "";
             const endISO =
                 formData.endDate && formData.endTime
                     ? new Date(
-                          `${formData.endDate}T${formData.endTime}`
-                      ).toISOString()
+                        `${formData.endDate}T${formData.endTime}`
+                    ).toISOString()
                     : "";
             const caloriesPerHour =
                 formData.caloriesPerHourMin && formData.caloriesPerHourMax
@@ -363,7 +363,7 @@ const CreateActivityPage = () => {
                         </label>
                         <div
                             className="relative w-full rounded-lg overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300 hover:border-indigo-400 transition-colors cursor-pointer"
-                            style={{ height: "240px" }}
+                            style={formData.bannerImage ? {} : { height: "240px" }}
                             onClick={() => {
                                 if (bannerInputRef.current) {
                                     bannerInputRef.current.click();
@@ -383,14 +383,14 @@ const CreateActivityPage = () => {
                                     <img
                                         src={
                                             typeof formData.bannerImage ===
-                                            "string"
+                                                "string"
                                                 ? formData.bannerImage
                                                 : URL.createObjectURL(
-                                                      formData.bannerImage
-                                                  )
+                                                    formData.bannerImage
+                                                )
                                         }
                                         alt="Banner Preview"
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-auto object-cover"
                                     />
                                     <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors"></div>
                                     <button
@@ -457,11 +457,11 @@ const CreateActivityPage = () => {
                                             ref={imgRef}
                                             src={
                                                 typeof formData.image ===
-                                                "string"
+                                                    "string"
                                                     ? formData.image
                                                     : URL.createObjectURL(
-                                                          formData.image
-                                                      )
+                                                        formData.image
+                                                    )
                                             }
                                             alt="Preview"
                                             className="w-full h-full object-contain"
@@ -864,11 +864,11 @@ const CreateActivityPage = () => {
                             </div>
                             {(fieldErrors.caloriesPerHourMin ||
                                 fieldErrors.caloriesPerHourMax) && (
-                                <span className="text-error text-base">
-                                    {fieldErrors.caloriesPerHourMin ||
-                                        fieldErrors.caloriesPerHourMax}
-                                </span>
-                            )}
+                                    <span className="text-error text-base">
+                                        {fieldErrors.caloriesPerHourMin ||
+                                            fieldErrors.caloriesPerHourMax}
+                                    </span>
+                                )}
                         </div>
                     </div>
 
