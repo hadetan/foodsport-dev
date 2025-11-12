@@ -25,7 +25,7 @@ function daysInMonth(date) {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 }
 
-export default function DobPickerClient({ value = '', onChange = () => { }, id = 'dob', required = false, label = 'Date of birth' }) {
+export default function DobPickerClient({ value = '', onChange = () => { }, id = 'dob', required = false, label = 'Date of birth', disableLabel = false }) {
     const parsed = toDate(value);
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState(parsed);
@@ -71,9 +71,9 @@ export default function DobPickerClient({ value = '', onChange = () => { }, id =
 
     return (
         <div className="relative" ref={ref}>
-            <label className="block mb-1 font-medium text-black">
+            {!disableLabel && <label className="block mb-1 font-medium text-black">
                 {label}
-            </label>
+            </label>}
             <input
                 id={id}
                 type="text"

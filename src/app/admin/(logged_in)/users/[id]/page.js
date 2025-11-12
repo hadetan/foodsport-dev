@@ -9,6 +9,14 @@ import { IoIosArrowBack } from "react-icons/io";
 import { Pencil, Check, Copy } from "lucide-react";
 import formatDate from "@/utils/formatDate";
 import FullPageLoader from "../../components/FullPageLoader";
+import DobPickerClient from "@/app/shared/components/DobPickerClient";
+
+function convertDDMMYYYYToYYYYMMDD(ddMmyyyy) {
+    if (!ddMmyyyy) return "";
+    const parts = ddMmyyyy.split("-");
+    if (parts.length !== 3) return "";
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+}
 
 const UserDetailPage = () => {
     const { id } = useParams();
@@ -367,7 +375,7 @@ const UserDetailPage = () => {
                         User Details
                     </h2>
                 </div>
-                <div className="bg-base-100 border border-base-300 rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-base-100 border border-base-300 rounded-2xl shadow-lg">
                     <div className="flex flex-col md:flex-row items-center gap-6 p-8 bg-gradient-to-r from-primary/10 to-base-100 border-b border-base-300">
                         <div className="flex-shrink-0">
                             <Avatar
@@ -504,15 +512,10 @@ const UserDetailPage = () => {
                             value={
                                 isEditingDateOfBirth ? (
                                     <div className="flex items-center gap-2">
-                                        <input
-                                            className="input input-bordered input-sm"
-                                            type="date"
+                                        <DobPickerClient
                                             value={dateOfBirth}
-                                            onChange={(e) =>
-                                                setDateOfBirth(e.target.value)
-                                            }
-                                            autoFocus
-                                            disabled={dateOfBirthLoading}
+                                            onChange={(val) => setDateOfBirth(convertDDMMYYYYToYYYYMMDD(val))}
+                                            disableLabel
                                         />
                                         <button
                                             type="button"
@@ -935,7 +938,7 @@ function Detail({ label, value }) {
             <span className="text-xs font-semibold text-base-content/60 uppercase tracking-wide">
                 {label}
             </span>
-            <span className="text-base-content text-sm break-all">{value}</span>
+            <span className="text-base-content text-sm">{value}</span>
         </div>
     );
 }

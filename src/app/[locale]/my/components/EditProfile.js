@@ -13,6 +13,7 @@ import { FaMountainSun } from 'react-icons/fa6';
 import { DISTRICTS } from '@/app/constants/constants';
 import { useTranslations } from 'next-intl';
 import Tooltip from '@/app/shared/components/Tooltip';
+import DobPickerClient from '@/app/shared/components/DobPickerClient';
 
 export default function EditProfile() {
 	const { user, setUser } = useUser();
@@ -518,13 +519,11 @@ export default function EditProfile() {
 					pattern='[0-9]*'
 					type='text'
 				/>
-				<input
-					name='dateOfBirth'
-					type='date'
+				<DobPickerClient
 					value={form.dateOfBirth}
-					onChange={handleChange}
-					placeholder={t('placeholders.dateOfBirth')}
-					className='edit-profile-fullwidth'
+					onChange={(val) => setForm((f) => ({ ...f, dateOfBirth: val }))}
+					label={t('placeholders.dateOfBirth')}
+					id="dateOfBirth"
 				/>
 				<div className='edit-profile-district-bio-row'>
 					<div>
