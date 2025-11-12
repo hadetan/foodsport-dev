@@ -142,11 +142,11 @@ const ActivityDetails = ({
             return;
         }
         if (activity.status !== "active") {
-            toast.warning(t('Activity.DetailsPage.notActiveWarning'));
+            toast.warning(t("Activity.DetailsPage.notActiveWarning"));
             return;
         }
         if (!user.weight || !user.height) {
-            toast.warning(t('Activity.DetailsPage.fillProfileWarning'));
+            toast.warning(t("Activity.DetailsPage.fillProfileWarning"));
             return (window.location.href = `/my/profile?editProfile=1&returnTo=${encodeURIComponent(
                 window.location.pathname
             )}`);
@@ -179,7 +179,7 @@ const ActivityDetails = ({
                 status === 400 &&
                 serverMsg?.includes("Activity is not")
             ) {
-                toast.warning(t('Activity.DetailsPage.notActiveWarning'));
+                toast.warning(t("Activity.DetailsPage.notActiveWarning"));
             } else if (serverMsg) {
                 if (
                     serverMsg.toLowerCase().includes("height") ||
@@ -230,7 +230,7 @@ const ActivityDetails = ({
         }
     }
 
-    const tooltipText = t('Activity.ActivityItem.startEndFull', {
+    const tooltipText = t("Activity.ActivityItem.startEndFull", {
         startDate: formatDate(activity.startDate),
         startTime: formattedStartTime,
         endDate: formatDate(activity.endDate),
@@ -246,9 +246,9 @@ const ActivityDetails = ({
                     </h1>
                     <div className="activityDetailsMainDesc">
                         <div className="activityDetailsHero">
-                            {activity.imageUrl && (
+                            {activity.bannerImageUrl && (
                                 <Image
-                                    src={activity.imageUrl}
+                                    src={activity.bannerImageUrl}
                                     alt={activity.activityType}
                                     fill={true}
                                     className="activityDetailsImage"
@@ -265,7 +265,7 @@ const ActivityDetails = ({
                     </div>
                     <div className="activityDetailsDetailsSection">
                         <h2 className="activityDetailsDetailsTitle">
-                            {t('Activity.DetailsPage.detailsTitle')}
+                            {t("Activity.DetailsPage.detailsTitle")}
                         </h2>
                         <div className="activityDetailsDetailsGrid">
                             <div className="activityDetailsDetailsItem">
@@ -277,7 +277,9 @@ const ActivityDetails = ({
                                 </span>
                                 <div>
                                     <div className="activityDetailsDetailsLabel">
-                                        {t('Activity.DetailsPage.activityTypeLabel')}
+                                        {t(
+                                            "Activity.DetailsPage.activityTypeLabel"
+                                        )}
                                     </div>
                                     <div className="activityDetailsDetailsValue">
                                         {activity.activityType}
@@ -290,11 +292,13 @@ const ActivityDetails = ({
                                 </span>
                                 <div>
                                     <div className="activityDetailsDetailsLabel">
-                                        {t('Activity.DetailsPage.totalCaloriesLabel')}
+                                        {t(
+                                            "Activity.DetailsPage.totalCaloriesLabel"
+                                        )}
                                     </div>
                                     <div className="activityDetailsDetailsValue">
-                                        {activity.totalCaloriesBurnt}{" "}
-                                        calories burnt
+                                        {activity.totalCaloriesBurnt} calories
+                                        burnt
                                     </div>
                                 </div>
                             </div>
@@ -304,7 +308,9 @@ const ActivityDetails = ({
                                 </span>
                                 <div>
                                     <div className="activityDetailsDetailsLabel">
-                                        {t('Activity.DetailsPage.caloriesPerHourLabel')}
+                                        {t(
+                                            "Activity.DetailsPage.caloriesPerHourLabel"
+                                        )}
                                     </div>
                                     <div className="activityDetailsDetailsValue">
                                         {activity.caloriesPerHour || "—"}{" "}
@@ -318,10 +324,13 @@ const ActivityDetails = ({
                                 </span>
                                 <div>
                                     <div className="activityDetailsDetailsLabel">
-                                        {t('Activity.DetailsPage.organizerLabel')}
+                                        {t(
+                                            "Activity.DetailsPage.organizerLabel"
+                                        )}
                                     </div>
                                     <div className="activityDetailsDetailsValue">
-                                        {activity.organizationName || t('Activity.DetailsPage.unknown')}
+                                        {activity.organizationName ||
+                                            t("Activity.DetailsPage.unknown")}
                                     </div>
                                 </div>
                             </div>
@@ -335,7 +344,10 @@ const ActivityDetails = ({
                     <Tooltip content={tooltipText} width={'16rem'}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <div className="activityDetailsSidebarRow">
-                                <FaCalendar className="logo logo-faded" size={22} />
+                                <FaCalendar
+                                    className="logo logo-faded"
+                                    size={22}
+                                />
                                 <span>{`${formatDate(
                                     activity.startDate
                                 )} - ${formatDate(activity.endDate)}`}</span>
@@ -362,32 +374,30 @@ const ActivityDetails = ({
                         <span>
                             {t(
                                 seatsLeft === 1
-                                    ? 'Activity.DetailsPage.seatsLeft_one'
-                                    : 'Activity.DetailsPage.seatsLeft_other'
-                            ).replace('#', seatsLeft)}
+                                    ? "Activity.DetailsPage.seatsLeft_one"
+                                    : "Activity.DetailsPage.seatsLeft_other"
+                            ).replace("#", seatsLeft)}
                         </span>
                     </div>
                     {/* Avatars */}
                     <div className="activityDetailsAvatars">
                         {Array.isArray(activity.participants) &&
-                            activity.participants
-                                .slice(0, 7)
-                                .map((p, idx) => {
-                                    const first = p.firstname || "";
-                                    const last = p.lastname || "";
-                                    const full = `${(first + " " + last).trim()}`;
-                                    const alt = full || "avatar";
-                                    return (
-                                        <Avatar
-                                            key={idx}
-                                            srcAvatar={p.profilePictureUrl}
-                                            firstName={first}
-                                            lastName={last}
-                                            title={alt}
-                                            isNav={true}
-                                        />
-                                    );
-                                })}
+                            activity.participants.slice(0, 7).map((p, idx) => {
+                                const first = p.firstname || "";
+                                const last = p.lastname || "";
+                                const full = `${(first + " " + last).trim()}`;
+                                const alt = full || "avatar";
+                                return (
+                                    <Avatar
+                                        key={idx}
+                                        srcAvatar={p.profilePictureUrl}
+                                        firstName={first}
+                                        lastName={last}
+                                        title={alt}
+                                        isNav={true}
+                                    />
+                                );
+                            })}
                         {activity.participantCount > 7 && (
                             <span className="activityDetailsAvatarMore">
                                 +{activity.participantCount - 7}
@@ -437,8 +447,8 @@ const ActivityDetails = ({
                                 disabled={loading || hideJoin || wasPresent}
                             >
                                 {loading
-                                    ? t('Activity.DetailsPage.leaving')
-                                    : t('Activity.DetailsPage.leave')}
+                                    ? t("Activity.DetailsPage.leaving")
+                                    : t("Activity.DetailsPage.leave")}
                             </button>
                         ) : (
                             <button
@@ -447,15 +457,15 @@ const ActivityDetails = ({
                                 disabled={loading || hideJoin}
                             >
                                 {loading
-                                    ? t('Activity.DetailsPage.joining')
-                                    : t('Activity.DetailsPage.joinNow')}
+                                    ? t("Activity.DetailsPage.joining")
+                                    : t("Activity.DetailsPage.joinNow")}
                             </button>
                         )}
                         <button
                             className="activityDetailsShareBtn"
                             onClick={() => setShowShare(true)}
                         >
-                            {t('Activity.DetailsPage.share')}
+                            {t("Activity.DetailsPage.share")}
                         </button>
                         {showShare && (
                             <ShareDialog
@@ -487,8 +497,15 @@ const ActivityDetails = ({
                             </div>
                         )
                     ) : (
-                        <div style={{ width: '100%', margin: '32px 0', color: 'red', textAlign: 'center' }}>
-                            {t('Activity.DetailsPage.mapError')}
+                        <div
+                            style={{
+                                width: "100%",
+                                margin: "32px 0",
+                                color: "red",
+                                textAlign: "center",
+                            }}
+                        >
+                            {t("Activity.DetailsPage.mapError")}
                         </div>
                     )}
                 </aside>

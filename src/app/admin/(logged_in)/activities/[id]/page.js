@@ -49,6 +49,7 @@ export default function EditActivityPage() {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [imageFile, setImageFile] = useState(null);
+    const [bannerImageFile, setBannerImageFile] = useState(null);
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [success, setSuccess] = useState("");
     const [error, setError] = useState("");
@@ -58,6 +59,7 @@ export default function EditActivityPage() {
     );
     const router = useRouter();
     const fileInputRef = useRef();
+    const bannerInputRef = useRef();
     const params = useParams();
     const activityId = params?.id;
     const searchParams = useSearchParams();
@@ -158,6 +160,11 @@ export default function EditActivityPage() {
             setImageFile({ url: activity.imageUrl });
         } else {
             setImageFile(null);
+        }
+        if (activity.bannerImageUrl) {
+            setBannerImageFile({ url: activity.bannerImageUrl });
+        } else {
+            setBannerImageFile(null);
         }
     }, [activity]);
 
@@ -288,6 +295,12 @@ export default function EditActivityPage() {
         setImageFile(file);
     };
 
+    const handleBannerImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setBannerImageFile(file);
+    };
+
     const handleSave = async () => {
         if (!validate()) return;
         setLoading(true);
@@ -374,6 +387,10 @@ export default function EditActivityPage() {
 
             if (imageFile && imageFile.url === undefined) {
                 formData.append("image", imageFile);
+            }
+
+            if (bannerImageFile && bannerImageFile.url === undefined) {
+                formData.append("bannerImage", bannerImageFile);
             }
 
             const { data } = await axios.patch(
@@ -466,6 +483,80 @@ export default function EditActivityPage() {
                                     handleSave();
                                 }}
                             >
+                                {/* Full Width Banner Image Upload */}
+                                <div className="w-full mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Banner Image
+                                    </label>
+                                    <div
+                                        className="relative w-full rounded-lg overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300 hover:border-indigo-400 transition-colors cursor-pointer"
+                                        style={{ height: "240px" }}
+                                        onClick={() => {
+                                            if (bannerInputRef.current) {
+                                                bannerInputRef.current.click();
+                                            }
+                                        }}
+                                    >
+                                        <input
+                                            id="banner-image-upload"
+                                            type="file"
+                                            ref={bannerInputRef}
+                                            className="hidden"
+                                            accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
+                                            onChange={handleBannerImageChange}
+                                        />
+                                        {bannerImageFile ? (
+                                            <>
+                                                <img
+                                                    src={
+                                                        bannerImageFile.url
+                                                            ? bannerImageFile.url
+                                                            : URL.createObjectURL(
+                                                                  bannerImageFile
+                                                              )
+                                                    }
+                                                    alt="Banner Preview"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors"></div>
+                                                <button
+                                                    type="button"
+                                                    className="absolute top-4 right-4 bg-white/95 hover:bg-white rounded-lg px-4 py-2 shadow-lg flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors z-10"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (
+                                                            bannerInputRef.current
+                                                        ) {
+                                                            bannerInputRef.current.value =
+                                                                "";
+                                                            bannerInputRef.current.click();
+                                                        }
+                                                    }}
+                                                >
+                                                    <Pencil className="w-4 h-4" />
+                                                    Change Image
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 pointer-events-none">
+                                                <ImageUp className="w-12 h-12 mb-3 text-indigo-500" />
+                                                <span className="text-base font-medium text-gray-700">
+                                                    Click to upload banner image
+                                                </span>
+                                                <span className="text-sm text-gray-500 mt-2">
+                                                    Supports JPG, PNG, WEBP,
+                                                    AVIF (Max 5MB)
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {errors.bannerImage && (
+                                        <span className="text-error text-base mt-1 block">
+                                            {errors.bannerImage}
+                                        </span>
+                                    )}
+                                </div>
+
                                 {/* Main grid: left preview, right fields */}
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                     {/* Left: Image + dates + location */}
@@ -480,7 +571,7 @@ export default function EditActivityPage() {
                                             <input
                                                 type="file"
                                                 className="absolute inset-0 opacity-0 cursor-pointer"
-                                                accept="image/jpeg,image/png"
+                                                accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
                                                 multiple={false}
                                                 ref={fileInputRef}
                                                 onChange={handleImageChange}
@@ -528,7 +619,7 @@ export default function EditActivityPage() {
                                                         Drop image or browse
                                                     </span>
                                                     <span className="text-xs text-gray-400 mt-1">
-                                                        JPG, PNG
+                                                        JPG, PNG, WEBP, AVIF
                                                     </span>
                                                 </div>
                                             )}
