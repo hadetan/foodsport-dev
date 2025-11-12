@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SearchBar from "@/app/admin/(logged_in)/components/SearchBar";
 import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
@@ -9,7 +9,7 @@ import { useUsers } from "@/app/shared/contexts/usersContext";
 import FullPageLoader from "../components/FullPageLoader";
 import Pagination from "@/app/admin/(logged_in)/components/Pagination";
 
-const UserManagementPage = () => {
+const UserManagementContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { users, loading } = useUsers();
@@ -152,5 +152,11 @@ const UserManagementPage = () => {
         </>
     );
 };
+
+const UserManagementPage = () => (
+    <Suspense fallback={<FullPageLoader />}>
+        <UserManagementContent />
+    </Suspense>
+);
 
 export default UserManagementPage;
