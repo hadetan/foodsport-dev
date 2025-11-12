@@ -10,6 +10,7 @@
 	transition: box-shadow 0.2s;
 	position: relative;
 	margin-bottom: 1rem;
+	overflow: auto;
 }
 
 .card:hover {

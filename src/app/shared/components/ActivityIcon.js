@@ -11,7 +11,6 @@ import { HiQuestionMarkCircle } from "react-icons/hi2";
 import { GiBodyBalance, GiTennisRacket } from "react-icons/gi";
 import { ACTIVITY_TYPES_FORMATTED } from "@/app/constants/constants";
 import { useTranslations } from 'next-intl';
-import Tooltip from './Tooltip';
 
 const iconMap = {
   "Running": { Component: FaRunning },
@@ -35,8 +34,8 @@ export default function ActivityIcon({ type, size = 24, className = '', translat
 
   let title = null;
   if (translate) {
-  const t = useTranslations();
-  title = translate ? (t(`Activity.ActivityTypes.${key}`) || t('Activity.ActivityTypes.other')) : null;
+    const t = useTranslations();
+    title = translate ? (t(`Activity.ActivityTypes.${key}`) || t('Activity.ActivityTypes.other')) : null;
   }
 
   const iconConfig = iconMap[type] || { Component: HiQuestionMarkCircle };
@@ -45,9 +44,7 @@ export default function ActivityIcon({ type, size = 24, className = '', translat
   // Render with Tooltip only when translate === true
   if (translate) {
     return (
-      <Tooltip content={title}>
-        <Component size={size} className={className} />
-      </Tooltip>
+      <Component size={size} className={className} />
     );
   }
 
