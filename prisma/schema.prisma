@@ -479,3 +479,32 @@ model SocialMediaImage {
 
   @@map("social_media_images")
 }
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String?  @unique
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id              String   @id @default(uuid())
+  productImageUrl String   @map("product_image_url")
+  title           String
+  summary         String?  @db.Text
+  description     String   @db.Text
+  price           Decimal  @db.Decimal(10, 2)
+  categoryId      String   @map("category_id")
+  category        Category @relation(fields: [categoryId], references: [id])
+  isFeatured      Boolean  @default(false) @map("is_featured")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("products")
+}
