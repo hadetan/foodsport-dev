@@ -47,7 +47,7 @@ const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=fal
                 </div>
             ) : (
                 <div className="avatar">
-                    <div className={imgMaskClass}>
+                    <div className={`${imgMaskClass} w-full`}>
                         <Image
                             src={avatarUrl}
                             alt={`${firstName} ${lastName} avatar`}
