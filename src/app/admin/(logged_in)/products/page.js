@@ -39,18 +39,18 @@ const FilterBar = ({ setFilters, filters, categories }) => {
                         </label>
                         <select
                             className="input input-bordered min-w-[160px]"
-                            value={filters.Category}
+                            value={filters.category}
                             onChange={(e) =>
                                 setFilters((f) => ({
                                     ...f,
-                                    Category: e.target.value,
+                                    category: e.target.value,
                                 }))
                             }
                         >
                             <option value="">All</option>
                             {categories?.map((c) => {
                                 return (
-                                    <option key={c.id} value={c.slug}>
+                                    <option key={c.id} value={c.name}>
                                         {c.name}
                                     </option>
                                 );

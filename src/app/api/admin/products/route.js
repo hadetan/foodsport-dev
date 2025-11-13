@@ -189,7 +189,7 @@ export async function POST(req) {
                 isFeatured: true,
                 createdAt: true,
                 updatedAt: true,
-                category: { select: { id: true, name: true } },
+                category: { select: { id: true, name: true, slug: true, description: true } },
             }
         );
         if (product && product.error) {
@@ -377,7 +377,7 @@ export async function PATCH(req) {
                 isFeatured: true,
                 createdAt: true,
                 updatedAt: true,
-                category: { select: { id: true, name: true } },
+                category: { select: { id: true, name: true, slug: true, description: true } },
             }
         );
         if (product && product.error) {
