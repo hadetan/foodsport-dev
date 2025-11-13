@@ -28,3 +28,25 @@
 .star {
 	font-size: 1.3rem;
 }
+
+/* Smaller screens: make featured badge less intrusive */
+@media (max-width: 420px) {
+	.featuredBadge {
+		font-size: 0.85rem;
+		padding: 6px 10px;
+		gap: 6px;
+		border-radius: 6px;
+	}
+	.star {
+		font-size: 1rem;
+	}
+	.topLeft {
+		top: 10px;
+		left: 10px;
+	}
+	.bottomRight {
+		right: 10px;
+		bottom: 10px;
+		padding: 6px 10px;
+	}
+}

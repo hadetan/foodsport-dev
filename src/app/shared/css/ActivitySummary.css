@@ -1,4 +1,5 @@
 .activitySummary {
     padding-bottom: 16px;
     border-bottom: 1px solid #dadada;
+    word-wrap: break-word;
 }

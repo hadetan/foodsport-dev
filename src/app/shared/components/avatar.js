@@ -1,14 +1,14 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
 
 const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=false, size='8' }) => {
     const first = firstName?.[0]?.toUpperCase() || '';
     const last = lastName?.[0]?.toUpperCase() || '';
     const router = useRouter();
-    const [broken, setBroken] = React.useState(false);
+    const [broken, setBroken] = useState(false);
     
     const maskClass = isNav
     ? `mask mask-circle w-${size} h-${size} bg-accent text-accent-content select-none ${pointer && 'cursor-pointer'}`
@@ -28,7 +28,7 @@ const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=fal
         return url + '=s128-c';
     };
 
-    const avatarUrl = React.useMemo(() => {
+    const avatarUrl = useMemo(() => {
         if (!srcAvatar || broken) return null;
         if (srcAvatar.includes('googleusercontent')) {
             return normalizeGoogle(srcAvatar);
