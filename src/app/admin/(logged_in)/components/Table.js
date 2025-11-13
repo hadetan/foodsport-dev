@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import UserRow from "@/app/admin/(logged_in)/components/userRow";
 import ActivityRow from "./ActivityRow";
+import ProductRow from "./ProductRow";
 
 const Table = ({
     heading,
@@ -38,20 +39,29 @@ const Table = ({
                 </thead>
                 <tbody>
                     {tableType == "userPage"
-                        ? paginatedData.map((user, idx) => (
-                              <UserRow
-                                  key={user.id}
-                                  user={user}
-                                  onRowClick={onRowClick}
-                              />
-                          ))
-                        : paginatedData.map((activity) => (
-                              <ActivityRow
-                                  key={activity.id}
-                                  activity={activity}
-                                  onRowClick={onRowClick}
-                              />
-                          ))}
+                        && paginatedData.map((user, idx) => (
+                            <UserRow
+                                key={user.id}
+                                user={user}
+                                onRowClick={onRowClick}
+                            />
+                        ))}
+                    {tableType == "activityPage"
+                        && paginatedData.map((activity) => (
+                            <ActivityRow
+                                key={activity.id}
+                                activity={activity}
+                                onRowClick={onRowClick}
+                            />
+                        ))}
+                    {tableType == "productPage"
+                        && paginatedData.map((product) => (
+                            <ProductRow
+                                key={product.id}
+                                product={product}
+                                onRowClick={onRowClick}
+                            />
+                        ))}
                 </tbody>
             </table>
         </div>

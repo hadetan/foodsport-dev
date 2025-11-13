@@ -265,7 +265,7 @@ function ActivityManagementPageContent() {
                             <Table
                                 heading={tableHeading}
                                 tableData={paginatedActivities}
-                                tableType={"acitivityPage"}
+                                tableType={"activityPage"}
                                 onRowClick={handleActivityClick}
                                 className="cursor-pointer"
                             />
