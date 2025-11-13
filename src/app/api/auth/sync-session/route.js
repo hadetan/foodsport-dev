@@ -21,7 +21,7 @@ export async function POST(req) {
       httpOnly: true,
       path: '/',
       sameSite: 'lax',
-      maxAge: 60 * 60, // 1 hour (Supabase access token typical lifetime)
+      maxAge: 86400,
     });
     if (refresh_token) {
       cookieStore.set('refresh_token', refresh_token, {

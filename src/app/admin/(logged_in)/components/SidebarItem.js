@@ -37,7 +37,8 @@ export default function SidebarItem({
         if (onClick) onClick(e);
         try {
             await axios.delete("/admin/auth/logout");
-            localStorage.removeItem('admin_auth_token')
+            localStorage.removeItem('admin_auth_token');
+            localStorage.removeItem('admin_refresh_token');
             router.push("/admin/login");
         } catch (error) {
             console.error("Logout failed:", error);
@@ -50,13 +51,7 @@ export default function SidebarItem({
                 <button
                     type="button"
                     onClick={handleLogout}
-                    className={`transition-colors text-red-500
-     ${
-         isActive
-             ? "bg-primary text-primary-content rounded-lg flex content whitespace-nowrap "
-             : "text-base-content flex content whitespace-nowrap"
-     }
- `}
+                    className={`transition-colors text-red-500 ${isActive ? "bg-primary text-primary-content rounded-lg flex content whitespace-nowrap " : "text-base-content flex content whitespace-nowrap"}`} 
                 >
                     {icon}
                     {label}

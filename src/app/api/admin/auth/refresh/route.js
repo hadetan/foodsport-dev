@@ -19,7 +19,7 @@ export async function POST(_) {
 			httpOnly: true,
 			path: '/',
 			sameSite: 'lax',
-			maxAge: data.session.expires_in || 3600,
+			maxAge: 86400,
 		});
 		if (data.session.refresh_token) {
 			cookieStore.set('admin_refresh_token', data.session.refresh_token, {

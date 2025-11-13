@@ -31,7 +31,7 @@ export async function POST(req) {
 
 			const cookieStore = await cookies();
 			if (data.session.access_token) {
-				cookieStore.set('admin_auth_token', data.session.access_token, { httpOnly: true, path: '/', sameSite: 'lax', maxAge: 3600 });
+				cookieStore.set('admin_auth_token', data.session.access_token, { httpOnly: true, path: '/', sameSite: 'lax', maxAge: 86400 });
 			}
 			if (data.session.refresh_token) {
 				cookieStore.set('admin_refresh_token', data.session.refresh_token, { httpOnly: true, path: '/', sameSite: 'lax', maxAge: 60 * 60 * 24 * 30 });
