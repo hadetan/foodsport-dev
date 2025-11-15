@@ -147,25 +147,14 @@
 		"title": "Coming Soon",
 		"trustedBy": "Trusted by top brands",
 		"popularRewards": "Popular rewards",
-		"rewards": {
-			"smartwatch": {
-				"title": "SMARTWATCH",
-				"description": "Garmin Forerunner 965 Smart Watch"
-			},
-			"nike_gift_card": {
-				"title": "Nike",
-				"description": "Nike Gift Card"
-			},
-			"apple_airpods_3": {
-				"title": "Apple",
-				"description": "AirPods (3rd generation)"
-			}
-		},
 		"RewardCards": {
 			"saveAria": "Save reward",
 			"share": "Share",
 			"redeem": "Redeem Now",
-			"imageAlt": "Reward image"
+			"imageAlt": "Reward image",
+			"empty": "Rewards are coming soon.",
+			"untitled": "Reward",
+			"pointsLabel": "FS pts"
 		}
 	},
 	"HowPage": {

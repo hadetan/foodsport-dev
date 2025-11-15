@@ -167,7 +167,10 @@
             "saveAria": "儲存獎賞",
             "share": "分享",
             "redeem": "立即兌換",
-            "imageAlt": "獎賞圖片"
+            "imageAlt": "獎賞圖片",
+            "empty": "敬請期待更多獎賞。",
+            "untitled": "獎賞",
+            "pointsLabel": "FS 積分"
         }
     },
     "HowPage": {

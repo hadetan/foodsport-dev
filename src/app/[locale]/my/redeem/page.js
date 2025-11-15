@@ -1,82 +1,84 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import RewardCards from "@/app/[locale]/(landing)/Components/rewardCards";
 import redeemTitle from "@/app/shared/components/redeemTitle";
-
-const categories = [
-    { key: "food", label: "Food & Beverages" },
-    { key: "wellness", label: "Wellness" },
-    { key: "home", label: "Home" },
-    { key: "electronics", label: "Electronics" },
-    { key: "entertainment", label: "Entertainments" },
-    { key: "fashion", label: "Fashion & Beauty" },
-    { key: "travel", label: "Travel" },
-];
+import { useProducts } from "@/app/shared/contexts/productsContext";
 
 export default function RedeemPage() {
-    const [active, setActive] = useState("electronics");
-    const [min, setMin] = useState(190);
-    const [max, setMax] = useState(340);
+    const { products = [], categories = [], loading, error } = useProducts();
+    const [activeCategory, setActiveCategory] = useState("all");
+    const [priceRange, setPriceRange] = useState({ min: null, max: null });
 
-    const items = useMemo(
-        () => [
-            {
-                id: 1,
-                title: "Smart Watch",
-                description: "Garmin Forerunner 965S Smart Watch",
-                points: 200000,
-                image: "/redeemCardsImage/smartWatch.jpg",
-            },
-            {
-                id: 2,
-                title: "Iphone",
-                description: "Nike Gift Card",
-                points: 50000,
-                image: "/redeemCardsImage/iphone.jpg",
-            },
-            {
-                id: 3,
-                title: "Ear Buds",
-                description: "AirPods (3rd generation)",
-                points: 90000,
-                image: "/redeemCardsImage/air.jpg",
-            },
-            {
-                id: 4,
-                title: "Neck Band",
-                description: "Garmin Forerunner 965S Smart Watch",
-                points: 200000,
-                image: "/redeemCardsImage/neckband.jpg",
-            },
-            {
-                id: 5,
-                title: "Sound Bar",
-                description: "Nike Gift Card",
-                points: 50000,
-                image: "/redeemCardsImage/soundBar.jpeg",
-            },
-            {
-                id: 6,
-                title: "Ear phone",
-                description: "AirPods (3rd generation)",
-                points: 90000,
-                image: "/redeemCardsImage/earphone.jpg",
-            },
-        ],
-        []
-    );
+    const priceBounds = useMemo(() => {
+        if (!products.length) {
+            return { min: 0, max: 0 };
+        }
+        const values = products
+            .map((item) => Number.parseFloat(item.price))
+            .filter((val) => Number.isFinite(val));
+        if (!values.length) {
+            return { min: 0, max: 0 };
+        }
+        return {
+            min: Math.min(...values),
+            max: Math.max(...values),
+        };
+    }, [products]);
 
-    const handleMinChange = (v) => {
-        const val = Number(v);
-        if (val >= max) return setMin(max - 1);
-        setMin(val);
+    useEffect(() => {
+        if (!products.length) return;
+        setPriceRange((prev) => ({
+            min: prev.min ?? priceBounds.min,
+            max: prev.max ?? priceBounds.max,
+        }));
+    }, [products.length, priceBounds.min, priceBounds.max]);
+
+    const availableCategories = useMemo(() => {
+        const safeCategories = Array.isArray(categories) ? categories : [];
+        return [
+            { id: "all", name: "All" },
+            ...safeCategories.map((cat) => ({ id: cat.id, name: cat.name })),
+        ];
+    }, [categories]);
+
+    const currentMin = priceRange.min ?? priceBounds.min ?? 0;
+    const currentMax = priceRange.max ?? priceBounds.max ?? 0;
+
+    const filteredProducts = useMemo(() => {
+        if (!products.length) return [];
+        return products.filter((product) => {
+            const categoryId = product.category?.id;
+            const numericPrice = Number.parseFloat(product.price);
+            const matchesCategory =
+                activeCategory === "all" || categoryId === activeCategory;
+            const matchesPrice =
+                (Number.isFinite(currentMin) ? numericPrice >= currentMin : true) &&
+                (Number.isFinite(currentMax) ? numericPrice <= currentMax : true);
+            return matchesCategory && matchesPrice;
+        });
+    }, [products, activeCategory, currentMin, currentMax]);
+
+    const handleCategoryClick = (categoryId) => {
+        setActiveCategory(categoryId);
     };
 
-    const handleMaxChange = (v) => {
-        const val = Number(v);
-        if (val <= min) return setMax(min + 1);
-        setMax(val);
+    const handleMinChange = (value) => {
+        const val = Number(value);
+        if (!Number.isFinite(val)) return;
+        setPriceRange((prev) => ({
+            ...prev,
+            min: Math.max(priceBounds.min, Math.min(val, currentMax)),
+        }));
+    };
+
+    const handleMaxChange = (value) => {
+        const val = Number(value);
+        if (!Number.isFinite(val)) return;
+        setPriceRange((prev) => ({
+            ...prev,
+            max: Math.min(priceBounds.max, Math.max(val, currentMin)),
+        }));
     };
 
     return (
@@ -92,19 +94,20 @@ export default function RedeemPage() {
                     <div className="flex w-full flex-col gap-3 rounded-2xl bg-[#fff] p-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                                {categories.map((c) => {
-                                    const isActive = c.key === active;
+                                {availableCategories.map((category) => {
+                                    const isActive = category.id === activeCategory;
                                     return (
                                         <button
-                                            key={c.key}
-                                            onClick={() => setActive(c.key)}
-                                            disabled={true}
-                                            className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm transition cursor-not-allowed  ${isActive
-                                                ? "bg-[#E8E1D7] border-amber-400 text-gray-900 shadow"
-                                                : "bg-[#dadada] border-gray-200 text-gray-600 hover:text-gray-900"
-                                                }`}
+                                            key={category.id}
+                                            onClick={() => handleCategoryClick(category.id)}
+                                            className={`whitespace-nowrap rounded-full border px-4 py-2 text-sm transition  ${
+                                                isActive
+                                                    ? "bg-[#E8E1D7] border-amber-400 text-gray-900 shadow"
+                                                    : "bg-[#dadada] border-gray-200 text-gray-600 hover:text-gray-900"
+                                            }`}
+                                            disabled={loading}
                                         >
-                                            {c.label}
+                                            {category.name}
                                         </button>
                                     );
                                 })}
@@ -113,44 +116,52 @@ export default function RedeemPage() {
                             {/* Range filter */}
                             <div className="flex items-center gap-3">
                                 <div className="rounded-full bg-amber-300/70 text-gray-900 text-sm font-semibold px-3 py-1">
-                                    {min} - {max}
+                                    {Math.round(currentMin)} - {Math.round(currentMax)}
                                 </div>
                                 <div className="hidden sm:flex items-center gap-2 text-xs text-gray-600">
-                                    <span>10</span>
+                                    <span>{Math.round(priceBounds.min)}</span>
                                     <div className="relative w-56">
                                         {/* double range slider */}
                                         <input
                                             type="range"
-                                            min={10}
-                                            max={500}
-                                            value={min}
-                                            onChange={(e) =>
-                                                handleMinChange(e.target.value)
-                                            }
+                                            min={priceBounds.min}
+                                            max={priceBounds.max}
+                                            value={currentMin}
+                                            onChange={(e) => handleMinChange(e.target.value)}
                                             className="absolute z-20 h-2 w-full appearance-none bg-transparent pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:cursor-pointer"
                                             aria-label="Minimum points"
+                                            disabled={!products.length}
                                         />
                                         <input
                                             type="range"
-                                            min={10}
-                                            max={500}
-                                            value={max}
-                                            onChange={(e) =>
-                                                handleMaxChange(e.target.value)
-                                            }
+                                            min={priceBounds.min}
+                                            max={priceBounds.max}
+                                            value={currentMax}
+                                            onChange={(e) => handleMaxChange(e.target.value)}
                                             className="absolute z-10 h-2 w-full appearance-none bg-transparent pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:cursor-pointer"
                                             aria-label="Maximum points"
+                                            disabled={!products.length}
                                         />
                                         <div className="relative h-2 w-full rounded-full bg-gray-200" />
                                     </div>
-                                    <span>500</span>
+                                    <span>{Math.round(priceBounds.max)}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Cards */}
-                    <RewardCards items={items} />
+                    {error ? (
+                        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-center text-sm text-red-600">
+                            {error}
+                        </div>
+                    ) : (
+                        <RewardCards
+                            items={filteredProducts}
+                            loading={loading}
+                            limit={filteredProducts.length || 3}
+                        />
+                    )}
 
                     {/* CTA */}
                     <div className="flex items-center justify-center py-8">
