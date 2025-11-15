@@ -1,10 +1,17 @@
+"use client";
+
 import "./comingSoon.css";
 import Image from "next/image";
 import RewardCards from "./rewardCards";
 import { useTranslations } from "next-intl";
-import styles from './coming.module.css'
+import { useMemo } from "react";
+import { useProducts } from "@/app/shared/contexts/productsContext";
+import styles from "./coming.module.css";
+
 export default function ComingSoon() {
     const t = useTranslations();
+    const { products, loading: productsLoading } = useProducts();
+
     const brands = [
         { id: 1, name: "GARMIN", logo: "/garmin.png" },
         { id: 2, name: "Häagen-Dazs", logo: "/haagen-dazs.svg" },
@@ -16,26 +23,13 @@ export default function ComingSoon() {
         { id: 8, name: "HOKA", logo: "/hoka.svg" },
     ];
 
-    const rewards = [
-        {
-            id: "smartwatch",
-            title: t("ComingSoon.rewards.smartwatch.title"),
-            description: t("ComingSoon.rewards.smartwatch.description"),
-            image: "/smart.jpg",
-        },
-        {
-            id: "nike-gift-card",
-            title: t("ComingSoon.rewards.nike_gift_card.title"),
-            description: t("ComingSoon.rewards.nike_gift_card.description"),
-            image: "/nike.webp",
-        },
-        {
-            id: "apple-airpods-3",
-            title: t("ComingSoon.rewards.apple_airpods_3.title"),
-            description: t("ComingSoon.rewards.apple_airpods_3.description"),
-            image: "/aripod.webp",
-        },
-    ];
+    const rewards = useMemo(() => {
+        if (products.length === 0) return [];
+
+        const featured = products.filter((product) => product?.isFeatured);
+        const nonFeatured = products.filter((product) => !product?.isFeatured);
+        return [...featured, ...nonFeatured].slice(0, 3);
+    }, [products]);
 
     return (
         <>
@@ -85,7 +79,13 @@ export default function ComingSoon() {
                     <h2 className="sponsor-title">
                         {t("ComingSoon.popularRewards")}
                     </h2>
-                    <RewardCards items={rewards} />
+                    <div className="rewards-grid-wrap">
+                        <RewardCards
+                            items={rewards}
+                            loading={productsLoading}
+                            limit={3}
+                        />
+                    </div>
                 </section>
             </div>
         </>

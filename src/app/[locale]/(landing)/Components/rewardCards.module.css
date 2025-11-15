@@ -1,0 +1,255 @@
+ .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: clamp(1rem, 3vw, 2.5rem);
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.loadingState {
+    opacity: 0.8;
+}
+
+.card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.12);
+    border: 1px solid rgba(15, 23, 42, 0.05);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.18);
+}
+
+.media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #f3f4f6;
+}
+
+.mediaImage {
+    object-fit: cover;
+}
+
+.mediaFallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+}
+
+.bookmarkBtn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    padding: 8px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(15, 23, 42, 0.6);
+    color: #fff7cc;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.bookmarkBtn:hover {
+    background: rgba(15, 23, 42, 0.85);
+    transform: scale(1.04);
+}
+
+.body {
+    padding: 1.5rem 1.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.title {
+    font-size: clamp(1.15rem, 2vw, 1.35rem);
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.2;
+}
+
+.description {
+    font-size: 0.95rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.metaRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pointsChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background: #fff6e5;
+    color: #92400e;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.pointsHalo {
+    fill: currentColor;
+    opacity: 0.3;
+}
+
+.pointsValue {
+    font-size: 1rem;
+}
+
+.pointsLabel {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid #f3f4f6;
+    background: #f9fafb;
+}
+
+.actionBtn {
+    border: none;
+    background: transparent;
+    padding: 0.9rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #9ca3af;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: not-allowed;
+}
+
+.actionBtn + .actionBtn {
+    border-left: 1px solid #e5e7eb;
+}
+
+.emptyState {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+    border-radius: 16px;
+    border: 1px dashed #cbd5f5;
+    background: #f9fafb;
+    text-align: center;
+    color: #4b5563;
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+.skeletonCard,
+.skeletonActions {
+    pointer-events: none;
+}
+
+.skeletonBlock {
+    background: linear-gradient(110deg, #eceff3 8%, #f5f7fa 18%, #eceff3 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+    border-radius: 12px;
+}
+
+.skeletonTitle {
+    height: 20px;
+    width: 70%;
+    margin-bottom: 0.5rem;
+}
+
+.skeletonText {
+    height: 14px;
+    width: 100%;
+}
+
+.skeletonButton {
+    height: 40px;
+    margin: 0.5rem 1rem;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .card {
+        max-width: 520px;
+    }
+}
+
+@media (max-width: 768px) {
+    .body {
+        padding: 1.25rem 1.25rem 0.75rem;
+    }
+
+    .actions {
+        grid-template-columns: 1fr;
+    }
+
+    .actionBtn + .actionBtn {
+        border-left: none;
+        border-top: 1px solid #e5e7eb;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        border-radius: 16px;
+    }
+
+    .media {
+        aspect-ratio: 4 / 3;
+    }
+}

@@ -14,8 +14,6 @@ function slugify(text) {
         .replace(/-+/g, "-");
 }
 
-
-
 // GET /api/admin/products
 export async function GET(req) {
     try {
