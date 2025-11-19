@@ -39,14 +39,11 @@ We are implementing a flexible and admin-driven badge system that supports seaso
    - Ticket verification flow will trigger invite logic: when a user verifies a ticket, confirm the inviter and mark that the inviter has a valid referred & present user. If the inviter meets the invite target, award the `invite_count` badge.
 
 4. Social/share badges
-   - Award when user triggers a share action that the backend verifies (if needed), using `social_share` rule.
-   Awarding must be idempotent (if `UserBadge` already exists do nothing), and must not award seasonal and non-seasonal duplicates for the same condition simultaneously — prefer seasonal badges.
-   - This flow avoids cron jobs and awards immediately on the admin verification path.
-
-   - Verification options (in order of preference):
-     - Server-generated share links: create a `shareId` token on the server, embed into the share URL on the frontend; when the share target site or link is visited, the server tracks the visit and uses it as proof. Alternatively, require that a certain number of unique clicks happen on the shared link.
-     - Admin manual verification: where APIs or links are unavailable, allow admin to verify share instances manually.
-   - Implement `POST /api/social-shares/verify` to accept proof payloads and verify the share before awarding any `social_share` badge. Awarding must be idempotent and respect seasonal rules.
+   - Create a fully automated share-token workflow so admins never review proof manually.
+   - `POST /api/social-shares` (auth required) mints a share token tied to the user + badge context and returns a canonical share URL (e.g., `/share/{token}`). Frontend embeds this URL in the share sheet so every share goes through our redirect.
+   - When anyone hits `/share/{token}`, the server records a unique click (IP + UA hash) for that token, forwards the visitor to the public landing page, and once the first unique click (or configured threshold) occurs it marks the token `verified` and triggers badge evaluation immediately.
+   - Awarding remains idempotent: if the user already has the `social_share` badge (seasonal preferred over non-seasonal), no duplicate `UserBadge` rows are created. Tokens are single-use and rate limited per user to avoid abuse.
+   - No admin interaction or proof upload is required; everything happens via the redirect + click logging. APIs should still respect seasonal priority and operate without cron jobs.
 
 5. Seasonal badges
    - If a badge is seasonal (`isSeasonal` true and `seasonalStartDate`/`seasonalEndDate` defines the window), the award evaluator must only award the seasonal badge within its seasonal window.
@@ -124,7 +121,7 @@ Phase C — Awarding integration
 - [ ] Localization: `name`/`nameZh` and `description`/`descriptionZh` are used in the frontend to display titles/descriptions according to locale.
 - [ ] No retries/cron jobs needed for awarding; awarding occurs during import/event flows or on direct trigger flows (ticket verification, redemption, share), and all awarding is idempotent.
 - [x] `User` model has a `pendingCaloriesForFsPoints` Int field (default 0) for storing calories usable for FS point conversion.
-- [ ] rewardCalories endpoint: increments `totalCaloriesBurned` and `pendingCaloriesForFsPoints`, converts calories to FS points using `500 calories = 1 FS point`, and increments `totalPoints` with atomic transaction.
+- [x] rewardCalories endpoint: increments `totalCaloriesBurned` and `pendingCaloriesForFsPoints`, converts calories to FS points using `500 calories = 1 FS point`, and increments `totalPoints` with atomic transaction.
 - [ ] Redemption: Redemption endpoint deducts `fsPointsCost` atomically, creates `BadgeRedemption` and `UserBadge`, and logs redemption activity for audit.
 - [ ] Tests: Unit/integration tests for FS point conversion (`rewardCalories`) and redemption flows exist and pass.
 - [x] `TempUser` model also supports `pendingCaloriesForFsPoints` (optional) and migration/mapping onto `User` on account conversion.

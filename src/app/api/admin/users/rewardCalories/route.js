@@ -4,6 +4,8 @@ import { createServerClient } from '@/lib/supabase/server-only';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import serverApi from '@/utils/axios/serverApi';
 
+const CALORIES_PER_POINT = 500;
+
 async function sendInvitationEmailsToTempUsers(tempUserEmailsWithNames) {
 	if (!tempUserEmailsWithNames || tempUserEmailsWithNames.length === 0) {
 		return;
@@ -106,39 +108,63 @@ export async function POST(req) {
 			continue;
 		}
 
+		let pointsEarnedThisImport = 0;
 		try {
 			await prisma.$transaction(async (tx) => {
 				if (user) {
-					await tx.user.update({
-						where: { email },
-						data: { totalCaloriesBurned: { increment: calories } },
+					const updatedUser = await tx.user.update({
+						where: { id: user.id },
+						data: {
+							totalCaloriesBurned: { increment: calories },
+							pendingCaloriesForFsPoints: { increment: calories },
+						},
+						select: { pendingCaloriesForFsPoints: true },
 					});
+
+					pointsEarnedThisImport = Math.floor(updatedUser.pendingCaloriesForFsPoints / CALORIES_PER_POINT);
+					if (pointsEarnedThisImport > 0) {
+						await tx.user.update({
+							where: { id: user.id },
+							data: {
+								totalPoints: { increment: pointsEarnedThisImport },
+								pendingCaloriesForFsPoints: {
+									decrement: pointsEarnedThisImport * CALORIES_PER_POINT,
+								},
+							},
+						});
+					}
+
 					await tx.userActivity.updateMany({
 						where: { userId: user.id, activityId },
 						data: { wasPresent: true, totalDuration: validDuration },
 					});
-
-					await tx.activity.updateMany({
-						where: { id: activityId },
-						data: { totalCaloriesBurnt: { increment: calories } },
-					});
 				} else if (tempUser) {
 					await tx.tempUser.update({
-						where: { email },
-						data: { totalCaloriesBurned: { increment: calories } },
+						where: { id: tempUser.id },
+						data: {
+							totalCaloriesBurned: { increment: calories },
+							pendingCaloriesForFsPoints: { increment: calories },
+						},
 					});
 					await tx.userActivity.updateMany({
 						where: { tempUserId: tempUser.id, activityId },
 						data: { wasPresent: true, totalDuration: validDuration },
 					});
-
-					await tx.activity.updateMany({
-						where: { id: activityId },
-						data: { totalCaloriesBurnt: { increment: calories } },
-					});
 				}
+
+				await tx.activity.updateMany({
+					where: { id: activityId },
+					data: { totalCaloriesBurnt: { increment: calories } },
+				});
 			});
-			results.push({ email, success: true, userType, calories, duration });
+			results.push({
+				email,
+				success: true,
+				userType,
+				calories,
+				duration,
+				pointsEarned: user ? pointsEarnedThisImport : 0,
+			});
 
 			if (userType === 'tempUser' && tempUser) {
 				const userName = tempUser.firstname && tempUser.lastname

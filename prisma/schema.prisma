@@ -72,6 +72,12 @@ enum BadgeRedemptionStatus {
   cancelled
 }
 
+enum SocialShareStatus {
+  pending
+  verified
+  expired
+}
+
 enum VerificationStatus {
   pending
   approved
@@ -147,6 +153,7 @@ model User {
   calorieDonations    CalorieDonation[]    @relation("UserCalorieDonations")
   userBadges          UserBadge[]
   badgeRedemptions    BadgeRedemption[]
+  socialShares        SocialShare[]
   referralCodes       ReferralCode[]
   referralsGiven      Referral[]           @relation("Referrer")
   referralsReceived   Referral[]           @relation("Referred")
@@ -459,6 +466,25 @@ model BadgeRedemption {
   @@index([userId])
   @@index([badgeId])
   @@map("badge_redemptions")
+}
+
+model SocialShare {
+  id           String            @id @default(uuid())
+  token        String            @unique
+  userId       String            @map("user_id")
+  redirectUrl  String            @map("redirect_url")
+  status       SocialShareStatus @default(pending)
+  uniqueClicks Int               @default(0) @map("unique_clicks")
+  lastClickAt  DateTime?         @map("last_click_at")
+  verifiedAt   DateTime?         @map("verified_at")
+  expiresAt    DateTime?         @map("expires_at")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("social_shares")
 }
 
 model ReferralCode {
