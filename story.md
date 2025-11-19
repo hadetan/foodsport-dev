@@ -82,7 +82,7 @@ Phase B — Backend APIs
    2. Compute `pointsEarned = Math.floor(pendingCaloriesForFsPoints / 500)` and if > 0 increment `User.totalPoints` by `pointsEarned` and decrement `pendingCaloriesForFsPoints` by `pointsEarned * 500`.
    3. Make this whole flow an atomic database transaction to avoid race conditions and ensure idempotency.
    4. For `TempUser`, update `pendingCaloriesForFsPoints` similarly (optional), but only award points to `User` accounts; handle migrating `TempUser` to a full `User` account if required.
- - Add `POST /api/social-shares/verify` (auth-required) to verify social shares server-side and award `social_share` badges only on verified proof.
+ - Add `POST /api/social-shares` (auth-required) to mint share tokens and the public `/share/{token}` redirect handler that logs unique clicks, self-verifies the share, and awards `social_share` badges without manual admin review.
 
 ### Phase B (continued) — FS Points conversion & redemption
 - Add `pendingCaloriesForFsPoints` Int field to `User` (and `TempUser` optionally) to accumulate calories for point conversion. Default: 0.
