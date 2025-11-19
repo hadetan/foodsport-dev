@@ -76,7 +76,7 @@ export default function BadgeModal({ badge, locale, labels, onClose }) {
         <div className="badge-modal__body">
           <div className="badge-modal__image" aria-hidden="true">
             {badge.imageUrl ? (
-              <img src={badge.imageUrl} alt="" />
+              <img src={badge.imageUrl} alt={localized.title} />
             ) : (
               <span role="img" aria-label={localized.title}>
                 {badge.emoji || '🏅'}

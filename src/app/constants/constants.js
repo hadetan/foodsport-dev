@@ -71,3 +71,21 @@ export const MONTHS = [
 export const MAX_IMAGE_SIZE_MB = 10;
 
 export const MAX_SOCIAL_MEDIA_IMAGES = 5;
+
+export const ALLOWED_RULE_TYPES = new Set([
+  'calorie_single_activity',
+  'calorie_cumulative',
+  'activity_participation_count',
+  'activity_specific_participation',
+  'consecutive_days_calories',
+  'invite_count',
+  'social_share',
+]);
+
+export const ACTIVITY_RULE_TYPES = [
+  'calorie_single_activity',
+  'calorie_cumulative',
+  'activity_participation_count',
+  'activity_specific_participation',
+  'consecutive_days_calories',
+];

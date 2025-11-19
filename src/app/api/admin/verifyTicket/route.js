@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import { prisma } from '@/lib/prisma/db';
+import { awardInviteBadges } from '@/lib/badges/ruleEvaluator';
 
 // POST /api/admin/verifyTicket
 export async function POST(request) {
@@ -80,10 +81,31 @@ export async function POST(request) {
 		);
 	}
 
-	const [updatedTicket, updatedUserActivity] = await prisma.$transaction([
-		prisma.ticket.update({ where: { id: ticket.id }, data: { ticketUsed: true, status: 'used', usedAt: new Date() } }),
-		prisma.userActivity.update({ where: { id: userActivity.id }, data: { wasPresent: true } }),
-	]);
+	let updatedTicket;
+	let updatedUserActivity;
+	await prisma.$transaction(async (tx) => {
+		updatedTicket = await tx.ticket.update({
+			where: { id: ticket.id },
+			data: { ticketUsed: true, status: 'used', usedAt: new Date() },
+		});
+		updatedUserActivity = await tx.userActivity.update({
+			where: { id: userActivity.id },
+			data: { wasPresent: true },
+		});
+
+		if (ticket.invitedUserId) {
+			const invited = await tx.invitedUser.findUnique({
+				where: { id: ticket.invitedUserId },
+				select: { inviterId: true },
+			});
+			if (invited?.inviterId) {
+				await awardInviteBadges(tx, {
+					userId: invited.inviterId,
+					source: `invite:${ticket.activityId}`,
+				});
+			}
+		}
+	});
 
 	let user = null;
 	let tempUser = null;

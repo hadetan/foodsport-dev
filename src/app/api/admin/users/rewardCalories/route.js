@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma/db';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import serverApi from '@/utils/axios/serverApi';
+import { awardBadgesForActivityProgress } from '@/lib/badges/ruleEvaluator';
 
 const CALORIES_PER_POINT = 500;
 
@@ -109,6 +110,7 @@ export async function POST(req) {
 		}
 
 		let pointsEarnedThisImport = 0;
+		let awardedBadges = [];
 		try {
 			await prisma.$transaction(async (tx) => {
 				if (user) {
@@ -118,7 +120,7 @@ export async function POST(req) {
 							totalCaloriesBurned: { increment: calories },
 							pendingCaloriesForFsPoints: { increment: calories },
 						},
-						select: { pendingCaloriesForFsPoints: true },
+						select: { pendingCaloriesForFsPoints: true, totalCaloriesBurned: true },
 					});
 
 					pointsEarnedThisImport = Math.floor(updatedUser.pendingCaloriesForFsPoints / CALORIES_PER_POINT);
@@ -137,6 +139,15 @@ export async function POST(req) {
 					await tx.userActivity.updateMany({
 						where: { userId: user.id, activityId },
 						data: { wasPresent: true, totalDuration: validDuration },
+					});
+
+					awardedBadges = await awardBadgesForActivityProgress(tx, {
+						userId: user.id,
+						activityId,
+						caloriesDelta: calories,
+						totalCaloriesBurned: updatedUser.totalCaloriesBurned,
+						wasPresent: true,
+						source: `activity_import:${activityId}`,
 					});
 				} else if (tempUser) {
 					await tx.tempUser.update({
@@ -164,6 +175,7 @@ export async function POST(req) {
 				calories,
 				duration,
 				pointsEarned: user ? pointsEarnedThisImport : 0,
+				awardedBadges: awardedBadges.map((entry) => entry.badgeId),
 			});
 
 			if (userType === 'tempUser' && tempUser) {
