@@ -50,12 +50,26 @@ enum TicketStatus {
   cancelled
 }
 
-enum BadgeType {
-  streak
-  calorie
-  seasonal
-  achievement
-  referral
+enum BadgeRuleType {
+  calorie_single_activity
+  calorie_cumulative
+  activity_participation_count
+  activity_specific_participation
+  consecutive_days_calories
+  invite_count
+  social_share
+}
+
+enum UserBadgeStatus {
+  earned
+  pending
+  redeemed
+}
+
+enum BadgeRedemptionStatus {
+  pending
+  completed
+  cancelled
 }
 
 enum VerificationStatus {
@@ -99,31 +113,32 @@ enum District {
 }
 
 model User {
-  id                   String    @id @default(uuid())
-  email                String    @unique
-  firstname            String?   @map("firstname")
-  lastname             String?   @map("lastname")
-  dateOfBirth          DateTime  @map("date_of_birth")
-  weight               Decimal?  @db.Decimal(5, 2)
-  height               Decimal?  @db.Decimal(5, 2)
-  gender               String?
-  district             District? @map("district")
-  phoneNumber          String?   @map("phone_number")
-  profilePictureUrl    String?   @map("profile_picture_url")
-  border               String?   @default("default")
-  title                String?   @default("Newcomer")
-  bio                  String?
-  level                Int       @default(1)
-  totalPoints          Int       @default(0) @map("total_points")
-  totalCaloriesBurned  Int       @default(0) @map("total_calories_burned")
-  totalCaloriesDonated Int       @default(0) @map("total_calories_donated")
-  googleId             String?   @unique @map("google_id")
-  emailVerified        Boolean   @default(false) @map("email_verified")
-  phoneVerified        Boolean   @default(false) @map("phone_verified")
-  isActive             Boolean   @default(true) @map("is_active")
-  hasReferredBefore    Boolean   @default(false) @map("has_referred_before")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
+  id                         String    @id @default(uuid())
+  email                      String    @unique
+  firstname                  String?   @map("firstname")
+  lastname                   String?   @map("lastname")
+  dateOfBirth                DateTime  @map("date_of_birth")
+  weight                     Decimal?  @db.Decimal(5, 2)
+  height                     Decimal?  @db.Decimal(5, 2)
+  gender                     String?
+  district                   District? @map("district")
+  phoneNumber                String?   @map("phone_number")
+  profilePictureUrl          String?   @map("profile_picture_url")
+  border                     String?   @default("default")
+  title                      String?   @default("Newcomer")
+  bio                        String?
+  level                      Int       @default(1)
+  totalPoints                Int       @default(0) @map("total_points")
+  totalCaloriesBurned        Int       @default(0) @map("total_calories_burned")
+  totalCaloriesDonated       Int       @default(0) @map("total_calories_donated")
+  pendingCaloriesForFsPoints Int       @default(0) @map("pending_calories_for_fs_points")
+  googleId                   String?   @unique @map("google_id")
+  emailVerified              Boolean   @default(false) @map("email_verified")
+  phoneVerified              Boolean   @default(false) @map("phone_verified")
+  isActive                   Boolean   @default(true) @map("is_active")
+  hasReferredBefore          Boolean   @default(false) @map("has_referred_before")
+  createdAt                  DateTime  @default(now()) @map("created_at")
+  updatedAt                  DateTime  @updatedAt @map("updated_at")
 
   // Relations
   tickets             Ticket[]
@@ -131,6 +146,7 @@ model User {
   calorieSubmissions  CalorieSubmission[]
   calorieDonations    CalorieDonation[]    @relation("UserCalorieDonations")
   userBadges          UserBadge[]
+  badgeRedemptions    BadgeRedemption[]
   referralCodes       ReferralCode[]
   referralsGiven      Referral[]           @relation("Referrer")
   referralsReceived   Referral[]           @relation("Referred")
@@ -206,6 +222,7 @@ model Activity {
   calorieSubmissions CalorieSubmission[]
   tncs               Tnc[]
   invitedUsers       InvitedUser[]
+  badges             Badge[]
 
   @@map("activities")
 }
@@ -225,16 +242,17 @@ model Tnc {
 }
 
 model TempUser {
-  id                  String   @id @default(uuid())
-  email               String   @unique
-  firstname           String
-  lastname            String
-  dateOfBirth         DateTime @map("date_of_birth")
-  weight              Decimal? @db.Decimal(5, 2)
-  height              Decimal? @db.Decimal(5, 2)
-  totalCaloriesBurned Int      @default(0) @map("total_calories_burned")
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @default(now()) @map("updated_at")
+  id                         String   @id @default(uuid())
+  email                      String   @unique
+  firstname                  String
+  lastname                   String
+  dateOfBirth                DateTime @map("date_of_birth")
+  weight                     Decimal? @db.Decimal(5, 2)
+  height                     Decimal? @db.Decimal(5, 2)
+  totalCaloriesBurned        Int      @default(0) @map("total_calories_burned")
+  pendingCaloriesForFsPoints Int      @default(0) @map("pending_calories_for_fs_points")
+  createdAt                  DateTime @default(now()) @map("created_at")
+  updatedAt                  DateTime @default(now()) @map("updated_at")
 
   // Relations
   userActivities UserActivity[]
@@ -369,28 +387,53 @@ model CalorieDonation {
 model Badge {
   id                String    @id @default(uuid())
   name              String
-  imageUrl          String?   @map("image_url")
-  badgeType         BadgeType @map("badge_type")
-  criteriaValue     Int?      @map("criteria_value")
+  nameZh            String?   @map("name_zh")
+  description       String?   @db.Text
+  descriptionZh     String?   @map("description_zh") @db.Text
+  imageUrl          String    @map("image_url")
   isSeasonal        Boolean   @default(false) @map("is_seasonal")
   seasonalStartDate DateTime? @map("seasonal_start_date")
   seasonalEndDate   DateTime? @map("seasonal_end_date")
-  rarity            String?   @default("common")
+  activityId        String?   @map("activity_id")
+  isLimitedEdition  Boolean   @default(false) @map("is_limited_edition")
+  fsPointsCost      Int?      @map("fs_points_cost")
+  place             Int       @map("place")
   isActive          Boolean   @default(true) @map("is_active")
   createdAt         DateTime  @default(now()) @map("created_at")
 
   // Relations
-  userBadges UserBadge[]
+  activity    Activity?         @relation(fields: [activityId], references: [id])
+  userBadges  UserBadge[]
+  badgeRule   BadgeRule?
+  redemptions BadgeRedemption[]
 
   @@map("badges")
 }
 
+model BadgeRule {
+  id          String        @id @default(uuid())
+  badgeId     String        @unique @map("badge_id")
+  ruleType    BadgeRuleType @map("rule_type")
+  targetValue Int?          @map("target_value")
+  params      Json?         @map("params")
+  isActive    Boolean       @default(true) @map("is_active")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@map("badge_rules")
+}
+
 model UserBadge {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  badgeId     String   @map("badge_id")
-  earnedAt    DateTime @default(now()) @map("earned_at")
-  earnedValue Int?     @map("earned_value")
+  id          String          @id @default(uuid())
+  userId      String          @map("user_id")
+  badgeId     String          @map("badge_id")
+  status      UserBadgeStatus @default(earned)
+  source      String?         @map("source")
+  earnedAt    DateTime        @default(now()) @map("earned_at")
+  earnedValue Int?            @map("earned_value")
+  pointsSpent Int?            @map("points_spent")
 
   // Relations
   user  User  @relation(fields: [userId], references: [id])
@@ -398,6 +441,24 @@ model UserBadge {
 
   @@unique([userId, badgeId])
   @@map("user_badges")
+}
+
+model BadgeRedemption {
+  id         String                @id @default(uuid())
+  userId     String                @map("user_id")
+  badgeId    String                @map("badge_id")
+  pointsPaid Int                   @map("points_paid")
+  status     BadgeRedemptionStatus @default(completed)
+  redeemedAt DateTime              @default(now()) @map("redeemed_at")
+  createdAt  DateTime              @default(now()) @map("created_at")
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@index([userId])
+  @@index([badgeId])
+  @@map("badge_redemptions")
 }
 
 model ReferralCode {
