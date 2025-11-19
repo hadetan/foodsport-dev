@@ -1,22 +1,67 @@
-import React from 'react';
+'use client';
+
+import React, { useMemo, useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import '@/app/[locale]/my/css/AllBadges.css';
-import { useTranslations } from 'next-intl';
+import BadgeGrid from './BadgeGrid';
+import BadgeModal from './BadgeModal';
+
+const MOCK_BADGES = Array.from({ length: 20 }, (_, index) => ({
+  id: `badge-${index + 1}`,
+  title: `Badge ${index + 1}`,
+  description: 'Complete activities to unlock this badge.',
+  titleZh: `徽章 ${index + 1}`,
+  descriptionZh: '完成活動即可解鎖此徽章。',
+  emoji: ['🏅', '🎯', '🏆', '🔥', '🚀'][index % 5],
+  isUnlocked: index % 3 !== 0,
+}));
 
 export default function AllBadges() {
   const t = useTranslations('AllBadges');
+  const locale = useLocale();
+  const [selectedBadge, setSelectedBadge] = useState(null);
+
+  const statusLabels = useMemo(() => ({
+    locked: t('status.locked'),
+    unlocked: t('status.unlocked'),
+  }), [t]);
+
+  const modalLabels = useMemo(() => ({
+    share: t('modal.share'),
+    close: t('modal.close'),
+    viewDetails: t('modal.viewDetails'),
+    shareSuccess: t('modal.shareSuccess'),
+    shareError: t('modal.shareError'),
+  }), [t]);
+
+  const handleBadgeSelect = (badge) => {
+    setSelectedBadge(badge);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedBadge(null);
+  };
+
   return (
-    <div className="all-badges-coming-soon">
-      <div className="coming-soon-content">
-        <h1 className="coming-soon-title">{t('title')}</h1>
-        <p className="coming-soon-subtitle">{t('subtitle')}</p>
-        <div className="coming-soon-illustration">
-          <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-            <circle cx="60" cy="60" r="55" stroke="#FFD700" strokeWidth="6" fill="#FFF8DC" />
-            <text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="32" fill="#FFD700">🏅</text>
-          </svg>
-        </div>
-        <p className="coming-soon-description">{t('description')}</p>
+    <section className="all-badges-section">
+
+      <div className="all-badges-grid-wrapper">
+        <BadgeGrid
+          badges={MOCK_BADGES}
+          locale={locale}
+          onSelectBadge={handleBadgeSelect}
+          statusLabels={statusLabels}
+        />
       </div>
-    </div>
+
+      {selectedBadge && (
+        <BadgeModal
+          badge={selectedBadge}
+          locale={locale}
+          labels={modalLabels}
+          onClose={handleCloseModal}
+        />
+      )}
+    </section>
   );
 }
