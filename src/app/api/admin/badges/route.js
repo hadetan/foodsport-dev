@@ -3,7 +3,7 @@ import { createServerClient } from '@/lib/supabase/server-only';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import { prisma } from '@/lib/prisma/db';
 import { validateRequiredFields } from '@/utils/validation';
-import { ALLOWED_RULE_TYPES } from '@/app/constants/constants';
+import { coerceRulesPayload, validateAndNormalizeBadgeRules } from '@/lib/badges/ruleValidation';
 
 function parseDate(value) {
   if (!value) {
@@ -25,7 +25,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const validation = validateRequiredFields(payload, ['name', 'imageUrl', 'rule']);
+  const validation = validateRequiredFields(payload, ['name', 'imageUrl']);
   if (!validation.isValid) {
     return NextResponse.json({ error: validation.error || 'Missing required fields' }, { status: 400 });
   }
@@ -43,12 +43,13 @@ export async function POST(request) {
     isLimitedEdition = false,
     fsPointsCost,
     place,
-    rule,
   } = payload;
 
-  if (!rule || typeof rule !== 'object' || !ALLOWED_RULE_TYPES.has(rule.ruleType)) {
-    return NextResponse.json({ error: 'Invalid or missing badge rule' }, { status: 400 });
+  const normalizedRulesResult = validateAndNormalizeBadgeRules(coerceRulesPayload(payload));
+  if (!normalizedRulesResult.isValid) {
+    return NextResponse.json({ error: normalizedRulesResult.error }, { status: 400 });
   }
+  const normalizedRules = normalizedRulesResult.rules;
 
   const seasonalStart = parseDate(seasonalStartDate);
   const seasonalEnd = parseDate(seasonalEndDate);
@@ -75,6 +76,10 @@ export async function POST(request) {
     select: { place: true },
   });
 
+  const normalizedPlace = Number.isFinite(place)
+    ? Math.trunc(place)
+    : ((lastHighestPlace?.place ?? 0) + 1);
+
   const badgeData = {
     name,
     nameZh,
@@ -87,7 +92,7 @@ export async function POST(request) {
     activityId: activityId ?? null,
     isLimitedEdition,
     fsPointsCost: isLimitedEdition ? limitedCost : null,
-    place: Number.isFinite(place) ? Math.trunc(place) : lastHighestPlace + 1,
+    place: normalizedPlace,
   };
 
   try {
@@ -96,18 +101,22 @@ export async function POST(request) {
         data: badgeData,
       });
 
-      await tx.badgeRule.create({
-        data: {
+      await tx.badgeRule.createMany({
+        data: normalizedRules.map((rulePayload) => ({
           badgeId: badge.id,
-          ruleType: rule.ruleType,
-          targetValue: Number.isFinite(rule.targetValue) ? Math.trunc(rule.targetValue) : null,
-          params: rule.params ?? null,
-        },
+          ruleType: rulePayload.ruleType,
+          targetValue: rulePayload.targetValue,
+          params: rulePayload.params ?? null,
+        })),
       });
 
       return tx.badge.findUnique({
         where: { id: badge.id },
-        include: { badgeRule: true },
+        include: {
+          badgeRules: {
+            orderBy: { createdAt: 'asc' },
+          },
+        },
       });
     });
 

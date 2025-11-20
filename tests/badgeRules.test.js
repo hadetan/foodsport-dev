@@ -154,12 +154,12 @@ test('awardBadgesForActivityProgress grants single-event calorie badges', async 
         badge: {
             findMany: async () => ([{
                 id: 'badge-single-calorie',
-                badgeRule: {
+                badgeRules: [{
                     id: 'rule-single',
                     ruleType: 'calorie_single_activity',
                     targetValue: 500,
                     params: null,
-                },
+                }],
             }]),
         },
         userBadge: {
@@ -185,12 +185,12 @@ test('awardBadgesForActivityProgress awards cumulative calorie milestones', asyn
         badge: {
             findMany: async () => ([{
                 id: 'badge-cumulative-calorie',
-                badgeRule: {
+                badgeRules: [{
                     id: 'rule-cumulative',
                     ruleType: 'calorie_cumulative',
                     targetValue: 5000,
                     params: null,
-                },
+                }],
             }]),
         },
         userBadge: {
@@ -215,12 +215,12 @@ test('awardBadgesForActivityProgress recognizes participation milestones', async
         badge: {
             findMany: async () => ([{
                 id: 'badge-participation',
-                badgeRule: {
+                badgeRules: [{
                     id: 'rule-participation',
                     ruleType: 'activity_participation_count',
                     targetValue: 5,
                     params: null,
-                },
+                }],
             }]),
         },
         userBadge: {
@@ -248,12 +248,12 @@ test('awardBadgesForActivityProgress handles activity-specific badges', async ()
             findMany: async () => ([{
                 id: 'badge-activity-specific',
                 activityId: 'activity-special',
-                badgeRule: {
+                badgeRules: [{
                     id: 'rule-specific',
                     ruleType: 'activity_specific_participation',
                     targetValue: 1,
                     params: null,
-                },
+                }],
             }]),
         },
         userBadge: {
@@ -278,12 +278,12 @@ test('awardBadgesForActivityProgress honors consecutive calorie days', async () 
         badge: {
             findMany: async () => ([{
                 id: 'badge-streak',
-                badgeRule: {
+                badgeRules: [{
                     id: 'rule-streak',
                     ruleType: 'consecutive_days_calories',
                     targetValue: 3,
                     params: { minDailyCalories: 200, type: 'burn' },
-                },
+                }],
             }]),
         },
         userBadge: {
@@ -305,18 +305,94 @@ test('awardBadgesForActivityProgress honors consecutive calorie days', async () 
     assert.equal(createdBadges[0].badgeId, 'badge-streak');
 });
 
+test('awardBadgesForActivityProgress requires all rules to match before awarding', async () => {
+    const createdBadges = [];
+    const tx = createMockTx({
+        badge: {
+            findMany: async () => ([{
+                id: 'badge-multi-rule',
+                activityId: 'activity-special',
+                badgeRules: [
+                    {
+                        id: 'rule-activity',
+                        ruleType: 'activity_specific_participation',
+                        targetValue: 1,
+                        params: null,
+                    },
+                    {
+                        id: 'rule-calories',
+                        ruleType: 'calorie_single_activity',
+                        targetValue: 500,
+                        params: null,
+                    },
+                ],
+            }]),
+        },
+        userBadge: {
+            create: async ({ data }) => { createdBadges.push(data); },
+        },
+    });
+
+    const awards = await awardBadgesForActivityProgress(tx, {
+        userId: 'user-multi',
+        activityId: 'activity-special',
+        wasPresent: true,
+        caloriesDelta: 600,
+        source: 'unit-test',
+    });
+
+    assert.equal(awards.length, 1);
+    assert.equal(createdBadges.length, 1);
+    assert.equal(createdBadges[0].badgeId, 'badge-multi-rule');
+});
+
+test('awardBadgesForActivityProgress does not award when only some rules match', async () => {
+    const tx = createMockTx({
+        badge: {
+            findMany: async () => ([{
+                id: 'badge-all-rules',
+                activityId: 'activity-special',
+                badgeRules: [
+                    {
+                        id: 'rule-activity',
+                        ruleType: 'activity_specific_participation',
+                        targetValue: 1,
+                        params: null,
+                    },
+                    {
+                        id: 'rule-calories',
+                        ruleType: 'calorie_single_activity',
+                        targetValue: 800,
+                        params: null,
+                    },
+                ],
+            }]),
+        },
+    });
+
+    const awards = await awardBadgesForActivityProgress(tx, {
+        userId: 'user-partial',
+        activityId: 'activity-special',
+        wasPresent: true,
+        caloriesDelta: 500,
+        source: 'unit-test',
+    });
+
+    assert.equal(awards.length, 0);
+});
+
 test('awardInviteBadges tracks invite milestones based on used tickets', async () => {
     const createdBadges = [];
     const tx = createMockTx({
         badge: {
             findMany: async () => ([{
                 id: 'badge-invite',
-                badgeRule: {
+                badgeRules: [{
                     id: 'rule-invite',
                     ruleType: 'invite_count',
                     targetValue: 3,
                     params: null,
-                },
+                }],
             }]),
         },
         userBadge: {
@@ -342,12 +418,12 @@ test('awardPointsBadges grants badge when total points meet threshold', async ()
         badge: {
             findMany: async () => ([{
                 id: 'badge-points',
-                badgeRule: {
+                badgeRules: [{
                     id: 'rule-points',
                     ruleType: 'points_cumulative',
                     targetValue: 1000,
                     params: null,
-                },
+                }],
             }]),
         },
         userBadge: {
@@ -374,21 +450,21 @@ test('awardRedemptionBadges handles first redeem and cumulative totals', async (
             findMany: async () => ([
                 {
                     id: 'badge-first',
-                    badgeRule: {
+                    badgeRules: [{
                         id: 'rule-first',
                         ruleType: 'redeem_first',
                         targetValue: 1,
                         params: null,
-                    },
+                    }],
                 },
                 {
                     id: 'badge-cumulative',
-                    badgeRule: {
+                    badgeRules: [{
                         id: 'rule-cumulative',
                         ruleType: 'redeem_points_cumulative',
                         targetValue: 5000,
                         params: null,
-                    },
+                    }],
                 },
             ]),
         },
@@ -417,12 +493,12 @@ test('awardSocialShareBadge grants badge on first verified share', async () => {
         badge: {
             findMany: async () => ([{
                 id: 'badge-social',
-                badgeRule: {
+                badgeRules: [{
                     id: 'rule-social',
                     ruleType: 'social_share',
                     targetValue: 1,
                     params: null,
-                },
+                }],
             }]),
         },
         userBadge: {
@@ -449,22 +525,22 @@ test('seasonal badges are prioritized when multiple rules share a bucket', async
                     isSeasonal: true,
                     seasonalStartDate: earlier,
                     seasonalEndDate: later,
-                    badgeRule: {
+                    badgeRules: [{
                         id: 'rule-seasonal',
                         ruleType: 'points_cumulative',
                         targetValue: 500,
                         params: null,
-                    },
+                    }],
                 },
                 {
                     id: 'badge-regular',
                     isSeasonal: false,
-                    badgeRule: {
+                    badgeRules: [{
                         id: 'rule-regular',
                         ruleType: 'points_cumulative',
                         targetValue: 500,
                         params: null,
-                    },
+                    }],
                 },
             ]),
         },

@@ -1,9 +1,10 @@
 # Admin Badges API — Quick Guide
 
-This guide explains how to use the admin `POST /api/admin/badges` API to create badges with different rules. Keep the examples handy when creating new seasonal, activity-specific, social, limited-edition, milestone, or invite badges.
+This guide explains how to use the admin badge APIs to create or update badges with flexible rule sets. Keep the examples handy when creating new seasonal, activity-specific, social, limited-edition, milestone, or invite badges.
 
-Endpoint
-- POST /api/admin/badges (admin-only, requires authentication via Supabase admin cookies)
+Endpoints
+- POST /api/admin/badges — Create a badge. Admin-only, requires authentication via Supabase admin cookies.
+- PUT /api/admin/badges/{badgeId} — Update badge metadata and rule sets. Admin-only.
 
 Required request headers
 - x-internal-api (if used by internal admin clients) or the admin user session via Supabase auth cookie
@@ -21,12 +22,14 @@ Top-level request body fields
 - isLimitedEdition (boolean, optional) — indicates this badge is redeemable via FS points. If true, `fsPointsCost` must be set.
 - fsPointsCost (number, optional) — FS point price if redeemable (must be a positive integer for limited edition badges).
 - place (int, optional) — integer ordering for UI; if not set, the server assigns the next available place.
-- rule (object, required) — rule payload describing the badge rule and parameters (one rule per badge enforced by DB).
+- rules (array, required) — array of rule payloads for the badge. Must contain at least one rule and every rule must be satisfied for the badge to be earned.
 
 Rule object fields (example):
 - ruleType (string, required) — enum value for the rule (see below).
 - targetValue (int, optional) — threshold (e.g., a calorie amount, participation count).
 - params (JSON object or null, optional) — further parameters (e.g., `days` for consecutive-day rules).
+
+When multiple rules are provided, the evaluator uses logical AND: a user must satisfy every active rule on the badge before it is awarded.
 
 Allowed ruleType values and example bodies
 - calorie_single_activity — Award if calories in a single activity meet or exceed target value.
@@ -35,7 +38,9 @@ Allowed ruleType values and example bodies
   {
     "name": "500 Cal Single Activity",
     "imageUrl": "badges/500cal.png",
-    "rule": { "ruleType": "calorie_single_activity", "targetValue": 500 }
+    "rules": [
+      { "ruleType": "calorie_single_activity", "targetValue": 500 }
+    ]
   }
   ```
 
@@ -45,7 +50,9 @@ Allowed ruleType values and example bodies
   {
     "name": "10k Cumul",
     "imageUrl": "badges/10k.png",
-    "rule": { "ruleType": "calorie_cumulative", "targetValue": 10000 }
+    "rules": [
+      { "ruleType": "calorie_cumulative", "targetValue": 10000 }
+    ]
   }
   ```
 
@@ -55,7 +62,9 @@ Allowed ruleType values and example bodies
   {
     "name": "Attend 5 Activities",
     "imageUrl": "badges/attend5.png",
-    "rule": { "ruleType": "activity_participation_count", "targetValue": 5 }
+    "rules": [
+      { "ruleType": "activity_participation_count", "targetValue": 5 }
+    ]
   }
   ```
 
@@ -66,7 +75,9 @@ Allowed ruleType values and example bodies
     "name": "Marathon 2025 Participant",
     "imageUrl": "badges/marathon2025.png",
     "activityId": "<activity-uuid>",
-    "rule": { "ruleType": "activity_specific_participation" }
+    "rules": [
+      { "ruleType": "activity_specific_participation" }
+    ]
   }
   ```
 
@@ -76,11 +87,13 @@ Allowed ruleType values and example bodies
   {
     "name": "7-Day Streak",
     "imageUrl": "badges/7daystreak.png",
-    "rule": {
-      "ruleType": "consecutive_days_calories",
-      "targetValue": 500, // Could indicate a per-day threshold or be used by your evaluator
-      "params": { "days": 7 }
-    }
+    "rules": [
+      {
+        "ruleType": "consecutive_days_calories",
+        "targetValue": 500,
+        "params": { "days": 7 }
+      }
+    ]
   }
   ```
 
@@ -90,7 +103,9 @@ Allowed ruleType values and example bodies
   {
     "name": "Invite Champion",
     "imageUrl": "badges/invite_champ.png",
-    "rule": { "ruleType": "invite_count", "targetValue": 3 }
+    "rules": [
+      { "ruleType": "invite_count", "targetValue": 3 }
+    ]
   }
   ```
 
@@ -100,7 +115,9 @@ Allowed ruleType values and example bodies
   {
     "name": "Share the Love",
     "imageUrl": "badges/share.png",
-    "rule": { "ruleType": "social_share" }
+    "rules": [
+      { "ruleType": "social_share" }
+    ]
   }
   ```
 
@@ -111,7 +128,27 @@ Limited edition redeemable badge example
   "imageUrl": "badges/tshirt-special.png",
   "isLimitedEdition": true,
   "fsPointsCost": 30,
-  "rule": { "ruleType": "social_share" }
+  "rules": [
+    { "ruleType": "social_share" },
+    { "ruleType": "calorie_cumulative", "targetValue": 2500 }
+  ]
+}
+```
+
+## Updating an existing badge
+- Endpoint: `PUT /api/admin/badges/{badgeId}`.
+- Provide any fields you wish to change (e.g., `name`, `imageUrl`, `isActive`).
+- Include `rules` (array) to replace the entire rule set atomically.
+
+Example payload updating rules and limited-edition settings:
+```json
+{
+  "name": "Anniversary Legend",
+  "isLimitedEdition": false,
+  "rules": [
+    { "ruleType": "calorie_cumulative", "targetValue": 10000 },
+    { "ruleType": "activity_participation_count", "targetValue": 10 }
+  ]
 }
 ```
 
@@ -119,7 +156,7 @@ Notes, validation, and server-side rules
 - The API validates `isSeasonal` with `seasonalStartDate` and `seasonalEndDate`. If `isSeasonal` is true, `seasonalStartDate` and `seasonalEndDate` must be valid ISO dates and `seasonalStartDate` < `seasonalEndDate`.
 - For `activityId`, the API validates the referenced activity exists and is not cancelled; otherwise the request will be rejected (404).
 - For `isLimitedEdition`, `fsPointsCost` must be provided and be a positive integer. The API enforces this.
-- There is a DB constraint ensuring `BadgeRule` is unique per `Badge` (one rule per badge). The API creates the badge and rule inside one transaction so this is enforced for any create action.
+- Every badge must have at least one rule. Provide multiple rules via the `rules` array; all rules must be satisfied for the badge to be awarded.
 - `imageUrl` should be a relative Supabase path (FE composes the public URL). The API does not upload or validate bucket-level permissions.
 - Default `place` behavior: the server assigns the next highest place if `place` is not provided. Admins can set `place` to reorder badges for UI.
 - Awarding is immediate in flows where awarding is expected (e.g., admin import, ticket verification); social share badges are automatically verified when click thresholds are met via the `/share/{token}` redirect.
@@ -130,19 +167,28 @@ Response example (201)
   "badge": {
     "id": "uuid",
     "name": "...",
-    "imageUrl": "badges/...,",
+    "imageUrl": "badges/...",
     "isSeasonal": false,
     "activityId": null,
     "isLimitedEdition": false,
     "fsPointsCost": null,
     "place": 1,
-    "badgeRule": {
-      "id": "uuid",
-      "badgeId": "uuid",
-      "ruleType": "calorie_cumulative",
-      "targetValue": 10000,
-      "params": null
-    }
+    "badgeRules": [
+      {
+        "id": "uuid-1",
+        "badgeId": "uuid",
+        "ruleType": "calorie_cumulative",
+        "targetValue": 10000,
+        "params": null
+      },
+      {
+        "id": "uuid-2",
+        "badgeId": "uuid",
+        "ruleType": "activity_participation_count",
+        "targetValue": 3,
+        "params": null
+      }
+    ]
   }
 }
 ```

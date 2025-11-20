@@ -407,7 +407,7 @@ model Badge {
   // Relations
   activity    Activity?         @relation(fields: [activityId], references: [id])
   userBadges  UserBadge[]
-  badgeRule   BadgeRule?
+  badgeRules  BadgeRule[]
   redemptions BadgeRedemption[]
 
   @@map("badges")
@@ -415,16 +415,18 @@ model Badge {
 
 model BadgeRule {
   id          String        @id @default(uuid())
-  badgeId     String        @unique @map("badge_id")
+  badgeId     String        @map("badge_id")
   ruleType    BadgeRuleType @map("rule_type")
   targetValue Int?          @map("target_value")
   params      Json?         @map("params")
   isActive    Boolean       @default(true) @map("is_active")
   createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @default(now()) @updatedAt @map("updated_at")
 
   // Relations
   badge Badge @relation(fields: [badgeId], references: [id])
 
+  @@index([badgeId])
   @@map("badge_rules")
 }
 

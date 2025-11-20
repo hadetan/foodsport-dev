@@ -8,17 +8,26 @@ export async function awardSocialShareBadge(tx, userId) {
     const badges = await tx.badge.findMany({
         where: {
             isActive: true,
-            badgeRule: {
-                isActive: true,
-                ruleType: 'social_share',
+            badgeRules: {
+                some: {
+                    isActive: true,
+                    ruleType: 'social_share',
+                },
             },
         },
         include: {
-            badgeRule: true,
+            badgeRules: {
+                where: {
+                    isActive: true,
+                },
+                orderBy: { createdAt: 'asc' },
+            },
         },
     });
 
-    const prioritized = prioritizeBadges(badges, now);
+    const eligible = badges.filter((badge) => badge.badgeRules?.length
+        && badge.badgeRules.every((rule) => rule.ruleType === 'social_share'));
+    const prioritized = prioritizeBadges(eligible, now);
     const targetBadge = prioritized[0];
     if (!targetBadge) {
         return { awarded: false };

@@ -33,16 +33,21 @@ export function prioritizeBadges(badges, referenceDate = new Date()) {
     return sortBadgesByPriority(pool);
 }
 
-export function buildRuleKey(badge) {
-    const ruleType = badge?.badgeRule?.ruleType ?? 'unknown';
-    const targetValue = badge?.badgeRule?.targetValue ?? 'any';
+export function buildRuleSetKey(badge) {
     const activityKey = badge?.activityId ?? 'any';
-    return `${ruleType}:${activityKey}:${targetValue}`;
+    const ruleFragments = (badge?.badgeRules ?? [])
+        .map((rule) => {
+            const targetValue = rule?.targetValue ?? 'any';
+            const paramsDigest = rule?.params ? JSON.stringify(rule.params) : 'noparams';
+            return `${rule?.ruleType ?? 'unknown'}:${targetValue}:${paramsDigest}`;
+        })
+        .sort();
+    return `${activityKey}::${ruleFragments.join('|')}`;
 }
 
-export function groupBadgesByRuleKey(badges) {
+export function groupBadgesByRuleSetKey(badges) {
     return badges.reduce((map, badge) => {
-        const key = buildRuleKey(badge);
+        const key = buildRuleSetKey(badge);
         if (!map.has(key)) {
             map.set(key, []);
         }

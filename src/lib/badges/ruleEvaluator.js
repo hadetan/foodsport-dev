@@ -1,5 +1,5 @@
 import { Prisma, UserBadgeStatus } from '@prisma/client';
-import { groupBadgesByRuleKey, prioritizeBadges } from './utils';
+import { groupBadgesByRuleSetKey, prioritizeBadges } from './utils';
 import { ACTIVITY_RULE_TYPES, POINT_RULE_TYPES, REDEMPTION_RULE_TYPES } from '../../app/constants/constants';
 
 const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -58,26 +58,45 @@ async function awardBadgesForRules(tx, { userId, ruleTypes, source, ...context }
     const badges = await tx.badge.findMany({
         where: {
             isActive: true,
-            badgeRule: {
-                isActive: true,
-                ruleType: { in: ruleTypes },
+            badgeRules: {
+                some: {
+                    isActive: true,
+                    ruleType: { in: ruleTypes },
+                },
             },
         },
         include: {
-            badgeRule: true,
+            badgeRules: {
+                where: {
+                    isActive: true,
+                },
+                orderBy: { createdAt: 'asc' },
+            },
         },
     });
 
-    if (!badges.length) {
+    const candidateBadges = badges
+        .map((badge) => {
+            const relevantRules = (badge.badgeRules ?? []).filter((rule) => ruleTypes.includes(rule.ruleType));
+            return {
+                ...badge,
+                badgeRules: relevantRules,
+                __totalRuleCount: badge.badgeRules?.length ?? 0,
+            };
+        })
+        .filter((badge) => badge.badgeRules.length && badge.badgeRules.length === badge.__totalRuleCount)
+        .map(({ __totalRuleCount, ...rest }) => rest);
+    if (!candidateBadges.length) {
         return [];
     }
 
-    const grouped = groupBadgesByRuleKey(badges);
+    const grouped = groupBadgesByRuleSetKey(candidateBadges);
     const awards = [];
     const evalContext = {
         ...context,
         userId,
     };
+    const awardedBadgeIds = new Set();
 
     for (const [, bucket] of grouped.entries()) {
         const prioritized = prioritizeBadges(bucket, now);
@@ -86,12 +105,16 @@ async function awardBadgesForRules(tx, { userId, ruleTypes, source, ...context }
         }
 
         for (const badge of prioritized) {
-            const matches = await doesBadgeMatchRule(tx, badge, evalContext);
+            if (awardedBadgeIds.has(badge.id)) {
+                continue;
+            }
+            const matches = await doesBadgeMatchAllRules(tx, badge, evalContext);
             if (!matches) {
                 continue;
             }
-            const earnedValue = computeEarnedValue(badge, evalContext);
+            const earnedValue = computeBadgeEarnedValue(badge, evalContext);
             const created = await ensureUserBadge(tx, userId, badge, source, earnedValue);
+            awardedBadgeIds.add(badge.id);
             if (created) {
                 awards.push({ badgeId: badge.id });
             }
@@ -102,8 +125,21 @@ async function awardBadgesForRules(tx, { userId, ruleTypes, source, ...context }
     return awards;
 }
 
-async function doesBadgeMatchRule(tx, badge, context) {
-    const rule = badge.badgeRule;
+async function doesBadgeMatchAllRules(tx, badge, context) {
+    const rules = badge?.badgeRules ?? [];
+    if (!rules.length) {
+        return false;
+    }
+    for (const rule of rules) {
+        const matches = await doesBadgeRuleMatch(tx, badge, rule, context);
+        if (!matches) {
+            return false;
+        }
+    }
+    return true;
+}
+
+async function doesBadgeRuleMatch(tx, badge, rule, context) {
     const target = rule?.targetValue ?? 0;
     const params = rule?.params ?? {};
     switch (rule?.ruleType) {
@@ -378,8 +414,17 @@ function getRuleEarnedValue(context, ruleId) {
     return context?.__earnedValues?.get(ruleId);
 }
 
-function computeEarnedValue(badge, context) {
-    const rule = badge.badgeRule;
+function computeBadgeEarnedValue(badge, context) {
+    for (const rule of badge.badgeRules ?? []) {
+        const value = computeRuleEarnedValue(rule, badge, context);
+        if (value != null) {
+            return value;
+        }
+    }
+    return null;
+}
+
+function computeRuleEarnedValue(rule, badge, context) {
     const cached = getRuleEarnedValue(context, rule?.id);
     if (cached != null) {
         return cached;
@@ -399,23 +444,27 @@ function computeEarnedValue(badge, context) {
 }
 
 async function ensureUserBadge(tx, userId, badge, source, earnedValue) {
-    try {
-        await tx.userBadge.create({
-            data: {
+    const existing = await tx.userBadge.findUnique({
+        where: {
+            userId_badgeId: {
                 userId,
                 badgeId: badge.id,
-                status: UserBadgeStatus.earned,
-                source,
-                earnedValue,
             },
-        });
-        return true;
-    } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-            return false;
-        }
-        throw error;
+        },
+    });
+    if (existing) {
+        return false;
     }
+    await tx.userBadge.create({
+        data: {
+            userId,
+            badgeId: badge.id,
+            status: UserBadgeStatus.earned,
+            source,
+            earnedValue,
+        },
+    });
+    return true;
 }
 
 function formatPeriodKey(date, timeframe) {
@@ -521,5 +570,5 @@ export const __ruleEvaluatorInternals = {
     evaluateFrequencyRule,
     getDailyCalorieTotals,
     truncateToDate,
-    doesBadgeMatchRule,
+    doesBadgeRuleMatch,
 };
