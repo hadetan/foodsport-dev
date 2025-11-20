@@ -80,6 +80,10 @@ export const ALLOWED_RULE_TYPES = new Set([
   'consecutive_days_calories',
   'invite_count',
   'social_share',
+  'frequency_count',
+  'points_cumulative',
+  'redeem_first',
+  'redeem_points_cumulative',
 ]);
 
 export const ACTIVITY_RULE_TYPES = [
@@ -88,4 +92,9 @@ export const ACTIVITY_RULE_TYPES = [
   'activity_participation_count',
   'activity_specific_participation',
   'consecutive_days_calories',
+  'frequency_count',
 ];
+
+export const POINT_RULE_TYPES = ['points_cumulative'];
+
+export const REDEMPTION_RULE_TYPES = ['redeem_first', 'redeem_points_cumulative'];

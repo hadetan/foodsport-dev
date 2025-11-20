@@ -3,6 +3,7 @@ import { createServerClient } from '@/lib/supabase/server-only';
 import { requireUser } from '@/lib/prisma/require-user';
 import { prisma } from '@/lib/prisma/db';
 import { UserBadgeStatus } from '@prisma/client';
+import { awardRedemptionBadges } from '@/lib/badges/ruleEvaluator';
 
 const REDEEM_SOURCE = 'redeem';
 
@@ -96,6 +97,19 @@ export async function POST(request, { params }) {
                     pointsSpent: cost,
                     source: REDEEM_SOURCE,
                 },
+            });
+
+            const redemptionAggregate = await tx.badgeRedemption.aggregate({
+                where: { userId: user.id },
+                _sum: { pointsPaid: true },
+                _count: { _all: true },
+            });
+
+            await awardRedemptionBadges(tx, {
+                userId: user.id,
+                source: `redeem:${badge.id}`,
+                redemptionCount: redemptionAggregate?._count?._all ?? 0,
+                redeemedPointsTotal: redemptionAggregate?._sum?.pointsPaid ?? cost,
             });
 
             return {

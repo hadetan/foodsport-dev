@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import { prisma } from '@/lib/prisma/db';
-import { awardInviteBadges } from '@/lib/badges/ruleEvaluator';
+import { awardBadgesForActivityProgress, awardInviteBadges } from '@/lib/badges/ruleEvaluator';
 
 // POST /api/admin/verifyTicket
 export async function POST(request) {
@@ -91,7 +91,24 @@ export async function POST(request) {
 		updatedUserActivity = await tx.userActivity.update({
 			where: { id: userActivity.id },
 			data: { wasPresent: true },
+			select: {
+				id: true,
+				userId: true,
+				tempUserId: true,
+				activityId: true,
+				wasPresent: true,
+				joinedAt: true,
+			},
 		});
+
+		if (updatedUserActivity.userId) {
+			await awardBadgesForActivityProgress(tx, {
+				userId: updatedUserActivity.userId,
+				activityId,
+				wasPresent: true,
+				source: `verifyTicket:${activityId}`,
+			});
+		}
 
 		if (ticket.invitedUserId) {
 			const invited = await tx.invitedUser.findUnique({

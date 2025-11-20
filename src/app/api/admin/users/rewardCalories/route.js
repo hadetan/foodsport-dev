@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma/db';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import serverApi from '@/utils/axios/serverApi';
-import { awardBadgesForActivityProgress } from '@/lib/badges/ruleEvaluator';
+import { awardBadgesForActivityProgress, awardPointsBadges } from '@/lib/badges/ruleEvaluator';
 
 const CALORIES_PER_POINT = 500;
 
@@ -120,12 +120,13 @@ export async function POST(req) {
 							totalCaloriesBurned: { increment: calories },
 							pendingCaloriesForFsPoints: { increment: calories },
 						},
-						select: { pendingCaloriesForFsPoints: true, totalCaloriesBurned: true },
+						select: { pendingCaloriesForFsPoints: true, totalCaloriesBurned: true, totalPoints: true },
 					});
 
 					pointsEarnedThisImport = Math.floor(updatedUser.pendingCaloriesForFsPoints / CALORIES_PER_POINT);
+					let latestTotalPoints = updatedUser.totalPoints;
 					if (pointsEarnedThisImport > 0) {
-						await tx.user.update({
+						const updatedPointRecord = await tx.user.update({
 							where: { id: user.id },
 							data: {
 								totalPoints: { increment: pointsEarnedThisImport },
@@ -133,12 +134,22 @@ export async function POST(req) {
 									decrement: pointsEarnedThisImport * CALORIES_PER_POINT,
 								},
 							},
+							select: { totalPoints: true },
 						});
+						latestTotalPoints = updatedPointRecord.totalPoints;
 					}
 
 					await tx.userActivity.updateMany({
 						where: { userId: user.id, activityId },
 						data: { wasPresent: true, totalDuration: validDuration },
+					});
+
+					await tx.calorieSubmission.create({
+						data: {
+							userId: user.id,
+							activityId,
+							submittedCalories: calories,
+						},
 					});
 
 					awardedBadges = await awardBadgesForActivityProgress(tx, {
@@ -149,6 +160,14 @@ export async function POST(req) {
 						wasPresent: true,
 						source: `activity_import:${activityId}`,
 					});
+
+					if (pointsEarnedThisImport > 0) {
+						await awardPointsBadges(tx, {
+							userId: user.id,
+							totalPoints: latestTotalPoints,
+							source: `points:${activityId}`,
+						});
+					}
 				} else if (tempUser) {
 					await tx.tempUser.update({
 						where: { id: tempUser.id },
