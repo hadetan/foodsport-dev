@@ -215,9 +215,17 @@
 		"na": "N/A"
 	},
 	"AllBadges": {
-		"title": "Achievement e-badges",
-		"subtitle": "Coming Soon",
-		"description": "Unlock and showcase your achievements soon! Stay tuned for exciting rewards and badges."
+		"status": {
+			"locked": "Locked",
+			"unlocked": "Unlocked"
+		},
+		"modal": {
+			"share": "Share badge",
+			"viewDetails": "View details",
+			"close": "Close",
+			"shareSuccess": "Badge link copied to your clipboard.",
+			"shareError": "Unable to share this badge right now."
+		}
 	},
 	"EditProfile": {
 		"info": {

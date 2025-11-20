@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma/db';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import serverApi from '@/utils/axios/serverApi';
+import { awardBadgesForActivityProgress, awardPointsBadges } from '@/lib/badges/ruleEvaluator';
+import { CALORIES_PER_POINT } from '@/app/constants/constants';
+
 
 async function sendInvitationEmailsToTempUsers(tempUserEmailsWithNames) {
 	if (!tempUserEmailsWithNames || tempUserEmailsWithNames.length === 0) {
@@ -106,39 +109,93 @@ export async function POST(req) {
 			continue;
 		}
 
+		let pointsEarnedThisImport = 0;
+		let awardedBadges = [];
 		try {
 			await prisma.$transaction(async (tx) => {
 				if (user) {
-					await tx.user.update({
-						where: { email },
-						data: { totalCaloriesBurned: { increment: calories } },
+					const updatedUser = await tx.user.update({
+						where: { id: user.id },
+						data: {
+							totalCaloriesBurned: { increment: calories },
+							pendingCaloriesForFsPoints: { increment: calories },
+						},
+						select: { pendingCaloriesForFsPoints: true, totalCaloriesBurned: true, totalPoints: true },
 					});
+
+					pointsEarnedThisImport = Math.floor(updatedUser.pendingCaloriesForFsPoints / CALORIES_PER_POINT);
+					let latestTotalPoints = updatedUser.totalPoints;
+					if (pointsEarnedThisImport > 0) {
+						const updatedPointRecord = await tx.user.update({
+							where: { id: user.id },
+							data: {
+								totalPoints: { increment: pointsEarnedThisImport },
+								pendingCaloriesForFsPoints: {
+									decrement: pointsEarnedThisImport * CALORIES_PER_POINT,
+								},
+							},
+							select: { totalPoints: true },
+						});
+						latestTotalPoints = updatedPointRecord.totalPoints;
+					}
+
 					await tx.userActivity.updateMany({
 						where: { userId: user.id, activityId },
 						data: { wasPresent: true, totalDuration: validDuration },
 					});
 
-					await tx.activity.updateMany({
-						where: { id: activityId },
-						data: { totalCaloriesBurnt: { increment: calories } },
+					await tx.calorieSubmission.create({
+						data: {
+							userId: user.id,
+							activityId,
+							submittedCalories: calories,
+						},
 					});
+
+					awardedBadges = await awardBadgesForActivityProgress(tx, {
+						userId: user.id,
+						activityId,
+						caloriesDelta: calories,
+						totalCaloriesBurned: updatedUser.totalCaloriesBurned,
+						wasPresent: true,
+						source: `activity_import:${activityId}`,
+					});
+
+					if (pointsEarnedThisImport > 0) {
+						await awardPointsBadges(tx, {
+							userId: user.id,
+							totalPoints: latestTotalPoints,
+							source: `points:${activityId}`,
+						});
+					}
 				} else if (tempUser) {
 					await tx.tempUser.update({
-						where: { email },
-						data: { totalCaloriesBurned: { increment: calories } },
+						where: { id: tempUser.id },
+						data: {
+							totalCaloriesBurned: { increment: calories },
+							pendingCaloriesForFsPoints: { increment: calories },
+						},
 					});
 					await tx.userActivity.updateMany({
 						where: { tempUserId: tempUser.id, activityId },
 						data: { wasPresent: true, totalDuration: validDuration },
 					});
-
-					await tx.activity.updateMany({
-						where: { id: activityId },
-						data: { totalCaloriesBurnt: { increment: calories } },
-					});
 				}
+
+				await tx.activity.updateMany({
+					where: { id: activityId },
+					data: { totalCaloriesBurnt: { increment: calories } },
+				});
 			});
-			results.push({ email, success: true, userType, calories, duration });
+			results.push({
+				email,
+				success: true,
+				userType,
+				calories,
+				duration,
+				pointsEarned: user ? pointsEarnedThisImport : 0,
+				awardedBadges: awardedBadges.map((entry) => entry.badgeId),
+			});
 
 			if (userType === 'tempUser' && tempUser) {
 				const userName = tempUser.firstname && tempUser.lastname

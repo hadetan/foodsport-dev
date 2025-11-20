@@ -230,9 +230,17 @@
         "na": "不適用"
     },
     "AllBadges": {
-        "title": "成就電子徽章",
-        "subtitle": "即將推出",
-        "description": "即將解鎖並展示你的成就！敬請期待精彩獎賞和徽章。"
+        "status": {
+            "locked": "已鎖定",
+            "unlocked": "已解鎖"
+        },
+        "modal": {
+            "share": "分享徽章",
+            "viewDetails": "查看詳情",
+            "close": "關閉",
+            "shareSuccess": "徽章連結已複製。",
+            "shareError": "暫時無法分享此徽章。"
+        }
     },
     "EditProfile": {
         "info": {

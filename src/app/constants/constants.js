@@ -71,3 +71,32 @@ export const MONTHS = [
 export const MAX_IMAGE_SIZE_MB = 10;
 
 export const MAX_SOCIAL_MEDIA_IMAGES = 5;
+
+export const ALLOWED_RULE_TYPES = new Set([
+  'calorie_single_activity',
+  'calorie_cumulative',
+  'activity_participation_count',
+  'activity_specific_participation',
+  'consecutive_days_calories',
+  'invite_count',
+  'social_share',
+  'frequency_count',
+  'points_cumulative',
+  'redeem_first',
+  'redeem_points_cumulative',
+]);
+
+export const ACTIVITY_RULE_TYPES = [
+  'calorie_single_activity',
+  'calorie_cumulative',
+  'activity_participation_count',
+  'activity_specific_participation',
+  'consecutive_days_calories',
+  'frequency_count',
+];
+
+export const POINT_RULE_TYPES = ['points_cumulative'];
+
+export const REDEMPTION_RULE_TYPES = ['redeem_first', 'redeem_points_cumulative'];
+
+export const CALORIES_PER_POINT = 500;
