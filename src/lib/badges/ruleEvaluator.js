@@ -1,4 +1,4 @@
-import { Prisma, UserBadgeStatus } from '@prisma/client';
+import { UserBadgeStatus } from '@prisma/client';
 import { groupBadgesByRuleSetKey, prioritizeBadges } from './utils';
 import { ACTIVITY_RULE_TYPES, POINT_RULE_TYPES, REDEMPTION_RULE_TYPES } from '../../app/constants/constants';
 
@@ -141,7 +141,7 @@ async function doesBadgeMatchAllRules(tx, badge, context) {
 
 async function doesBadgeRuleMatch(tx, badge, rule, context) {
     const target = rule?.targetValue ?? 0;
-    const params = rule?.params ?? {};
+    // const params = rule?.params ?? {};
     switch (rule?.ruleType) {
         case 'calorie_single_activity':
             return (context.caloriesDelta ?? 0) >= target;

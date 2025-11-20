@@ -4,8 +4,8 @@ import { createServerClient } from '@/lib/supabase/server-only';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import serverApi from '@/utils/axios/serverApi';
 import { awardBadgesForActivityProgress, awardPointsBadges } from '@/lib/badges/ruleEvaluator';
+import { CALORIES_PER_POINT } from '@/app/constants/constants';
 
-const CALORIES_PER_POINT = 500;
 
 async function sendInvitationEmailsToTempUsers(tempUserEmailsWithNames) {
 	if (!tempUserEmailsWithNames || tempUserEmailsWithNames.length === 0) {
