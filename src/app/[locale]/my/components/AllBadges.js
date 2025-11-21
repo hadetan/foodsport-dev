@@ -6,13 +6,15 @@ import '@/app/[locale]/my/css/AllBadges.css';
 import BadgeGrid from './BadgeGrid';
 import BadgeModal from './BadgeModal';
 
+const DEMO_IMAGES = ['/demo/ac1.png', '/demo/ac2.png', '/demo/ac3.png', '/demo/ac4.png', '/demo/ac5.png'];
+
 const MOCK_BADGES = Array.from({ length: 20 }, (_, index) => ({
   id: `badge-${index + 1}`,
   title: `Badge ${index + 1}`,
   description: 'Complete activities to unlock this badge.',
   titleZh: `徽章 ${index + 1}`,
   descriptionZh: '完成活動即可解鎖此徽章。',
-  emoji: ['🏅', '🎯', '🏆', '🔥', '🚀'][index % 5],
+  imageUrl: DEMO_IMAGES[Math.floor(Math.random() * DEMO_IMAGES.length)],
   isUnlocked: index % 3 !== 0,
 }));
 

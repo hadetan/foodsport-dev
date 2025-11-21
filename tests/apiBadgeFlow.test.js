@@ -296,6 +296,10 @@ test('FS points and redemption badges earn through points accumulation and redee
             id: 'badge-redeem-10k',
             badgeRules: [{ id: 'rule-redeem-10k', ruleType: 'redeem_points_cumulative', targetValue: 10000, params: null }],
         },
+        {
+            id: 'badge-purchase-only',
+            badgeRules: [{ id: 'rule-redeem-purchase', ruleType: 'redeem_purchase', targetValue: null, params: null }],
+        },
     ];
     const redemptionCreated = [];
     const redemptionTx = createMockTx({
@@ -307,6 +311,7 @@ test('FS points and redemption badges earn through points accumulation and redee
         userId: 'redeemer',
         redemptionCount: 2,
         redeemedPointsTotal: 12000,
+        redeemedBadgeId: 'badge-purchase-only',
         source: 'redeem:badge',
     });
 

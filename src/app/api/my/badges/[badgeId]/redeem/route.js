@@ -14,18 +14,21 @@ class RedemptionError extends Error {
     }
 }
 
-export async function POST(request, { params }) {
+export async function POST(request, context) {
+    const { params } = context;
+    const resolvedParams = await params;
     const supabase = await createServerClient();
     const { error, user } = await requireUser(supabase, NextResponse, request);
     if (error) {
         return error;
     }
 
-    const badgeId = params?.badgeId;
+    const badgeId = resolvedParams?.badgeId;
     if (!badgeId) {
         return NextResponse.json({ error: 'Badge id is required' }, { status: 400 });
     }
 
+    const postTransactionJobs = [];
     try {
         const redemptionResult = await prisma.$transaction(async (tx) => {
             const badge = await tx.badge.findUnique({
@@ -99,19 +102,6 @@ export async function POST(request, { params }) {
                 },
             });
 
-            const redemptionAggregate = await tx.badgeRedemption.aggregate({
-                where: { userId: user.id },
-                _sum: { pointsPaid: true },
-                _count: { _all: true },
-            });
-
-            await awardRedemptionBadges(tx, {
-                userId: user.id,
-                source: `redeem:${badge.id}`,
-                redemptionCount: redemptionAggregate?._count?._all ?? 0,
-                redeemedPointsTotal: redemptionAggregate?._sum?.pointsPaid ?? cost,
-            });
-
             return {
                 redemptionId: redemptionRecord.id,
                 badgeId: userBadge.badgeId,
@@ -120,6 +110,28 @@ export async function POST(request, { params }) {
             };
         });
 
+        let redemptionAggregate;
+        try {
+            redemptionAggregate = await prisma.badgeRedemption.aggregate({
+                where: { userId: user.id },
+                _sum: { pointsPaid: true },
+                _count: { _all: true },
+            });
+        } catch (aggregateError) {
+            console.error('Failed to compute redemption aggregate for post-transaction jobs', aggregateError);
+        }
+
+        postTransactionJobs.push({
+            type: 'redemption_badges',
+            userId: user.id,
+            source: `redeem:${badgeId}`,
+            redemptionCount: redemptionAggregate?._count?._all ?? undefined,
+            redeemedPointsTotal: redemptionAggregate?._sum?.pointsPaid ?? undefined,
+            redeemedBadgeId: redemptionResult.badgeId,
+        });
+
+        enqueuePostTransactionJobs(postTransactionJobs);
+
         return NextResponse.json({ success: true, ...redemptionResult }, { status: 200 });
     } catch (err) {
         if (err instanceof RedemptionError) {
@@ -127,5 +139,34 @@ export async function POST(request, { params }) {
         }
         console.error('Failed to redeem badge', err);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}
+
+function enqueuePostTransactionJobs(jobs = []) {
+    if (!jobs.length) {
+        return;
+    }
+    setImmediate(() => {
+        void processPostTransactionJobs(jobs).catch((err) => {
+            console.error('Failed to process post-transaction jobs (redeem badge)', err);
+        });
+    });
+}
+
+async function processPostTransactionJobs(jobs) {
+    for (const job of jobs) {
+        try {
+            if (job.type === 'redemption_badges') {
+                await awardRedemptionBadges(prisma, {
+                    userId: job.userId,
+                    source: job.source,
+                    redemptionCount: job.redemptionCount,
+                    redeemedPointsTotal: job.redeemedPointsTotal,
+                    redeemedBadgeId: job.redeemedBadgeId,
+                });
+            }
+        } catch (err) {
+            console.error('Failed to award redemption badges after transaction', err);
+        }
     }
 }

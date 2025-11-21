@@ -43,14 +43,13 @@ export async function POST(request) {
 
 	const existingUser = await prisma.user.findUnique({ where: { email } });
 
+	const postTransactionJobs = [];
 	try {
 		const result = await prisma.$transaction(async (tx) => {
 			const invitedRecord = await tx.invitedUser.findUnique({
 				where: { id: ticket.invitedUserId },
 				select: { inviterId: true },
 			});
-
-			await tx.invitedUser.deleteMany({ where: { id: ticket.invitedUserId } });
 
 			if (existingUser) {
 				const updatedTicket = await tx.ticket.update({
@@ -67,7 +66,8 @@ export async function POST(request) {
 					select: { id: true, wasPresent: true, joinedAt: true, userId: true },
 				});
 
-				await awardBadgesForActivityProgress(tx, {
+				postTransactionJobs.push({
+					type: 'activity_badges',
 					userId: existingUser.id,
 					activityId,
 					wasPresent: true,
@@ -75,8 +75,11 @@ export async function POST(request) {
 				});
 
 				if (invitedRecord?.inviterId) {
-					await awardInviteBadges(tx, {
+					postTransactionJobs.push({
+						type: 'invite_badges',
 						userId: invitedRecord.inviterId,
+						activityId,
+						wasPresent: true,
 						source: `invite:${activityId}`,
 					});
 				}
@@ -126,8 +129,11 @@ export async function POST(request) {
 			});
 
 			if (invitedRecord?.inviterId) {
-				await awardInviteBadges(tx, {
+				postTransactionJobs.push({
+					type: 'invite_badges',
 					userId: invitedRecord.inviterId,
+					activityId,
+					wasPresent: true,
 					source: `invite:${activityId}`,
 				});
 			}
@@ -145,7 +151,29 @@ export async function POST(request) {
 			};
 		});
 
-		if (result.tempUser) {
+		for (const job of postTransactionJobs) {
+			try {
+				if (job.type === 'activity_badges') {
+					await awardBadgesForActivityProgress(prisma, {
+						userId: job.userId,
+						activityId: job.activityId,
+						wasPresent: job.wasPresent,
+						source: job.source,
+					});
+				} else if (job.type === 'invite_badges') {
+					await awardInviteBadges(prisma, {
+						userId: job.userId,
+						activityId: job.activityId,
+						wasPresent: job.wasPresent,
+						source: job.source,
+					});
+				}
+			} catch (err) {
+				console.error('Failed to award badges after transaction (verifyInvitedTicket)', err);
+			}
+		}
+
+		if (result.tempUser && !process.env.USER_DISABLE_OTP) {
 			try {
 				const templateId = process.env.INVITED_USER_TEMPLATE_ID;
 				const params = { name: `${result.tempUser.firstname} ${result.tempUser.lastname}` };

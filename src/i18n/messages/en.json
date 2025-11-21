@@ -207,7 +207,8 @@
 			"date": "DATE",
 			"exercise": "EXERCISE",
 			"kcal": "KCAL",
-			"totalWorkoutDuration": "Total Workout Duration",
+			"kcalBurned": "CALORIES BURNED",
+			"totalWorkoutDuration": "WORKOUT DURATION",
 			"invite": "INVITE"
 		},
 		"noActivities": "No activities found.",

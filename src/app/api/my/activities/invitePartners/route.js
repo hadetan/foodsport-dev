@@ -34,6 +34,9 @@ export async function POST(request) {
             return Response.json({ error: 'No partner emails provided' }, { status: 400 });
         }
 
+        const disableOtp = process.env.USER_DISABLE_OTP === 'true';
+
+        const createdTickets = [];
         for (const emailRaw of partnerEmails) {
             const email = String(emailRaw).trim().toLowerCase();
             if (!email) {
@@ -95,13 +98,15 @@ export async function POST(request) {
                     throw new Error(`Ticket already exists for ${email} in this activity`);
                 }
 
+                // Always generate a unique ticket code to avoid duplicate key errors
+                // even when OTP is disabled for development environments.
                 const ticketCode = await generateUniqueTicketCode(tx);
 
                 const ticketData = {
                     ticketCode,
                     activityId: body.activityId,
                     status: 'active',
-                    ticketSent: false,
+                    ticketSent: disableOtp ? true : false,
                     ticketUsed: false,
                     invitedUserId: invitedUser ? invitedUser.id : null,
                     tempUserId: existingTempUser ? existingTempUser.id : null,
@@ -129,38 +134,50 @@ export async function POST(request) {
                 return Response.json({ error: 'Failed to invite partners', details }, { status: 500 });
             }
 
-            const templateId = process.env.INVITE_PARTNER_TICKET_TEMPLATE_ID;
-            const params = {
-                name: invited.existingTempUser ? `${invited.existingTempUser.firstname} ${invited.existingTempUser.lastname}` : email,
-                code: invited.ticket.ticketCode.toUpperCase(),
-                title: activity.title,
-            };
-            const emailRes = await serverApi.post(
-                `/admin/email/template_email`,
-                {
-                    to: email,
-                    templateId,
-                    params,
-                },
-                {
-                    headers: {
-                        'x-internal-api': process.env.INTERNAL_API_SECRET,
-                    },
+                const templateId = process.env.INVITE_PARTNER_TICKET_TEMPLATE_ID;
+                const params = {
+                    name: invited.existingTempUser ? `${invited.existingTempUser.firstname} ${invited.existingTempUser.lastname}` : email,
+                    code: invited.ticket.ticketCode.toUpperCase(),
+                    title: activity.title,
+                };
+
+                if (!disableOtp) {
+                    const emailRes = await serverApi.post(
+                        `/admin/email/template_email`,
+                        {
+                            to: email,
+                            templateId,
+                            params,
+                        },
+                        {
+                            headers: {
+                                'x-internal-api': process.env.INTERNAL_API_SECRET,
+                            },
+                        }
+                    );
+
+                    if (!emailRes?.data || !emailRes.data.success) {
+                        return Response.json({ error: 'Failed to send ticket email', details: emailRes?.data || 'email api error' }, { status: 500 });
+                    }
+
+                    try {
+                        await updateById('ticket', invited.ticket.id, { ticketSent: true });
+                    } catch (err) {
+                        console.error('Failed to mark ticket as sent:', err);
+                    }
+                } else {
+                    try {
+                        await updateById('ticket', invited.ticket.id, { ticketSent: true });
+                    } catch (err) {
+                        console.error('Failed to mark ticket as sent (dev otp):', err);
+                    }
                 }
-            );
 
-            if (!emailRes?.data || !emailRes.data.success) {
-                return Response.json({ error: 'Failed to send ticket email', details: emailRes?.data || 'email api error' }, { status: 500 });
-            }
-
-            try {
-                await updateById('ticket', invited.ticket.id, { ticketSent: true });
-            } catch (err) {
-                console.error('Failed to mark ticket as sent:', err);
-            }
+                // Collect the created ticket info for the response when otp is disabled
+                createdTickets.push({ email, ticketCode: invited.ticket.ticketCode });
         }
 
-        return Response.json({ message: 'Partners invited successfully. Tickets sent.' });
+            return Response.json({ message: 'Partners invited successfully. Tickets sent.', tickets: createdTickets });
     } catch (error) {
         return Response.json(
             { error: 'Failed to invite partners', details: error.message },

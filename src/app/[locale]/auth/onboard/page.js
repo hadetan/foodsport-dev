@@ -67,6 +67,7 @@ export default function OnboardPage() {
 						onChange={(val) => setForm((f) => ({ ...f, dateOfBirth: convertDDMMYYYYToYYYYMMDD(val) }))}
 						required
 						label={t('OnboardPage.dateOfBirth')}
+						// hFull
 					/>
 				</div>
 				<div className='grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2'>

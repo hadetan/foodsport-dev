@@ -121,6 +121,20 @@ Allowed ruleType values and example bodies
   }
   ```
 
+- redeem_purchase — Tie a limited-edition badge to the FS-points redemption flow. Use this rule when `isLimitedEdition` is `true` so the admin API accepts the badge without layering on extra requirements. No `targetValue` is required.
+  Example:
+  ```json
+  {
+    "name": "Buy this badge with 2 FS points",
+    "imageUrl": "badges/limited.png",
+    "isLimitedEdition": true,
+    "fsPointsCost": 2,
+    "rules": [
+      { "ruleType": "redeem_purchase" }
+    ]
+  }
+  ```
+
 Limited edition redeemable badge example
 ```json
 {

@@ -130,55 +130,12 @@ const CreateActivityPage = () => {
                 errors[field] = "This field is required.";
             }
         });
-        if (
-            formData.startDate &&
-            formData.startTime &&
-            formData.endDate &&
-            formData.endTime
-        ) {
-            const start = new Date(
-                `${formData.startDate}T${formData.startTime}`
-            );
-            const end = new Date(`${formData.endDate}T${formData.endTime}`);
-            if (start > end) {
-                errors.startDate =
-                    "Start date/time cannot be after end date/time.";
-                errors.endDate =
-                    "End date/time cannot be before start date/time.";
-            }
-        }
-        if (
-            formData.caloriesPerHourMin &&
-            formData.caloriesPerHourMax &&
-            !isNaN(Number(formData.caloriesPerHourMin)) &&
-            !isNaN(Number(formData.caloriesPerHourMax))
-        ) {
-            if (
-                Number(formData.caloriesPerHourMin) >
-                Number(formData.caloriesPerHourMax)
-            ) {
-                errors.caloriesPerHourMin =
-                    "Minimum must be less than or equal to maximum.";
-                errors.caloriesPerHourMax =
-                    "Maximum must be greater than or equal to minimum.";
-            }
-        }
         setFieldErrors(errors);
         return Object.keys(errors).length === 0;
     };
 
     const handleFormChange = (e) => {
         const { name, value, type, checked } = e.target;
-        if (
-            (name === "startDate" || name === "endDate") &&
-            !isValidYear(value)
-        ) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                [name]: "Year must be at most 4 digits.",
-            }));
-            return;
-        }
         setFieldErrors((prev) => ({
             ...prev,
             [name]: undefined,
@@ -286,14 +243,13 @@ const CreateActivityPage = () => {
                             formDataToSend.append(`${key}[]`, item);
                         });
                         formDataToSend.set(key, JSON.stringify(value));
-                    } else {
-                        formDataToSend.set(key, JSON.stringify([]));
                     }
                 } else if (
                     value !== undefined &&
                     value !== null &&
                     typeof value !== "object"
                 ) {
+                    if (key === "tncId" && value === "") return;
                     formDataToSend.set(key, value);
                 }
             });
@@ -758,7 +714,6 @@ const CreateActivityPage = () => {
                                     name="startDate"
                                     value={formData.startDate}
                                     onChange={handleFormChange}
-                                    required
                                 />
                                 <Calendar className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                             </div>
@@ -780,7 +735,6 @@ const CreateActivityPage = () => {
                                 name="startTime"
                                 value={formData.startTime}
                                 onChange={handleFormChange}
-                                required
                             />
                             {fieldErrors.startTime && (
                                 <span className="text-error text-base">
@@ -801,7 +755,6 @@ const CreateActivityPage = () => {
                                     name="endDate"
                                     value={formData.endDate}
                                     onChange={handleFormChange}
-                                    required
                                 />
                                 <Calendar className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                             </div>
@@ -823,7 +776,6 @@ const CreateActivityPage = () => {
                                 name="endTime"
                                 value={formData.endTime}
                                 onChange={handleFormChange}
-                                required
                             />
                             {fieldErrors.endTime && (
                                 <span className="text-error text-base">
@@ -845,7 +797,6 @@ const CreateActivityPage = () => {
                                     value={formData.caloriesPerHourMin}
                                     onChange={handleFormChange}
                                     min={0}
-                                    required
                                     placeholder="Min"
                                 />
                                 <span className="flex items-center px-1 text-lg text-gray-500">
@@ -858,7 +809,6 @@ const CreateActivityPage = () => {
                                     value={formData.caloriesPerHourMax}
                                     onChange={handleFormChange}
                                     min={0}
-                                    required
                                     placeholder="Max"
                                 />
                             </div>

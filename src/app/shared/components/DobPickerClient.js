@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { HiChevronLeft, HiChevronRight } from 'react-icons/hi';
 
 function toDate(value) {
     if (!value) return null;
@@ -89,19 +88,19 @@ export default function DobPickerClient({ value = '', onChange = () => { }, id =
             {open && (
                 <div className="absolute z-50 mt-2 bg-white border rounded-lg shadow-lg p-3 w-[320px] sm:w-[360px]">
                     <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                            <button type="button" onClick={() => changeMonth(-1)} className="btn btn-ghost btn-sm" aria-label="Previous month">
+                        <div className="flex items-center gap-2 w-36">
+                            {/* <button type="button" onClick={() => changeMonth(-1)} className="btn btn-ghost btn-sm" aria-label="Previous month">
                                 <HiChevronLeft className="w-4 h-4" aria-hidden="true" />
-                            </button>
-                            <div className="font-medium">{viewDate.toLocaleString(undefined, { month: 'long' })}</div>
-                            <button type="button" onClick={() => changeMonth(1)} className="btn btn-ghost btn-sm" aria-label="Next month">
+                            </button> */}
+                            <div className="font-medium w-full text-center">{viewDate.toLocaleString(undefined, { month: 'long' })}</div>
+                            {/* <button type="button" onClick={() => changeMonth(1)} className="btn btn-ghost btn-sm" aria-label="Next month">
                                 <HiChevronRight className="w-4 h-4" aria-hidden="true" />
-                            </button>
+                            </button> */}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 justify-end">
                             <select
                                 aria-label="Month"
-                                className="select select-bordered select-sm"
+                                className="select select-bordered select-sm min-w-[60px] md:min-w-[70px] max-w-[40%] px-2"
                                 value={viewDate.getMonth()}
                                 onChange={(e) => setViewDate(new Date(viewDate.getFullYear(), Number(e.target.value), 1))}
                             >
@@ -111,7 +110,7 @@ export default function DobPickerClient({ value = '', onChange = () => { }, id =
                             </select>
                             <select
                                 aria-label="Year"
-                                className="select select-bordered select-sm"
+                                className="select select-bordered select-sm min-w-[80px] md:min-w-[100px] max-w-[50%] px-2"
                                 value={viewDate.getFullYear()}
                                 onChange={(e) => setViewDate(new Date(Number(e.target.value), viewDate.getMonth(), 1))}
                             >

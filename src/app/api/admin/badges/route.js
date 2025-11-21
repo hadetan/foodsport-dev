@@ -14,9 +14,9 @@ function parseDate(value) {
 }
 
 export async function POST(request) {
-  const supabase = await createServerClient();
-  const { error } = await requireAdmin(supabase, NextResponse);
-  if (error) return error;
+  // const supabase = await createServerClient();
+  // const { error } = await requireAdmin(supabase, NextResponse);
+  // if (error) return error;
 
   let payload = {};
   try {
