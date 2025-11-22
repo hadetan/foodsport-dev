@@ -235,6 +235,12 @@
             "locked": "已鎖定",
             "unlocked": "已解鎖"
         },
+        "states": {
+            "loading": "正在載入徽章...",
+            "empty": "暫時未有徽章，參加更多活動即可解鎖。",
+            "error": "未能載入你的徽章，請再試一次。",
+            "retry": "重試"
+        },
         "modal": {
             "share": "分享徽章",
             "viewDetails": "查看詳情",

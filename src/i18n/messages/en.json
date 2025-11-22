@@ -220,6 +220,12 @@
 			"locked": "Locked",
 			"unlocked": "Unlocked"
 		},
+		"states": {
+			"loading": "Fetching your badges...",
+			"empty": "No badges yet. Join more activities to unlock your first one.",
+			"error": "We could not load your badges. Please try again.",
+			"retry": "Try again"
+		},
 		"modal": {
 			"share": "Share badge",
 			"viewDetails": "View details",

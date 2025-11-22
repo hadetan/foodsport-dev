@@ -128,25 +128,26 @@
     2. *User flow*: Accumulate points through existing activities, donations, or admin adjustments that increment `user.totalPoints`. The badge waitlist is evaluated when `awardPointsBadges` runs; once `totalPoints >= 5000`, the rule evaluator calls `ensureUserBadge` and awards the badge automatically.
     3. *Test steps*: After creating the badge, grant yourself points (e.g., via fixtures, admin reward APIs, or direct DB edit) until your `totalPoints` reaches 5,000. Trigger the rule evaluator by redeeming or logging activity if needed (or call any helper that invokes `awardPointsBadges`) and confirm the badge appears under your earned badges in `/api/my/badges`.
 
-- x `frequency_count`:
+- ✓ `frequency_count`:
 
     ```json
-        {
-            "name": "Weekly Warrior",
-            "description": "Attend at least 3 qualifying activities every week for the last 4 weeks.",
-            "imageUrl": "https://example.com/badges/weekly-warrior.png",
-            "rules": [
-                {
-                    "ruleType": "frequency_count",
-                    "params": {
-                        "timeframe": "weekly",
-                        "weeks": 4,
-                        "timesPerWeek": 3,
-                        "eventType": "presence"
-                    }
+    {
+        "name": "Weekly Warrior",
+        "description": "Attend at least 1 qualifying activities every week for the last 2 weeks.",
+        "imageUrl": "https://raw.githubusercontent.com/drknzz/GitHub-Achievements/main/Media/Badges/Quick-Draw/PNG/Skin-Tones/QuickDraw_SkinTone1.png",
+        "rules": [
+            {
+                "ruleType": "frequency_count",
+                "targetValue": 1,
+                "params": {
+                    "timeframe": "weekly",
+                    "weeks": 2,
+                    "timesPerWeek": 1,
+                    "eventType": "presence"
                 }
-            ]
-        }
+            }
+        ]
+    }
     ```
 
     ```json
@@ -159,7 +160,7 @@
     }
     ```
 
-        newgrp docker        **Guide**
+    **Guide**
         1. *Admin flow*: Post the badge via the admin badge endpoint so that it includes the `frequency_count` rule. The `params` determine the rolling window: 4 weekly periods, with 3 presence entries required each.
         2. *User flow*: Activities should be recorded in `userActivity` with `wasPresent: true` and a `joinedAt` timestamp that falls inside the weeks being evaluated. The evaluator calculates counts across the required weeks using `evaluateFrequencyRule`.
         3. *Fast QA (recommended)*: You don't need to wait days. Use the Supabase Table Editor to insert rows into `userActivity` with past `joinedAt` timestamps that simulate the last 4 weeks. Then run a local evaluator script to trigger the badge logic immediately.
@@ -190,25 +191,6 @@
 
         - The script prints awarded badge objects (if any). You can also verify by querying the `userBadge` table in Supabase (look for `userId = <USER_ID>` and `status = 'earned'`).
 
-        SQL template (Postgres) you can paste into Supabase SQL editor — this uses `now()` offsets so you don't need to manually compute dates. Replace `<USER_ID>` and `<ACTIVITY_ID>` as needed.
-
-        ```sql
-        -- Example: insert 12 presence entries across the last 4 weeks
-        INSERT INTO user_activity (id, "userId", "activityId", "tempUserId", "wasPresent", "joinedAt", "createdAt", "updatedAt") VALUES
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '2 days', now(), now()),
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '3 days', now(), now()),
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '5 days', now(), now()),
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '9 days', now(), now()),
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '10 days', now(), now()),
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '12 days', now(), now()),
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '16 days', now(), now()),
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '17 days', now(), now()),
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '19 days', now(), now()),
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '23 days', now(), now()),
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '24 days', now(), now()),
-        (gen_random_uuid(), '<USER_ID>', '<ACTIVITY_ID>', NULL, TRUE, now() - interval '26 days', now(), now());
-        ```
-
         Notes & verification
         - The script `scripts/evaluate-badges.js` uses the repository's Prisma client and the `awardBadgesForActivityProgress` evaluator. It reads `DATABASE_URL` from your environment, so ensure `.env.local` or your shell has `DATABASE_URL` set to your Supabase DB connection.
         - The script is intentionally minimal: it logs awarded badges for `activity`-type rules (includes `frequency_count`) and `points` rules. After running it, check the `userBadge` table for new earned badges.
@@ -222,7 +204,7 @@
         Optional automation
         - If you want this to be a one-click QA job, I can add a small admin API route (server-only) that accepts `userId` and runs the evaluator for you. Want me to add that?
 
-- x `redeem_points_cumulative`:
+- ✓ `redeem_points_cumulative`:
 
     ```json
         {

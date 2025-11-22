@@ -2,6 +2,7 @@ import { prisma } from './db.js';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { getAuthenticatedUser } from '@/lib/supabase/server-only.js';
+import { verifyToken } from '@/lib/jwt.js';
 
 /**
  * Checks if the request is from an authenticated user using Supabase Auth.
@@ -23,7 +24,7 @@ export async function requireUser(_ ,NextResponse) {
 		};
 	}
 	try {
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		const decoded = verifyToken(token);
 		if (!decoded || !decoded.exp) {
 			return {
 				error: NextResponse.json(

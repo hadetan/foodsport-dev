@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers.js';
 import { prisma } from './db.js';
 import jwt from 'jsonwebtoken';
+import { verifyToken } from '@/lib/jwt.js';
 
 /**
  * Checks if the request is from an authenticated admin user using Prisma and Supabase Auth.
@@ -38,7 +39,7 @@ export async function requireAdmin(supabase, NextResponse, request) {
 	}
 	// Decode JWT and check expiry
 	try {
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		const decoded = verifyToken(token);
 		if (!decoded || !decoded.exp) {
 			return {
 				error: NextResponse.json(
