@@ -84,6 +84,7 @@ export const ALLOWED_RULE_TYPES = new Set([
   'points_cumulative',
   'redeem_first',
   'redeem_points_cumulative',
+  'redeem_purchase',
 ]);
 
 export const ACTIVITY_RULE_TYPES = [
@@ -97,6 +98,6 @@ export const ACTIVITY_RULE_TYPES = [
 
 export const POINT_RULE_TYPES = ['points_cumulative'];
 
-export const REDEMPTION_RULE_TYPES = ['redeem_first', 'redeem_points_cumulative'];
+export const REDEMPTION_RULE_TYPES = ['redeem_first', 'redeem_points_cumulative', 'redeem_purchase'];
 
 export const CALORIES_PER_POINT = 500;

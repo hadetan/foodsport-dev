@@ -8,13 +8,14 @@ const TARGET_REQUIRED_RULES = new Set([
   'invite_count',
   'frequency_count',
   'points_cumulative',
-  'redeem_first',
   'redeem_points_cumulative',
 ]);
 
 const TARGET_OPTIONAL_RULES = new Set([
   'activity_specific_participation',
   'social_share',
+  'redeem_first',
+  'redeem_purchase',
 ]);
 
 export function coerceRulesPayload(payload) {

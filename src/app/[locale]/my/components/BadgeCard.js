@@ -39,7 +39,7 @@ export default function BadgeCard({ badge, locale, onSelect, statusLabels = {} }
     >
       <div className="badge-card__image-wrapper" aria-hidden="true">
         {badge.imageUrl ? (
-          <img src={badge.imageUrl} alt="" className="badge-card__image" />
+          <img src={badge.imageUrl} alt={title} className="badge-card__image" />
         ) : (
           <span className="badge-card__emoji" role="img">
             {badge.emoji || '🏅'}
@@ -53,9 +53,9 @@ export default function BadgeCard({ badge, locale, onSelect, statusLabels = {} }
           </div>
         )}
       </div>
-      {/* <span className="badge-card__label" title={title}>
+      <span className="badge-card__label" title={title}>
         {title}
-      </span> */}
+      </span>
     </button>
   );
 }

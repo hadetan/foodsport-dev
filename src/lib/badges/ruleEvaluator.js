@@ -23,7 +23,7 @@ export async function awardInviteBadges(tx, params) {
     }
     return awardBadgesForRules(tx, {
         ...params,
-        ruleTypes: ['invite_count'],
+        ruleTypes: ['invite_count', 'activity_specific_participation'],
     });
 }
 
@@ -192,6 +192,10 @@ async function doesBadgeRuleMatch(tx, badge, rule, context) {
             setRuleEarnedValue(context, rule.id, redeemedPointsTotal);
             return (redeemedPointsTotal ?? 0) >= target;
         }
+        case 'redeem_purchase':
+            return Boolean(context.redeemedBadgeId)
+                && Boolean(badge?.id)
+                && badge.id === context.redeemedBadgeId;
         default:
             return false;
     }

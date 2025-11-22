@@ -487,6 +487,53 @@ test('awardRedemptionBadges handles first redeem and cumulative totals', async (
     assert.deepEqual(badgeIds, ['badge-cumulative', 'badge-first']);
 });
 
+test('redeem_purchase rule only awards the badge being redeemed', async () => {
+    const limitedBadgeA = {
+        id: 'badge-limited-a',
+        badgeRules: [{ id: 'rule-limited-a', ruleType: 'redeem_purchase', targetValue: null, params: null }],
+    };
+    const limitedBadgeB = {
+        id: 'badge-limited-b',
+        badgeRules: [{ id: 'rule-limited-b', ruleType: 'redeem_purchase', targetValue: null, params: null }],
+    };
+
+    const createdForA = [];
+    const txForA = createMockTx({
+        badge: { findMany: async () => [limitedBadgeA, limitedBadgeB] },
+        userBadge: {
+            create: async ({ data }) => { createdForA.push(data); },
+            findUnique: async () => null,
+        },
+    });
+
+    const awardsForA = await awardRedemptionBadges(txForA, {
+        userId: 'user-limited',
+        source: 'redeem:badge-limited-a',
+        redeemedBadgeId: 'badge-limited-a',
+    });
+
+    assert.equal(awardsForA.length, 1);
+    assert.equal(createdForA[0]?.badgeId, 'badge-limited-a');
+
+    const createdForB = [];
+    const txForB = createMockTx({
+        badge: { findMany: async () => [limitedBadgeA, limitedBadgeB] },
+        userBadge: {
+            create: async ({ data }) => { createdForB.push(data); },
+            findUnique: async () => null,
+        },
+    });
+
+    const awardsForB = await awardRedemptionBadges(txForB, {
+        userId: 'user-limited',
+        source: 'redeem:badge-limited-b',
+        redeemedBadgeId: 'badge-limited-b',
+    });
+
+    assert.equal(awardsForB.length, 1);
+    assert.equal(createdForB[0]?.badgeId, 'badge-limited-b');
+});
+
 test('awardSocialShareBadge grants badge on first verified share', async () => {
     const createdBadges = [];
     const tx = createMockTx({

@@ -234,9 +234,6 @@ export default function EditActivityPage() {
         if (!min || !max) {
             errs.caloriesPerHour =
                 "Both min and max calories per hour are required.";
-        } else if (min > max) {
-            errs.caloriesPerHour =
-                "Min calories per hour should not be greater than max.";
         }
         if (imageFile === null) errs.images = "An image is required.";
         if (
@@ -369,7 +366,7 @@ export default function EditActivityPage() {
                 formData.append("organizationName", form.organizationName);
             }
 
-            // Add all tncIds as separate form data entries
+            // Add all tncIds as separate form data entries (only when present)
             const selectedTncIds = Array.isArray(form.tncIds)
                 ? form.tncIds
                 : [];
@@ -380,10 +377,8 @@ export default function EditActivityPage() {
                 selectedTncIds.forEach((id) => {
                     formData.append("tncIds[]", id);
                 });
-            } else {
-                formData.append("tncId", "");
+                formData.append("tncIds", JSON.stringify(selectedTncIds));
             }
-            formData.append("tncIds", JSON.stringify(selectedTncIds));
 
             if (imageFile && imageFile.url === undefined) {
                 formData.append("image", imageFile);
@@ -490,7 +485,6 @@ export default function EditActivityPage() {
                                     </label>
                                     <div
                                         className="relative w-full rounded-lg overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300 hover:border-indigo-400 transition-colors cursor-pointer"
-                                        style={{ height: "240px" }}
                                         onClick={() => {
                                             if (bannerInputRef.current) {
                                                 bannerInputRef.current.click();

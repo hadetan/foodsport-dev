@@ -83,6 +83,7 @@ export async function POST(request) {
 
 	let updatedTicket;
 	let updatedUserActivity;
+	const postTransactionJobs = [];
 	await prisma.$transaction(async (tx) => {
 		updatedTicket = await tx.ticket.update({
 			where: { id: ticket.id },
@@ -102,7 +103,8 @@ export async function POST(request) {
 		});
 
 		if (updatedUserActivity.userId) {
-			await awardBadgesForActivityProgress(tx, {
+			postTransactionJobs.push({
+				type: 'activity_badges',
 				userId: updatedUserActivity.userId,
 				activityId,
 				wasPresent: true,
@@ -116,13 +118,38 @@ export async function POST(request) {
 				select: { inviterId: true },
 			});
 			if (invited?.inviterId) {
-				await awardInviteBadges(tx, {
+				postTransactionJobs.push({
+					type: 'invite_badges',
 					userId: invited.inviterId,
+					activityId: ticket.activityId,
+					wasPresent: true,
 					source: `invite:${ticket.activityId}`,
 				});
 			}
 		}
 	});
+
+	for (const job of postTransactionJobs) {
+		try {
+			if (job.type === 'activity_badges') {
+				await awardBadgesForActivityProgress(prisma, {
+					userId: job.userId,
+					activityId: job.activityId,
+					wasPresent: job.wasPresent,
+					source: job.source,
+				});
+			} else if (job.type === 'invite_badges') {
+				await awardInviteBadges(prisma, {
+					userId: job.userId,
+					activityId: job.activityId,
+					wasPresent: job.wasPresent,
+					source: job.source,
+				});
+			}
+		} catch (err) {
+			console.error('Failed to award badges after transaction (verifyTicket)', err);
+		}
+	}
 
 	let user = null;
 	let tempUser = null;

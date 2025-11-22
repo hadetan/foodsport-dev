@@ -641,12 +641,6 @@ export async function POST(req) {
             sanitizedData.tncs = { connect: tncIds.map((id) => ({ id })) };
         }
 
-        // Debug log to verify bannerImageUrl is included
-        console.log("Inserting activity with data:", {
-            ...sanitizedData,
-            tncs: sanitizedData.tncs ? `[${tncIds.length} TNCs]` : undefined,
-        });
-
         const activity = await insert("activity", sanitizedData);
         if (activity && activity.error) {
             return NextResponse.json(

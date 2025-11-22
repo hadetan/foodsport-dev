@@ -62,6 +62,7 @@ enum BadgeRuleType {
   points_cumulative
   redeem_first
   redeem_points_cumulative
+  redeem_purchase
 }
 
 enum UserBadgeStatus {

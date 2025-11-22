@@ -19,9 +19,9 @@ export default function ProfilePage() {
 	const displayName = `${user.firstname} ${user.lastname}`;
 	const userId = `# ${user.id}`;
 	const caloriesDonated = user.totalCaloriesBurned;
-	const fsPoints = Math.floor(user.totalCaloriesBurned / 500);
+	const fsPoints = user.totalPoints;
 	const activitiesJoined = user.joinedActivityIds.length;
-	const badges = user.userBadges.length;
+	const badges = user.badgeCount ?? 0;
 
 	return (
 		<div style={{overflow: 'hidden'}}>

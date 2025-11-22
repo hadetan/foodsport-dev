@@ -67,36 +67,45 @@ export default function RecentActivitiesTable() {
     }
   }
 
+  const getMyActivityCalories = (actId) => {
+    const subs = user.calorieSubmissions?.filter((cs) => cs.activityId === actId && typeof cs.submittedCalories === 'number') ?? [];
+    if (!subs.length) return t('na');
+    const total = subs.reduce((acc, s) => acc + (Number(s.submittedCalories) || 0), 0);
+    return `${total} kcal`;
+  }
+
   return (
     <div className="recent-activities-card">
       <div className="recent-activities-table-wrapper">
         <table className="recent-activities-table">
           <thead>
-            <tr className="recent-activities-table-header">
+              <tr className="recent-activities-table-header">
               <th className="recent-activities-th">{t('headers.exercise')}</th>
               <th className="recent-activities-th">{t('headers.type')}</th>
               <th className="recent-activities-th">{t('headers.date')}</th>
               <th className="recent-activities-th">{t('headers.kcal')}</th>
               <th className="recent-activities-th">{t('headers.totalWorkoutDuration')}</th>
+              <th className="recent-activities-th">{t('headers.kcalBurned')}</th>
               <th className="recent-activities-th">{t('headers.invite')}</th>
             </tr>
           </thead>
           <tbody>
             {joinedActivities.length === 0 ? (
-              <tr><td colSpan={6} className="recent-activities-empty">{t('noActivities')}</td></tr>
+              <tr><td colSpan={7} className="recent-activities-empty">{t('noActivities')}</td></tr>
             ) : (
               visibleActivities.map((act) => (
                 <tr key={act.id} className="recent-activities-row">
-                  <td className="no-wrap recent-activities-td recent-activities-exercise" data-label={t('headers.exercise')}>{act.title}</td>
+                  <td className="text-nowrap recent-activities-td recent-activities-exercise" data-label={t('headers.exercise')}>{act.title}</td>
                   <td className="recent-activities-td" data-label={t('headers.type')}>
                     <span className="recent-activities-type-icon">
                       <ActivityIcon type={act.activityType} size={20} />
                     </span>
                   </td>
-                  <td className="recent-activities-td no-wrap" data-label={t('headers.date')}>{formatDate(act.startDate)}</td>
-                  <td className="recent-activities-td no-wrap" data-label={t('headers.kcal')}>{act.caloriesPerHour ? `${act.caloriesPerHour}kcal` : t('na')}</td>
-                  <td className="recent-activities-td" data-label={t('headers.totalWorkoutDuration')}>{getMyActivityWorkoutDuration(act.id)}</td>
-                  <td className="recent-activities-td no-wrap" data-label={t('headers.invite')}>
+                  <td className="recent-activities-td text-nowrap" data-label={t('headers.date')}>{formatDate(act.startDate)}</td>
+                  <td className="recent-activities-td text-nowrap" data-label={t('headers.kcal')}>{act.caloriesPerHour ? `${act.caloriesPerHour}kcal` : t('na')}</td>
+                  <td className="recent-activities-td text-nowrap" data-label={t('headers.totalWorkoutDuration')}>{getMyActivityWorkoutDuration(act.id)}</td>
+                  <td className="recent-activities-td text-nowrap" data-label={t('headers.kcalBurned')}>{getMyActivityCalories(act.id)}</td>
+                  <td className="recent-activities-td text-nowrap" data-label={t('headers.invite')}>
                     <button
                       type="button"
                       onClick={() => { setSelectedActivityId(act.id); setInviteOpen(true); }}

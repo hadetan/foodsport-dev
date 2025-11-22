@@ -111,6 +111,7 @@ export async function POST(req) {
 
 		let pointsEarnedThisImport = 0;
 		let awardedBadges = [];
+		const postTransactionJobs = [];
 		try {
 			await prisma.$transaction(async (tx) => {
 				if (user) {
@@ -152,22 +153,17 @@ export async function POST(req) {
 						},
 					});
 
-					awardedBadges = await awardBadgesForActivityProgress(tx, {
-						userId: user.id,
-						activityId,
-						caloriesDelta: calories,
-						totalCaloriesBurned: updatedUser.totalCaloriesBurned,
-						wasPresent: true,
-						source: `activity_import:${activityId}`,
-					});
-
-					if (pointsEarnedThisImport > 0) {
-						await awardPointsBadges(tx, {
+						postTransactionJobs.push({
+							type: 'activity_badges',
 							userId: user.id,
-							totalPoints: latestTotalPoints,
-							source: `points:${activityId}`,
+							activityId,
+							calories,
+							wasPresent: true,
+							totalCaloriesBurned: updatedUser.totalCaloriesBurned,
+							pointsEarnedThisImport,
+							latestTotalPoints,
+							source: `activity_import:${activityId}`,
 						});
-					}
 				} else if (tempUser) {
 					await tx.tempUser.update({
 						where: { id: tempUser.id },
@@ -187,16 +183,6 @@ export async function POST(req) {
 					data: { totalCaloriesBurnt: { increment: calories } },
 				});
 			});
-			results.push({
-				email,
-				success: true,
-				userType,
-				calories,
-				duration,
-				pointsEarned: user ? pointsEarnedThisImport : 0,
-				awardedBadges: awardedBadges.map((entry) => entry.badgeId),
-			});
-
 			if (userType === 'tempUser' && tempUser) {
 				const userName = tempUser.firstname && tempUser.lastname
 					? `${tempUser.firstname} ${tempUser.lastname}`
@@ -206,6 +192,42 @@ export async function POST(req) {
 		} catch (err) {
 			results.push({ email, success: false, error: err.message });
 		}
+
+		if (postTransactionJobs.length > 0) {
+			for (const job of postTransactionJobs) {
+				if (job.type === 'activity_badges') {
+					try {
+						awardedBadges = await awardBadgesForActivityProgress(prisma, {
+							userId: job.userId,
+							activityId: job.activityId,
+							caloriesDelta: job.calories,
+							totalCaloriesBurned: job.totalCaloriesBurned,
+							wasPresent: job.wasPresent,
+							source: job.source,
+						});
+						if (job.pointsEarnedThisImport > 0) {
+							await awardPointsBadges(prisma, {
+								userId: job.userId,
+								totalPoints: job.latestTotalPoints,
+								source: `points:${job.activityId}`,
+							});
+						}
+					} catch (err) {
+						console.error('Error awarding badges after transaction:', err?.message || err);
+					}
+				}
+			}
+		}
+
+		results.push({
+			email,
+			success: true,
+			userType,
+			calories,
+			duration,
+			pointsEarned: user ? pointsEarnedThisImport : 0,
+			awardedBadges: awardedBadges.map((entry) => entry.badgeId),
+		});
 	}
 
 	if (successfulTempUsersWithNames.length > 0) {

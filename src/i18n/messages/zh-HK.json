@@ -222,7 +222,8 @@
             "date": "日期",
             "exercise": "運動",
             "kcal": "卡路里",
-            "totalWorkoutDuration": "總運動時間",
+            "kcalBurned": "燃燒的卡路里",
+            "totalWorkoutDuration": "運動時長",
             "invite": "邀請"
         },
         "noActivities": "未找到活動。",
@@ -233,6 +234,12 @@
         "status": {
             "locked": "已鎖定",
             "unlocked": "已解鎖"
+        },
+        "states": {
+            "loading": "正在載入徽章...",
+            "empty": "暫時未有徽章，參加更多活動即可解鎖。",
+            "error": "未能載入你的徽章，請再試一次。",
+            "retry": "重試"
         },
         "modal": {
             "share": "分享徽章",

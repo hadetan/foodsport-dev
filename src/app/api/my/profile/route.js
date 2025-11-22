@@ -17,7 +17,7 @@ export async function GET() {
         userActivities: { select: { activityId: true, wasPresent: true, totalDuration: true } },
         calorieSubmissions: true,
         calorieDonations: true,
-        userBadges: true,
+        _count: { select: { userBadges: true } },
         referralsGiven: true,
       },
     });
@@ -33,14 +33,16 @@ export async function GET() {
             userActivities: { select: { activityId: true, wasPresent: true, totalDuration: true } },
             calorieSubmissions: true,
             calorieDonations: true,
-            userBadges: true,
+            _count: { select: { userBadges: true } },
             referralsGiven: true,
           },
         });
       }
     }
     const joinedActivityIds = User.userActivities.map(ua => ua.activityId);
-    return Response.json({ user: {...User, joinedActivityIds} });
+    const badgeCount = User?._count?.userBadges ?? 0;
+    const { _count, ...userWithoutCount } = User;
+    return Response.json({ user: {...userWithoutCount, badgeCount, joinedActivityIds} });
   } catch (err) {
     return Response.json({ error: 'Failed to fetch user profile', details: err.message }, { status: 500 });
   }

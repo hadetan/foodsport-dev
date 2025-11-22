@@ -85,6 +85,7 @@ export async function POST(request) {
 				throw new Error('User has already joined this activity');
 			}
 
+			const disableOtp = process.env.USER_DISABLE_OTP === 'true';
 			const ticketCode = await generateUniqueTicketCode(tx);
 
 			let ticket, userActivity;
@@ -95,7 +96,7 @@ export async function POST(request) {
 						activityId: body.activityId,
 						userId: user.id,
 						status: 'active',
-						ticketSent: false,
+						ticketSent: disableOtp ? true : false,
 						ticketUsed: false,
 					},
 				});
@@ -129,25 +130,30 @@ export async function POST(request) {
 				title: activity.title,
 			};
 			let emailRes;
-			try {
-				emailRes = await serverApi.post(
-					`/admin/email/template_email`,
-					{
-						to: user.email,
-						templateId,
-						params,
-					},
-					{
-						headers: {
-							'x-internal-api': process.env.INTERNAL_API_SECRET,
+			if (!disableOtp) {
+				try {
+					emailRes = await serverApi.post(
+						`/admin/email/template_email`,
+						{
+							to: user.email,
+							templateId,
+							params,
 						},
-					}
-				);
-			} catch (err) {
-				throw new Error('Failed to send ticket email');
-			}
-			if (!emailRes.data || !emailRes.data.success) {
-				throw new Error('Failed to send ticket email');
+						{
+							headers: {
+								'x-internal-api': process.env.INTERNAL_API_SECRET,
+							},
+						}
+					);
+				} catch (err) {
+					throw new Error('Failed to send ticket email');
+				}
+				if (!emailRes.data || !emailRes.data.success) {
+					throw new Error('Failed to send ticket email');
+				}
+			} else {
+				// In dev mode, pretend the email was sent and continue using the dev OTP
+				emailRes = { data: { success: true } };
 			}
 
 			try {
@@ -176,6 +182,7 @@ export async function POST(request) {
 		return Response.json({
 			message: 'Joined activity successfully. Ticket sent.',
 			userActivity: result.userActivity,
+			ticket: result.ticket ? { ticketCode: result.ticket.ticketCode } : undefined,
 			participantCount: updatedCount,
 		});
 	} catch (error) {
