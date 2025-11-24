@@ -1,103 +1,109 @@
 # FoodSport Frontend
 
+Next.js App Router surface for FoodSport's user-facing and admin portals. The app localizes every public route, talks to Supabase for auth/storage, and reads/writes application data through Prisma.
+
+## Highlights
+- **Two surfaces, one repo** – locale-aware public/user flows live in `src/app/[locale]/**`, while `/admin` hosts a standalone admin experience with its own contexts and auth token handling.
+- **Supabase-first auth** – server handlers create Supabase server clients (`src/lib/supabase/server-only.js`) and enforce access via Prisma-backed guards (`requireAdmin`, `requireUser`).
+- **Prisma domain layer** – schema + helpers (`src/lib/prisma/**`) centralize data access, transactions, and badge workflows so API routes stay thin.
+- **Gamification toolkit** – badge rules, evaluators, and QA scripts live under `src/lib/badges` + `scripts/evaluate-*.js`, keeping reward logic consistent across APIs, jobs, and manual runs.
+
+## Tech Stack
+- **Runtime**: Next.js 15 (App Router) + React 19 + Turbopack dev server
+- **State & data**: Prisma 6, Supabase Auth/Storage, Next Intl, Axios
+- **Styling**: Tailwind CSS + DaisyUI + scoped admin CSS
+- **Tooling**: TSX test runner, node:test + assert, Supabase CLI (optional)
+
+## Project Structure
+```
+src/
+  app/
+    [locale]/          # Public + authenticated user flows, localized via next-intl
+    admin/             # Non-localized admin routes (login + logged-in shell)
+    api/               # Route handlers (REST-ish) sharing Prisma + Supabase helpers
+    shared/            # Reusable components, CSS, and React contexts
+  i18n/                # Locale config, helpers, and translation messages
+  lib/
+    prisma/            # Prisma client + guard utilities
+    supabase/          # Browser/server client factories
+    badges/            # Rule evaluators, validators, helpers
+  utils/               # Axios instance, validation, sanitize, misc helpers
+docs/                  # User/admin stories, API notes, i18n guides
+prisma/                # Prisma schema + generated migrations
+scripts/               # DB setup/seed + badge/redemption QA runners
+```
+
 ## Getting Started
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
+2. **Configure environment**
+   - Copy `.env.example` → `.env.local` (and `.env` for Supabase CLI if needed).
+   - Fill Supabase keys (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL`), Prisma `DATABASE_URL`, and JWT/AES secrets used by auth guards.
+3. **Run database migrations** (requires `DATABASE_URL`)
+   ```bash
+   npm run db:migrate
+   npm run db:generate
+   ```
+4. **Start dev server** (Turbopack + React 19)
+   ```bash
+   npm run dev
+   ```
+5. Visit `http://localhost:3000`. Middleware auto-redirects to `/en` or `/zh-HK` depending on Accept-Language/cookies.
 
-First, run the development server:
+### Optional local Supabase
+- `supabase/config.toml` contains the CLI config (API 54321, DB 54322). Run `supabase start` to spin up a full stack for offline testing. To open __local supabase UI__ visit `http://127.0.0.1:54323/`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Environment Reference
+- `NEXT_PUBLIC_BASEURL` – Axios base URL (dev defaults to `/api`). Required for `src/utils/axios/api.js` refresh logic.
+- `INTERNAL_API_SECRET` – header token that lets automation hit admin APIs without cookie auth.
+- `JWT_SECRET` / `AES_SECRET` – used by cookie tokens and encrypted payloads.
+- `PRISMA_TRANSACTION_*` – optional overrides for long-running badge evaluators.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Check `.env.example` for the full list and keep values in sync with Supabase project settings.
 
-## Database Migration
+## Available Scripts
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Next.js dev with Turbopack |
+| `npm run dev-build` | Dry-run production build without migrations |
+| `npm run build` | `db:generate` + `db:migrate` + `next build` |
+| `npm start` | Run compiled Next.js server |
+| `npm test` | Node's `node:test` via `tsx --test tests/**/*.test.js` |
+| `npm run db:generate` | `prisma generate` |
+| `npm run db:migrate` | `prisma migrate dev` (creates/updates migrations) |
+| `npm run db:push` | Sync schema without migration files |
+| `npm run db:reset` | Reset database + reapply migrations |
+| `npm run studio` | Prisma Studio UI |
+| `npm run sb:start` | Start local supabase |
+| `npm run sb:stop` | Stop local supabase |
 
-*Run these commands whenever theres a change in schema:*
-   1. Create migration -
-      ```bash
-         npm run m-dev
-      ```
-   
-   2. Generate code for client -
-      ```bash
-         npm run generate
-      ```
+## Database & Seeding Workflows
+- **Initial schema**: `npx tsx scripts/setup-database.js` streams `src/lib/supabase/schema.sql` through a PG connection (needs `SUPABASE_DB_URL`).
+- **Seed sample data**: `npx tsx scripts/seed-database.js` inserts demo users, activities, charities, and badges. The script refuses to run in prod unless confirmed interactively.
+- **Badge QA**:
+  ```bash
+  npx tsx scripts/evaluate-badges.js --userId <uuid> [--activityId <uuid>]
+  npx tsx scripts/evaluate-redemptions.js --userId <uuid>
+  ```
+  These scripts reuse the same evaluators the API calls, so they are safe for manual verification against staging snapshots.
 
-## Environment Variables
+## Testing Strategy
+- Fast unit/integration tests live under `tests/*.test.js` (e.g., `tests/apiBadgeFlow.test.js`, `tests/badgeRules.test.js`).
+- Tests run via Node's native runner; add new suites next to the features you build and avoid coupling to Supabase by mocking Prisma calls where possible.
 
- the [`.env.example`](./.env.example) file in the root directory for required environment variables and example values.
-
-## API Documentation
-- All API endpoints use Prisma ORM for database operations.
-- Supabase Auth is used for authentication.
-
-# Project Structure Proposal: User & Admin Portal Separation
-
-This project contains both the user and admin portals, each with their own frontend (FE) and backend (BE) logic. To improve maintainability, the following structure is proposed:
-
-```
-root/
-│
-├── prisma/                  # Prisma schema and migrations
-│   ├── schema.prisma
-│   └── migrations/
-├── public/                  # Static assets (images, svgs, etc.)
-├── docs/                    # Documentation
-├── scripts/                 # Utility scripts
-│   └── utils/
-├── src/                     # Main source code
-│   ├── app/                 # Next.js app directory
-│   │   ├── (user)/          # User portal (FE & BE)
-│   │   │   ├── api/
-│   │   │   │   └── activities/
-│   │   │   └── pages/
-│   │   │       ├── activities/
-│   │   │       |   └── [id]/
-|   |   |       └── components/          # Shared React components
-│   │   └── admin/           # Admin portal (FE & BE)
-│   │       ├── api/
-│   │       │   ├── activities/
-│   │       │   ├── dashboard/
-│   │       │   ├── login/
-│   │       │   ├── register/
-│   │       │   └── users/
-│   │       └── pages/
-│   │           ├── activities/
-│   │           │   └── [id]/
-│   │           ├── components/
-│   │           ├── dashboard/
-│   │           ├── error/403/
-│   │           ├── login/
-│   │           └── users/
-│   │   └── test/
-│   ├── data/                # Static data
-│   ├── generated/           # Generated files (e.g., Prisma client)
-│   │   └── prisma/
-│   └── utils/               # Utility functions
-├── lib/                     # Shared libraries (e.g., prisma, supabase)
-│   ├── prisma/
-│   └── supabase/
-├── next.config.mjs          # Next.js config
-├── package.json             # Project dependencies
-├── jsconfig.json            # JS/TS config
-├── postcss.config.mjs       # PostCSS config
-├── tailwind.config.js       # Tailwind CSS config
-├── env.example              # Example environment variables
-└── ...                      # Other root-level files
-```
-
-## Notes
-- All user portal code (pages, components, API routes) will be moved under the `user/` directory.
-- All admin portal code (pages, components, API routes) will be moved under the `admin/` directory.
-- Shared code (e.g., database, authentication, utilities) remains at the root or in `lib/` and `utils/`.
-- This structure will make it easier to develop, test, and deploy user and admin portals independently.
-
----
-
-Let me know when you are ready to proceed with the migration or if you want a step-by-step plan for moving the files.
+## Key Concepts
+- **Middleware-driven locale routing** (`src/middleware.js`)
+  - Adds locale prefixes automatically, corrects aliases (`/z` → `/zh-HK`).
+  - Redirects unauthenticated `/[locale]/my/**` visitors to `/[locale]/auth/login`.
+  - Redirects authenticated `/activities` hits to `/[locale]/my/activities` to keep UX consistent.
+- **Shared contexts** (`src/app/shared/contexts/*`)
+  - `ActivitiesProvider` fetches `/api/activities` once and feeds landing pages.
+  - Admin layout composes providers for users, activities, products, categories, social images, verified attendees, and dashboard stats.
+- **Axios refresh flow** (`src/utils/axios/api.js`)
+  - Automatically refreshes Supabase sessions for user and admin tokens; on failure it clears local storage and redirects to the relevant login route.
+- **Badge rules**
+  - Rule definitions and enums: `src/app/constants/constants.js` + Prisma `BadgeRuleType` enum.
+  - Validation + coercion: `src/lib/badges/ruleValidation.js` ensures admin payloads only create supported rule types.
+  - Evaluation: `src/lib/badges/ruleEvaluator.js` groups rules, re-checks participation/calorie stats, and writes to `userBadge` via Prisma transactions.
