@@ -158,8 +158,17 @@ function describeRule(rule, badge, t, locale, formatNumber) {
                 days: formatNumber(Math.max(target, 1)),
             });
         }
-        case 'invite_count':
+        case 'invite_count': {
+            const activityTitle = pickLocalizedField(badge?.activity?.title, badge?.activity?.titleZh, locale);
+            if (activityTitle) {
+                try {
+                    return t('rules.descriptions.invite_count_activity_generic', { count: formatNumber(Math.max(target, 1)) });
+                } catch (_) {
+                    return t('rules.descriptions.invite_count', { count: formatNumber(Math.max(target, 1)) });
+                }
+            }
             return t('rules.descriptions.invite_count', { count: formatNumber(Math.max(target, 1)) });
+        }
         case 'social_share':
             return t('rules.descriptions.social_share');
         case 'frequency_count': {
@@ -644,6 +653,15 @@ function BadgeDetailsPage({ badgeId, viewerContext = null }) {
                             <h2>{t('rules.title')}</h2>
                         </div>
                     </div>
+                    {badge.activity && badge.badgeRules?.some((r) => r.type === 'invite_count') && (
+                        <div className="badge-panel__note">
+                            <p>
+                                {t('rules.hints.invite_activity', {
+                                    activity: pickLocalizedField(badge.activity.title, badge.activity.titleZh, locale),
+                                })}
+                            </p>
+                        </div>
+                    )}
                     {badge.badgeRules?.length ? (
                         <div className="badge-rules">
                             {badge.badgeRules.map((rule) => {
@@ -661,7 +679,15 @@ function BadgeDetailsPage({ badgeId, viewerContext = null }) {
                                         </div>
                                         <div>
                                             <h3>{ruleLabel}</h3>
-                                            <p>{describeRule(rule, badge, t, locale, formatNumber)}</p>
+                                            <p>
+                                                {describeRule(rule, badge, t, locale, formatNumber)}
+                                                {rule.type === 'invite_count' && badge.activity && (
+                                                    <>
+                                                        {' '}
+                                                        <Link href={`/${locale}/activities/${badge.activity.id}`}>{localized.activityTitle || badge.activity.title}</Link>
+                                                    </>
+                                                )}
+                                            </p>
                                         </div>
                                     </article>
                                 );

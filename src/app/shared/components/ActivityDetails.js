@@ -33,6 +33,8 @@ const ActivityDetails = ({
     const topRef = useRef(null);
     const [loading, setLoading] = useState(false);
     const [showShare, setShowShare] = useState(false);
+    const [shareUrl, setShareUrl] = useState("");
+    const [shareLoading, setShareLoading] = useState(false);
     const [tncChecked, setTncChecked] = useState(false);
     const t = useTranslations();
 
@@ -86,6 +88,8 @@ const ActivityDetails = ({
     const hasTncs =
         Array.isArray(activity?.tncs) && activity.tncs.length > 0;
 
+    const activitySharePath = activity?.id ? `/activities/${activity.id}` : "/activities";
+
     function renderTncLinks() {
         if (!hasTncs) return null;
         const andText = t('Activity.DetailsPage.and');
@@ -130,6 +134,51 @@ const ActivityDetails = ({
                 {andText} {links[links.length - 1]}
             </>
         );
+    }
+
+    function buildAbsoluteActivityUrl() {
+        if (typeof window === "undefined") {
+            return activitySharePath;
+        }
+        return `${window.location.origin}${activitySharePath}`;
+    }
+
+    async function handleShareClick() {
+        const fallbackUrl = buildAbsoluteActivityUrl();
+        if (!activity?.id) {
+            return;
+        }
+        if (!authToken) {
+            setShareUrl(fallbackUrl);
+            setShowShare(true);
+            return;
+        }
+        setShareLoading(true);
+        try {
+            const response = await api.post("/social-shares", {
+                redirectUrl: activitySharePath,
+            });
+            const trackedUrl = response?.data?.shareUrl || fallbackUrl;
+            setShareUrl(trackedUrl);
+            toast.success(t("Activity.DetailsPage.shareLinkReady"));
+            setShowShare(true);
+        } catch (error) {
+            const status = error?.response?.status;
+            if (status === 401) {
+                toast.info(t("Activity.DetailsPage.shareLoginRequired"));
+                window.location.href = "/auth/login";
+            } else {
+                setShareUrl(fallbackUrl);
+                setShowShare(true);
+            }
+        } finally {
+            setShareLoading(false);
+        }
+    }
+
+    function handleShareDialogClose() {
+        setShowShare(false);
+        setShareUrl("");
     }
 
     async function handleJoin() {
@@ -471,19 +520,22 @@ const ActivityDetails = ({
                         )}
                         <button
                             className="activityDetailsShareBtn"
-                            onClick={() => setShowShare(true)}
+                            onClick={handleShareClick}
+                            disabled={shareLoading}
                         >
-                            {t("Activity.DetailsPage.share")}
+                            {shareLoading
+                                ? t("Activity.DetailsPage.sharePreparing")
+                                : t("Activity.DetailsPage.share")}
                         </button>
                         {showShare && (
                             <ShareDialog
-                                url={
-                                    typeof window !== "undefined"
-                                        ? window.location.origin +
-                                        `/activities/${activity.id}`
-                                        : `/activities/${activity.id}`
+                                url={shareUrl || buildAbsoluteActivityUrl()}
+                                label={
+                                    authToken
+                                        ? t("Activity.DetailsPage.shareDialogLabelAuthed")
+                                        : t("Activity.DetailsPage.shareDialogLabelGuest")
                                 }
-                                onClose={() => setShowShare(false)}
+                                onClose={handleShareDialogClose}
                             />
                         )}
                     </div>

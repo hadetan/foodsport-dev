@@ -5,6 +5,7 @@ import { LOCALE_PATTERN } from '@/utils/localePattern';
 function isBypassed(pathname) {
 	if (pathname.startsWith('/admin') || pathname.startsWith('/api'))
 		return true;
+	if (pathname.startsWith('/share')) return true;
 	if (pathname.startsWith('/_next')) return true;
 	const staticExtRe = /\.(?:png|jpe?g|gif|svg|webp|ico|css|js|woff2?|ttf|eot)$/i;
 	if (staticExtRe.test(pathname)) return true;

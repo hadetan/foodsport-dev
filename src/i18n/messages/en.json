@@ -136,6 +136,10 @@
 			"joining": "JOINING",
 			"joinNow": "JOIN NOW",
 			"share": "SHARE",
+			"sharePreparing": "SHARING…",
+			"shareDialogLabelAuthed": "Copy this link to share this activity.",
+			"shareDialogLabelGuest": "Copy this link to share this activity.",
+			"shareLinkReady": "Share link ready!",
 			"mapError": "Something went wrong while loading the google map.",
 			"agreeTncWarning": "You must agree to the Conditions first.",
 			"notActiveWarning": "Cannot join activity that is not active.",
@@ -334,7 +338,7 @@
 				"month": "month",
 				"monthPlural": "months"
 			},
-			"descriptions": {
+				"descriptions": {
 				"generic": "Complete the required action.",
 				"calorie_single_activity": {
 					"withTarget": "Burn at least {target} kcal during a single FoodSport activity.",
@@ -354,6 +358,8 @@
 					"default": "Keep a {days}-day activity streak."
 				},
 				"invite_count": "Invite {count} friends who attend and check in.",
+				"invite_count_activity": "Invite {count} friends to join and check in to {activity}.",
+				"invite_count_activity_generic": "Invite {count} friends to join and check in to:",
 				"social_share": "Complete the social share mission linked to this badge.",
 				"frequency_count": {
 					"presence": "Complete {occurrences} activities every {window} for {periods} {totalWindow} in a row.",
@@ -366,6 +372,10 @@
 				},
 				"redeem_points_cumulative": "Redeem {points} FS points worth of rewards.",
 				"redeem_purchase": "Redeem this badge directly with FS points."
+			}
+			,
+			"hints": {
+				"invite_activity": "Invites apply to the activity: {activity}."
 			}
 		},
 		"activity": {

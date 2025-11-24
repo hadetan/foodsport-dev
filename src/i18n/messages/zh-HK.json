@@ -138,6 +138,10 @@
             "joining": "加入中",
             "joinNow": "立即加入",
             "share": "分享",
+            "sharePreparing": "分享中…",
+            "shareDialogLabelAuthed": "複製此連結以分享此活動。",
+            "shareDialogLabelGuest": "複製此連結以分享此活動。",
+            "shareLinkReady": "分享連結已就緒！",
             "mapError": "載入 Google 地圖時發生問題。",
             "agreeTncWarning": "您必須先同意條款。",
             "notActiveWarning": "無法加入非進行中活動。",
@@ -349,7 +353,7 @@
                 "month": "月",
                 "monthPlural": "個月"
             },
-            "descriptions": {
+                "descriptions": {
                 "generic": "完成指定條件。",
                 "calorie_single_activity": {
                     "withTarget": "在單次 FOODSPORT 活動中燃燒至少 {target} 卡路里。",
@@ -369,6 +373,8 @@
                     "default": "維持 {days} 天連續參與或簽到。"
                 },
                 "invite_count": "邀請 {count} 位朋友參與並完成簽到。",
+                "invite_count_activity": "邀請 {count} 位朋友參與並完成指定活動 {activity} 的簽到。",
+                "invite_count_activity_generic": "邀請 {count} 位朋友參與並完成此活動的簽到",
                 "social_share": "完成此徽章的社交分享任務。",
                 "frequency_count": {
                     "presence": "連續 {periods}{totalWindow}，每{window}參與 {occurrences} 次活動。",
@@ -381,6 +387,10 @@
                 },
                 "redeem_points_cumulative": "累積兌換 {points} 個 FS 積分。",
                 "redeem_purchase": "以 FS 積分直接兌換此徽章。"
+            }
+            ,
+            "hints": {
+                "invite_activity": "邀請需適用於活動：{activity}。"
             }
         },
         "activity": {
