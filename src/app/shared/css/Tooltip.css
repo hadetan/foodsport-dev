@@ -16,6 +16,14 @@
 	position: relative;
 }
 
+/* Allow opting into a block-level wrapper that fills the parent. Useful for
+ * wrapping inline label elements within flex/grid contexts so the tooltip
+ * wrapper does not shrink and cause overflow visual issues. */
+.tooltip-wrapper.tooltip-block {
+	display: block;
+	width: 100%;
+}
+
 .tooltip-content {
 	position: absolute;
 	opacity: 0;

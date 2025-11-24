@@ -5,12 +5,15 @@ import { useTranslations, useLocale } from 'next-intl';
 import '@/app/[locale]/my/css/AllBadges.css';
 import BadgeGrid from './BadgeGrid';
 import BadgeModal from './BadgeModal';
-
-const BADGES_ENDPOINT = '/api/my/badges';
+import BadgeGridSkeleton from '@/app/shared/components/skeletons/BadgeGridSkeleton';
+import api from '@/utils/axios/api';
+import { useMyBadges } from '@/app/shared/contexts/myBadgesContext';
 
 export default function AllBadges() {
   const t = useTranslations('AllBadges');
   const locale = useLocale();
+  const myBadgesContext = useMyBadges();
+  const usingContext = Boolean(myBadgesContext);
   const [selectedBadge, setSelectedBadge] = useState(null);
   const [badges, setBadges] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,21 +35,19 @@ export default function AllBadges() {
 
 
   useEffect(() => {
+    if (usingContext) {
+      return undefined;
+    }
+
     let isMounted = true;
-    const controller = new AbortController();
 
     async function fetchBadges() {
       setIsLoading(true);
       setErrorMessage('');
 
       try {
-        const response = await fetch(BADGES_ENDPOINT, { signal: controller.signal });
-        const payload = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          const message = typeof payload?.error === 'string' ? payload.error : `HTTP ${response.status}`;
-          throw new Error(message);
-        }
+        const response = await api.get('/my/badges');
+        const payload = response?.data ?? {};
 
         if (!isMounted) {
           return;
@@ -58,7 +59,8 @@ export default function AllBadges() {
           return;
         }
         console.error('Failed to load badges', err);
-        setErrorMessage(err instanceof Error ? err.message : '');
+        const apiError = err?.response?.data?.error || err?.message || '';
+        setErrorMessage(apiError instanceof Error ? apiError.message : String(apiError));
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -70,53 +72,81 @@ export default function AllBadges() {
 
     return () => {
       isMounted = false;
-      controller.abort();
     };
-  }, [refreshKey]);
+  }, [refreshKey, usingContext]);
 
   const handleBadgeSelect = (badge) => {
     setSelectedBadge(badge);
   };
 
+  const resolvedBadges = usingContext ? (myBadgesContext?.badges ?? []) : badges;
+  const resolvedLoading = usingContext ? Boolean(myBadgesContext?.loading) : isLoading;
+  const resolvedError = usingContext ? (myBadgesContext?.error || '') : errorMessage;
+
+  useEffect(() => {
+    if (!selectedBadge) {
+      return;
+    }
+    const latest = resolvedBadges.find((badge) => badge.id === selectedBadge.id);
+    if (!latest) {
+      return;
+    }
+    const hasChanged = ['isUnlocked', 'status', 'pointsSpent', 'unlockedAt', 'earnedValue']
+      .some((field) => latest[field] !== selectedBadge[field]);
+    if (hasChanged) {
+      setSelectedBadge(latest);
+    }
+  }, [resolvedBadges, selectedBadge]);
+
   const handleCloseModal = () => {
     setSelectedBadge(null);
   };
 
-  const handleRetry = () => {
+  const handleBadgeRedeemed = () => {
+    if (usingContext && typeof myBadgesContext?.refresh === 'function') {
+      myBadgesContext.refresh();
+      return;
+    }
     setRefreshKey((key) => key + 1);
   };
 
-  const hasBadges = badges.length > 0;
+  const handleRetry = () => {
+    if (usingContext && typeof myBadgesContext?.refresh === 'function') {
+      myBadgesContext.refresh();
+      return;
+    }
+    setRefreshKey((key) => key + 1);
+  };
+
+  const hasBadges = resolvedBadges.length > 0;
 
   return (
     <section className="all-badges-section">
 
       <div className="all-badges-grid-wrapper">
-        {isLoading && (
-          <p className="all-badges-state" role="status">
-            {t('states.loading')}
-          </p>
+        {resolvedLoading && (
+          <BadgeGridSkeleton />
         )}
 
-        {!isLoading && errorMessage && (
+        {!resolvedLoading && resolvedError && (
           <div className="all-badges-state all-badges-state--error" role="alert">
             <p>{t('states.error')}</p>
-            {errorMessage && <small>{errorMessage}</small>}
+            {resolvedError && <small>{resolvedError}</small>}
             <button type="button" className="all-badges-state__action" onClick={handleRetry}>
               {t('states.retry')}
             </button>
           </div>
         )}
 
-        {!isLoading && !errorMessage && !hasBadges && (
+        {!resolvedLoading && !resolvedError && !hasBadges && (
           <p className="all-badges-state">
             {t('states.empty')}
           </p>
         )}
 
-        {!isLoading && hasBadges && (
+        {!resolvedLoading && hasBadges && (
           <BadgeGrid
-            badges={badges}
+            badges={resolvedBadges}
             locale={locale}
             onSelectBadge={handleBadgeSelect}
             statusLabels={statusLabels}
@@ -130,6 +160,7 @@ export default function AllBadges() {
           locale={locale}
           labels={modalLabels}
           onClose={handleCloseModal}
+          onRedeemed={handleBadgeRedeemed}
         />
       )}
     </section>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styles from '@/app/shared/css/ShareDialog.module.css';
 
-export default function ShareDialog({ url, onClose }) {
+export default function ShareDialog({ url, onClose, label='Share this activity' }) {
   const dialogRef = useRef(null);
   const [copied, setCopied] = useState(false);
 
@@ -40,7 +40,7 @@ export default function ShareDialog({ url, onClose }) {
     <div className={styles.overlay}>
       <div className={styles.dialog} ref={dialogRef}>
         <button className={styles.closeBtn} onClick={onClose} title="Close">×</button>
-        <div className={styles.label}>Share this activity</div>
+        <div className={styles.label}>{label}</div>
         <div className={styles.inputRow}>
           <div className={styles.fakeInput} title={url}>
             {url}

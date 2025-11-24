@@ -131,7 +131,19 @@ export function middleware(request) {
 		return NextResponse.redirect(new URL(`${localePrefix}${target}${url.search}`, request.url));
 	}
 
+	if (!token && remainderPath.startsWith('/my/badges/')) {
+		const target = remainderPath.replace(/^\/my/, '');
+		return NextResponse.redirect(new URL(`${localePrefix}${target}${url.search}`, request.url));
+	}
+
 	if (token && remainderPath.startsWith('/activities/')) {
+		const target = '/my' + remainderPath;
+		return NextResponse.redirect(
+			new URL(`${localePrefix}${target}${url.search}`, request.url)
+		);
+	}
+
+	if (token && remainderPath.startsWith('/badges/')) {
 		const target = '/my' + remainderPath;
 		return NextResponse.redirect(
 			new URL(`${localePrefix}${target}${url.search}`, request.url)

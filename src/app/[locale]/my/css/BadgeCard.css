@@ -69,6 +69,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 0 20px;
+  display: block;
 }
 
 .badge-card--locked {
@@ -77,5 +79,5 @@
 }
 
 .badge-card--unlocked {
-  border-color: #c7d2fe;
+  border-color: rgba(54, 189, 189, 0.479);
 }
