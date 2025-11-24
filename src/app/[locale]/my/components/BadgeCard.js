@@ -2,6 +2,7 @@
 
 import React from 'react';
 import '@/app/[locale]/my/css/BadgeCard.css';
+import Tooltip from '@/app/shared/components/Tooltip';
 
 function resolveLocalizedText(badge, locale) {
   const isZh = locale?.toLowerCase().startsWith('zh');
@@ -53,9 +54,11 @@ export default function BadgeCard({ badge, locale, onSelect, statusLabels = {} }
           </div>
         )}
       </div>
-      <span className="badge-card__label" title={title}>
-        {title}
-      </span>
+      <Tooltip content={title} width={'12rem'} className="tooltip-block">
+        <span className="badge-card__label">
+          {title}
+        </span>
+      </Tooltip>
     </button>
   );
 }

@@ -136,6 +136,10 @@
 			"joining": "JOINING",
 			"joinNow": "JOIN NOW",
 			"share": "SHARE",
+			"sharePreparing": "SHARING…",
+			"shareDialogLabelAuthed": "Copy this link to share this activity.",
+			"shareDialogLabelGuest": "Copy this link to share this activity.",
+			"shareLinkReady": "Share link ready!",
 			"mapError": "Something went wrong while loading the google map.",
 			"agreeTncWarning": "You must agree to the Conditions first.",
 			"notActiveWarning": "Cannot join activity that is not active.",
@@ -221,7 +225,6 @@
 			"unlocked": "Unlocked"
 		},
 		"states": {
-			"loading": "Fetching your badges...",
 			"empty": "No badges yet. Join more activities to unlock your first one.",
 			"error": "We could not load your badges. Please try again.",
 			"retry": "Try again"
@@ -231,7 +234,177 @@
 			"viewDetails": "View details",
 			"close": "Close",
 			"shareSuccess": "Badge link copied to your clipboard.",
-			"shareError": "Unable to share this badge right now."
+			"shareError": "Unable to share this badge right now.",
+			"buyTitle": "Buy this badge",
+			"buyDescription": "Spend your FS points to unlock it instantly.",
+			"buyCta": "Buy badge",
+			"back": "Back",
+			"confirmCta": "Confirm purchase",
+			"confirming": "Buying...",
+			"costLabel": "Cost",
+			"balanceLabel": "Your balance",
+			"pointsSuffix": "FS pts",
+			"insufficientTitle": "Not enough FS points",
+			"insufficientDescription": "You need {shortfall} more FS points.",
+			"insufficientCta": "Earn more FS points to continue.",
+			"successTitle": "Badge unlocked!",
+			"successDescription": "You spent {cost} FS points and have {balance} left.",
+			"purchaseError": "Unable to complete the purchase. Please try again."
+		}
+	},
+	"BadgeDetails": {
+		"loading": "Loading badge details…",
+		"error": {
+			"title": "Unable to load this badge",
+			"message": "Please refresh the page or try again.",
+			"retry": "Retry"
+		},
+		"notFound": {
+			"title": "Badge not found",
+			"message": "This badge may have been unpublished or the link is invalid.",
+			"cta": "Explore activities"
+		},
+		"cta": {
+			"back": "Back to activities",
+			"join": "Join FoodSport"
+		},
+		"hero": {
+			"kicker": "Achievement badge",
+			"limited": "Limited edition",
+			"seasonal": "Seasonal",
+			"evergreen": "Evergreen",
+			"activityTag": "Activity exclusive",
+			"costLabel": "Instant unlock",
+			"seasonalRange": "Season window",
+			"defaultSubtitle": "Unlock this badge by completing the challenges below."
+		},
+		"share": {
+			"cta": "Share badge",
+			"success": "Badge link copied",
+			"error": "Unable to share this badge right now."
+		},
+		"purchase": {
+			"cta": "Redeem for {cost} FS pts",
+			"buying": "Buying…",
+			"redeemed": "Redeemed",
+			"balance": "Balance: {balance} FS pts",
+			"insufficient": "You need {shortfall} more FS points to buy this badge.",
+			"owned": "You already have this badge.",
+			"success": "Badge unlocked! Check it on your profile.",
+			"error": "Unable to complete the purchase right now."
+		},
+		"viewer": {
+			"title": "Your status",
+			"statuses": {
+				"locked": "Locked",
+				"earned": "Earned",
+				"redeemed": "Redeemed",
+				"unlocked": "Unlocked"
+			},
+			"unlockedAt": "Unlocked on {date}",
+			"pointsSpent": "Redeemed with {points} FS pts",
+			"profileCta": "View all"
+		},
+		"stats": {
+			"title": "Badge stats",
+			"unlocked": "Unlocks",
+			"redeemed": "Redemptions",
+			"lastUnlocked": "Last unlock",
+			"beFirst": "Be the first",
+			"fsCost": "{cost} FS pts",
+			"place": "Spot #{place}"
+		},
+		"rules": {
+			"title": "How to unlock",
+			"subtitle": "Complete every requirement to earn this badge.",
+			"noRules": "Unlock requirements will be shared soon.",
+			"labels": {
+				"calorie_single_activity": "Single activity calories",
+				"calorie_cumulative": "Total calories",
+				"activity_participation_count": "Activity participation",
+				"activity_specific_participation": "Activity exclusive",
+				"consecutive_days_calories": "Streak requirement",
+				"invite_count": "Invites",
+				"social_share": "Social share",
+				"frequency_count": "Consistency",
+				"points_cumulative": "FS points earned",
+				"redeem_first": "Redeem-first",
+				"redeem_points_cumulative": "Points redeemed",
+				"redeem_purchase": "Redeem purchase"
+			},
+			"timeframes": {
+				"week": "week",
+				"weekPlural": "weeks",
+				"month": "month",
+				"monthPlural": "months"
+			},
+				"descriptions": {
+				"generic": "Complete the required action.",
+				"calorie_single_activity": {
+					"withTarget": "Burn at least {target} kcal during a single FoodSport activity.",
+					"default": "Burn calories within one FoodSport activity."
+				},
+				"calorie_cumulative": {
+					"withTarget": "Burn a total of {target} kcal across FoodSport activities.",
+					"default": "Stack calories across FoodSport activities."
+				},
+				"activity_participation_count": "Join {count} FoodSport activities.",
+				"activity_specific_participation": {
+					"named": "Join {activity} and check in successfully.",
+					"generic": "Join the highlighted activity for this badge."
+				},
+				"consecutive_days_calories": {
+					"withCalories": "Keep a {days}-day streak with at least {calories} kcal per day.",
+					"default": "Keep a {days}-day activity streak."
+				},
+				"invite_count": "Invite {count} friends who attend and check in.",
+				"invite_count_activity": "Invite {count} friends to join and check in to {activity}.",
+				"invite_count_activity_generic": "Invite {count} friends to join and check in to:",
+				"social_share": "Complete the social share mission linked to this badge.",
+				"frequency_count": {
+					"presence": "Complete {occurrences} activities every {window} for {periods} {totalWindow} in a row.",
+					"calories": "Log {occurrences} calorie sessions (>= {calories} kcal) every {window} for {periods} {totalWindow}."
+				},
+				"points_cumulative": "Collect {points} FS points.",
+				"redeem_first": {
+					"single": "Redeem your first reward.",
+					"multiple": "Redeem {count} rewards."
+				},
+				"redeem_points_cumulative": "Redeem {points} FS points worth of rewards.",
+				"redeem_purchase": "Redeem this badge directly with FS points."
+			}
+			,
+			"hints": {
+				"invite_activity": "Invites apply to the activity: {activity}."
+			}
+		},
+		"activity": {
+			"title": "Featured activity",
+			"untitled": "FoodSport activity",
+			"locationFallback": "Location to be announced",
+			"cta": "View activity"
+		},
+		"season": {
+			"title": "Season timeline",
+			"active": "Happening now",
+			"upcoming": "Starts soon",
+			"completed": "Season ended",
+			"evergreen": "Always available"
+		},
+		"metadata": {
+			"title": "Badge details",
+			"typeLabel": "Type",
+			"seasonal": "Seasonal badge",
+			"evergreen": "Evergreen badge",
+			"limitedLabel": "Availability",
+			"limited": "Limited edition",
+			"openAccess": "Open to everyone",
+			"placeLabel": "Priority spot"
+		},
+		"gallery": {
+			"title": "More achievement badges",
+			"subtitle": "Share them with friends or unlock them from your dashboard.",
+			"view": "View badge"
 		}
 	},
 	"EditProfile": {

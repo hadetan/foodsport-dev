@@ -3,9 +3,7 @@ import { createServerClient } from '@/lib/supabase/server-only';
 import { requireUser } from '@/lib/prisma/require-user';
 import { prisma } from '@/lib/prisma/db';
 import { sortBadgesByPriority } from '@/lib/badges/utils';
-
-const LOCKED_STATUS = 'locked';
-const UNLOCKED_STATUSES = new Set(['earned', 'redeemed']);
+import { normalizeUserBadge } from '@/lib/badges/normalizeUserBadge';
 
 export async function GET(request) {
   const supabase = await createServerClient();
@@ -55,31 +53,5 @@ export async function GET(request) {
 
 function normalizeBadgesResponse(badges = []) {
   const ordered = sortBadgesByPriority(badges);
-  return ordered.map((badge) => {
-    const owned = badge.userBadges?.[0] ?? null;
-    const status = owned?.status ?? null;
-    const isUnlocked = status ? UNLOCKED_STATUSES.has(status) : false;
-
-    return {
-      id: badge.id,
-      title: badge.name,
-      titleZh: badge.nameZh,
-      description: badge.description,
-      descriptionZh: badge.descriptionZh,
-      imageUrl: badge.imageUrl,
-      place: badge.place,
-      activityId: badge.activityId,
-      isSeasonal: badge.isSeasonal,
-      seasonalStartDate: badge.seasonalStartDate,
-      seasonalEndDate: badge.seasonalEndDate,
-      isLimitedEdition: badge.isLimitedEdition,
-      fsPointsCost: badge.fsPointsCost,
-      isUnlocked,
-      status: isUnlocked ? status : LOCKED_STATUS,
-      unlockedAt: isUnlocked ? owned?.earnedAt : null,
-      earnedValue: isUnlocked ? owned?.earnedValue ?? null : null,
-      pointsSpent: isUnlocked ? owned?.pointsSpent ?? null : null,
-      source: isUnlocked ? owned?.source ?? null : null,
-    };
-  });
+  return ordered.map((badge) => normalizeUserBadge(badge, badge.userBadges?.[0] ?? null));
 }

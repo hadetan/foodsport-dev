@@ -13,7 +13,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
-    "studio": "prisma studio"
+    "studio": "prisma studio",
+    "sb:start": "sg docker -c 'supabase start'",
+    "sb:stop": "sg docker -c 'supabase stop'"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",

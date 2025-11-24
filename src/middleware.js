@@ -5,6 +5,7 @@ import { LOCALE_PATTERN } from '@/utils/localePattern';
 function isBypassed(pathname) {
 	if (pathname.startsWith('/admin') || pathname.startsWith('/api'))
 		return true;
+	if (pathname.startsWith('/share')) return true;
 	if (pathname.startsWith('/_next')) return true;
 	const staticExtRe = /\.(?:png|jpe?g|gif|svg|webp|ico|css|js|woff2?|ttf|eot)$/i;
 	if (staticExtRe.test(pathname)) return true;
@@ -131,7 +132,19 @@ export function middleware(request) {
 		return NextResponse.redirect(new URL(`${localePrefix}${target}${url.search}`, request.url));
 	}
 
+	if (!token && remainderPath.startsWith('/my/badges/')) {
+		const target = remainderPath.replace(/^\/my/, '');
+		return NextResponse.redirect(new URL(`${localePrefix}${target}${url.search}`, request.url));
+	}
+
 	if (token && remainderPath.startsWith('/activities/')) {
+		const target = '/my' + remainderPath;
+		return NextResponse.redirect(
+			new URL(`${localePrefix}${target}${url.search}`, request.url)
+		);
+	}
+
+	if (token && remainderPath.startsWith('/badges/')) {
 		const target = '/my' + remainderPath;
 		return NextResponse.redirect(
 			new URL(`${localePrefix}${target}${url.search}`, request.url)

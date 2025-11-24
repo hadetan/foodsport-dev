@@ -126,3 +126,145 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Failed to create badge', details: err.message }, { status: 500 });
   }
 }
+
+// GET /api/admin/badges - Returns badges and related data for admin users
+export async function GET(request) {
+  try {
+    const supabase = await createServerClient();
+    const { error } = await requireAdmin(supabase, NextResponse, request);
+    if (error) return error;
+
+    const url = new URL(request.url);
+    const searchParams = url.searchParams;
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '10000', 10);
+    const skip = (page - 1) * limit;
+    const status = searchParams.get('status') || '';
+    const activityId = searchParams.get('activityId') || '';
+    const isActiveFilter = status ? (status === 'active') : undefined;
+
+    const where = {};
+    if (typeof isActiveFilter === 'boolean') {
+      where.isActive = isActiveFilter;
+    }
+    if (activityId) {
+      where.activityId = activityId;
+    }
+
+    const badges = await prisma.badge.findMany({
+      where,
+      include: {
+        badgeRules: {
+          orderBy: { createdAt: 'asc' },
+          select: {
+            id: true,
+            ruleType: true,
+            targetValue: true,
+            params: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        activity: {
+          select: {
+            id: true,
+            title: true,
+            titleZh: true,
+            summary: true,
+            summaryZh: true,
+            location: true,
+            startDate: true,
+            endDate: true,
+            activityType: true,
+            imageUrl: true,
+            bannerImageUrl: true,
+          },
+        },
+        userBadges: {
+          select: {
+            id: true,
+            userId: true,
+            earnedAt: true,
+            status: true,
+            earnedValue: true,
+            pointsSpent: true,
+            user: { select: { id: true, firstname: true, lastname: true, email: true } },
+          },
+        },
+        redemptions: {
+          select: {
+            id: true,
+            userId: true,
+            pointsPaid: true,
+            status: true,
+            redeemedAt: true,
+            user: { select: { id: true, firstname: true, lastname: true, email: true } },
+          },
+        },
+        _count: {
+          select: {
+            userBadges: true,
+            redemptions: true,
+          },
+        },
+      },
+      orderBy: { place: 'asc' },
+      take: limit,
+      skip,
+    });
+
+    const normalized = (badges || []).map((b) => ({
+      id: b.id,
+      name: b.name,
+      nameZh: b.nameZh,
+      description: b.description,
+      descriptionZh: b.descriptionZh,
+      imageUrl: b.imageUrl,
+      place: b.place,
+      isSeasonal: b.isSeasonal,
+      seasonalStartDate: b.seasonalStartDate,
+      seasonalEndDate: b.seasonalEndDate,
+      activity: b.activity || null,
+      isLimitedEdition: b.isLimitedEdition,
+      fsPointsCost: b.fsPointsCost,
+      isActive: b.isActive,
+      badgeRules: (b.badgeRules || []).map((r) => ({
+        id: r.id,
+        type: r.ruleType,
+        targetValue: r.targetValue,
+        params: r.params,
+        isActive: r.isActive,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+      })),
+      userBadges: (b.userBadges || []).map((ub) => ({
+        id: ub.id,
+        userId: ub.userId,
+        earnedAt: ub.earnedAt,
+        status: ub.status,
+        earnedValue: ub.earnedValue,
+        pointsSpent: ub.pointsSpent,
+        user: ub.user || null,
+      })),
+      redemptions: (b.redemptions || []).map((r) => ({
+        id: r.id,
+        userId: r.userId,
+        pointsPaid: r.pointsPaid,
+        status: r.status,
+        redeemedAt: r.redeemedAt,
+        user: r.user || null,
+      })),
+      stats: {
+        unlockedCount: b._count?.userBadges ?? 0,
+        redeemedCount: b._count?.redemptions ?? 0,
+      },
+      createdAt: b.createdAt,
+    }));
+
+    return NextResponse.json({ badges: normalized, pagination: { page, limit, total: normalized.length } }, { status: 200 });
+  } catch (err) {
+    console.error('Error in GET /api/admin/badges', err);
+    return NextResponse.json({ error: 'Failed to load badges.' }, { status: 500 });
+  }
+}
