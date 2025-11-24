@@ -32,7 +32,7 @@ function isZhLocale(locale) {
 
 function pickLocalized(primary, secondary, locale) {
   if (isZhLocale(locale)) {
-    return secondary || primary || secondary || '';
+    return secondary || primary || '';
   }
   return primary || secondary || '';
 }

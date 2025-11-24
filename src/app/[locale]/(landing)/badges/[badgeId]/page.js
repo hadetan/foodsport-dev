@@ -1,6 +1,6 @@
 import BadgeDetailsPage from '../../Components/BadgeDetailsPage';
 
-export default function BadgeDetailsRoute({ params }) {
-  const badgeId = params?.badgeId || '';
-  return <BadgeDetailsPage badgeId={badgeId} />;
+export default async function BadgeDetailsRoute({ params }) {
+  const awaitedParam = await params || {};
+  return <BadgeDetailsPage badgeId={awaitedParam?.badgeId} />;
 }

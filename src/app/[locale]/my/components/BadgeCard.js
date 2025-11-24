@@ -54,15 +54,11 @@ export default function BadgeCard({ badge, locale, onSelect, statusLabels = {} }
           </div>
         )}
       </div>
-      {title ? (
-        <Tooltip content={title} width={'12rem'} className="tooltip-block">
-          <span className="badge-card__label">
-            {title}
-          </span>
-        </Tooltip>
-      ) : (
-        <span className="badge-card__label">{title}</span>
-      )}
+      <Tooltip content={title} width={'12rem'} className="tooltip-block">
+        <span className="badge-card__label">
+          {title}
+        </span>
+      </Tooltip>
     </button>
   );
 }

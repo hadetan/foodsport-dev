@@ -17,7 +17,7 @@ function parseViewerContext(rawCtx) {
 }
 
 export default async function MyBadgeDetailsRoute({ params, searchParams }) {
-  const badgeId = await params || '';
+  const badgeId = await params || {};
   const awaitedParams = await searchParams;
   const viewerContext = parseViewerContext(awaitedParams?.ctx);
 
