@@ -21,6 +21,7 @@ import {
     Users,
 } from 'lucide-react';
 import api from '@/utils/axios/api';
+import { buildImageUrl } from '@/utils/image';
 import BadgeModal from '@/app/[locale]/my/components/BadgeModal';
 import '@/app/[locale]/(landing)/Components/BadgeDetails.css';
 import { BadgeDetailsSkeleton } from '@/app/shared/components/skeletons/BadgeDetailsSkeleton';
@@ -508,7 +509,7 @@ function BadgeDetailsPage({ badgeId, viewerContext = null }) {
             <div className="badge-hero">
                 <div className="badge-hero__media" aria-hidden="true">
                     {badge.imageUrl ? (
-                        <img src={badge.imageUrl} alt={localized.title} />
+                        <img src={buildImageUrl(badge.imageUrl)} alt={localized.title} />
                     ) : (
                         <div className="badge-hero__placeholder">
                             <Sparkles size={40} />
@@ -742,7 +743,7 @@ function BadgeDetailsPage({ badgeId, viewerContext = null }) {
                                 <article key={other.id} className="badge-rail-card">
                                     <div className="badge-rail-card__media" aria-hidden="true">
                                         {other.imageUrl ? (
-                                            <img src={other.imageUrl} alt={otherTitle} />
+                                            <img src={buildImageUrl(other.imageUrl)} alt={otherTitle} />
                                         ) : (
                                             <div className="badge-rail-card__placeholder">
                                                 <Activity size={24} />

@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
 import React from 'react';
+import { buildImageUrl } from '@/utils/image';
 import '@/app/[locale]/my/css/BadgeCard.css';
 import Tooltip from '@/app/shared/components/Tooltip';
 
@@ -40,7 +41,7 @@ export default function BadgeCard({ badge, locale, onSelect, statusLabels = {} }
     >
       <div className="badge-card__image-wrapper" aria-hidden="true">
         {badge.imageUrl ? (
-          <img src={badge.imageUrl} alt={title} className="badge-card__image" />
+          <img src={buildImageUrl(badge.imageUrl)} alt={title} className="badge-card__image" />
         ) : (
           <span className="badge-card__emoji" role="img">
             {badge.emoji || '🏅'}

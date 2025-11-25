@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { buildImageUrl } from '@/utils/image';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import '@/app/[locale]/my/css/BadgeModal.css';
@@ -294,7 +295,7 @@ export default function BadgeModal({ badge, locale, labels, onClose, onRedeemed,
                 <div className="badge-modal__body">
                     <div className="badge-modal__image" aria-hidden="true">
                         {badge.imageUrl ? (
-                            <img src={badge.imageUrl} alt={localized.title} />
+                            <img src={buildImageUrl(badge.imageUrl)} alt={localized.title} />
                         ) : (
                             <span role="img" aria-label={localized.title}>
                                 {badge.emoji || '🏅'}

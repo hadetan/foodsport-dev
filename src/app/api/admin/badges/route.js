@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/prisma/require-admin';
 import { prisma } from '@/lib/prisma/db';
 import { validateRequiredFields } from '@/utils/validation';
 import { coerceRulesPayload, validateAndNormalizeBadgeRules } from '@/lib/badges/ruleValidation';
+import { MAX_IMAGE_SIZE_MB } from '@/app/constants/constants';
 
 function parseDate(value) {
   if (!value) {
@@ -14,18 +15,30 @@ function parseDate(value) {
 }
 
 export async function POST(request) {
-  // const supabase = await createServerClient();
-  // const { error } = await requireAdmin(supabase, NextResponse);
-  // if (error) return error;
+  const supabase = await createServerClient();
+  const { error } = await requireAdmin(supabase, NextResponse);
+  if (error) return error;
 
   let payload = {};
+  let formData = null;
+  const contentType = request.headers.get('content-type') || '';
   try {
-    payload = await request.json();
+    if (contentType.includes('multipart/form-data')) {
+      formData = await request.formData();
+      payload = Object.fromEntries(
+        Array.from(formData.entries()).filter(([key, value]) => typeof value === 'string')
+      );
+    } else {
+      payload = await request.json();
+    }
   } catch (err) {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const validation = validateRequiredFields(payload, ['name', 'imageUrl']);
+  const requireImage = !(formData && formData.get('image') && typeof formData.get('image') !== 'string');
+  const validationFields = ['name'];
+  if (requireImage) validationFields.push('imageUrl');
+  const validation = validateRequiredFields(payload, validationFields);
   if (!validation.isValid) {
     return NextResponse.json({ error: validation.error || 'Missing required fields' }, { status: 400 });
   }
@@ -94,6 +107,44 @@ export async function POST(request) {
     fsPointsCost: isLimitedEdition ? limitedCost : null,
     place: normalizedPlace,
   };
+
+  if (formData && formData.get('image') && typeof formData.get('image') !== 'string') {
+    try {
+      const supabase = await createServerClient();
+      const file = formData.get('image');
+      const allowedTypes = ['image/png'];
+      const maxSize = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+      if (!allowedTypes.includes(file.type)) {
+        return NextResponse.json({ error: 'Invalid image type. Only JPEG and PNG are allowed.' }, { status: 400 });
+      }
+      if (file.size > maxSize) {
+        return NextResponse.json({ error: `Image size exceeds the maximum limit of ${MAX_IMAGE_SIZE_MB}MB.` }, { status: 400 });
+      }
+
+      const bucket = 'badges-images';
+      const ext = file.name.split('.').pop();
+      const fileName = `badge_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from(bucket).upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type,
+      });
+      if (uploadError) {
+        return NextResponse.json({ error: 'Failed to upload image', details: uploadError.message }, { status: 500 });
+      }
+
+      const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+      const publicUrl = publicUrlData?.publicUrl;
+      if (!publicUrl) {
+        return NextResponse.json({ error: 'Failed to get image public URL' }, { status: 500 });
+      }
+      const urlObj = new URL(publicUrl);
+      badgeData.imageUrl = urlObj.pathname;
+    } catch (err) {
+      console.error('Badge image upload failed', err);
+      return NextResponse.json({ error: 'Failed to process image upload' }, { status: 500 });
+    }
+  }
 
   try {
     const created = await prisma.$transaction(async (tx) => {
