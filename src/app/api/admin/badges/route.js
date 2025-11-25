@@ -5,61 +5,7 @@ import { prisma } from '@/lib/prisma/db';
 import { validateRequiredFields } from '@/utils/validation';
 import { coerceRulesPayload, validateAndNormalizeBadgeRules, INVALID_RULES_PAYLOAD_ERROR } from '@/lib/badges/ruleValidation';
 import { MAX_IMAGE_SIZE_MB } from '@/app/constants/constants';
-
-function parseDate(value) {
-  if (!value) {
-    return null;
-  }
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-function parseBooleanInput(value) {
-  if (value === undefined || value === null || value === '') {
-    return undefined;
-  }
-  if (typeof value === 'boolean') {
-    return value;
-  }
-  if (typeof value === 'number') {
-    return value !== 0;
-  }
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (!normalized) {
-      return undefined;
-    }
-    if (['true', '1', 'yes', 'on'].includes(normalized)) {
-      return true;
-    }
-    if (['false', '0', 'no', 'off'].includes(normalized)) {
-      return false;
-    }
-  }
-  return Boolean(value);
-}
-
-function parseIntegerInput(value) {
-  if (value === undefined) {
-    return undefined;
-  }
-  if (value === null || value === '') {
-    return null;
-  }
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) {
-    return null;
-  }
-  return Math.trunc(numeric);
-}
-
-function normalizeNullableString(value) {
-  if (value === undefined || value === null) {
-    return null;
-  }
-  const trimmed = String(value).trim();
-  return trimmed || null;
-}
+import { parseDate, parseBooleanInput, parseIntegerInput, normalizeNullableString } from '@/utils/input-parsing';
 
 export async function POST(request) {
   const supabase = await createServerClient();
