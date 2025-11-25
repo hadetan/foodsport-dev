@@ -131,6 +131,20 @@ const BadgeRow = ({ badge, onRowClick }) => {
                     )}
                 </div>
             </td>
+
+            {/* Actions */}
+            <td className="text-base align-middle text-center">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/admin/badges/${badge.id}`);
+                    }}
+                    className="btn btn-ghost btn-sm btn-circle hover:bg-primary hover:text-white"
+                    title="Edit Badge"
+                >
+                    <Pencil size={18} />
+                </button>
+            </td>
         </tr>
     );
 };

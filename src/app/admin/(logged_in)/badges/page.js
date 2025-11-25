@@ -29,10 +29,66 @@ const BadgeManagementContent = () => {
             try {
                 setLoading(true);
                 const response = await api.get("/api/admin/badges");
-                setBadges(response.data.badges || []);
+                const fetchedBadges = response.data.badges || [];
+
+                // Add demo badge if no badges exist
+                if (fetchedBadges.length === 0) {
+                    const demoBadges = [
+                        {
+                            id: "demo-badge-1",
+                            name: "First Steps",
+                            nameZh: "第一步",
+                            description: "Complete your first activity",
+                            descriptionZh: "完成你的第一個活動",
+                            imageUrl: "/logos/default-badge.png",
+                            isActive: true,
+                            activity: {
+                                title: "Morning Yoga",
+                                titleZh: "早晨瑜珈",
+                                activityType: "yoga"
+                            },
+                            badgeRules: [
+                                {
+                                    id: "rule-1",
+                                    type: "activity_participation_count",
+                                    targetValue: 1,
+                                    isActive: true
+                                }
+                            ]
+                        }
+                    ];
+                    setBadges(demoBadges);
+                } else {
+                    setBadges(fetchedBadges);
+                }
             } catch (error) {
                 console.error("Error fetching badges:", error);
-                setBadges([]);
+                // Add demo badge on error too
+                const demoBadges = [
+                    {
+                        id: "demo-badge-1",
+                        name: "First Steps",
+                        nameZh: "第一步",
+                        description: "Complete your first activity",
+                        descriptionZh: "完成你的第一個活動",
+                        imageUrl: "/logos/default-badge.png",
+                        isActive: true,
+                        activity: {
+                            title: "Morning Yoga",
+                            titleZh: "早晨瑜珈",
+                            activityType: "yoga"
+                        },
+                        badgeRules: [
+                            {
+                                id: "rule-1",
+                                type: "activity_participation_count",
+                                targetValue: 1,
+                                isActive: true
+                            }
+                        ]
+                    }
+                ];
+                setBadges(demoBadges);
             } finally {
                 setLoading(false);
             }
@@ -101,6 +157,7 @@ const BadgeManagementContent = () => {
         "Description",
         "Badge Rules",
         "Target Value",
+        "Actions",
     ];
 
     const handleStatusChange = (status) => {
