@@ -36,8 +36,8 @@ export function buildActivityMetadataFields(activity, locale, siteOrigin) {
         ? activity.titleZh || activity.title
         : activity.title || activity.titleZh;
     const descriptionRaw = isZh
-        ? activity.descriptionZh || stripHtml(activity.summaryZh) || activity.description || stripHtml(activity.summary)
-        : activity.description || stripHtml(activity.summary) || activity.descriptionZh || stripHtml(activity.summaryZh);
+        ? activity.descriptionZh || activity.summaryZh || activity.description || activity.summary
+        : activity.description || activity.summary || activity.descriptionZh || activity.summaryZh;
 
     const title = titleRaw || 'FoodSport Activity';
     const description = stripHtml(descriptionRaw).slice(0, 200) || 'Join FoodSport activities to move, connect, and earn.';

@@ -7,13 +7,15 @@ import {
     extractActivityTarget,
     toAbsoluteImageUrl,
 } from '@/lib/social-share/metadata-helpers';
+import { isSafeImageUrl, getAllowedImageOriginsFromEnv } from '@/lib/ssrf-protection';
 
 const IMAGE_CACHE_SECONDS = 60 * 60;
 
 export const runtime = 'nodejs';
 
 export async function GET(_request, { params }) {
-    const token = params?.token;
+    const awaitedParams = await params;
+    const token = awaitedParams?.token;
     if (!token) {
         return new NextResponse('Missing token', { status: 400 });
     }
@@ -35,6 +37,12 @@ export async function GET(_request, { params }) {
         process.env.NEXT_PUBLIC_SUPABASE_URL,
     );
 
+    // Validate that the upstream image is safe to proxy (avoid SSRF)
+    const allowedOrigins = getAllowedImageOriginsFromEnv();
+    const allowed = await isSafeImageUrl(absoluteImageUrl, allowedOrigins);
+    if (!allowed) {
+        return new NextResponse('Unauthorized image host', { status: 403 });
+    }
     if (!absoluteImageUrl) {
         return new NextResponse(null, { status: 204 });
     }

@@ -104,7 +104,7 @@ export async function processShareVisit(token) {
                 return { redirectUrl: fallbackRedirect, share: null };
             }
 
-            const redirectUrl = buildRedirectUrl(share.redirectUrl);
+            const redirectUrl = sanitizeRedirectUrl(share.redirectUrl);
             const now = new Date();
             const updateData = {
                 uniqueClicks: { increment: 1 },

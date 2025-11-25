@@ -24,16 +24,16 @@ const FALLBACK_META = {
     ogLocale: 'en_US',
 };
 
-function getRequestHeaders() {
+async function getRequestHeaders() {
     try {
-        return headers();
+        return await headers();
     } catch (_err) {
         return new Headers();
     }
 }
 
-function getSiteOrigin() {
-    const h = getRequestHeaders();
+async function getSiteOrigin() {
+    const h = await getRequestHeaders();
     const proto = h.get('x-forwarded-proto') || 'http';
     const host = h.get('x-forwarded-host') || h.get('host');
     if (host) return `${proto}://${host}`;
@@ -62,7 +62,7 @@ async function resolveShareMetadata(token, siteOrigin) {
 export async function generateMetadata({ params }) {
     const awaitedParams = await params;
     const token = awaitedParams?.token || '';
-    const siteOrigin = getSiteOrigin();
+    const siteOrigin = await getSiteOrigin();
     const { meta } = await resolveShareMetadata(token, siteOrigin);
     const canonical = `${siteOrigin}/share/${token}`;
     const ogImageUrl = meta.imageUrlAbs ? `${canonical}/image` : null;

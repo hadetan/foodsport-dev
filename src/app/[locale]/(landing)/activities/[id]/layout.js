@@ -53,7 +53,7 @@ export async function generateMetadata({ params }) {
     const description = stripHtml(descriptionRaw).slice(0, 200) || 'Join FoodSport activities to move, connect, and earn.';
 
     const heroImage = activity?.bannerImageUrl || activity?.imageUrl;
-    const imageUrlAbs = toAbsoluteImageUrl(heroImage);
+    const imageUrlAbs = heroImage ? `${siteOrigin}/api/images/activity/${id}` : null;
     const siteName = 'FoodSport';
     const ogLocale = isZh ? 'zh_HK' : 'en_US';
 
