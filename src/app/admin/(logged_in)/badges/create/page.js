@@ -250,7 +250,7 @@ const CreateBadgePage = () => {
         }
 
         if (rules.length === 0) {
-            errors.rules = "At least one badge rule is required...";
+            errors.rules = "At least one badge rule is required.";
         }
 
         setFieldErrors(errors);
