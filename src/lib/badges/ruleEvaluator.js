@@ -434,6 +434,10 @@ async function getDailyCalorieTotals(tx, userId, sinceDate, source = 'burn') {
 
 function truncateToDate(value) {
     const date = new Date(value);
+    // Truncate to UTC midnight for consistent date handling across timezones.
+    // This ensures daily calorie aggregation, streak calculations, and badge rule evaluations
+    // are not affected by local timezone differences. Changing this to local time would break
+    // cross-timezone consistency and may cause off-by-one errors.
     date.setUTCHours(0, 0, 0, 0);
     return date;
 }
