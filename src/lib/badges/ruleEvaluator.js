@@ -60,7 +60,7 @@ export async function awardRedemptionBadges(tx, params) {
  * @param {string} params.userId - The UUID of the user to evaluate for badge awards.
  * @param {string[]} params.ruleTypes - Array of rule type strings to evaluate (e.g. ['invite_count', 'activity_participation']).
  * @param {string} [params.source] - Optional source identifier for the badge evaluation context.
- * @param {...any} [params.context] - Additional context fields required by specific rule types (e.g. activityId, points, etc.).
+ * @param {any} [params.context] - Additional context fields required by specific rule types (e.g. activityId, points, etc.).
  *
  * @returns {Promise<object[]>} - Promise resolving to an array of awarded badge objects.
  *
