@@ -8,6 +8,95 @@ import axiosClient from "@/utils/axios/api";
 import { MAX_IMAGE_SIZE_MB, ALLOWED_RULE_TYPES } from "@/app/constants/constants";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
 
+// Rule combination matrix based on cross-connection.md
+const ALLOWED_RULE_COMBINATIONS = {
+    calorie_single_activity: new Set([
+        'activity_specific_participation',
+        'invite_count',
+        'social_share',
+    ]),
+    calorie_cumulative: new Set([
+        'activity_participation_count',
+        'invite_count',
+        'social_share',
+        'frequency_count',
+        'points_cumulative',
+    ]),
+    activity_participation_count: new Set([
+        'calorie_cumulative',
+        'invite_count',
+        'social_share',
+    ]),
+    activity_specific_participation: new Set([
+        'calorie_single_activity',
+        'invite_count',
+        'social_share',
+    ]),
+    consecutive_days_calories: new Set([]),
+    invite_count: new Set([
+        'calorie_single_activity',
+        'calorie_cumulative',
+        'activity_participation_count',
+        'activity_specific_participation',
+        'social_share',
+    ]),
+    social_share: new Set([
+        'calorie_single_activity',
+        'calorie_cumulative',
+        'activity_participation_count',
+        'activity_specific_participation',
+        'invite_count',
+    ]),
+    frequency_count: new Set([
+        'calorie_cumulative',
+    ]),
+    points_cumulative: new Set([
+        'calorie_cumulative',
+    ]),
+    redeem_first: new Set([]),
+    redeem_points_cumulative: new Set([]),
+    redeem_purchase: new Set([]),
+};
+
+// Helper function to check if a rule can be combined with currently selected rules
+function canSelectRule(ruleType, currentRules) {
+    // If no rules selected yet, any rule can be selected
+    if (currentRules.length === 0) {
+        return { canSelect: true, reason: null };
+    }
+
+    // Check if this rule can be combined with all currently selected rules
+    const allowedCombinations = ALLOWED_RULE_COMBINATIONS[ruleType];
+
+    for (const existingRule of currentRules) {
+        const existingRuleType = existingRule.ruleType;
+
+        // Skip checking against itself
+        if (existingRuleType === ruleType) {
+            continue;
+        }
+
+        // Check if the new rule allows combination with existing rule
+        if (!allowedCombinations || !allowedCombinations.has(existingRuleType)) {
+            return {
+                canSelect: false,
+                reason: `Cannot combine with "${existingRuleType.replace(/_/g, ' ')}"`
+            };
+        }
+
+        // Also check if the existing rule allows combination with the new rule
+        const existingAllowed = ALLOWED_RULE_COMBINATIONS[existingRuleType];
+        if (!existingAllowed || !existingAllowed.has(ruleType)) {
+            return {
+                canSelect: false,
+                reason: `Cannot combine with "${existingRuleType.replace(/_/g, ' ')}"`
+            };
+        }
+    }
+
+    return { canSelect: true, reason: null };
+}
+
 const EditBadgePage = () => {
     const router = useRouter();
     const params = useParams();
@@ -138,7 +227,7 @@ const EditBadgePage = () => {
                     ruleType: 'activity_specific_participation',
                     targetValue: null,
                     params: null,
-                    isAuto: true
+                    isAuto: false // Changed to false so it appears as checked in the dialog
                 });
             }
         }
@@ -150,7 +239,7 @@ const EditBadgePage = () => {
                     if (r.ruleType === 'redeem_purchase' && r.isAuto && !formData.isLimitedEdition) {
                         return false;
                     }
-                    if (r.ruleType === 'activity_specific_participation' && r.isAuto && !formData.activityId) {
+                    if (r.ruleType === 'activity_specific_participation' && !formData.activityId) {
                         return false;
                     }
                     return true;
@@ -172,7 +261,7 @@ const EditBadgePage = () => {
                 if (r.ruleType === 'redeem_purchase' && r.isAuto && !formData.isLimitedEdition) {
                     return false;
                 }
-                if (r.ruleType === 'activity_specific_participation' && r.isAuto && !formData.activityId) {
+                if (r.ruleType === 'activity_specific_participation' && !formData.activityId) {
                     return false;
                 }
                 return true;
@@ -825,39 +914,55 @@ const EditBadgePage = () => {
                         {/* Display current rules */}
                         {rules.length > 0 ? (
                             <div className="space-y-2">
-                                {rules.map((rule, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex items-center justify-between p-3 bg-base-200 rounded-lg"
-                                    >
-                                        <div className="flex-1">
-                                            <div className="font-semibold">
-                                                {rule.ruleType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                {rules.map((rule, index) => {
+                                    const isActivityRule = rule.ruleType === 'activity_specific_participation' && formData.activityId;
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="flex items-center justify-between p-3 bg-base-200 rounded-lg"
+                                        >
+                                            <div className="flex-1">
+                                                <div className="font-semibold">
+                                                    {rule.ruleType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                </div>
+                                                {rule.targetValue && (
+                                                    <div className="text-sm text-gray-600">
+                                                        Target: {rule.targetValue}
+                                                    </div>
+                                                )}
+                                                {rule.isAuto && (
+                                                    <div className="text-xs text-primary mt-1">
+                                                        Auto-selected
+                                                    </div>
+                                                )}
+                                                {isActivityRule && (
+                                                    <div className="text-xs text-info mt-1">
+                                                        Linked to activity
+                                                    </div>
+                                                )}
                                             </div>
-                                            {rule.targetValue && (
-                                                <div className="text-sm text-gray-600">
-                                                    Target: {rule.targetValue}
-                                                </div>
-                                            )}
-                                            {rule.isAuto && (
-                                                <div className="text-xs text-primary mt-1">
-                                                    Auto-selected
-                                                </div>
+                                            {!rule.isAuto && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setRules(prev => prev.filter((_, i) => i !== index));
+                                                        // If removing activity_specific_participation, clear the activity selection
+                                                        if (rule.ruleType === 'activity_specific_participation') {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                activityId: ''
+                                                            }));
+                                                            setActivitySearchTerm('');
+                                                        }
+                                                    }}
+                                                    className="btn btn-sm btn-ghost btn-circle text-error"
+                                                >
+                                                    <X size={16} />
+                                                </button>
                                             )}
                                         </div>
-                                        {!rule.isAuto && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setRules(prev => prev.filter((_, i) => i !== index));
-                                                }}
-                                                className="btn btn-sm btn-ghost btn-circle text-error"
-                                            >
-                                                <X size={16} />
-                                            </button>
-                                        )}
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="p-4 text-center text-gray-500 bg-base-200 rounded-lg">
@@ -866,12 +971,12 @@ const EditBadgePage = () => {
                         )}
 
                         {/* Show info message when activity is selected */}
-                        {formData.activityId && (
+                        {formData.activityId && rules.some(r => r.ruleType === 'activity_specific_participation') && (
                             <div className="mt-3">
                                 <div className="text-sm text-info flex items-center gap-2">
                                     <span>ℹ️</span>
                                     <span>
-                                        <strong>Activity Specific Participation</strong> rule is automatically selected when an Activity is linked
+                                        <strong>Activity Specific Participation</strong> rule is automatically checked when an Activity is selected. Unchecking it will remove the activity link.
                                     </span>
                                 </div>
                             </div>
@@ -924,21 +1029,29 @@ const EditBadgePage = () => {
 
                         <div className="space-y-3 max-h-96 overflow-y-auto">
                             {Array.from(ALLOWED_RULE_TYPES).map((ruleType) => {
-                                const isAutoSelected =
-                                    (ruleType === 'redeem_purchase' && formData.isLimitedEdition) ||
-                                    (ruleType === 'activity_specific_participation' && formData.activityId);
+                                const isAutoSelected = (ruleType === 'redeem_purchase' && formData.isLimitedEdition);
+                                const isActivityLinked = (ruleType === 'activity_specific_participation' && formData.activityId);
 
                                 const isAlreadyAdded = rules.some(r => r.ruleType === ruleType);
 
-                                const isDisabled = isAutoSelected;
+                                // Check if this rule can be combined with currently selected rules
+                                const combinationCheck = canSelectRule(ruleType, rules.filter(r => r.ruleType !== ruleType));
+                                const canCombine = combinationCheck.canSelect;
+                                const incompatibilityReason = combinationCheck.reason;
+
+                                const isDisabled = isAutoSelected || (!isAlreadyAdded && !canCombine);
 
                                 return (
                                     <div
                                         key={ruleType}
-                                        className={`p-4 border rounded-lg ${isDisabled ? 'bg-base-200 border-info' : 'hover:border-primary cursor-pointer'
-                                            } ${isAlreadyAdded && !isAutoSelected ? 'border-primary bg-primary/5' : ''}`}
+                                        className={`p-4 border rounded-lg ${isDisabled
+                                            ? isAutoSelected
+                                                ? 'bg-base-200 border-info'
+                                                : 'bg-base-300 border-base-300 opacity-60'
+                                            : 'hover:border-primary cursor-pointer'
+                                            } ${isAlreadyAdded && !isAutoSelected && !isActivityLinked ? 'border-primary bg-primary/5' : ''} ${isActivityLinked && isAlreadyAdded ? 'border-primary bg-primary/5' : ''}`}
                                     >
-                                        <label className="flex items-start gap-3 cursor-pointer">
+                                        <label className={`flex items-start gap-3 ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                                             <input
                                                 type="checkbox"
                                                 checked={isAlreadyAdded}
@@ -955,7 +1068,17 @@ const EditBadgePage = () => {
                                                             }
                                                         ]);
                                                     } else {
+                                                        // Remove the rule
                                                         setRules(prev => prev.filter(r => r.ruleType !== ruleType));
+
+                                                        // If unchecking activity_specific_participation, clear the activity selection
+                                                        if (ruleType === 'activity_specific_participation') {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                activityId: ''
+                                                            }));
+                                                            setActivitySearchTerm('');
+                                                        }
                                                     }
                                                 }}
                                                 className="checkbox checkbox-primary mt-1"
@@ -969,16 +1092,24 @@ const EditBadgePage = () => {
                                                 </div>
                                                 {isAutoSelected && (
                                                     <div className="text-xs text-info mt-2 font-medium">
-                                                        ✓ Auto-selected (
-                                                        {ruleType === 'redeem_purchase' ? 'Limited Edition enabled' : 'Activity linked'}
-                                                        )
+                                                        ✓ Auto-selected (Limited Edition enabled)
+                                                    </div>
+                                                )}
+                                                {isActivityLinked && isAlreadyAdded && (
+                                                    <div className="text-xs text-info mt-2 font-medium">
+                                                        ℹ️ Linked to selected activity (uncheck to remove activity)
+                                                    </div>
+                                                )}
+                                                {!isAlreadyAdded && !canCombine && (
+                                                    <div className="text-xs text-error mt-2 font-medium">
+                                                        ✗ {incompatibilityReason}
                                                     </div>
                                                 )}
                                             </div>
                                         </label>
 
                                         {/* Target Value Input for rules that need it */}
-                                        {isAlreadyAdded && !isAutoSelected && needsTargetValue(ruleType) && (
+                                        {isAlreadyAdded && !isAutoSelected && !isActivityLinked && needsTargetValue(ruleType) && (
                                             <div className="mt-3 ml-8">
                                                 <label className="label">
                                                     <span className="label-text text-sm">Target Value</span>

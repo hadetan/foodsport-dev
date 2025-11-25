@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Eye, Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const BadgeRow = ({ badge, onRowClick }) => {
     const router = useRouter();
+    const [imageError, setImageError] = useState(false);
 
     // Helper to capitalize first letter of each word
     const capitalize = (str) => {
@@ -26,19 +27,20 @@ const BadgeRow = ({ badge, onRowClick }) => {
             {/* Badge Name with Image */}
             <td className="align-middle">
                 <div className="flex items-center space-x-3">
-                    <div className="avatar">
-                        <div className="mask mask-squircle w-16 h-16">
-                            <img
-                                src={badge.imageUrl}
-                                alt={badge.name}
-                                className="cursor-pointer hover:opacity-75"
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = "/logos/default-badge.png";
-                                }}
-                            />
+                    {badge.imageUrl && !imageError && (
+                        <div className="avatar">
+                            <div className="mask mask-squircle w-16 h-16">
+                                <img
+                                    src={badge.imageUrl}
+                                    alt={badge.name}
+                                    className="cursor-pointer hover:opacity-75"
+                                    onError={() => {
+                                        setImageError(true);
+                                    }}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )}
                     <div className="min-w-[120px] sm:min-w-[160px] md:min-w-[200px]">
                         <div className="font-bold text-base max-w-[220px] md:max-w-[320px] break-words">
                             {badge.name}

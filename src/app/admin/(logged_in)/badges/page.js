@@ -40,7 +40,7 @@ const BadgeManagementContent = () => {
                             nameZh: "第一步",
                             description: "Complete your first activity",
                             descriptionZh: "完成你的第一個活動",
-                            imageUrl: "/logos/default-badge.png",
+                            // imageUrl: "/logos/default-badge.png",
                             isActive: true,
                             activity: {
                                 title: "Morning Yoga",
@@ -71,7 +71,7 @@ const BadgeManagementContent = () => {
                         nameZh: "第一步",
                         description: "Complete your first activity",
                         descriptionZh: "完成你的第一個活動",
-                        imageUrl: "/logos/default-badge.png",
+                        // imageUrl: "/logos/default-badge.png",
                         isActive: true,
                         activity: {
                             title: "Morning Yoga",
