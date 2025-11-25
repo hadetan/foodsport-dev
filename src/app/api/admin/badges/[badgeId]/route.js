@@ -111,7 +111,7 @@ export async function PUT(request, { params }) {
 
       if (formData && formData.get('image') && typeof formData.get('image') !== 'string') {
         const file = formData.get('image');
-        const allowedTypes = ['image/jpeg', 'image/png'];
+        const allowedTypes = ['image/png'];
         const maxSize = MAX_IMAGE_SIZE_MB * 1024 * 1024;
         if (!allowedTypes.includes(file.type)) {
           return NextResponse.json({ error: 'Invalid image type. Only JPEG and PNG are allowed.' }, { status: 400 });
