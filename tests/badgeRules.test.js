@@ -687,7 +687,6 @@ crossConnectionCombos.forEach((comboCase) => {
     });
 });
 
-
 test('awardBadgesForActivityProgress does not award when only some rules match', async () => {
     const tx = createMockTx({
         badge: {
