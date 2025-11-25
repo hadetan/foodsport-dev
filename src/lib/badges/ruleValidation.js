@@ -108,7 +108,7 @@ export function coerceRulesPayload(payload) {
 
 export function validateAndNormalizeBadgeRules(rawRules) {
   if (!Array.isArray(rawRules) || rawRules.length === 0) {
-    return { isValid: false, error: 'At least one badge rule is required...........' };
+    return { isValid: false, error: 'At least one badge rule is required.' };
   }
 
   const normalized = [];
