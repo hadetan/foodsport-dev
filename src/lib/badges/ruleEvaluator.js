@@ -49,6 +49,38 @@ export async function awardRedemptionBadges(tx, params) {
     });
 }
 
+/**
+ * Evaluates and awards badges for a user based on a custom set of rule types.
+ *
+ * Primary use case: Testing multi-rule combinations, aggregated badge flows, or scenarios
+ * where you need to evaluate badge eligibility across several rule categories at once.
+ *
+ * @param {object} tx - Prisma transaction/client instance. Used to query and update badge data.
+ * @param {object} params - Parameters for badge evaluation.
+ * @param {string} params.userId - The UUID of the user to evaluate for badge awards.
+ * @param {string[]} params.ruleTypes - Array of rule type strings to evaluate (e.g. ['invite_count', 'activity_participation']).
+ * @param {string} [params.source] - Optional source identifier for the badge evaluation context.
+ * @param {...any} [params.context] - Additional context fields required by specific rule types (e.g. activityId, points, etc.).
+ *
+ * @returns {Promise<object[]>} - Promise resolving to an array of awarded badge objects.
+ *
+ * @example
+ * // Award badges for a user based on invite and activity participation rules:
+ * await awardBadgesForCustomRuleTypes(tx, {
+ *   userId: 'user-uuid',
+ *   ruleTypes: ['invite_count', 'activity_participation'],
+ *   source: 'unit-test',
+ *   activityId: 'activity-uuid',
+ *   inviteCount: 5
+ * });
+ *
+ * // Use this function for multi-rule or aggregated badge flows.
+ * // For single-category badge awards, prefer specialized helpers like awardBadgesForActivityProgress.
+ */
+export async function awardBadgesForCustomRuleTypes(tx, params) {
+    return awardBadgesForRules(tx, params);
+}
+
 async function awardBadgesForRules(tx, { userId, ruleTypes, source, ...context }) {
     if (!ruleTypes?.length) {
         return [];
@@ -176,6 +208,13 @@ async function doesBadgeRuleMatch(tx, badge, rule, context) {
                 });
             }
             return (context.inviteSuccessCount ?? 0) >= target;
+        case 'social_share':
+            if (context.socialShareCount == null) {
+                context.socialShareCount = await tx.socialShare.count({
+                    where: { userId: context.userId, status: 'verified' },
+                });
+            }
+            return (context.socialShareCount ?? 0) >= target;
         case 'points_cumulative': {
             const totalPoints = await resolveUserTotalPoints(tx, context);
             setRuleEarnedValue(context, rule.id, totalPoints ?? null);
@@ -395,7 +434,11 @@ async function getDailyCalorieTotals(tx, userId, sinceDate, source = 'burn') {
 
 function truncateToDate(value) {
     const date = new Date(value);
-    date.setHours(0, 0, 0, 0);
+    // Truncate to UTC midnight for consistent date handling across timezones.
+    // This ensures daily calorie aggregation, streak calculations, and badge rule evaluations
+    // are not affected by local timezone differences. Changing this to local time would break
+    // cross-timezone consistency and may cause off-by-one errors.
+    date.setUTCHours(0, 0, 0, 0);
     return date;
 }
 

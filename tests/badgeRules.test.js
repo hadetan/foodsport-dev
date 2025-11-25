@@ -6,6 +6,7 @@ import {
     awardRedemptionBadges,
     awardInviteBadges,
     __ruleEvaluatorInternals,
+    awardBadgesForCustomRuleTypes,
 } from '../src/lib/badges/ruleEvaluator.js';
 import { awardSocialShareBadge } from '../src/lib/badges/awardSocialShare.js';
 
@@ -37,6 +38,7 @@ function createMockTx(overrides = {}) {
             aggregate: async () => ({ _sum: { pointsPaid: 0 } }),
         },
         ticket: { count: async () => 0 },
+        socialShare: { count: async () => 0 },
     };
 
     return {
@@ -50,6 +52,7 @@ function createMockTx(overrides = {}) {
         user: { ...defaultTx.user, ...(overrides.user || {}) },
         badgeRedemption: { ...defaultTx.badgeRedemption, ...(overrides.badgeRedemption || {}) },
         ticket: { ...defaultTx.ticket, ...(overrides.ticket || {}) },
+        socialShare: { ...defaultTx.socialShare, ...(overrides.socialShare || {}) },
     };
 }
 
@@ -97,6 +100,10 @@ function makeWeeklyActivities(weeks, occurrencesPerWeek) {
         }
     }
     return entries;
+}
+
+function buildBadgeConfig(id, badgeRules, extra = {}) {
+    return { id, badgeRules, ...extra };
 }
 
 test('evaluateFrequencyRule passes when weekly participation meets requirement', async () => {
@@ -344,6 +351,340 @@ test('awardBadgesForActivityProgress requires all rules to match before awarding
     assert.equal(awards.length, 1);
     assert.equal(createdBadges.length, 1);
     assert.equal(createdBadges[0].badgeId, 'badge-multi-rule');
+});
+
+test('calorie_single_activity combined with activity_specific_participation + invite_count + social_share awards when all satisfied', async () => {
+    const createdBadges = [];
+    const badge = {
+        id: 'badge-calorie-activity-invite-social',
+        activityId: 'activity-combo',
+        badgeRules: [
+            { id: 'r1', ruleType: 'activity_specific_participation', targetValue: null, params: null },
+            { id: 'r2', ruleType: 'calorie_single_activity', targetValue: 400, params: null },
+            { id: 'r3', ruleType: 'invite_count', targetValue: 2, params: null },
+            { id: 'r4', ruleType: 'social_share', targetValue: 1, params: null },
+        ],
+    };
+
+    const tx = createMockTx({
+        badge: { findMany: async () => [badge] },
+        userBadge: { create: async ({ data }) => createdBadges.push(data), findUnique: async () => null },
+        ticket: { count: async () => 2 },
+        socialShare: { count: async () => 1 },
+    });
+
+    const awards = await awardBadgesForCustomRuleTypes(tx, {
+        userId: 'combo-user',
+        ruleTypes: ['calorie_single_activity', 'activity_specific_participation', 'invite_count', 'social_share'],
+        activityId: 'activity-combo',
+        wasPresent: true,
+        caloriesDelta: 500,
+        source: 'combo-test',
+    });
+
+    assert.equal(awards.length, 1);
+    assert.equal(createdBadges[0].badgeId, badge.id);
+});
+
+test('calorie_single_activity + activity_specific_participation awards when both satisfied', async () => {
+    const createdBadges = [];
+    const badge = {
+        id: 'badge-calorie-activity',
+        activityId: 'activity-combo',
+        badgeRules: [
+            { id: 'r1', ruleType: 'activity_specific_participation', targetValue: null, params: null },
+            { id: 'r2', ruleType: 'calorie_single_activity', targetValue: 350, params: null },
+        ],
+    };
+
+    const tx = createMockTx({
+        badge: { findMany: async () => [badge] },
+        userBadge: { create: async ({ data }) => createdBadges.push(data), findUnique: async () => null },
+    });
+
+    const awards = await awardBadgesForCustomRuleTypes(tx, {
+        userId: 'combo-user-activity',
+        ruleTypes: ['calorie_single_activity', 'activity_specific_participation'],
+        activityId: 'activity-combo',
+        wasPresent: true,
+        caloriesDelta: 500,
+        source: 'combo-test',
+    });
+
+    assert.equal(awards.length, 1);
+    assert.equal(createdBadges[0].badgeId, badge.id);
+});
+
+test('calorie_single_activity + activity_specific_participation + invite_count awards when all satisfied', async () => {
+    const createdBadges = [];
+    const badge = {
+        id: 'badge-calorie-activity-invite',
+        activityId: 'activity-combo',
+        badgeRules: [
+            { id: 'r1', ruleType: 'activity_specific_participation', targetValue: null, params: null },
+            { id: 'r2', ruleType: 'calorie_single_activity', targetValue: 400, params: null },
+            { id: 'r3', ruleType: 'invite_count', targetValue: 2, params: null },
+        ],
+    };
+
+    const tx = createMockTx({
+        badge: { findMany: async () => [badge] },
+        userBadge: { create: async ({ data }) => createdBadges.push(data), findUnique: async () => null },
+        ticket: { count: async () => 3 },
+    });
+
+    const awards = await awardBadgesForCustomRuleTypes(tx, {
+        userId: 'combo-user-activity-invite',
+        ruleTypes: ['calorie_single_activity', 'activity_specific_participation', 'invite_count'],
+        activityId: 'activity-combo',
+        wasPresent: true,
+        caloriesDelta: 500,
+        source: 'combo-test',
+    });
+
+    assert.equal(awards.length, 1);
+    assert.equal(createdBadges[0].badgeId, badge.id);
+});
+
+test('calorie_single_activity + activity_specific_participation + invite_count fails if invites insufficient', async () => {
+    const createdBadges = [];
+    const badge = {
+        id: 'badge-calorie-activity-invite',
+        activityId: 'activity-combo-2',
+        badgeRules: [
+            { id: 'r1', ruleType: 'activity_specific_participation', targetValue: null, params: null },
+            { id: 'r2', ruleType: 'calorie_single_activity', targetValue: 400, params: null },
+            { id: 'r3', ruleType: 'invite_count', targetValue: 3, params: null },
+        ],
+    };
+
+    const tx = createMockTx({
+        badge: { findMany: async () => [badge] },
+        userBadge: { create: async ({ data }) => createdBadges.push(data), findUnique: async () => null },
+        ticket: { count: async () => 2 },
+    });
+
+    const awards = await awardBadgesForCustomRuleTypes(tx, {
+        userId: 'combo-user-2',
+        ruleTypes: ['calorie_single_activity', 'activity_specific_participation', 'invite_count'],
+        activityId: 'activity-combo-2',
+        wasPresent: true,
+        caloriesDelta: 500,
+        source: 'combo-test',
+    });
+
+    assert.equal(awards.length, 0);
+});
+
+const crossConnectionCombos = [
+    {
+        name: 'calorie_single_activity + invite_count awards when satisfied per matrix',
+        badge: buildBadgeConfig('badge-calorie-invite-only', [
+            { id: 'matrix-c1', ruleType: 'calorie_single_activity', targetValue: 350, params: null },
+            { id: 'matrix-c2', ruleType: 'invite_count', targetValue: 2, params: null },
+        ]),
+        txOverrides: {
+            ticket: { count: async () => 3 },
+        },
+        context: {
+            caloriesDelta: 500,
+        },
+    },
+    {
+        name: 'calorie_single_activity + social_share awards when satisfied per matrix',
+        badge: buildBadgeConfig('badge-calorie-social', [
+            { id: 'matrix-c3', ruleType: 'calorie_single_activity', targetValue: 300, params: null },
+            { id: 'matrix-c4', ruleType: 'social_share', targetValue: 1, params: null },
+        ]),
+        txOverrides: {
+            socialShare: { count: async () => 2 },
+        },
+        context: {
+            caloriesDelta: 400,
+        },
+    },
+    {
+        name: 'activity_specific_participation + invite_count awards when both satisfied per matrix',
+        badge: buildBadgeConfig(
+            'badge-activity-invite',
+            [
+                { id: 'matrix-c5', ruleType: 'activity_specific_participation', targetValue: null, params: null },
+                { id: 'matrix-c6', ruleType: 'invite_count', targetValue: 2, params: null },
+            ],
+            { activityId: 'activity-matrix' },
+        ),
+        txOverrides: {
+            ticket: { count: async () => 3 },
+        },
+        context: {
+            activityId: 'activity-matrix',
+            wasPresent: true,
+        },
+    },
+    {
+        name: 'activity_specific_participation + social_share awards when both satisfied per matrix',
+        badge: buildBadgeConfig(
+            'badge-activity-social',
+            [
+                { id: 'matrix-c7', ruleType: 'activity_specific_participation', targetValue: null, params: null },
+                { id: 'matrix-c8', ruleType: 'social_share', targetValue: 1, params: null },
+            ],
+            { activityId: 'activity-social' },
+        ),
+        txOverrides: {
+            socialShare: { count: async () => 2 },
+        },
+        context: {
+            activityId: 'activity-social',
+            wasPresent: true,
+        },
+    },
+    {
+        name: 'invite_count + social_share awards according to matrix support',
+        badge: buildBadgeConfig('badge-invite-social', [
+            { id: 'matrix-c9', ruleType: 'invite_count', targetValue: 2, params: null },
+            { id: 'matrix-c10', ruleType: 'social_share', targetValue: 1, params: null },
+        ]),
+        txOverrides: {
+            ticket: { count: async () => 3 },
+            socialShare: { count: async () => 2 },
+        },
+        context: {},
+    },
+    {
+        name: 'invite_count + activity_participation_count awards when both satisfied per matrix',
+        badge: buildBadgeConfig('badge-invite-participation', [
+            { id: 'matrix-c11', ruleType: 'invite_count', targetValue: 2, params: null },
+            { id: 'matrix-c12', ruleType: 'activity_participation_count', targetValue: 4, params: null },
+        ]),
+        txOverrides: {
+            ticket: { count: async () => 3 },
+            userActivity: {
+                count: async () => 5,
+                findMany: async () => [],
+            },
+        },
+        context: {},
+    },
+    {
+        name: 'calorie_cumulative + activity_participation_count awards when both satisfied per matrix',
+        badge: buildBadgeConfig('badge-cumulative-participation', [
+            { id: 'matrix-c13', ruleType: 'calorie_cumulative', targetValue: 5000, params: null },
+            { id: 'matrix-c14', ruleType: 'activity_participation_count', targetValue: 5, params: null },
+        ]),
+        txOverrides: {
+            userActivity: {
+                count: async () => 6,
+                findMany: async () => [],
+            },
+        },
+        context: {
+            totalCaloriesBurned: 6000,
+        },
+    },
+    {
+        name: 'calorie_cumulative + invite_count awards when both satisfied per matrix',
+        badge: buildBadgeConfig('badge-cumulative-invite', [
+            { id: 'matrix-c15', ruleType: 'calorie_cumulative', targetValue: 4000, params: null },
+            { id: 'matrix-c16', ruleType: 'invite_count', targetValue: 2, params: null },
+        ]),
+        txOverrides: {
+            ticket: { count: async () => 3 },
+        },
+        context: {
+            totalCaloriesBurned: 5000,
+        },
+    },
+    {
+        name: 'calorie_cumulative + social_share awards when both satisfied per matrix',
+        badge: buildBadgeConfig('badge-cumulative-social', [
+            { id: 'matrix-c17', ruleType: 'calorie_cumulative', targetValue: 4500, params: null },
+            { id: 'matrix-c18', ruleType: 'social_share', targetValue: 1, params: null },
+        ]),
+        txOverrides: {
+            socialShare: { count: async () => 2 },
+        },
+        context: {
+            totalCaloriesBurned: 6000,
+        },
+    },
+    {
+        name: 'calorie_cumulative + frequency_count awards when both satisfied per matrix',
+        badge: buildBadgeConfig('badge-cumulative-frequency', [
+            { id: 'matrix-c19', ruleType: 'calorie_cumulative', targetValue: 4000, params: null },
+            {
+                id: 'matrix-c20',
+                ruleType: 'frequency_count',
+                targetValue: 2,
+                params: { timeframe: 'weekly', weeks: 2, timesPerWeek: 1, eventType: 'presence' },
+            },
+        ]),
+        txOverrides: {
+            userActivity: {
+                findMany: async () => ([
+                    { joinedAt: new Date() },
+                    { joinedAt: new Date(Date.now() - 8 * ONE_DAY_MS) },
+                ]),
+                count: async () => 5,
+            },
+        },
+        context: {
+            totalCaloriesBurned: 5000,
+        },
+    },
+    {
+        name: 'calorie_cumulative + points_cumulative awards when both satisfied per matrix',
+        badge: buildBadgeConfig('badge-cumulative-points', [
+            { id: 'matrix-c21', ruleType: 'calorie_cumulative', targetValue: 4000, params: null },
+            { id: 'matrix-c22', ruleType: 'points_cumulative', targetValue: 1500, params: null },
+        ]),
+        context: {
+            totalCaloriesBurned: 6000,
+            totalPoints: 2000,
+        },
+    },
+    {
+        name: 'social_share + activity_participation_count awards when both satisfied per matrix',
+        badge: buildBadgeConfig('badge-social-participation', [
+            { id: 'matrix-c23', ruleType: 'social_share', targetValue: 1, params: null },
+            { id: 'matrix-c24', ruleType: 'activity_participation_count', targetValue: 4, params: null },
+        ]),
+        txOverrides: {
+            socialShare: { count: async () => 2 },
+            userActivity: {
+                count: async () => 5,
+                findMany: async () => [],
+            },
+        },
+        context: {},
+    },
+];
+
+crossConnectionCombos.forEach((comboCase) => {
+    test(comboCase.name, async () => {
+        const createdBadges = [];
+        const tx = createMockTx({
+            badge: { findMany: async () => [comboCase.badge] },
+            userBadge: {
+                create: async ({ data }) => { createdBadges.push(data); },
+                findUnique: async () => null,
+            },
+            ...(comboCase.txOverrides || {}),
+        });
+
+        const badgeRuleTypes = comboCase.ruleTypes
+            || Array.from(new Set(comboCase.badge.badgeRules.map((rule) => rule.ruleType)));
+
+        const awards = await awardBadgesForCustomRuleTypes(tx, {
+            userId: comboCase.userId || 'matrix-user',
+            source: 'matrix-test',
+            ruleTypes: badgeRuleTypes,
+            ...comboCase.context,
+        });
+
+        assert.equal(awards.length, 1);
+        assert.equal(createdBadges[0]?.badgeId, comboCase.badge.id);
+    });
 });
 
 test('awardBadgesForActivityProgress does not award when only some rules match', async () => {
