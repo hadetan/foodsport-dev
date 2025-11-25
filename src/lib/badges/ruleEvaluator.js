@@ -49,6 +49,13 @@ export async function awardRedemptionBadges(tx, params) {
     });
 }
 
+// Exported helper to evaluate badges for any set of rule types. Useful for
+// combined rule types that span several categories (unit tests or aggregated
+// flows can invoke this with a union of rule types).
+export async function awardBadgesForCustomRuleTypes(tx, params) {
+    return awardBadgesForRules(tx, params);
+}
+
 async function awardBadgesForRules(tx, { userId, ruleTypes, source, ...context }) {
     if (!ruleTypes?.length) {
         return [];
@@ -176,6 +183,13 @@ async function doesBadgeRuleMatch(tx, badge, rule, context) {
                 });
             }
             return (context.inviteSuccessCount ?? 0) >= target;
+        case 'social_share':
+            if (context.socialShareCount == null) {
+                context.socialShareCount = await tx.socialShare.count({
+                    where: { userId: context.userId, status: 'verified' },
+                });
+            }
+            return (context.socialShareCount ?? 0) >= target;
         case 'points_cumulative': {
             const totalPoints = await resolveUserTotalPoints(tx, context);
             setRuleEarnedValue(context, rule.id, totalPoints ?? null);
@@ -395,7 +409,7 @@ async function getDailyCalorieTotals(tx, userId, sinceDate, source = 'burn') {
 
 function truncateToDate(value) {
     const date = new Date(value);
-    date.setHours(0, 0, 0, 0);
+    date.setUTCHours(0, 0, 0, 0);
     return date;
 }
 

@@ -5,6 +5,7 @@ import {
     awardPointsBadges,
     awardRedemptionBadges,
     awardInviteBadges,
+    awardBadgesForCustomRuleTypes,
 } from '../src/lib/badges/ruleEvaluator.js';
 import { awardSocialShareBadge } from '../src/lib/badges/awardSocialShare.js';
 
@@ -28,7 +29,11 @@ function createMockTx(overrides = {}) {
             aggregate: async () => ({ _sum: { pointsPaid: 0 } }),
         },
         ticket: { count: async () => 0 },
-        socialShare: { findUnique: async () => null, update: async () => null },
+        socialShare: {
+            count: async () => 0,
+            findUnique: async () => null,
+            update: async () => null,
+        },
     };
 
     return {
@@ -42,7 +47,12 @@ function createMockTx(overrides = {}) {
         user: { ...defaultTx.user, ...(overrides.user || {}) },
         badgeRedemption: { ...defaultTx.badgeRedemption, ...(overrides.badgeRedemption || {}) },
         ticket: { ...defaultTx.ticket, ...(overrides.ticket || {}) },
+        socialShare: { ...defaultTx.socialShare, ...(overrides.socialShare || {}) },
     };
+}
+
+function buildBadgeConfig(id, badgeRules, extra = {}) {
+    return { id, badgeRules, ...extra };
 }
 
 test('activity APIs award badges for single and multi-rule sets', async () => {
@@ -382,4 +392,115 @@ test('mixed rule badge spans participation, activity, and cumulative calories', 
 
     assert.equal(awards.length, 1);
     assert.deepEqual(created.map((entry) => entry.badgeId), [badge.id]);
+});
+
+const apiMatrixCombos = [
+    {
+        name: 'API combo: calorie_single_activity + invite_count awards when satisfied',
+        badge: buildBadgeConfig('api-calorie-invite', [
+            { id: 'api-c1', ruleType: 'calorie_single_activity', targetValue: 350, params: null },
+            { id: 'api-c2', ruleType: 'invite_count', targetValue: 2, params: null },
+        ]),
+        txOverrides: {
+            ticket: { count: async () => 3 },
+        },
+        context: {
+            caloriesDelta: 500,
+        },
+    },
+    {
+        name: 'API combo: calorie_cumulative + frequency_count awards when satisfied',
+        badge: buildBadgeConfig('api-cumulative-frequency', [
+            { id: 'api-c3', ruleType: 'calorie_cumulative', targetValue: 4000, params: null },
+            {
+                id: 'api-c4',
+                ruleType: 'frequency_count',
+                targetValue: 2,
+                params: { timeframe: 'weekly', weeks: 2, timesPerWeek: 1, eventType: 'presence' },
+            },
+        ]),
+        txOverrides: {
+            userActivity: {
+                findMany: async () => ([
+                    { joinedAt: new Date() },
+                    { joinedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000) },
+                ]),
+                count: async () => 5,
+            },
+        },
+        context: {
+            totalCaloriesBurned: 5000,
+        },
+    },
+    {
+        name: 'API combo: activity_specific_participation + social_share awards when satisfied',
+        badge: buildBadgeConfig(
+            'api-activity-social',
+            [
+                { id: 'api-c5', ruleType: 'activity_specific_participation', targetValue: null, params: null },
+                { id: 'api-c6', ruleType: 'social_share', targetValue: 1, params: null },
+            ],
+            { activityId: 'api-activity' },
+        ),
+        txOverrides: {
+            socialShare: { count: async () => 2 },
+        },
+        context: {
+            activityId: 'api-activity',
+            wasPresent: true,
+        },
+    },
+    {
+        name: 'API combo: invite_count + activity_participation_count awards when satisfied',
+        badge: buildBadgeConfig('api-invite-participation', [
+            { id: 'api-c7', ruleType: 'invite_count', targetValue: 2, params: null },
+            { id: 'api-c8', ruleType: 'activity_participation_count', targetValue: 4, params: null },
+        ]),
+        txOverrides: {
+            ticket: { count: async () => 3 },
+            userActivity: {
+                count: async () => 5,
+                findMany: async () => [],
+            },
+        },
+        context: {},
+    },
+    {
+        name: 'API combo: calorie_cumulative + points_cumulative awards when satisfied',
+        badge: buildBadgeConfig('api-cumulative-points', [
+            { id: 'api-c9', ruleType: 'calorie_cumulative', targetValue: 4500, params: null },
+            { id: 'api-c10', ruleType: 'points_cumulative', targetValue: 1200, params: null },
+        ]),
+        context: {
+            totalCaloriesBurned: 6000,
+            totalPoints: 1500,
+        },
+    },
+];
+
+apiMatrixCombos.forEach((combo) => {
+    test(combo.name, async () => {
+        const created = [];
+        const tx = createMockTx({
+            badge: { findMany: async () => [combo.badge] },
+            userBadge: {
+                create: async ({ data }) => { created.push(data); },
+                findUnique: async () => null,
+            },
+            ...(combo.txOverrides || {}),
+        });
+
+        const ruleTypes = combo.ruleTypes
+            || Array.from(new Set(combo.badge.badgeRules.map((rule) => rule.ruleType)));
+
+        const awards = await awardBadgesForCustomRuleTypes(tx, {
+            userId: 'api-matrix-user',
+            source: 'api-matrix-test',
+            ruleTypes,
+            ...combo.context,
+        });
+
+        assert.equal(awards.length, 1);
+        assert.equal(created[0]?.badgeId, combo.badge.id);
+    });
 });
