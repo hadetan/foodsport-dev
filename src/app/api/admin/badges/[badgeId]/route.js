@@ -88,6 +88,8 @@ export async function PUT(request, { params }) {
     }
   }
 
+  // Use preserveUndefined to distinguish between "field not provided" (keep existing)
+  // and "field provided as empty" (clear value) in update operations
   const parsedSeasonalStart = parseDate(seasonalStartDate, { preserveUndefined: true });
   const parsedSeasonalEnd = parseDate(seasonalEndDate, { preserveUndefined: true });
 
