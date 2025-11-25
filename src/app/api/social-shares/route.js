@@ -3,33 +3,7 @@ import { createServerClient } from '@/lib/supabase/server-only';
 import { requireUser } from '@/lib/prisma/require-user';
 import { prisma } from '@/lib/prisma/db';
 import { randomUUID } from 'crypto';
-
-const DEFAULT_REDIRECT_PATH = '/';
-
-function getBaseAppUrl() {
-    const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    return base.endsWith('/') ? base.slice(0, -1) : base;
-}
-
-function sanitizeRedirectUrl(candidate) {
-    const baseUrl = getBaseAppUrl();
-    const fallback = `${baseUrl}${DEFAULT_REDIRECT_PATH}`;
-    if (!candidate || typeof candidate !== 'string') {
-        return fallback;
-    }
-
-    try {
-        const resolved = new URL(candidate, baseUrl);
-        const allowedOrigin = new URL(baseUrl).origin;
-        if (resolved.origin !== allowedOrigin) {
-            return fallback;
-        }
-        return resolved.toString();
-    } catch (error) {
-        console.warn('Invalid redirectUrl provided for social share:', error.message);
-        return fallback;
-    }
-}
+import { getBaseAppUrl, sanitizeRedirectUrl } from '@/lib/social-share/utils';
 
 function generateShareToken() {
     return randomUUID().replace(/-/g, '');
