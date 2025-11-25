@@ -11,6 +11,7 @@ import {
     UserPlus,
     LogOut,
     ReceiptText,
+    Award,
 } from "lucide-react";
 import { UsersProvider } from "@/app/shared/contexts/usersContext";
 import { DashboardProvider } from "@/app/shared/contexts/DashboardContext";
@@ -51,6 +52,7 @@ export default function AdminLoggedInLayout({ children }) {
                                                         <SidebarItem href="/admin" icon={<CircleGauge />} label="Dashboard" pathname={pathname} />
                                                         <SidebarItem href="/admin/users" icon={<Users />} label="All Users" pathname={pathname} />
                                                         <SidebarItem href="/admin/activities" icon={<Calendar1 />} label="All Activities" pathname={pathname} />
+                                                        <SidebarItem href="/admin/badges" icon={<Award />} label="Badges" pathname={pathname} />
                                                         <SidebarItem href="/admin/products" icon={<Box />} label="All Products" pathname={pathname} />
                                                         <SidebarItem href="/admin/social" icon={<Share2 />} label="Social Media Images" pathname={pathname} />
                                                         <SidebarItem href="/admin/email" icon={<Mail />} label="Send Emails" pathname={pathname} />
@@ -70,6 +72,7 @@ export default function AdminLoggedInLayout({ children }) {
                                                             <SidebarItem href="/admin" icon={<CircleGauge />} label="Dashboard" pathname={pathname} />
                                                             <SidebarItem href="/admin/users" icon={<Users />} label="All Users" pathname={pathname} />
                                                             <SidebarItem href="/admin/activities" icon={<Calendar1 />} label="All Activities" pathname={pathname} />
+                                                            <SidebarItem href="/admin/badges" icon={<Award />} label="Badges" pathname={pathname} />
                                                             <SidebarItem href="/admin/products" icon={<Box />} label="All Products" pathname={pathname} />
                                                             <SidebarItem href="/admin/social" icon={<Share2 />} label="Social Media Images" pathname={pathname} />
                                                             <SidebarItem href="/admin/email" icon={<Mail />} label="Send Emails" pathname={pathname} />

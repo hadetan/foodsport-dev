@@ -14,37 +14,75 @@ function parseDate(value) {
 }
 
 export async function POST(request) {
-  // const supabase = await createServerClient();
-  // const { error } = await requireAdmin(supabase, NextResponse);
-  // if (error) return error;
+  const supabase = await createServerClient();
+  const { error } = await requireAdmin(supabase, NextResponse);
+  if (error) return error;
 
-  let payload = {};
+  let formData;
   try {
-    payload = await request.json();
+    formData = await request.formData();
   } catch (err) {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid form data' }, { status: 400 });
   }
 
-  const validation = validateRequiredFields(payload, ['name', 'imageUrl']);
-  if (!validation.isValid) {
-    return NextResponse.json({ error: validation.error || 'Missing required fields' }, { status: 400 });
+  const name = formData.get('name');
+  const nameZh = formData.get('nameZh') || null;
+  const description = formData.get('description');
+  const descriptionZh = formData.get('descriptionZh') || null;
+  const image = formData.get('image');
+  const isSeasonal = formData.get('isSeasonal') === 'true';
+  const seasonalStartDate = formData.get('seasonalStartDate') || null;
+  const seasonalEndDate = formData.get('seasonalEndDate') || null;
+  const activityId = formData.get('activityId') || null;
+  const isLimitedEdition = formData.get('isLimitedEdition') === 'true';
+  const fsPointsCost = formData.get('fsPointsCost') || null;
+  const place = formData.get('place') || null;
+
+  if (!name || !name.trim()) {
+    return NextResponse.json({ error: 'Badge name is required' }, { status: 400 });
   }
 
-  const {
-    name,
-    nameZh,
-    description,
-    descriptionZh,
-    imageUrl,
-    isSeasonal = false,
-    seasonalStartDate,
-    seasonalEndDate,
-    activityId,
-    isLimitedEdition = false,
-    fsPointsCost,
-    place,
-  } = payload;
+  if (!image || typeof image === 'string') {
+    return NextResponse.json({ error: 'Badge image is required' }, { status: 400 });
+  }
 
+  // Validate image type and size
+  const allowedTypes = ['image/png'];
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if (!allowedTypes.includes(image.type)) {
+    return NextResponse.json({ error: 'Invalid image type. Only PNG is allowed.' }, { status: 400 });
+  }
+  if (image.size > maxSize) {
+    return NextResponse.json({ error: 'Image size exceeds the maximum limit of 5MB.' }, { status: 400 });
+  }
+
+  // Upload image to Supabase storage
+  const bucket = 'badges';
+  const ext = image.name.split('.').pop();
+  const fileName = `badge_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage.from(bucket).upload(fileName, image, {
+    cacheControl: '3600',
+    upsert: false,
+    contentType: image.type,
+  });
+
+  if (uploadError) {
+    console.error('Upload error:', uploadError);
+    return NextResponse.json({ error: 'Failed to upload image', details: uploadError.message }, { status: 500 });
+  }
+
+  const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+  const imageUrl = publicUrlData?.publicUrl;
+
+  if (!imageUrl) {
+    return NextResponse.json({ error: 'Failed to get image URL' }, { status: 500 });
+  }
+
+  // Handle badge rules if provided (convert FormData to payload object for rules)
+  const payload = {
+    rules: formData.get('rules') ? JSON.parse(formData.get('rules')) : []
+  };
   const normalizedRulesResult = validateAndNormalizeBadgeRules(coerceRulesPayload(payload));
   if (!normalizedRulesResult.isValid) {
     return NextResponse.json({ error: normalizedRulesResult.error }, { status: 400 });
@@ -66,7 +104,7 @@ export async function POST(request) {
     }
   }
 
-  const limitedCost = Number.isFinite(fsPointsCost) ? Math.trunc(fsPointsCost) : null;
+  const limitedCost = fsPointsCost ? parseInt(fsPointsCost, 10) : null;
   if (isLimitedEdition && (!limitedCost || limitedCost <= 0)) {
     return NextResponse.json({ error: 'Limited-edition badges require a positive fsPointsCost' }, { status: 400 });
   }
@@ -76,9 +114,7 @@ export async function POST(request) {
     select: { place: true },
   });
 
-  const normalizedPlace = Number.isFinite(place)
-    ? Math.trunc(place)
-    : ((lastHighestPlace?.place ?? 0) + 1);
+  const normalizedPlace = place ? parseInt(place, 10) : ((lastHighestPlace?.place ?? 0) + 1);
 
   const badgeData = {
     name,

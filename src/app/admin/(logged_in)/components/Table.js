@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import UserRow from "@/app/admin/(logged_in)/components/userRow";
 import ActivityRow from "./ActivityRow";
 import ProductRow from "./ProductRow";
+import BadgeRow from "./BadgeRow";
 
 const Table = ({
     heading,
@@ -59,6 +60,14 @@ const Table = ({
                             <ProductRow
                                 key={product.id}
                                 product={product}
+                                onRowClick={onRowClick}
+                            />
+                        ))}
+                    {tableType == "badgePage"
+                        && paginatedData.map((badge) => (
+                            <BadgeRow
+                                key={badge.id}
+                                badge={badge}
                                 onRowClick={onRowClick}
                             />
                         ))}
