@@ -2,19 +2,9 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import { prisma } from '@/lib/prisma/db';
-import { coerceRulesPayload, validateAndNormalizeBadgeRules } from '@/lib/badges/ruleValidation';
+import { coerceRulesPayload, validateAndNormalizeBadgeRules, INVALID_RULES_PAYLOAD_ERROR } from '@/lib/badges/ruleValidation';
 import { MAX_IMAGE_SIZE_MB } from '@/app/constants/constants';
-
-function parseDate(value) {
-  if (value === undefined) {
-    return undefined;
-  }
-  if (!value) {
-    return null;
-  }
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
+import { parseDate, parseBooleanInput, parseIntegerInput, normalizeNullableString } from '@/utils/input-parsing';
 
 export async function PUT(request, { params }) {
   const supabase = await createServerClient();
@@ -58,7 +48,15 @@ export async function PUT(request, { params }) {
     isActive,
   } = payload;
 
-  const rulesPayload = coerceRulesPayload(payload);
+  let rulesPayload;
+  try {
+    rulesPayload = coerceRulesPayload(payload);
+  } catch (err) {
+    if (err instanceof Error && err.message === INVALID_RULES_PAYLOAD_ERROR) {
+      return NextResponse.json({ error: 'Invalid rules payload. Please send a JSON array of rule objects.' }, { status: 400 });
+    }
+    throw err;
+  }
   const hasRuleUpdates = rulesPayload.length > 0;
   let normalizedRules = null;
   if (hasRuleUpdates) {
@@ -69,9 +67,20 @@ export async function PUT(request, { params }) {
     normalizedRules = validation.rules;
   }
 
-  if (activityId) {
+  const parsedIsSeasonal = parseBooleanInput(isSeasonal);
+  const parsedIsLimitedEdition = parseBooleanInput(isLimitedEdition);
+  const parsedIsActive = parseBooleanInput(isActive);
+  const parsedPlace = place !== undefined ? parseIntegerInput(place) : undefined;
+  if (parsedPlace !== undefined && typeof parsedPlace !== 'number') {
+    return NextResponse.json({ error: 'Place must be a valid integer' }, { status: 400 });
+  }
+  const parsedFsPointsCost = fsPointsCost !== undefined ? parseIntegerInput(fsPointsCost) : undefined;
+  const hasActivityField = activityId !== undefined;
+  const normalizedActivityId = hasActivityField ? normalizeNullableString(activityId) : undefined;
+
+  if (normalizedActivityId) {
     const activityExists = await prisma.activity.findUnique({
-      where: { id: activityId, status: { not: 'cancelled' } },
+      where: { id: normalizedActivityId, status: { not: 'cancelled' } },
       select: { id: true },
     });
     if (!activityExists) {
@@ -79,8 +88,10 @@ export async function PUT(request, { params }) {
     }
   }
 
-  const parsedSeasonalStart = parseDate(seasonalStartDate);
-  const parsedSeasonalEnd = parseDate(seasonalEndDate);
+  // Use preserveUndefined to distinguish between "field not provided" (keep existing)
+  // and "field provided as empty" (clear value) in update operations
+  const parsedSeasonalStart = parseDate(seasonalStartDate, { preserveUndefined: true });
+  const parsedSeasonalEnd = parseDate(seasonalEndDate, { preserveUndefined: true });
 
   try {
     const updated = await prisma.$transaction(async (tx) => {
@@ -168,20 +179,20 @@ export async function PUT(request, { params }) {
           }
         }
       }
-      if (activityId !== undefined) data.activityId = activityId || null;
-      if (place !== undefined && Number.isFinite(place)) {
-        data.place = Math.trunc(place);
+      if (hasActivityField) data.activityId = normalizedActivityId ?? null;
+      if (parsedPlace !== undefined) {
+        data.place = parsedPlace;
       }
-      if (isActive !== undefined) {
-        data.isActive = Boolean(isActive);
+      if (parsedIsActive !== undefined) {
+        data.isActive = parsedIsActive;
       }
 
-      const nextIsSeasonal = typeof isSeasonal === 'boolean' ? isSeasonal : existing.isSeasonal;
+      const nextIsSeasonal = parsedIsSeasonal ?? existing.isSeasonal;
       const nextSeasonalStart = parsedSeasonalStart !== undefined ? parsedSeasonalStart : existing.seasonalStartDate;
       const nextSeasonalEnd = parsedSeasonalEnd !== undefined ? parsedSeasonalEnd : existing.seasonalEndDate;
-      if (typeof isSeasonal === 'boolean') {
-        data.isSeasonal = isSeasonal;
-        if (!isSeasonal) {
+      if (parsedIsSeasonal !== undefined) {
+        data.isSeasonal = parsedIsSeasonal;
+        if (!parsedIsSeasonal) {
           data.seasonalStartDate = null;
           data.seasonalEndDate = null;
         }
@@ -194,22 +205,28 @@ export async function PUT(request, { params }) {
         data.seasonalEndDate = nextSeasonalEnd;
       }
 
-      const nextIsLimited = typeof isLimitedEdition === 'boolean' ? isLimitedEdition : existing.isLimitedEdition;
-      const normalizedCost = fsPointsCost !== undefined && fsPointsCost !== null
-        ? Math.trunc(fsPointsCost)
+      const nextIsLimited = parsedIsLimitedEdition ?? existing.isLimitedEdition;
+      const normalizedCost = parsedFsPointsCost !== undefined
+        ? parsedFsPointsCost
         : existing.fsPointsCost;
-      if (typeof isLimitedEdition === 'boolean') {
-        data.isLimitedEdition = isLimitedEdition;
+      if (parsedIsLimitedEdition !== undefined) {
+        data.isLimitedEdition = parsedIsLimitedEdition;
       }
       if (nextIsLimited) {
-        if (!Number.isFinite(normalizedCost) || normalizedCost <= 0) {
+        if (typeof normalizedCost !== 'number' || normalizedCost <= 0) {
           throw new Error('INVALID_LIMITED_EDITION_COST');
         }
         data.fsPointsCost = normalizedCost;
-      } else if (typeof isLimitedEdition === 'boolean' && !isLimitedEdition) {
+      } else if (parsedIsLimitedEdition === false) {
         data.fsPointsCost = null;
-      } else if (fsPointsCost !== undefined) {
-        data.fsPointsCost = Number.isFinite(normalizedCost) && normalizedCost > 0 ? normalizedCost : null;
+      } else if (parsedFsPointsCost !== undefined) {
+        if (typeof parsedFsPointsCost === 'number' && parsedFsPointsCost > 0) {
+          data.fsPointsCost = parsedFsPointsCost;
+        } else if (parsedFsPointsCost === null) {
+          data.fsPointsCost = null;
+        } else {
+          throw new Error('INVALID_LIMITED_EDITION_COST');
+        }
       }
 
       if (Object.keys(data).length) {
