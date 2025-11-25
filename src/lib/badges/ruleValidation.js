@@ -1,5 +1,7 @@
 import { ALLOWED_RULE_TYPES } from '@/app/constants/constants';
 
+export const INVALID_RULES_PAYLOAD_ERROR = 'INVALID_RULES_PAYLOAD';
+
 const TARGET_REQUIRED_RULES = new Set([
   'calorie_single_activity',
   'calorie_cumulative',
@@ -73,12 +75,40 @@ export function coerceRulesPayload(payload) {
   if (!payload || typeof payload !== 'object') {
     return [];
   }
-  return Array.isArray(payload.rules) ? payload.rules : [];
+
+  const rawRules = payload.rules;
+  if (rawRules === undefined || rawRules === null) {
+    return [];
+  }
+
+  if (Array.isArray(rawRules)) {
+    return rawRules;
+  }
+
+  if (typeof rawRules === 'string') {
+    const trimmed = rawRules.trim();
+    if (!trimmed) {
+      return [];
+    }
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (!Array.isArray(parsed)) {
+        throw new Error('Rules payload must be an array');
+      }
+      return parsed;
+    } catch (err) {
+      const error = new Error(INVALID_RULES_PAYLOAD_ERROR);
+      error.cause = err;
+      throw error;
+    }
+  }
+
+  return [];
 }
 
 export function validateAndNormalizeBadgeRules(rawRules) {
   if (!Array.isArray(rawRules) || rawRules.length === 0) {
-    return { isValid: false, error: 'At least one badge rule is required.' };
+    return { isValid: false, error: 'At least one badge rule is required...........' };
   }
 
   const normalized = [];

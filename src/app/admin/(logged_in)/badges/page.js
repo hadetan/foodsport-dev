@@ -7,13 +7,12 @@ import Dropdown from "@/app/admin/(logged_in)/components/Dropdown";
 import Table from "@/app/admin/(logged_in)/components/Table";
 import FullPageLoader from "../components/FullPageLoader";
 import Pagination from "@/app/admin/(logged_in)/components/Pagination";
-import api from "@/utils/axios/api";
+import { useBadges } from "@/app/shared/contexts/BadgeContext";
 
 const BadgeManagementContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [badges, setBadges] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { badges, loading } = useBadges();
     const [filteredBadges, setFilteredBadges] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
@@ -22,80 +21,6 @@ const BadgeManagementContent = () => {
     // Get current page from URL, default to 1
     const currentPage = parseInt(searchParams.get("page")) || 1;
     const totalPages = Math.ceil(filteredBadges.length / pageSize);
-
-    // Fetch badges on mount
-    useEffect(() => {
-        const fetchBadges = async () => {
-            try {
-                setLoading(true);
-                const response = await api.get("/api/admin/badges");
-                const fetchedBadges = response.data.badges || [];
-
-                // Add demo badge if no badges exist
-                if (fetchedBadges.length === 0) {
-                    const demoBadges = [
-                        {
-                            id: "demo-badge-1",
-                            name: "First Steps",
-                            nameZh: "第一步",
-                            description: "Complete your first activity",
-                            descriptionZh: "完成你的第一個活動",
-                            // imageUrl: "/logos/default-badge.png",
-                            isActive: true,
-                            activity: {
-                                title: "Morning Yoga",
-                                titleZh: "早晨瑜珈",
-                                activityType: "yoga"
-                            },
-                            badgeRules: [
-                                {
-                                    id: "rule-1",
-                                    type: "activity_participation_count",
-                                    targetValue: 1,
-                                    isActive: true
-                                }
-                            ]
-                        }
-                    ];
-                    setBadges(demoBadges);
-                } else {
-                    setBadges(fetchedBadges);
-                }
-            } catch (error) {
-                console.error("Error fetching badges:", error);
-                // Add demo badge on error too
-                const demoBadges = [
-                    {
-                        id: "demo-badge-1",
-                        name: "First Steps",
-                        nameZh: "第一步",
-                        description: "Complete your first activity",
-                        descriptionZh: "完成你的第一個活動",
-                        // imageUrl: "/logos/default-badge.png",
-                        isActive: true,
-                        activity: {
-                            title: "Morning Yoga",
-                            titleZh: "早晨瑜珈",
-                            activityType: "yoga"
-                        },
-                        badgeRules: [
-                            {
-                                id: "rule-1",
-                                type: "activity_participation_count",
-                                targetValue: 1,
-                                isActive: true
-                            }
-                        ]
-                    }
-                ];
-                setBadges(demoBadges);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchBadges();
-    }, []);
 
     useEffect(() => {
         if (!Array.isArray(badges) || loading) {

@@ -31,7 +31,7 @@ const BadgeRow = ({ badge, onRowClick }) => {
                         <div className="avatar">
                             <div className="mask mask-squircle w-16 h-16">
                                 <img
-                                    src={badge.imageUrl}
+                                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}${badge.imageUrl}`}
                                     alt={badge.name}
                                     className="cursor-pointer hover:opacity-75"
                                     onError={() => {

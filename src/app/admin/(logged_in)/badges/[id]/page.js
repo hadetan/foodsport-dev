@@ -7,6 +7,7 @@ import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import axiosClient from "@/utils/axios/api";
 import { MAX_IMAGE_SIZE_MB, ALLOWED_RULE_TYPES } from "@/app/constants/constants";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
+import { useBadges } from "@/app/shared/contexts/BadgeContext";
 
 // Rule combination matrix based on cross-connection.md
 const ALLOWED_RULE_COMBINATIONS = {
@@ -102,6 +103,7 @@ const EditBadgePage = () => {
     const params = useParams();
     const badgeId = params.id;
     const { activities, loading: activitiesLoading } = useAdminActivities();
+    const { getBadgeById, loading: badgesLoading, fetchBadges } = useBadges();
     const [formData, setFormData] = useState({
         name: "",
         nameZh: "",
@@ -129,68 +131,73 @@ const EditBadgePage = () => {
     const [showRulesDialog, setShowRulesDialog] = useState(false);
     const [rules, setRules] = useState([]);
 
-    // Fetch existing badge data
+    // Load badge data from context
     useEffect(() => {
-        const fetchBadge = async () => {
-            try {
-                setFetchLoading(true);
-                const response = await axiosClient.get(`/admin/badges/${badgeId}`);
-                const badge = response.data;
-
-                setFormData({
-                    name: badge.name || "",
-                    nameZh: badge.nameZh || "",
-                    description: badge.description || "",
-                    descriptionZh: badge.descriptionZh || "",
-                    image: null,
-                    existingImageUrl: badge.imageUrl || "",
-                    isSeasonal: badge.isSeasonal || false,
-                    seasonalStartDate: badge.seasonalStartDate ? badge.seasonalStartDate.split('T')[0] : "",
-                    seasonalEndDate: badge.seasonalEndDate ? badge.seasonalEndDate.split('T')[0] : "",
-                    activityId: badge.activityId || "",
-                    isLimitedEdition: badge.isLimitedEdition || false,
-                    fsPointsCost: badge.fsPointsCost || "",
-                    place: badge.place || "",
-                });
-
-                // Set image preview to existing image
-                if (badge.imageUrl) {
-                    setImagePreview(badge.imageUrl);
-                }
-
-                // Set activity search term if activity is linked
-                if (badge.activityId && activities.length > 0) {
-                    const linkedActivity = activities.find(a => a.id === badge.activityId);
-                    if (linkedActivity) {
-                        setActivitySearchTerm(linkedActivity.title || linkedActivity.titleZh || "");
-                    }
-                }
-
-                // Load existing rules
-                if (badge.rules && badge.rules.length > 0) {
-                    setRules(badge.rules.map(r => ({
-                        ruleType: r.ruleType,
-                        targetValue: r.targetValue,
-                        params: r.params,
-                        isAuto: false
-                    })));
-                }
-            } catch (err) {
-                console.error("Error fetching badge:", err);
-                setError(
-                    err.response?.data?.error ||
-                    err.response?.data?.message ||
-                    "Failed to fetch badge details."
-                );
-            } finally {
-                setFetchLoading(false);
-            }
-        };
-
-        if (badgeId) {
-            fetchBadge();
+        if (badgesLoading) {
+            setFetchLoading(true);
+            return;
         }
-    }, [badgeId]);
+
+        if (!badgeId) {
+            setFetchLoading(false);
+            return;
+        }
+
+        const badge = getBadgeById(badgeId);
+
+        if (!badge) {
+            setError("Badge not found");
+            setFetchLoading(false);
+            return;
+        }
+
+        try {
+            setFormData({
+                name: badge.name || "",
+                nameZh: badge.nameZh || "",
+                description: badge.description || "",
+                descriptionZh: badge.descriptionZh || "",
+                image: null,
+                existingImageUrl: badge.imageUrl || "",
+                isSeasonal: badge.isSeasonal || false,
+                seasonalStartDate: badge.seasonalStartDate ? badge.seasonalStartDate.split('T')[0] : "",
+                seasonalEndDate: badge.seasonalEndDate ? badge.seasonalEndDate.split('T')[0] : "",
+                activityId: badge.activityId || "",
+                isLimitedEdition: badge.isLimitedEdition || false,
+                fsPointsCost: badge.fsPointsCost || "",
+                place: badge.place || "",
+            });
+
+            // Set image preview to existing image
+            if (badge.imageUrl) {
+                setImagePreview(badge.imageUrl);
+            }
+
+            // Set activity search term if activity is linked
+            if (badge.activityId && activities.length > 0) {
+                const linkedActivity = activities.find(a => a.id === badge.activityId);
+                if (linkedActivity) {
+                    setActivitySearchTerm(linkedActivity.title || linkedActivity.titleZh || "");
+                }
+            }
+
+            // Load existing rules (use badgeRules property which is what the API returns)
+            if (badge.badgeRules && badge.badgeRules.length > 0) {
+                setRules(badge.badgeRules.map(r => ({
+                    ruleType: r.type, // The API returns 'type' not 'ruleType'
+                    targetValue: r.targetValue,
+                    params: r.params,
+                    isAuto: false
+                })));
+            }
+
+            setFetchLoading(false);
+        } catch (err) {
+            console.error("Error loading badge:", err);
+            setError("Failed to load badge details.");
+            setFetchLoading(false);
+        }
+    }, [badgeId, badgesLoading, getBadgeById, activities]);
 
     // Update activity search term when activities load
     useEffect(() => {
@@ -325,7 +332,7 @@ const EditBadgePage = () => {
         }
 
         if (rules.length === 0) {
-            errors.rules = "At least one badge rule is required.";
+            errors.rules = "At least one badge rule is required...";
         }
 
         setFieldErrors(errors);
@@ -483,6 +490,8 @@ const EditBadgePage = () => {
             );
 
             if (response.status === 200) {
+                // Refresh the badges context with updated data
+                await fetchBadges();
                 router.push("/admin/badges");
             }
         } catch (err) {
@@ -551,7 +560,7 @@ const EditBadgePage = () => {
                             {imagePreview ? (
                                 <div className="flex flex-col items-center gap-4">
                                     <img
-                                        src={imagePreview}
+                                        src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}${imagePreview}`}
                                         alt="Badge preview"
                                         className="w-32 h-32 object-contain"
                                     />

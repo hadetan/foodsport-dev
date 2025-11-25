@@ -7,6 +7,7 @@ import ErrorAlert from "@/app/shared/components/ErrorAlert";
 import axiosClient from "@/utils/axios/api";
 import { MAX_IMAGE_SIZE_MB, ALLOWED_RULE_TYPES } from "@/app/constants/constants";
 import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
+import { useBadges } from "@/app/shared/contexts/BadgeContext";
 
 // Rule combination matrix based on cross-connection.md
 const ALLOWED_RULE_COMBINATIONS = {
@@ -100,6 +101,7 @@ function canSelectRule(ruleType, currentRules) {
 const CreateBadgePage = () => {
     const router = useRouter();
     const { activities, loading: activitiesLoading } = useAdminActivities();
+    const { fetchBadges } = useBadges();
     const [formData, setFormData] = useState({
         name: "",
         nameZh: "",
@@ -248,7 +250,7 @@ const CreateBadgePage = () => {
         }
 
         if (rules.length === 0) {
-            errors.rules = "At least one badge rule is required.";
+            errors.rules = "At least one badge rule is required...";
         }
 
         setFieldErrors(errors);
@@ -355,12 +357,19 @@ const CreateBadgePage = () => {
             setLoading(true);
 
             const formDataToSend = new FormData();
-            formDataToSend.append("name", formData.name);
-            formDataToSend.append("nameZh", formData.nameZh || "");
-            formDataToSend.append("description", formData.description);
-            formDataToSend.append("descriptionZh", formData.descriptionZh || "");
+            const sanitizedName = formData.name.trim();
+            const sanitizedNameZh = formData.nameZh.trim();
+            const sanitizedDescription = formData.description.trim();
+            const sanitizedDescriptionZh = formData.descriptionZh.trim();
+            const sanitizedFsPointsCost = formData.fsPointsCost ? formData.fsPointsCost.trim() : "";
+            const sanitizedPlace = formData.place ? formData.place.trim() : "";
+
+            formDataToSend.append("name", sanitizedName);
+            formDataToSend.append("nameZh", sanitizedNameZh);
+            formDataToSend.append("description", sanitizedDescription);
+            formDataToSend.append("descriptionZh", sanitizedDescriptionZh);
             formDataToSend.append("image", formData.image);
-            formDataToSend.append("isSeasonal", formData.isSeasonal);
+            formDataToSend.append("isSeasonal", String(formData.isSeasonal));
 
             if (formData.isSeasonal) {
                 formDataToSend.append("seasonalStartDate", formData.seasonalStartDate);
@@ -371,23 +380,31 @@ const CreateBadgePage = () => {
                 formDataToSend.append("activityId", formData.activityId);
             }
 
-            formDataToSend.append("isLimitedEdition", formData.isLimitedEdition);
+            formDataToSend.append("isLimitedEdition", String(formData.isLimitedEdition));
 
             if (formData.isLimitedEdition && formData.fsPointsCost) {
-                formDataToSend.append("fsPointsCost", formData.fsPointsCost);
+                formDataToSend.append("fsPointsCost", sanitizedFsPointsCost);
             }
 
             if (formData.place) {
-                formDataToSend.append("place", formData.place);
+                formDataToSend.append("place", sanitizedPlace);
             }
 
             // Add rules
             if (rules.length > 0) {
-                formDataToSend.append("rules", JSON.stringify(rules.map(r => ({
-                    ruleType: r.ruleType,
-                    targetValue: r.targetValue,
-                    params: r.params
-                }))));
+                const serializedRules = rules.map((rule) => {
+                    let normalizedTarget = null;
+                    if (rule.targetValue !== undefined && rule.targetValue !== null && rule.targetValue !== '') {
+                        const numericTarget = Number(rule.targetValue);
+                        normalizedTarget = Number.isFinite(numericTarget) ? numericTarget : null;
+                    }
+                    return {
+                        ruleType: rule.ruleType,
+                        targetValue: normalizedTarget,
+                        params: rule.params ?? null,
+                    };
+                });
+                formDataToSend.append("rules", JSON.stringify(serializedRules));
             }
 
             const response = await axiosClient.post(
@@ -401,6 +418,8 @@ const CreateBadgePage = () => {
             );
 
             if (response.status === 201 || response.status === 200) {
+                // Refresh badges context with the new badge
+                await fetchBadges();
                 router.push("/admin/badges");
             }
         } catch (err) {

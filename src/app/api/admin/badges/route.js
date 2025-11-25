@@ -3,7 +3,7 @@ import { createServerClient } from '@/lib/supabase/server-only';
 import { requireAdmin } from '@/lib/prisma/require-admin';
 import { prisma } from '@/lib/prisma/db';
 import { validateRequiredFields } from '@/utils/validation';
-import { coerceRulesPayload, validateAndNormalizeBadgeRules } from '@/lib/badges/ruleValidation';
+import { coerceRulesPayload, validateAndNormalizeBadgeRules, INVALID_RULES_PAYLOAD_ERROR } from '@/lib/badges/ruleValidation';
 import { MAX_IMAGE_SIZE_MB } from '@/app/constants/constants';
 
 function parseDate(value) {
@@ -12,6 +12,53 @@ function parseDate(value) {
   }
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function parseBooleanInput(value) {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (typeof value === 'number') {
+    return value !== 0;
+  }
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) {
+      return undefined;
+    }
+    if (['true', '1', 'yes', 'on'].includes(normalized)) {
+      return true;
+    }
+    if (['false', '0', 'no', 'off'].includes(normalized)) {
+      return false;
+    }
+  }
+  return Boolean(value);
+}
+
+function parseIntegerInput(value) {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null || value === '') {
+    return null;
+  }
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return null;
+  }
+  return Math.trunc(numeric);
+}
+
+function normalizeNullableString(value) {
+  if (value === undefined || value === null) {
+    return null;
+  }
+  const trimmed = String(value).trim();
+  return trimmed || null;
 }
 
 export async function POST(request) {
@@ -49,39 +96,58 @@ export async function POST(request) {
     description,
     descriptionZh,
     imageUrl,
-    isSeasonal = false,
+    isSeasonal,
     seasonalStartDate,
     seasonalEndDate,
     activityId,
-    isLimitedEdition = false,
+    isLimitedEdition,
     fsPointsCost,
     place,
   } = payload;
 
-  const normalizedRulesResult = validateAndNormalizeBadgeRules(coerceRulesPayload(payload));
+  let rulesPayload;
+  try {
+    rulesPayload = coerceRulesPayload(payload);
+  } catch (err) {
+    if (err instanceof Error && err.message === INVALID_RULES_PAYLOAD_ERROR) {
+      return NextResponse.json({ error: 'Invalid rules payload. Please send a JSON array of rule objects.' }, { status: 400 });
+    }
+    throw err;
+  }
+
+  const normalizedRulesResult = validateAndNormalizeBadgeRules(rulesPayload);
   if (!normalizedRulesResult.isValid) {
     return NextResponse.json({ error: normalizedRulesResult.error }, { status: 400 });
   }
   const normalizedRules = normalizedRulesResult.rules;
 
+  const isSeasonalFlag = parseBooleanInput(isSeasonal) ?? false;
+  const isLimitedEditionFlag = parseBooleanInput(isLimitedEdition) ?? false;
+  const normalizedActivityId = normalizeNullableString(activityId);
+  const normalizedFsPointsCost = parseIntegerInput(fsPointsCost);
+  const limitedCost = typeof normalizedFsPointsCost === 'number' ? normalizedFsPointsCost : null;
+  const normalizedPlaceInput = parseIntegerInput(place);
+  const requestedPlace = typeof normalizedPlaceInput === 'number' ? normalizedPlaceInput : null;
+
   const seasonalStart = parseDate(seasonalStartDate);
   const seasonalEnd = parseDate(seasonalEndDate);
-  if (isSeasonal) {
+  if (isSeasonalFlag) {
     if (!seasonalStart || !seasonalEnd || seasonalStart >= seasonalEnd) {
       return NextResponse.json({ error: 'Seasonal badges require valid start and end dates' }, { status: 400 });
     }
   }
 
-  if (activityId) {
-    const activityExists = await prisma.activity.findUnique({ where: { id: activityId, status: { not: 'cancelled' } }, select: { id: true } });
+  if (normalizedActivityId) {
+    const activityExists = await prisma.activity.findUnique({ where: { id: normalizedActivityId, status: { not: 'cancelled' } }, select: { id: true } });
     if (!activityExists) {
       return NextResponse.json({ error: 'Referenced activity not found or may be cancelled' }, { status: 404 });
     }
   }
 
-  const limitedCost = Number.isFinite(fsPointsCost) ? Math.trunc(fsPointsCost) : null;
-  if (isLimitedEdition && (!limitedCost || limitedCost <= 0)) {
-    return NextResponse.json({ error: 'Limited-edition badges require a positive fsPointsCost' }, { status: 400 });
+  if (isLimitedEditionFlag) {
+    if (limitedCost === null || limitedCost <= 0) {
+      return NextResponse.json({ error: 'Limited-edition badges require a positive fsPointsCost' }, { status: 400 });
+    }
   }
 
   const lastHighestPlace = await prisma.badge.findFirst({
@@ -89,28 +155,25 @@ export async function POST(request) {
     select: { place: true },
   });
 
-  const normalizedPlace = Number.isFinite(place)
-    ? Math.trunc(place)
-    : ((lastHighestPlace?.place ?? 0) + 1);
+  const normalizedPlace = requestedPlace ?? ((lastHighestPlace?.place ?? 0) + 1);
 
   const badgeData = {
-    name,
-    nameZh,
-    description,
-    descriptionZh,
+    name: typeof name === 'string' ? name.trim() : name,
+    nameZh: typeof nameZh === 'string' ? nameZh.trim() : nameZh,
+    description: typeof description === 'string' ? description.trim() : description,
+    descriptionZh: typeof descriptionZh === 'string' ? descriptionZh.trim() : descriptionZh,
     imageUrl,
-    isSeasonal,
+    isSeasonal: isSeasonalFlag,
     seasonalStartDate: seasonalStart,
     seasonalEndDate: seasonalEnd,
-    activityId: activityId ?? null,
-    isLimitedEdition,
-    fsPointsCost: isLimitedEdition ? limitedCost : null,
+    activityId: normalizedActivityId,
+    isLimitedEdition: isLimitedEditionFlag,
+    fsPointsCost: isLimitedEditionFlag ? limitedCost : null,
     place: normalizedPlace,
   };
 
   if (formData && formData.get('image') && typeof formData.get('image') !== 'string') {
     try {
-      const supabase = await createServerClient();
       const file = formData.get('image');
       const allowedTypes = ['image/png'];
       const maxSize = MAX_IMAGE_SIZE_MB * 1024 * 1024;
