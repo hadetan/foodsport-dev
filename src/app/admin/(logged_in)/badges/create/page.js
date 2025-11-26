@@ -1111,6 +1111,7 @@ function needsTargetValue(ruleType) {
         'activity_participation_count',
         'consecutive_days_calories',
         'invite_count',
+        'social_share',
         'frequency_count',
         'points_cumulative',
         'redeem_points_cumulative'
