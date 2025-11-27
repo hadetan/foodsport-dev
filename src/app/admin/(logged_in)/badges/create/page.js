@@ -889,6 +889,13 @@ const CreateBadgePage = () => {
                                                             }));
                                                             setActivitySearchTerm('');
                                                         }
+                                                        // If removing redeem_purchase, uncheck isLimitedEdition
+                                                        if (rule.ruleType === 'redeem_purchase') {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                isLimitedEdition: false
+                                                            }));
+                                                        }
                                                     }}
                                                     className="btn btn-sm btn-ghost btn-circle text-error"
                                                 >
@@ -1002,6 +1009,13 @@ const CreateBadgePage = () => {
                                                                 isAuto: false
                                                             }
                                                         ]);
+
+                                                        if (ruleType === 'redeem_purchase') {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                isLimitedEdition: true
+                                                            }));
+                                                        }
                                                     } else {
                                                         // Remove the rule
                                                         setRules(prev => prev.filter(r => r.ruleType !== ruleType));
