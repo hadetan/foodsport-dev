@@ -20,7 +20,6 @@ const ALLOWED_RULE_COMBINATIONS = {
         'activity_participation_count',
         'invite_count',
         'social_share',
-        'frequency_count',
         'points_cumulative',
     ]),
     activity_participation_count: new Set([
@@ -47,9 +46,6 @@ const ALLOWED_RULE_COMBINATIONS = {
         'activity_participation_count',
         'activity_specific_participation',
         'invite_count',
-    ]),
-    frequency_count: new Set([
-        'calorie_cumulative',
     ]),
     points_cumulative: new Set([
         'calorie_cumulative',
@@ -398,10 +394,20 @@ const CreateBadgePage = () => {
                         const numericTarget = Number(rule.targetValue);
                         normalizedTarget = Number.isFinite(numericTarget) ? numericTarget : null;
                     }
+
+                    // Clean params by removing empty or nullish fields
+                    let normalizedParams = null;
+                    if (rule.params && typeof rule.params === 'object') {
+                        const entries = Object.entries(rule.params).filter(([k, v]) => v !== undefined && v !== null && v !== '');
+                        if (entries.length) {
+                            normalizedParams = Object.fromEntries(entries);
+                        }
+                    }
+
                     return {
                         ruleType: rule.ruleType,
                         targetValue: normalizedTarget,
-                        params: rule.params ?? null,
+                        params: normalizedParams ?? null,
                     };
                 });
                 formDataToSend.append("rules", JSON.stringify(serializedRules));
@@ -1060,6 +1066,40 @@ const CreateBadgePage = () => {
                                                 />
                                             </div>
                                         )}
+                                        {/* Params editors for rules that support params */}
+                                        {isAlreadyAdded && !isAutoSelected && !isActivityLinked && ruleType === 'consecutive_days_calories' && (
+                                            <div className="mt-3 ml-8">
+                                                <label className="label">
+                                                    <span className="label-text text-sm">Calorie-based options (optional)</span>
+                                                </label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        placeholder="Min daily calories"
+                                                        value={rules.find(r => r.ruleType === ruleType)?.params?.minDailyCalories ?? ''}
+                                                        onChange={(e) => {
+                                                            const v = e.target.value ? parseInt(e.target.value) : null;
+                                                            setRules(prev => prev.map(r =>
+                                                                r.ruleType === ruleType
+                                                                    ? { ...r, params: { ...(r.params || {}), minDailyCalories: v } }
+                                                                    : r
+                                                            ));
+                                                        }}
+                                                        className="input input-bordered input-sm w-full"
+                                                    />
+                                                    <div className="flex items-center">
+                                                        <div className="text-sm font-medium">Burn</div>
+                                                        <div className="ml-3 text-xs text-gray-500">(fixed)</div>
+                                                    </div>
+                                                </div>
+                                                <label className="label">
+                                                    <span className="label-text text-xs text-gray-500">Rule evaluates based on calories burned (default: burn).</span>
+                                                </label>
+                                            </div>
+                                        )}
+
+
                                     </div>
                                 );
                             })}
@@ -1094,7 +1134,7 @@ function getRuleDescription(ruleType) {
         consecutive_days_calories: "User must burn calories on consecutive days",
         invite_count: "User must invite a certain number of people",
         social_share: "User must share on social media",
-        frequency_count: "User must participate with a specific frequency over time",
+        // frequency_count removed
         points_cumulative: "User must accumulate a certain number of FS points",
         redeem_first: "User must be among the first to redeem this badge",
         redeem_points_cumulative: "User must spend a certain number of FS points on redemptions",
@@ -1112,7 +1152,6 @@ function needsTargetValue(ruleType) {
         'consecutive_days_calories',
         'invite_count',
         'social_share',
-        'frequency_count',
         'points_cumulative',
         'redeem_points_cumulative'
     ];

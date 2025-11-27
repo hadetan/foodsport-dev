@@ -8,7 +8,6 @@ const TARGET_REQUIRED_RULES = new Set([
   'activity_participation_count',
   'consecutive_days_calories',
   'invite_count',
-  'frequency_count',
   'points_cumulative',
   'redeem_points_cumulative',
 ]);
@@ -20,6 +19,36 @@ const TARGET_OPTIONAL_RULES = new Set([
   'redeem_purchase',
 ]);
 
+// Rules that are allowed to include a `params` object. Others must pass `params: null`.
+const RULES_ALLOWING_PARAMS = new Set([
+  'consecutive_days_calories',
+]);
+
+function validateConsecutiveParams(params, index) {
+  const result = { isValid: true, params: {} };
+  const normalized = {};
+  if (params.minDailyCalories !== undefined && params.minDailyCalories !== null && params.minDailyCalories !== '') {
+    const n = Number(params.minDailyCalories);
+    if (!Number.isFinite(n) || n <= 0) {
+      return { isValid: false, error: `Rule at index ${index}: params.minDailyCalories must be a positive number.` };
+    }
+    normalized.minDailyCalories = Math.trunc(n);
+  }
+  const source = params.type ?? params.source ?? null;
+  // Default to 'burn' when no explicit type/source provided.
+  const allowed = ['presence', 'burn', 'donation'];
+  if (source === null) {
+    normalized.type = 'burn';
+  } else {
+    if (typeof source !== 'string' || !allowed.includes(source)) {
+      return { isValid: false, error: `Rule at index ${index}: params.type/source must be one of ${allowed.join(', ')}.` };
+    }
+    normalized.type = source;
+  }
+  return { isValid: true, params: Object.keys(normalized).length ? normalized : null };
+}
+
+// frequency_count params validator removed because rule is no longer available in admin UI
 // Rule combination matrix: defines which rule types can be combined together
 // Based on cross-connection.md specification
 const ALLOWED_RULE_COMBINATIONS = {
@@ -32,7 +61,6 @@ const ALLOWED_RULE_COMBINATIONS = {
     'activity_participation_count',
     'invite_count',
     'social_share',
-    'frequency_count',
     'points_cumulative',
   ]),
   activity_participation_count: new Set([
@@ -60,9 +88,7 @@ const ALLOWED_RULE_COMBINATIONS = {
     'activity_specific_participation',
     'invite_count',
   ]),
-  frequency_count: new Set([
-    'calorie_cumulative',
-  ]),
+  // frequency_count removed
   points_cumulative: new Set([
     'calorie_cumulative',
   ]),
@@ -82,7 +108,19 @@ export function coerceRulesPayload(payload) {
   }
 
   if (Array.isArray(rawRules)) {
-    return rawRules;
+    // Normalize rules: if any rule has `params` as a JSON string, parse it
+    return rawRules.map((r) => {
+      if (!r || typeof r !== 'object') return r;
+      const copy = { ...r };
+      if (copy.params && typeof copy.params === 'string') {
+        try {
+          copy.params = JSON.parse(copy.params);
+        } catch (err) {
+          // leave as string; validation will reject later
+        }
+      }
+      return copy;
+    });
   }
 
   if (typeof rawRules === 'string') {
@@ -133,7 +171,25 @@ export function validateAndNormalizeBadgeRules(rawRules) {
     if (params !== null && typeof params !== 'object') {
       return { isValid: false, error: `Rule at index ${i} must provide params as an object or null.` };
     }
-    normalizedRule.params = params;
+
+    // Enforce which rules are allowed to include a params object
+    if (params !== null && !RULES_ALLOWING_PARAMS.has(ruleType)) {
+      return { isValid: false, error: `Rule at index ${i} ("${ruleType}") does not accept params.` };
+    }
+
+    // If params are provided for allowed rules, validate and normalize them
+    if (params !== null && RULES_ALLOWING_PARAMS.has(ruleType)) {
+      let validationResult = { isValid: true, params: params };
+      if (ruleType === 'consecutive_days_calories') {
+        validationResult = validateConsecutiveParams(params, i);
+      }
+      if (!validationResult.isValid) {
+        return { isValid: false, error: validationResult.error };
+      }
+      normalizedRule.params = validationResult.params ?? null;
+    } else {
+      normalizedRule.params = null;
+    }
 
     if (TARGET_OPTIONAL_RULES.has(ruleType)) {
       normalizedRule.targetValue = normalizeTargetValue(targetValue);

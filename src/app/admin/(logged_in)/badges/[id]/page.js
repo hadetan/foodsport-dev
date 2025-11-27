@@ -20,7 +20,6 @@ const ALLOWED_RULE_COMBINATIONS = {
         'activity_participation_count',
         'invite_count',
         'social_share',
-        'frequency_count',
         'points_cumulative',
     ]),
     activity_participation_count: new Set([
@@ -47,9 +46,6 @@ const ALLOWED_RULE_COMBINATIONS = {
         'activity_participation_count',
         'activity_specific_participation',
         'invite_count',
-    ]),
-    frequency_count: new Set([
-        'calorie_cumulative',
     ]),
     points_cumulative: new Set([
         'calorie_cumulative',
@@ -1174,7 +1170,7 @@ function getRuleDescription(ruleType) {
         consecutive_days_calories: "User must burn calories on consecutive days",
         invite_count: "User must invite a certain number of people",
         social_share: "User must share on social media",
-        frequency_count: "User must participate with a specific frequency over time",
+        // frequency_count removed
         points_cumulative: "User must accumulate a certain number of FS points",
         redeem_first: "User must be among the first to redeem this badge",
         redeem_points_cumulative: "User must spend a certain number of FS points on redemptions",
@@ -1192,7 +1188,6 @@ function needsTargetValue(ruleType) {
         'consecutive_days_calories',
         'invite_count',
         'social_share',
-        'frequency_count',
         'points_cumulative',
         'redeem_points_cumulative'
     ];
