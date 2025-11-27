@@ -403,8 +403,9 @@ function BadgeDetailsPage({ badgeId, viewerContext = null }) {
     const badgeCost = Number(badge?.fsPointsCost ?? 0) || 0;
     const profileReady = Boolean(userProfile?.id);
     const badgeRedeemable = Boolean(profileReady && badge?.isLimitedEdition && badgeCost > 0);
-    const canRedeemNow = Boolean(badgeRedeemable && !viewerHasBadge);
-    const showRedeemDisabled = Boolean(badgeRedeemable && viewerHasBadge);
+    const isOutOfStock = badge?.quantity && (badge.remainingQuantity !== undefined ? badge.remainingQuantity <= 0 : false);
+    const canRedeemNow = Boolean(badgeRedeemable && !viewerHasBadge && !isOutOfStock);
+    const showRedeemDisabled = Boolean(badgeRedeemable && (viewerHasBadge || isOutOfStock));
     const userPoints = Number(userProfile?.totalPoints ?? 0);
     const hasEnoughPoints = canRedeemNow ? userPoints >= badgeCost : false;
     const showGuestBuyCta = Boolean(!loggedIn && badgeCost > 0);
@@ -524,6 +525,12 @@ function BadgeDetailsPage({ badgeId, viewerContext = null }) {
                             <div>
                                 <strong>{t('metadata.placeLabel')}</strong>
                                 <p>{t('stats.place', { place: formatNumber(badge.place || 1) })}</p>
+                            </div>
+                        )}
+                        {badge.quantity && (
+                            <div>
+                                <strong>{t('metadata.quantityLabel')}</strong>
+                                <p>{badge.remainingQuantity ?? badge.quantity} / {badge.quantity}</p>
                             </div>
                         )}
                     </div>
