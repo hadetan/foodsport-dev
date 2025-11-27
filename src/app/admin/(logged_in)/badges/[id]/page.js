@@ -113,6 +113,8 @@ const EditBadgePage = () => {
         activityId: "",
         isLimitedEdition: false,
         fsPointsCost: "",
+        isLimited: false,
+        quantity: "",
         place: "",
         forcePlaceZero: false,
     });
@@ -165,6 +167,8 @@ const EditBadgePage = () => {
                 activityId: resolvedActivityId,
                 isLimitedEdition: badge.isLimitedEdition || false,
                 fsPointsCost: badge.fsPointsCost || "",
+                isLimited: badge.quantity !== null && badge.quantity !== undefined && badge.quantity > 0,
+                quantity: (badge.quantity !== null && badge.quantity !== undefined && badge.quantity > 0) ? String(badge.quantity) : "",
                 place: badge.place || "",
                 forcePlaceZero: badge.place === 0 || badge.place === '0',
             });
@@ -330,13 +334,19 @@ const EditBadgePage = () => {
             }
         }
 
+        if (formData.isLimited) {
+            if (!formData.quantity || formData.quantity <= 0) {
+                errors.quantity = "Quantity must be greater than 0.";
+            }
+        }
+
         if (formData.place && (isNaN(formData.place) || formData.place < 0)) {
             errors.place = "Place must be a valid number.";
         }
 
-        // If any rules have been added, require an activity to be selected
-        if (rules.length > 0 && !formData.activityId) {
-            errors.activityId = "You must select an activity.";
+        const hasActivitySpecificRule = rules.some(r => r.ruleType === 'activity_specific_participation');
+        if (hasActivitySpecificRule && !formData.activityId) {
+            errors.activityId = "You must select an activity when using 'Activity Specific Participation' rule.";
         }
 
         if (rules.length === 0) {
@@ -363,7 +373,7 @@ const EditBadgePage = () => {
         }
 
         // Handle numeric fields - only allow numbers
-        if (name === "fsPointsCost") {
+        if (name === "fsPointsCost" || name === "quantity") {
             // Remove any non-digit characters
             finalValue = value.replace(/\D/g, "");
         }
@@ -487,6 +497,10 @@ const EditBadgePage = () => {
 
             if (formData.place) {
                 formDataToSend.append("place", formData.place);
+            }
+
+            if (formData.isLimited && formData.quantity) {
+                formDataToSend.append("quantity", formData.quantity);
             }
 
             // Add rules
@@ -692,73 +706,6 @@ const EditBadgePage = () => {
                         />
                     </div>
 
-                    {/* Seasonal Toggle */}
-                    <div className="form-control mb-4">
-                        <label className="label cursor-pointer justify-start gap-4">
-                            <input
-                                type="checkbox"
-                                name="isSeasonal"
-                                checked={formData.isSeasonal}
-                                onChange={handleFormChange}
-                                className="toggle toggle-primary"
-                            />
-                            <span className="label-text font-semibold">
-                                Is Seasonal Badge
-                            </span>
-                        </label>
-                    </div>
-
-                    {/* Seasonal Date Fields - Only shown when isSeasonal is true */}
-                    {formData.isSeasonal && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text font-semibold">
-                                        Seasonal Start Date *
-                                    </span>
-                                </label>
-                                <input
-                                    type="date"
-                                    name="seasonalStartDate"
-                                    value={formData.seasonalStartDate}
-                                    onChange={handleFormChange}
-                                    className={`input input-bordered w-full ${fieldErrors.seasonalStartDate ? "input-error" : ""
-                                        }`}
-                                />
-                                {fieldErrors.seasonalStartDate && (
-                                    <label className="label">
-                                        <span className="label-text-alt text-error">
-                                            {fieldErrors.seasonalStartDate}
-                                        </span>
-                                    </label>
-                                )}
-                            </div>
-
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text font-semibold">
-                                        Seasonal End Date *
-                                    </span>
-                                </label>
-                                <input
-                                    type="date"
-                                    name="seasonalEndDate"
-                                    value={formData.seasonalEndDate}
-                                    onChange={handleFormChange}
-                                    className={`input input-bordered w-full ${fieldErrors.seasonalEndDate ? "input-error" : ""
-                                        }`}
-                                />
-                                {fieldErrors.seasonalEndDate && (
-                                    <label className="label">
-                                        <span className="label-text-alt text-error">
-                                            {fieldErrors.seasonalEndDate}
-                                        </span>
-                                    </label>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
                     {/* Activity Searchable Dropdown */}
                     <div className="form-control mb-4">
                         <label className="label">
@@ -842,6 +789,73 @@ const EditBadgePage = () => {
                         )}
                     </div>
 
+                    {/* Seasonal Toggle */}
+                    <div className="form-control mb-4">
+                        <label className="label cursor-pointer justify-start gap-4">
+                            <input
+                                type="checkbox"
+                                name="isSeasonal"
+                                checked={formData.isSeasonal}
+                                onChange={handleFormChange}
+                                className="toggle toggle-primary"
+                            />
+                            <span className="label-text font-semibold">
+                                Is Seasonal Badge ?
+                            </span>
+                        </label>
+                    </div>
+
+                    {/* Seasonal Date Fields - Only shown when isSeasonal is true */}
+                    {formData.isSeasonal && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text font-semibold">
+                                        Seasonal Start Date *
+                                    </span>
+                                </label>
+                                <input
+                                    type="date"
+                                    name="seasonalStartDate"
+                                    value={formData.seasonalStartDate}
+                                    onChange={handleFormChange}
+                                    className={`input input-bordered w-full ${fieldErrors.seasonalStartDate ? "input-error" : ""
+                                        }`}
+                                />
+                                {fieldErrors.seasonalStartDate && (
+                                    <label className="label">
+                                        <span className="label-text-alt text-error">
+                                            {fieldErrors.seasonalStartDate}
+                                        </span>
+                                    </label>
+                                )}
+                            </div>
+
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text font-semibold">
+                                        Seasonal End Date *
+                                    </span>
+                                </label>
+                                <input
+                                    type="date"
+                                    name="seasonalEndDate"
+                                    value={formData.seasonalEndDate}
+                                    onChange={handleFormChange}
+                                    className={`input input-bordered w-full ${fieldErrors.seasonalEndDate ? "input-error" : ""
+                                        }`}
+                                />
+                                {fieldErrors.seasonalEndDate && (
+                                    <label className="label">
+                                        <span className="label-text-alt text-error">
+                                            {fieldErrors.seasonalEndDate}
+                                        </span>
+                                    </label>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Limited Edition Toggle */}
                     <div className="form-control mb-4">
                         <label className="label cursor-pointer justify-start gap-4">
@@ -853,7 +867,7 @@ const EditBadgePage = () => {
                                 className="toggle toggle-primary"
                             />
                             <span className="label-text font-semibold">
-                                Is Redeemable
+                                Is Redeemable ?
                             </span>
                         </label>
                     </div>
@@ -885,6 +899,49 @@ const EditBadgePage = () => {
                         </div>
                     )}
 
+                    {/* Is Limited Toggle */}
+                    <div className="form-control mb-4">
+                        <label className="label cursor-pointer justify-start gap-4">
+                            <input
+                                type="checkbox"
+                                name="isLimited"
+                                checked={formData.isLimited}
+                                onChange={handleFormChange}
+                                className="toggle toggle-primary"
+                            />
+                            <span className="label-text font-semibold">
+                                Is Limited ?
+                            </span>
+                        </label>
+                    </div>
+
+                    {/* Quantity - Only shown when isLimited is true */}
+                    {formData.isLimited && (
+                        <div className="form-control mb-4">
+                            <label className="label">
+                                <span className="label-text font-semibold">
+                                    Quantity *
+                                </span>
+                            </label>
+                            <input
+                                type="text"
+                                name="quantity"
+                                value={formData.quantity}
+                                onChange={handleFormChange}
+                                placeholder="Enter quantity (numbers only)"
+                                className={`input input-bordered w-full ${fieldErrors.quantity ? "input-error" : ""
+                                    }`}
+                            />
+                            {fieldErrors.quantity && (
+                                <label className="label">
+                                    <span className="label-text-alt text-error">
+                                        {fieldErrors.quantity}
+                                    </span>
+                                </label>
+                            )}
+                        </div>
+                    )}
+
                     {/* Place Toggle - replaces numeric place input */}
                     <div className="form-control mb-6">
                         <label className="label cursor-pointer justify-start gap-4">
@@ -896,10 +953,10 @@ const EditBadgePage = () => {
                                 className="toggle toggle-primary"
                             />
                             <span className="label-text font-semibold">
-                                Assign explicit place (set to 0)
+                                Place at first place ?
                             </span>
                         </label>
-                        
+
                         {fieldErrors.place && (
                             <label className="label">
                                 <span className="label-text-alt text-error">

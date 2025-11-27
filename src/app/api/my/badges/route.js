@@ -27,6 +27,16 @@ export async function GET(request) {
             source: true,
           },
         },
+        redemptions: {
+          where: { status: 'completed' },
+          select: { id: true },
+        },
+        _count: {
+          select: {
+            userBadges: true,
+            redemptions: true,
+          },
+        },
       },
       orderBy: [
         { place: 'asc' },

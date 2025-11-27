@@ -141,14 +141,18 @@ async function awardBadgesForRules(tx, { userId, ruleTypes, source, ...context }
                 continue;
             }
 
-            if (badge.quantity !== null) {
-                const currentCount = await tx.userBadge.count({
-                    where: { badgeId: badge.id },
-                });
-                if (currentCount >= badge.quantity) {
+                // Explicitly block badges with quantity === 0
+                if (badge.quantity === 0) {
                     continue;
                 }
-            }
+
+                if (badge.quantity !== null && badge.quantity > 0) {
+                    // Count `userBadge` records (earned/redeemed) as the canonical claimed count.
+                    const awardedCount = await tx.userBadge.count({ where: { badgeId: badge.id, status: { in: ['earned', 'redeemed'] } } });
+                    if ((awardedCount || 0) >= badge.quantity) {
+                        continue;
+                    }
+                }
 
             const matches = await doesBadgeMatchAllRules(tx, badge, evalContext);
             if (!matches) {

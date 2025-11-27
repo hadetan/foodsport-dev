@@ -25,6 +25,7 @@ function createMockTx(overrides = {}) {
         userBadge: {
             create: noopAsync,
             findUnique: async () => null,
+            count: async () => 0,
         },
         userActivity: {
             findMany: async () => [],

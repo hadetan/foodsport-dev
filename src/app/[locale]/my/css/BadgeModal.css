@@ -73,6 +73,16 @@
   color: #0f172a;
 }
 
+.badge-modal__quantity {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #0f172a;
+  background: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
 .badge-modal__description {
   font-size: 1rem;
   color: #475569;
@@ -196,6 +206,17 @@
   background: #d1d5db;
   color: #6b7280;
   cursor: not-allowed;
+}
+
+.badge-modal__buy:disabled,
+.badge-modal__buy[disabled] {
+  background: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+.badge-modal__buy:disabled:hover,
+.badge-modal__buy[disabled]:hover {
+  background: #d1d5db;
 }
 
 .badge-modal__redeem-panel {

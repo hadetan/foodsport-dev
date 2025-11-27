@@ -84,6 +84,7 @@ export default function BadgeModal({ badge, locale, labels, onClose, onRedeemed,
     const userPoints = Number(user?.totalPoints ?? 0);
     const hasEnoughPoints = userPoints >= cost;
     const shortfall = hasEnoughPoints ? 0 : Math.max(0, cost - userPoints);
+    const isOutOfStock = Boolean(badge?.isLimitedEdition && typeof badge?.quantity === 'number' && (badge.remainingQuantity ?? badge.quantity) <= 0);
 
     if (!badge) return null;
 
@@ -128,7 +129,7 @@ export default function BadgeModal({ badge, locale, labels, onClose, onRedeemed,
     };
 
     const handleRedeemConfirm = async () => {
-        if (!badge || !isRedeemable || !hasEnoughPoints) {
+        if (!badge || !isRedeemable || !hasEnoughPoints || isOutOfStock) {
             return;
         }
         setIsRedeeming(true);
@@ -187,12 +188,6 @@ export default function BadgeModal({ badge, locale, labels, onClose, onRedeemed,
                             <span>{t('modal.balanceLabel')}</span>
                             <strong>{formatPoints(userPoints)}</strong>
                         </div>
-                        {badge.quantity && (
-                            <div className="badge-modal__redeem-row">
-                                <span>{t('modal.remainingLabel')}</span>
-                                <strong>{badge.remainingQuantity ?? badge.quantity} / {badge.quantity}</strong>
-                            </div>
-                        )}
                     </div>
                     {!hasEnoughPoints && (
                         <div className="badge-modal__redeem-warning" role="alert">
@@ -240,8 +235,15 @@ export default function BadgeModal({ badge, locale, labels, onClose, onRedeemed,
                         <Link className="badge-modal__link" {...viewLinkProps}>
                             {viewLabel}
                         </Link>
-                        <button type="button" className="badge-modal__buy" onClick={handleBuyClick}>
-                            {t('modal.buyCta')}
+                        <button
+                            type="button"
+                            className="badge-modal__buy"
+                            onClick={handleBuyClick}
+                            disabled={isOutOfStock}
+                            aria-disabled={isOutOfStock}
+                            title={isOutOfStock ? t('modal.soldOut') : undefined}
+                        >
+                            {isOutOfStock ? t('modal.soldOut') : t('modal.buyCta')}
                         </button>
                     </>
                 );
@@ -270,7 +272,7 @@ export default function BadgeModal({ badge, locale, labels, onClose, onRedeemed,
                         type="button"
                         className="badge-modal__confirm"
                         onClick={handleRedeemConfirm}
-                        disabled={!hasEnoughPoints || isRedeeming}
+                        disabled={!hasEnoughPoints || isRedeeming || isOutOfStock}
                     >
                         {isRedeeming ? t('modal.confirming') : t('modal.confirmCta')}
                     </button>
@@ -312,6 +314,15 @@ export default function BadgeModal({ badge, locale, labels, onClose, onRedeemed,
                         )}
                     </div>
                     <h2 className="badge-modal__title">{localized.title}</h2>
+                    {/* Show remaining quantity for limited-edition badges - same condition as details page (badge.quantity) */}
+                    {badge.quantity !== null && (
+                        <div className="badge-modal__quantity" aria-hidden>
+                            { ( (badge.remainingQuantity ?? badge.quantity) > 0 )
+                                ? t('modal.left', { count: badge.remainingQuantity ?? badge.quantity })
+                                : t('modal.soldOut')
+                            }
+                        </div>
+                    )}
                     <p className="badge-modal__description">{localized.description}</p>
                     {renderPurchasePanel()}
                 </div>

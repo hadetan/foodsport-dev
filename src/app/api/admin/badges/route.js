@@ -254,6 +254,7 @@ export async function GET(request) {
                     },
                 },
                 redemptions: {
+                    where: { status: 'completed' },
                     select: {
                         id: true,
                         userId: true,
@@ -289,6 +290,8 @@ export async function GET(request) {
             activity: b.activity || null,
             isLimitedEdition: b.isLimitedEdition,
             fsPointsCost: b.fsPointsCost,
+            quantity: b.quantity ?? null,
+            remainingQuantity: (typeof b.quantity === 'number') ? Math.max(0, b.quantity - (b._count?.userBadges ?? 0)) : null,
             isActive: b.isActive,
             badgeRules: (b.badgeRules || []).map((r) => ({
                 id: r.id,

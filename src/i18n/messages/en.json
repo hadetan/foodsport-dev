@@ -249,7 +249,8 @@
 			"successTitle": "Badge unlocked!",
 			"successDescription": "You spent {cost} FS points and have {balance} left.",
 			"purchaseError": "Unable to complete the purchase. Please try again.",
-			"remainingLabel": "Remaining"
+			"left": "{count, plural, one {# left} other {# left}}",
+			"soldOut": "Out of stock"
 		}
 	},
 	"BadgeDetails": {

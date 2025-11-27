@@ -569,8 +569,13 @@ function BadgeDetailsPage({ badgeId, viewerContext = null }) {
                             </Link>
                         )}
                         {profileReady && badgeRedeemable && showRedeemDisabled && (
-                            <button type="button" className="badge-hero__btn badge-hero__btn--disabled" disabled>
-                                {t('purchase.redeemed')}
+                            <button
+                                type="button"
+                                className="badge-hero__btn badge-hero__btn--disabled"
+                                disabled
+                                title={isOutOfStock ? tModal('modal.soldOut') : undefined}
+                            >
+                                {isOutOfStock ? tModal('modal.soldOut') : t('purchase.redeemed')}
                             </button>
                         )}
                         {profileReady && badgeRedeemable && canRedeemNow && (

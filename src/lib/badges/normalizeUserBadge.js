@@ -23,6 +23,12 @@ export function normalizeUserBadge(badge, userBadge) {
         seasonalEndDate: badge.seasonalEndDate,
         isLimitedEdition: badge.isLimitedEdition,
         fsPointsCost: badge.fsPointsCost,
+        quantity: badge.quantity ?? null,
+            remainingQuantity: (function() {
+                if (badge.quantity == null) return null;
+                const awardedCount = typeof badge._count?.userBadges === 'number' ? badge._count.userBadges : 0;
+                return Math.max(0, badge.quantity - awardedCount);
+            })(),
         isUnlocked,
         status: isUnlocked ? status : LOCKED_STATUS,
         unlockedAt: isUnlocked ? userBadge?.earnedAt : null,

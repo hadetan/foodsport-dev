@@ -53,11 +53,26 @@ export async function POST(request, context) {
                 throw new RedemptionError(400, 'Badge does not have a valid FS points cost');
             }
 
-            if (badge.quantity !== null) {
-                const currentCount = await tx.userBadge.count({
-                    where: { badgeId: badge.id },
+            // If quantity is explicitly 0, treat it as out-of-stock/unavailable.
+            if (badge.quantity === 0) {
+                throw new RedemptionError(409, 'Badge is out of stock');
+            }
+
+            if (badge.quantity !== null && badge.quantity > 0) {
+                try {
+                    await tx.$queryRaw`SELECT id FROM "badges" WHERE id = ${badge.id} FOR UPDATE`;
+                } catch (lockError) {
+                    console.error('Failed to lock badge row for redemption', lockError);
+                }
+
+                // Prefer counting `userBadge` records (earned/redeemed) as canonical claimed count.
+                // Each redemption creates a userBadge as 'redeemed', so counting redemptions in addition
+                // causes double counting.
+                const awardedCount = await tx.userBadge.count({
+                    where: { badgeId: badge.id, status: { in: ['earned', 'redeemed'] } },
                 });
-                if (currentCount >= badge.quantity) {
+                const claimedTotal = awardedCount || 0;
+                if (claimedTotal >= badge.quantity) {
                     throw new RedemptionError(409, 'Badge is out of stock');
                 }
             }
@@ -112,11 +127,19 @@ export async function POST(request, context) {
                 },
             });
 
+            let remainingQuantity = null;
+            if (typeof badge.quantity === 'number' && badge.quantity > 0) {
+                const totalClaimed = await tx.userBadge.count({ where: { badgeId: badge.id, status: { in: ['earned', 'redeemed'] } } });
+                remainingQuantity = Math.max(0, badge.quantity - (totalClaimed || 0));
+            }
+
             return {
                 redemptionId: redemptionRecord.id,
                 badgeId: userBadge.badgeId,
                 pointsSpent: cost,
                 remainingPoints: updatedUser.totalPoints,
+                remainingQuantity,
+                badge: { id: badge.id, quantity: badge.quantity ?? null, remainingQuantity },
             };
         });
 

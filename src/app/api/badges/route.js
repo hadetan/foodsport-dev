@@ -36,6 +36,10 @@ export async function GET() {
           orderBy: { earnedAt: 'desc' },
           take: 1,
         },
+        redemptions: {
+          where: { status: 'completed' },
+          select: { id: true },
+        },
         _count: {
           select: {
             userBadges: true,
@@ -63,20 +67,22 @@ export async function GET() {
       seasonalEndDate: badge.seasonalEndDate,
       isLimitedEdition: badge.isLimitedEdition,
       fsPointsCost: badge.fsPointsCost,
+      quantity: badge.quantity ?? null,
+      remainingQuantity: badge.quantity != null ? Math.max(0, badge.quantity - (badge._count?.userBadges ?? 0)) : null,
       activity: badge.activity
         ? {
-            id: badge.activity.id,
-            title: badge.activity.title,
-            titleZh: badge.activity.titleZh,
-            summary: badge.activity.summary,
-            summaryZh: badge.activity.summaryZh,
-            location: badge.activity.location,
-            startDate: badge.activity.startDate,
-            endDate: badge.activity.endDate,
-            activityType: badge.activity.activityType,
-            imageUrl: badge.activity.imageUrl,
-            bannerImageUrl: badge.activity.bannerImageUrl,
-          }
+          id: badge.activity.id,
+          title: badge.activity.title,
+          titleZh: badge.activity.titleZh,
+          summary: badge.activity.summary,
+          summaryZh: badge.activity.summaryZh,
+          location: badge.activity.location,
+          startDate: badge.activity.startDate,
+          endDate: badge.activity.endDate,
+          activityType: badge.activity.activityType,
+          imageUrl: badge.activity.imageUrl,
+          bannerImageUrl: badge.activity.bannerImageUrl,
+        }
         : null,
       badgeRules: (badge.badgeRules ?? []).map((rule) => ({
         id: rule.id,

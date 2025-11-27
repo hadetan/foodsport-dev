@@ -263,7 +263,8 @@
             "successTitle": "成功解鎖徽章！",
             "successDescription": "你花費了 {cost} 個 FS 積分，餘額為 {balance}。",
             "purchaseError": "未能完成購買，請稍後再試。",
-            "remainingLabel": "剩餘"
+            "left": "{count, plural, one {尚餘 # 個} other {尚餘 # 個}}",
+            "soldOut": "已售罄"
         }
     },
     "BadgeDetails": {

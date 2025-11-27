@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: 'Badge id is required' }, { status: 400 });
   }
 
-  try {
+    try {
     const badge = await prisma.badge.findFirst({
       where: { id: badgeId, isActive: true },
       include: {
@@ -33,6 +33,10 @@ export async function GET(request, { params }) {
           },
           take: 1,
           orderBy: { earnedAt: 'desc' },
+        },
+        redemptions: {
+          where: { status: 'completed' },
+          select: { id: true },
         },
       },
     });
