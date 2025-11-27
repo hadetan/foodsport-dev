@@ -34,7 +34,6 @@ const RULE_ICONS = {
     calorie_cumulative: Flame,
     activity_participation_count: Users,
     activity_specific_participation: MapPin,
-    consecutive_days_calories: Calendar,
     invite_count: UserPlus,
     social_share: Share2,
     frequency_count: Repeat,
@@ -146,18 +145,6 @@ function describeRule(rule, badge, t, locale, formatNumber) {
             return activityTitle
                 ? t('rules.descriptions.activity_specific_participation.named', { activity: activityTitle })
                 : t('rules.descriptions.activity_specific_participation.generic');
-        }
-        case 'consecutive_days_calories': {
-            const minDaily = Number(params.minDailyCalories ?? 0) || null;
-            if (minDaily) {
-                return t('rules.descriptions.consecutive_days_calories.withCalories', {
-                    days: formatNumber(Math.max(target, 1)),
-                    calories: formatNumber(minDaily),
-                });
-            }
-            return t('rules.descriptions.consecutive_days_calories.default', {
-                days: formatNumber(Math.max(target, 1)),
-            });
         }
         case 'invite_count': {
             const activityTitle = pickLocalizedField(badge?.activity?.title, badge?.activity?.titleZh, locale);

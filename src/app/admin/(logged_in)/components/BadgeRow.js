@@ -102,7 +102,7 @@ const BadgeRow = ({ badge, onRowClick }) => {
                         badge.badgeRules.map((rule, index) => (
                             <div key={rule.id || index} className="mb-1">
                                 <span className="font-semibold capitalize">
-                                    {rule.type?.replace(/_/g, " ") || "N/A"}
+                                    {(rule.ruleType || rule.type)?.replace(/_/g, " ") || "N/A"}
                                 </span>
                                 {!rule.isActive && (
                                     <span className="ml-2 text-xs text-gray-500">(Inactive)</span>

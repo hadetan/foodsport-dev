@@ -32,7 +32,7 @@ const ALLOWED_RULE_COMBINATIONS = {
         'invite_count',
         'social_share',
     ]),
-    consecutive_days_calories: new Set([]),
+
     invite_count: new Set([
         'calorie_single_activity',
         'calorie_cumulative',
@@ -114,6 +114,7 @@ const EditBadgePage = () => {
         isLimitedEdition: false,
         fsPointsCost: "",
         place: "",
+        forcePlaceZero: false,
     });
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
@@ -148,6 +149,9 @@ const EditBadgePage = () => {
         }
 
         try {
+            // Resolve activity id whether API returns `activityId` or embedded `activity` object
+            const resolvedActivityId = badge.activityId || badge.activity?.id || "";
+
             setFormData({
                 name: badge.name || "",
                 nameZh: badge.nameZh || "",
@@ -158,10 +162,11 @@ const EditBadgePage = () => {
                 isSeasonal: badge.isSeasonal || false,
                 seasonalStartDate: badge.seasonalStartDate ? badge.seasonalStartDate.split('T')[0] : "",
                 seasonalEndDate: badge.seasonalEndDate ? badge.seasonalEndDate.split('T')[0] : "",
-                activityId: badge.activityId || "",
+                activityId: resolvedActivityId,
                 isLimitedEdition: badge.isLimitedEdition || false,
                 fsPointsCost: badge.fsPointsCost || "",
                 place: badge.place || "",
+                forcePlaceZero: badge.place === 0 || badge.place === '0',
             });
 
             // Set image preview to existing image
@@ -169,18 +174,20 @@ const EditBadgePage = () => {
                 setImagePreview(badge.imageUrl);
             }
 
-            // Set activity search term if activity is linked
-            if (badge.activityId && activities.length > 0) {
-                const linkedActivity = activities.find(a => a.id === badge.activityId);
+            // Set activity search term if activity is linked (support embedded activity object or id)
+            if (resolvedActivityId && activities.length > 0) {
+                const linkedActivity = activities.find(a =>
+                    a?.id === resolvedActivityId || a?.activityId === resolvedActivityId || a?.uuid === resolvedActivityId
+                );
                 if (linkedActivity) {
                     setActivitySearchTerm(linkedActivity.title || linkedActivity.titleZh || "");
                 }
             }
 
-            // Load existing rules (use badgeRules property which is what the API returns)
+            // Load existing rules (support both `ruleType` and legacy `type` field names)
             if (badge.badgeRules && badge.badgeRules.length > 0) {
                 setRules(badge.badgeRules.map(r => ({
-                    ruleType: r.type, // The API returns 'type' not 'ruleType'
+                    ruleType: r.ruleType || r.type,
                     targetValue: r.targetValue,
                     params: r.params,
                     isAuto: false
@@ -327,6 +334,11 @@ const EditBadgePage = () => {
             errors.place = "Place must be a valid number.";
         }
 
+        // If any rules have been added, require an activity to be selected
+        if (rules.length > 0 && !formData.activityId) {
+            errors.activityId = "You must select an activity.";
+        }
+
         if (rules.length === 0) {
             errors.rules = "At least one badge rule is required.";
         }
@@ -351,9 +363,20 @@ const EditBadgePage = () => {
         }
 
         // Handle numeric fields - only allow numbers
-        if (name === "place" || name === "fsPointsCost") {
+        if (name === "fsPointsCost") {
             // Remove any non-digit characters
             finalValue = value.replace(/\D/g, "");
+        }
+
+        // Special handling for place toggle (force place to 0)
+        if (name === "forcePlaceZero") {
+            finalValue = checked;
+            setFormData((prev) => ({
+                ...prev,
+                forcePlaceZero: finalValue,
+                place: finalValue ? "0" : "",
+            }));
+            return;
         }
 
         setFormData((prev) => ({
@@ -830,7 +853,7 @@ const EditBadgePage = () => {
                                 className="toggle toggle-primary"
                             />
                             <span className="label-text font-semibold">
-                                Is Limited Edition
+                                Is Redeemable
                             </span>
                         </label>
                     </div>
@@ -862,27 +885,21 @@ const EditBadgePage = () => {
                         </div>
                     )}
 
-                    {/* Place Field */}
+                    {/* Place Toggle - replaces numeric place input */}
                     <div className="form-control mb-6">
-                        <label className="label">
+                        <label className="label cursor-pointer justify-start gap-4">
+                            <input
+                                type="checkbox"
+                                name="forcePlaceZero"
+                                checked={formData.forcePlaceZero}
+                                onChange={handleFormChange}
+                                className="toggle toggle-primary"
+                            />
                             <span className="label-text font-semibold">
-                                Place (Optional)
+                                Assign explicit place (set to 0)
                             </span>
                         </label>
-                        <input
-                            type="text"
-                            name="place"
-                            value={formData.place}
-                            onChange={handleFormChange}
-                            placeholder="Enter display order (numbers only)"
-                            className={`input input-bordered w-full ${fieldErrors.place ? "input-error" : ""
-                                }`}
-                        />
-                        <label className="label">
-                            <span className="label-text-alt text-gray-500">
-                                Leave empty to auto-assign the next available place
-                            </span>
-                        </label>
+                        
                         {fieldErrors.place && (
                             <label className="label">
                                 <span className="label-text-alt text-error">
@@ -958,6 +975,14 @@ const EditBadgePage = () => {
                                                                 activityId: ''
                                                             }));
                                                             setActivitySearchTerm('');
+                                                        }
+                                                        // If removing redeem_purchase rule, turn off the redeemable toggle
+                                                        if (rule.ruleType === 'redeem_purchase') {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                isLimitedEdition: false,
+                                                                fsPointsCost: ''
+                                                            }));
                                                         }
                                                     }}
                                                     className="btn btn-sm btn-ghost btn-circle text-error"
@@ -1072,6 +1097,13 @@ const EditBadgePage = () => {
                                                                 isAuto: false
                                                             }
                                                         ]);
+                                                        // If user selects redeem_purchase in dialog, enable the redeemable toggle
+                                                        if (ruleType === 'redeem_purchase') {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                isLimitedEdition: true
+                                                            }));
+                                                        }
                                                     } else {
                                                         // Remove the rule
                                                         setRules(prev => prev.filter(r => r.ruleType !== ruleType));
@@ -1083,6 +1115,14 @@ const EditBadgePage = () => {
                                                                 activityId: ''
                                                             }));
                                                             setActivitySearchTerm('');
+                                                        }
+                                                        // If unchecking redeem_purchase in dialog, disable the redeemable toggle
+                                                        if (ruleType === 'redeem_purchase') {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                isLimitedEdition: false,
+                                                                fsPointsCost: ''
+                                                            }));
                                                         }
                                                     }
                                                 }}
@@ -1167,7 +1207,8 @@ function getRuleDescription(ruleType) {
         calorie_cumulative: "User must burn a cumulative number of calories across all activities",
         activity_participation_count: "User must participate in a certain number of activities",
         activity_specific_participation: "User must participate in a specific activity",
-        consecutive_days_calories: "User must burn calories on consecutive days",
+
+
         invite_count: "User must invite a certain number of people",
         social_share: "User must share on social media",
         // frequency_count removed
@@ -1185,7 +1226,8 @@ function needsTargetValue(ruleType) {
         'calorie_single_activity',
         'calorie_cumulative',
         'activity_participation_count',
-        'consecutive_days_calories',
+
+
         'invite_count',
         'social_share',
         'points_cumulative',

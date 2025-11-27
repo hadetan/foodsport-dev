@@ -32,7 +32,6 @@ const ALLOWED_RULE_COMBINATIONS = {
         'invite_count',
         'social_share',
     ]),
-    consecutive_days_calories: new Set([]),
     invite_count: new Set([
         'calorie_single_activity',
         'calorie_cumulative',
@@ -111,6 +110,7 @@ const CreateBadgePage = () => {
         isLimitedEdition: false,
         fsPointsCost: "",
         place: "",
+        forcePlaceZero: false,
     });
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
@@ -245,6 +245,11 @@ const CreateBadgePage = () => {
             errors.place = "Place must be a valid number.";
         }
 
+        // If any rules have been added, require an activity to be selected
+        if (rules.length > 0 && !formData.activityId) {
+            errors.activityId = "You must select an activity.";
+        }
+
         if (rules.length === 0) {
             errors.rules = "At least one badge rule is required.";
         }
@@ -269,9 +274,21 @@ const CreateBadgePage = () => {
         }
 
         // Handle numeric fields - only allow numbers
-        if (name === "place" || name === "fsPointsCost") {
+        if (name === "fsPointsCost") {
             // Remove any non-digit characters
             finalValue = value.replace(/\D/g, "");
+        }
+
+        // Special handling for place toggle (force place to 0)
+        if (name === "forcePlaceZero") {
+            // When toggled on, set place to "0" (hidden from UI). When off, clear place.
+            finalValue = checked;
+            setFormData((prev) => ({
+                ...prev,
+                forcePlaceZero: finalValue,
+                place: finalValue ? "0" : "",
+            }));
+            return;
         }
 
         setFormData((prev) => ({
@@ -760,7 +777,7 @@ const CreateBadgePage = () => {
                                 className="toggle toggle-primary"
                             />
                             <span className="label-text font-semibold">
-                                Is Limited Edition
+                                Is Redeemable
                             </span>
                         </label>
                     </div>
@@ -792,27 +809,21 @@ const CreateBadgePage = () => {
                         </div>
                     )}
 
-                    {/* Place Field */}
+                    {/* Place Toggle - replaces numeric place input */}
                     <div className="form-control mb-6">
-                        <label className="label">
+                        <label className="label cursor-pointer justify-start gap-4">
+                            <input
+                                type="checkbox"
+                                name="forcePlaceZero"
+                                checked={formData.forcePlaceZero}
+                                onChange={handleFormChange}
+                                className="toggle toggle-primary"
+                            />
                             <span className="label-text font-semibold">
-                                Place (Optional)
+                                Assign explicit place 
                             </span>
                         </label>
-                        <input
-                            type="text"
-                            name="place"
-                            value={formData.place}
-                            onChange={handleFormChange}
-                            placeholder="Enter display order (numbers only)"
-                            className={`input input-bordered w-full ${fieldErrors.place ? "input-error" : ""
-                                }`}
-                        />
-                        <label className="label">
-                            <span className="label-text-alt text-gray-500">
-                                Leave empty to auto-assign the next available place
-                            </span>
-                        </label>
+                        
                         {fieldErrors.place && (
                             <label className="label">
                                 <span className="label-text-alt text-error">
@@ -889,11 +900,12 @@ const CreateBadgePage = () => {
                                                             }));
                                                             setActivitySearchTerm('');
                                                         }
-                                                        // If removing redeem_purchase, uncheck isLimitedEdition
+                                                        // If removing redeem_purchase, uncheck isLimitedEdition and clear cost
                                                         if (rule.ruleType === 'redeem_purchase') {
                                                             setFormData(prev => ({
                                                                 ...prev,
-                                                                isLimitedEdition: false
+                                                                isLimitedEdition: false,
+                                                                fsPointsCost: ''
                                                             }));
                                                         }
                                                     }}
@@ -1028,6 +1040,14 @@ const CreateBadgePage = () => {
                                                             }));
                                                             setActivitySearchTerm('');
                                                         }
+                                                        // If unchecking redeem_purchase in dialog, disable the redeemable toggle and clear cost
+                                                        if (ruleType === 'redeem_purchase') {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                isLimitedEdition: false,
+                                                                fsPointsCost: ''
+                                                            }));
+                                                        }
                                                     }
                                                 }}
                                                 className="checkbox checkbox-primary mt-1"
@@ -1081,37 +1101,7 @@ const CreateBadgePage = () => {
                                             </div>
                                         )}
                                         {/* Params editors for rules that support params */}
-                                        {isAlreadyAdded && !isAutoSelected && !isActivityLinked && ruleType === 'consecutive_days_calories' && (
-                                            <div className="mt-3 ml-8">
-                                                <label className="label">
-                                                    <span className="label-text text-sm">Calorie-based options (optional)</span>
-                                                </label>
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        placeholder="Min daily calories"
-                                                        value={rules.find(r => r.ruleType === ruleType)?.params?.minDailyCalories ?? ''}
-                                                        onChange={(e) => {
-                                                            const v = e.target.value ? parseInt(e.target.value) : null;
-                                                            setRules(prev => prev.map(r =>
-                                                                r.ruleType === ruleType
-                                                                    ? { ...r, params: { ...(r.params || {}), minDailyCalories: v } }
-                                                                    : r
-                                                            ));
-                                                        }}
-                                                        className="input input-bordered input-sm w-full"
-                                                    />
-                                                    <div className="flex items-center">
-                                                        <div className="text-sm font-medium">Burn</div>
-                                                        <div className="ml-3 text-xs text-gray-500">(fixed)</div>
-                                                    </div>
-                                                </div>
-                                                <label className="label">
-                                                    <span className="label-text text-xs text-gray-500">Rule evaluates based on calories burned (default: burn).</span>
-                                                </label>
-                                            </div>
-                                        )}
+
 
 
                                     </div>
@@ -1145,7 +1135,7 @@ function getRuleDescription(ruleType) {
         calorie_cumulative: "User must burn a cumulative number of calories across all activities",
         activity_participation_count: "User must participate in a certain number of activities",
         activity_specific_participation: "User must participate in a specific activity",
-        consecutive_days_calories: "User must burn calories on consecutive days",
+
         invite_count: "User must invite a certain number of people",
         social_share: "User must share on social media",
         // frequency_count removed
@@ -1163,7 +1153,7 @@ function needsTargetValue(ruleType) {
         'calorie_single_activity',
         'calorie_cumulative',
         'activity_participation_count',
-        'consecutive_days_calories',
+
         'invite_count',
         'social_share',
         'points_cumulative',

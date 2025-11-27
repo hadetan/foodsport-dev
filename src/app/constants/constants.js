@@ -77,7 +77,6 @@ export const ALLOWED_RULE_TYPES = new Set([
   'calorie_cumulative',
   'activity_participation_count',
   'activity_specific_participation',
-  'consecutive_days_calories',
   'invite_count',
   'social_share',
   'points_cumulative',
@@ -91,7 +90,6 @@ export const ACTIVITY_RULE_TYPES = [
   'calorie_cumulative',
   'activity_participation_count',
   'activity_specific_participation',
-  'consecutive_days_calories',
 ];
 
 export const POINT_RULE_TYPES = ['points_cumulative'];

@@ -323,7 +323,7 @@
 				"calorie_cumulative": "Total calories",
 				"activity_participation_count": "Activity participation",
 				"activity_specific_participation": "Activity exclusive",
-				"consecutive_days_calories": "Streak requirement",
+                
 				"invite_count": "Invites",
 				"social_share": "Social share",
 				"frequency_count": "Consistency",
@@ -353,10 +353,7 @@
 					"named": "Join {activity} and check in successfully.",
 					"generic": "Join the highlighted activity for this badge."
 				},
-				"consecutive_days_calories": {
-					"withCalories": "Keep a {days}-day streak with at least {calories} kcal per day.",
-					"default": "Keep a {days}-day activity streak."
-				},
+                
 				"invite_count": "Invite {count} friends who attend and check in.",
 				"invite_count_activity": "Invite {count} friends to join and check in to {activity}.",
 				"invite_count_activity_generic": "Invite {count} friends to join and check in to:",

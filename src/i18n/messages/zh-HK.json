@@ -338,7 +338,7 @@
                 "calorie_cumulative": "累積卡路里",
                 "activity_participation_count": "參與次數",
                 "activity_specific_participation": "指定活動",
-                "consecutive_days_calories": "連續天數",
+                
                 "invite_count": "邀請任務",
                 "social_share": "社交分享",
                 "frequency_count": "出席頻率",
@@ -368,10 +368,7 @@
                     "named": "參加 {activity} 並成功簽到。",
                     "generic": "參加此徽章指定的活動。"
                 },
-                "consecutive_days_calories": {
-                    "withCalories": "連續 {days} 天，每天最少 {calories} 卡路里。",
-                    "default": "維持 {days} 天連續參與或簽到。"
-                },
+                
                 "invite_count": "邀請 {count} 位朋友參與並完成簽到。",
                 "invite_count_activity": "邀請 {count} 位朋友參與並完成指定活動 {activity} 的簽到。",
                 "invite_count_activity_generic": "邀請 {count} 位朋友參與並完成此活動的簽到",
