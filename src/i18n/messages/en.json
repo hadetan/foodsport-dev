@@ -203,8 +203,7 @@
 			"logoutConfirm": "Log out",
 			"cancel": "Cancel"
 		}
-	}
-	,
+	},
 	"RecentActivities": {
 		"headers": {
 			"type": "TYPE",
@@ -249,7 +248,8 @@
 			"insufficientCta": "Earn more FS points to continue.",
 			"successTitle": "Badge unlocked!",
 			"successDescription": "You spent {cost} FS points and have {balance} left.",
-			"purchaseError": "Unable to complete the purchase. Please try again."
+			"purchaseError": "Unable to complete the purchase. Please try again.",
+			"remainingLabel": "Remaining"
 		}
 	},
 	"BadgeDetails": {
@@ -338,7 +338,7 @@
 				"month": "month",
 				"monthPlural": "months"
 			},
-				"descriptions": {
+			"descriptions": {
 				"generic": "Complete the required action.",
 				"calorie_single_activity": {
 					"withTarget": "Burn at least {target} kcal during a single FoodSport activity.",
@@ -372,8 +372,7 @@
 				},
 				"redeem_points_cumulative": "Redeem {points} FS points worth of rewards.",
 				"redeem_purchase": "Redeem this badge directly with FS points."
-			}
-			,
+			},
 			"hints": {
 				"invite_activity": "Invites apply to the activity: {activity}."
 			}
@@ -399,7 +398,8 @@
 			"limitedLabel": "Availability",
 			"limited": "Limited edition",
 			"openAccess": "Open to everyone",
-			"placeLabel": "Priority spot"
+			"placeLabel": "Priority spot",
+			"quantityLabel": "Quantity"
 		},
 		"gallery": {
 			"title": "More achievement badges",

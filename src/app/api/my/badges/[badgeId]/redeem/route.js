@@ -38,6 +38,7 @@ export async function POST(request, context) {
                     isActive: true,
                     isLimitedEdition: true,
                     fsPointsCost: true,
+                    quantity: true,
                 },
             });
 
@@ -50,6 +51,15 @@ export async function POST(request, context) {
             const cost = badge.fsPointsCost ?? 0;
             if (cost <= 0) {
                 throw new RedemptionError(400, 'Badge does not have a valid FS points cost');
+            }
+
+            if (badge.quantity !== null) {
+                const currentCount = await tx.userBadge.count({
+                    where: { badgeId: badge.id },
+                });
+                if (currentCount >= badge.quantity) {
+                    throw new RedemptionError(409, 'Badge is out of stock');
+                }
             }
 
             const dbUser = await tx.user.findUnique({

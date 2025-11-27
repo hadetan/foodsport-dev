@@ -33,7 +33,10 @@ function buildBadgeViewerContext(badge) {
         pointsSpent: badge.pointsSpent || null,
         source: badge.source || null,
         fsPointsCost: typeof badge.fsPointsCost === 'number' ? badge.fsPointsCost : null,
+        fsPointsCost: typeof badge.fsPointsCost === 'number' ? badge.fsPointsCost : null,
         isLimitedEdition: Boolean(badge.isLimitedEdition),
+        quantity: badge.quantity ?? null,
+        remainingQuantity: badge.remainingQuantity ?? null,
     };
     return safeBadge;
 }
@@ -184,6 +187,12 @@ export default function BadgeModal({ badge, locale, labels, onClose, onRedeemed,
                             <span>{t('modal.balanceLabel')}</span>
                             <strong>{formatPoints(userPoints)}</strong>
                         </div>
+                        {badge.quantity && (
+                            <div className="badge-modal__redeem-row">
+                                <span>{t('modal.remainingLabel')}</span>
+                                <strong>{badge.remainingQuantity ?? badge.quantity} / {badge.quantity}</strong>
+                            </div>
+                        )}
                     </div>
                     {!hasEnoughPoints && (
                         <div className="badge-modal__redeem-warning" role="alert">

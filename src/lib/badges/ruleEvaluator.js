@@ -140,6 +140,16 @@ async function awardBadgesForRules(tx, { userId, ruleTypes, source, ...context }
             if (awardedBadgeIds.has(badge.id)) {
                 continue;
             }
+
+            if (badge.quantity !== null) {
+                const currentCount = await tx.userBadge.count({
+                    where: { badgeId: badge.id },
+                });
+                if (currentCount >= badge.quantity) {
+                    continue;
+                }
+            }
+
             const matches = await doesBadgeMatchAllRules(tx, badge, evalContext);
             if (!matches) {
                 continue;
