@@ -402,6 +402,7 @@ model Badge {
   isLimitedEdition  Boolean   @default(false) @map("is_limited_edition")
   fsPointsCost      Int?      @map("fs_points_cost")
   place             Int       @map("place")
+  quantity          Int?
   isActive          Boolean   @default(true) @map("is_active")
   createdAt         DateTime  @default(now()) @map("created_at")
 
