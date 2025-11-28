@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Eye, Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const BadgeRow = ({ badge, onRowClick }) => {
+const BadgeRow = ({ badge }) => {
     const router = useRouter();
     const [imageError, setImageError] = useState(false);
 
@@ -12,17 +12,10 @@ const BadgeRow = ({ badge, onRowClick }) => {
         return str.replace(/\b\w/g, (c) => c.toUpperCase()).replace(/_/g, " ");
     };
 
-    const handleRowClick = () => {
-        if (onRowClick) {
-            onRowClick(badge);
-        }
-    };
-
     return (
         <tr
             key={badge.id}
             className="text-base align-middle cursor-pointer hover:bg-purple-100"
-            onClick={handleRowClick}
         >
             {/* Badge Name with Image */}
             <td className="align-middle">

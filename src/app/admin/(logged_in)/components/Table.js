@@ -68,7 +68,6 @@ const Table = ({
                             <BadgeRow
                                 key={badge.id}
                                 badge={badge}
-                                onRowClick={onRowClick}
                             />
                         ))}
                 </tbody>

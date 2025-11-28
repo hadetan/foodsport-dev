@@ -67,13 +67,6 @@ const BadgeManagementContent = () => {
         }
     }, [searchQuery, badges, statusFilter, loading, router]);
 
-    // Handle row click
-    const handleRowClick = (badge) => {
-        // For now, just log the badge click
-        // You can add navigation to a badge detail page later
-        console.log("Badge clicked:", badge);
-    };
-
     const statusOptions = ["All", "Active", "Inactive"];
     const tableHeading = [
         "Badge Name",
@@ -147,7 +140,6 @@ const BadgeManagementContent = () => {
                             heading={tableHeading}
                             tableData={paginatedBadges}
                             tableType={"badgePage"}
-                            onRowClick={handleRowClick}
                         />
                     </div>
                 )}
