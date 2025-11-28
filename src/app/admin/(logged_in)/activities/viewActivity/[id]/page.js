@@ -29,6 +29,8 @@ const ActivityDetailPage = () => {
     const params = useParams();
     const router = useRouter();
     const [unknownCount, setUnknownCount] = useState(0);
+    const [attendeesData, setAttendeesData] = useState({ verified: [], unverified: [], unknown: [] });
+    const [verifying, setVerifying] = useState(null);
 
     const { activities, loading: activitiesLoading } = useAdminActivities();
     const activityId = params?.id;
@@ -73,20 +75,68 @@ const ActivityDetailPage = () => {
 
     useEffect(() => {
         if (!activityId) return;
-        const fetchUnknown = async () => {
+        const fetchAttendees = async () => {
             try {
                 const res = await axios.get(`/admin/verifyTicket?activityId=${activityId}`);
-                if (res.data && Array.isArray(res.data.unknown)) {
-                    setUnknownCount(res.data.unknown.length);
+                if (res.data) {
+                    setAttendeesData({
+                        verified: res.data.verified || [],
+                        unverified: res.data.unverified || [],
+                        unknown: res.data.unknown || []
+                    });
+                    setUnknownCount((res.data.unknown || []).length);
                 }
             } catch (e) {
-                console.error("Failed to fetch unknown attendees", e);
+                console.error("Failed to fetch attendees", e);
             }
         };
-        fetchUnknown();
+        fetchAttendees();
     }, [activityId]);
 
     const handleImportClick = () => fileInputRef.current?.click();
+
+    const getTicketCodeForUser = (userEmail) => {
+        const allAttendees = [...attendeesData.verified, ...attendeesData.unverified];
+        const attendee = allAttendees.find(a => a.participant?.email === userEmail);
+        return attendee?.ticketCode || null;
+    };
+
+    const handleVerifyUser = async (user) => {
+        const ticketCode = getTicketCodeForUser(user.email);
+        if (!ticketCode) {
+            toast.error("No ticket found for this user");
+            return;
+        }
+
+        setVerifying(user.id);
+        try {
+            await axios.post("/admin/verifyTicket", {
+                activityId,
+                ticketCode: ticketCode.toUpperCase()
+            });
+
+            setUsers(prevUsers => prevUsers.map(u => {
+                if (u.email === user.email) {
+                    return {
+                        ...u,
+                        joinedActivities: u.joinedActivities.map(activity => {
+                            if (activity.id === activityId) {
+                                return { ...activity, wasPresent: true };
+                            }
+                            return activity;
+                        })
+                    };
+                }
+                return u;
+            }));
+
+            toast.success("User verified successfully!");
+        } catch (error) {
+            toast.error(error?.response?.data?.error || "Verification failed");
+        } finally {
+            setVerifying(null);
+        }
+    };
 
     const updateUsersAfterImport = (successfulResults) => {
         if (!successfulResults || successfulResults.length === 0) return;
@@ -468,9 +518,6 @@ const ActivityDetailPage = () => {
                                                         Email
                                                     </th>
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
-                                                        Gender
-                                                    </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
                                                         Height/Weight
                                                     </th>
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
@@ -480,13 +527,13 @@ const ActivityDetailPage = () => {
                                                         Total Calories Burned
                                                     </th>
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
-                                                        Register Date
-                                                    </th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
                                                         Total Activities Joined
                                                     </th>
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
                                                         Ticket Verified
+                                                    </th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-nowrap">
+                                                        Action
                                                     </th>
                                                 </tr>
                                             </thead>
@@ -522,11 +569,6 @@ const ActivityDetailPage = () => {
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {user.gender || "Not specified"}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                <div className="text-sm text-gray-900">
                                                                     {`${user.height} CM`}{" "}
                                                                     /{" "}
                                                                     {`${user.weight} KG`}
@@ -544,11 +586,6 @@ const ActivityDetailPage = () => {
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap">
                                                                 <div className="text-sm text-gray-900">
-                                                                    {formatDate(user.joinDate)}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                                <div className="text-sm text-gray-900">
                                                                     {user.totalActivities}
                                                                 </div>
                                                             </td>
@@ -556,6 +593,17 @@ const ActivityDetailPage = () => {
                                                                 <div className="text-sm text-gray-900">
                                                                     {isUserVerified(i) ? "Yes" : "No"}
                                                                 </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                                {!isUserVerified(i) && (
+                                                                    <button
+                                                                        onClick={() => handleVerifyUser(user)}
+                                                                        disabled={verifying === user.id}
+                                                                        className="inline-flex items-center rounded-lg bg-indigo-50 px-5 py-1.5 text-xs font-medium text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                    >
+                                                                        {verifying === user.id ? "Verifying..." : "Verify"}
+                                                                    </button>
+                                                                )}
                                                             </td>
                                                         </tr>
                                                     ))}
