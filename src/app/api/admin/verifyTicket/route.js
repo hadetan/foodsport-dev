@@ -190,7 +190,7 @@ export async function GET(request) {
 			return NextResponse.json({ error: 'Missing activityId' }, { status: 400 });
 		}
 
-		const attendees = await prisma.userActivity.findMany({
+		const verifiedAttendees = await prisma.userActivity.findMany({
 			where: { activityId, wasPresent: true },
 			include: {
 				user: { select: { id: true, email: true, firstname: true, lastname: true, profilePictureUrl: true } },
@@ -200,17 +200,55 @@ export async function GET(request) {
 			orderBy: { joinedAt: 'asc' },
 		});
 
-		const result = attendees.map((a) => ({
+		const unverifiedAttendees = await prisma.userActivity.findMany({
+			where: { activityId, wasPresent: false },
+			include: {
+				user: { select: { id: true, email: true, firstname: true, lastname: true, profilePictureUrl: true } },
+				tempUser: { select: { id: true, email: true, firstname: true, lastname: true, dateOfBirth: true } },
+				ticket: { select: { ticketCode: true } },
+			},
+			orderBy: { joinedAt: 'asc' },
+		});
+
+		const unknownTickets = await prisma.ticket.findMany({
+			where: {
+				activityId,
+				invitedUserId: { not: null },
+				userId: null,
+				tempUserId: null,
+				status: 'active',
+			},
+			include: {
+				invitedUser: { select: { email: true } },
+			},
+			orderBy: { createdAt: 'asc' },
+		});
+
+		const mapAttendee = (a) => ({
 			userActivityId: a.id,
 			ticketCode: a.ticket?.ticketCode || null,
 			wasPresent: a.wasPresent,
 			joinedAt: a.joinedAt,
 			participant: a.user ? { type: 'user', ...a.user } : a.tempUser ? { type: 'tempUser', ...a.tempUser } : null,
+		});
+
+		const verified = verifiedAttendees.map(mapAttendee);
+		const unverified = unverifiedAttendees.map(mapAttendee);
+
+		const unknown = unknownTickets.map((t) => ({
+			ticketId: t.id,
+			ticketCode: t.ticketCode,
+			email: t.invitedUser?.email || 'Unknown',
 		}));
 
-		return NextResponse.json({ attendees: result });
+		return NextResponse.json({
+			attendees: verified,
+			verified,
+			unverified,
+			unknown,
+		});
 	} catch (err) {
-		return NextResponse.json({ error: 'Failed to fetch verified attendees', details: err.message }, { status: 500 });
+		return NextResponse.json({ error: 'Failed to fetch attendees', details: err.message }, { status: 500 });
 	}
 }
 

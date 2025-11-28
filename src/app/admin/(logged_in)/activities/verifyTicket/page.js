@@ -9,6 +9,171 @@ import { useUsers } from "@/app/shared/contexts/usersContext";
 import FullPageLoader from "../../components/FullPageLoader";
 import InviteParticipantsDialogAdmin from "../components/InviteParticipantsDialogAdmin";
 
+function UnknownAttendeesTable({ attendees, onVerify }) {
+    if (!attendees || attendees.length === 0) return null;
+
+    return (
+        <section className="mb-8">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/50 shadow-sm">
+                <div className="flex items-center justify-between border-b border-amber-200 px-6 py-4">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">
+                            Pending Action
+                        </p>
+                        <h2 className="mt-1 text-xl font-semibold text-slate-900">
+                            Unknown Attendees
+                        </h2>
+                    </div>
+                    <span className="inline-flex items-center rounded-full bg-amber-100 px-4 py-1 text-sm font-semibold text-amber-700">
+                        {attendees.length}
+                    </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-amber-200/50">
+                        <thead className="bg-amber-50 whitespace-nowrap">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-amber-700">
+                                    Email
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-amber-700">
+                                    Ticket Code
+                                </th>
+                                <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-amber-700">
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-amber-100 bg-white">
+                            {attendees.map((attendee) => (
+                                <tr key={attendee.ticketCode} className="transition hover:bg-amber-50/30">
+                                    <td className="whitespace-nowrap px-6 py-3 text-sm text-slate-700">
+                                        {attendee.email}
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-3 text-sm font-mono font-semibold uppercase tracking-wider text-slate-700">
+                                        {attendee.ticketCode}
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-3 text-right">
+                                        <button
+                                            onClick={() => onVerify(attendee.ticketCode)}
+                                            className="inline-flex items-center rounded-lg bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-700 transition hover:bg-amber-200"
+                                        >
+                                            Verify
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function UnverifiedAttendeesTable({ attendees, onVerify }) {
+    if (!attendees || attendees.length === 0) return null;
+
+    return (
+        <section className="mt-12">
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Registered
+                        </p>
+                        <h2 className="mt-1 text-xl font-semibold text-slate-900">
+                            Unverified Attendees
+                        </h2>
+                    </div>
+                    <span className="inline-flex items-center rounded-full bg-slate-100 px-4 py-1 text-sm font-semibold text-slate-600">
+                        {attendees.length}
+                    </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-slate-200">
+                        <thead className="bg-slate-50 whitespace-nowrap">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Name
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Email
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Type
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Ticket code
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Joined at
+                                </th>
+                                <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 bg-white">
+                            {attendees.map((attendee) => {
+                                const fullName = [
+                                    attendee.participant?.firstname,
+                                    attendee.participant?.lastname,
+                                ]
+                                    .filter(Boolean)
+                                    .join(" ");
+                                const type =
+                                    attendee.participant?.type === "tempUser"
+                                        ? "Unregistered User"
+                                        : attendee.participant?.type || "-";
+                                const ticketCode =
+                                    attendee.ticketCode?.toUpperCase() || "-";
+                                const joinedAt = attendee.joinedAt
+                                    ? new Date(attendee.joinedAt).toLocaleString()
+                                    : "-";
+
+                                return (
+                                    <tr
+                                        key={attendee.userActivityId}
+                                        className="transition hover:bg-slate-50/60"
+                                    >
+                                        <td className="whitespace-nowrap px-6 py-3 text-sm font-medium text-slate-800">
+                                            {fullName || "—"}
+                                        </td>
+                                        <td className="whitespace-nowrap px-6 py-3 text-sm text-slate-600">
+                                            {attendee.participant?.email || "—"}
+                                        </td>
+                                        <td className="whitespace-nowrap px-6 py-3 text-sm text-slate-600">
+                                            <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                                                {type}
+                                            </span>
+                                        </td>
+                                        <td className="whitespace-nowrap px-6 py-3 text-sm font-mono font-semibold uppercase tracking-wider text-slate-700">
+                                            {ticketCode}
+                                        </td>
+                                        <td className="whitespace-nowrap px-6 py-3 text-sm text-slate-600">
+                                            {joinedAt}
+                                        </td>
+                                        <td className="whitespace-nowrap px-6 py-3 text-right">
+                                            <button
+                                                onClick={() => onVerify(ticketCode)}
+                                                className="inline-flex items-center rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 transition hover:bg-indigo-100"
+                                            >
+                                                Verify
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    );
+}
+
 function VerifiedAttendeesTable({
     attendees,
     loading,
@@ -20,18 +185,18 @@ function VerifiedAttendeesTable({
     const hasAttendees = attendees.length > 0;
 
     return (
-        <section className="mt-12">
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <section>
+            <div className="rounded-2xl border border-emerald-200 bg-white shadow-sm">
+                <div className="flex items-center justify-between border-b border-emerald-100 px-6 py-4 bg-emerald-50/30">
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
                             Attendance
                         </p>
                         <h2 className="mt-1 text-xl font-semibold text-slate-900">
                             Verified attendees
                         </h2>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-4 py-1 text-sm font-semibold text-indigo-600">
+                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-4 py-1 text-sm font-semibold text-emerald-700">
                         {attendees.length}
                     </span>
                 </div>
@@ -40,27 +205,27 @@ function VerifiedAttendeesTable({
                     <div className="px-6 py-5 text-sm text-red-600">{error}</div>
                 ) : hasAttendees ? (
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-slate-200">
-                            <thead className="bg-slate-50 whitespace-nowrap">
+                        <table className="min-w-full divide-y divide-emerald-100">
+                            <thead className="bg-emerald-50/50 whitespace-nowrap">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-emerald-700">
                                         Name
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-emerald-700">
                                         Email
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-emerald-700">
                                         Type
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-emerald-700">
                                         Ticket code
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-emerald-700">
                                         Joined at
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 bg-white">
+                            <tbody className="divide-y divide-emerald-50 bg-white">
                                 {attendees.map((attendee) => {
                                     const fullName = [
                                         attendee.participant?.firstname,
@@ -70,22 +235,22 @@ function VerifiedAttendeesTable({
                                         .join(" ");
                                     const type =
                                         attendee.participant?.type === "tempUser"
-                                            ? "Invited guest"
+                                            ? "Unregistered User"
                                             : attendee.participant?.type ||
-                                              "-";
+                                            "-";
                                     const ticketCode =
                                         attendee.ticketCode?.toUpperCase() ||
                                         "-";
                                     const joinedAt = attendee.joinedAt
                                         ? new Date(
-                                              attendee.joinedAt
-                                          ).toLocaleString()
+                                            attendee.joinedAt
+                                        ).toLocaleString()
                                         : "-";
 
                                     return (
                                         <tr
                                             key={attendee.userActivityId}
-                                            className="transition hover:bg-slate-50/60"
+                                            className="transition hover:bg-emerald-50/30"
                                         >
                                             <td className="whitespace-nowrap px-6 py-3 text-sm font-medium text-slate-800">
                                                 {fullName || "—"}
@@ -95,7 +260,7 @@ function VerifiedAttendeesTable({
                                                     "—"}
                                             </td>
                                             <td className="whitespace-nowrap px-6 py-3 text-sm text-slate-600">
-                                                <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                                                <span className="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">
                                                     {type}
                                                 </span>
                                             </td>
@@ -125,6 +290,8 @@ function VerifiedAttendeesTable({
 export default function VerifyTicketPage() {
     const router = useRouter();
     const { attendees, loading, error, setAttendees, setError, setLoading } = useVerifiedAttendees();
+    const [unverifiedAttendees, setUnverifiedAttendees] = useState([]);
+    const [unknownAttendees, setUnknownAttendees] = useState([]);
     const { getActivityNameById, loading: ActivityLoading } = useAdminActivities();
     const { setUsers } = useUsers();
 
@@ -174,7 +341,9 @@ export default function VerifyTicketPage() {
             const { data } = await axios.get("/admin/verifyTicket", {
                 params: { activityId },
             });
-            setAttendees(data.attendees || []);
+            setAttendees(data.verified || data.attendees || []);
+            setUnverifiedAttendees(data.unverified || []);
+            setUnknownAttendees(data.unknown || []);
             setError(null);
         } catch (error) {
             setError(
@@ -216,12 +385,13 @@ export default function VerifyTicketPage() {
         setActivityName(getActivityNameById(activityId));
     }, [activityId, getActivityNameById]);
 
-    async function handleVerify() {
+    async function handleVerify(codeOverride) {
+        const codeToVerify = codeOverride || ticketCode;
         setVerifying(true);
         setVerifyError(null);
         setVerifySuccess(null);
         try {
-            if (!activityId || !ticketCode.trim()) {
+            if (!activityId || !codeToVerify.trim()) {
                 setVerifyError(
                     "Please provide both Activity ID and Ticket Code."
                 );
@@ -229,7 +399,7 @@ export default function VerifyTicketPage() {
             }
             const res = await axios.post("/admin/verifyTicket", {
                 activityId,
-                ticketCode: ticketCode.trim().toUpperCase(),
+                ticketCode: codeToVerify.trim().toUpperCase(),
             });
             const data = res.data;
 
@@ -250,6 +420,9 @@ export default function VerifyTicketPage() {
                 if (userEmail) {
                     updateUserPresentStatus(userEmail, activityId);
                 }
+                // Remove from unverified/unknown if present
+                setUnverifiedAttendees(prev => prev.filter(a => a.ticketCode !== data.attendee.ticketCode));
+                setUnknownAttendees(prev => prev.filter(a => a.ticketCode !== data.attendee.ticketCode));
             }
         } catch (error) {
             if (error?.response?.data?.error) {
@@ -305,6 +478,8 @@ export default function VerifyTicketPage() {
                 if (userEmail) {
                     updateUserPresentStatus(userEmail, activityId);
                 }
+                // Remove from unknown if present
+                setUnknownAttendees(prev => prev.filter(a => a.ticketCode !== res.data.attendee.ticketCode));
             }
         } catch (error) {
             setVerifyError(
@@ -331,11 +506,11 @@ export default function VerifyTicketPage() {
         : null;
     const lastVerifiedName = lastAttendee?.participant
         ? [
-              lastAttendee.participant.firstname,
-              lastAttendee.participant.lastname,
-          ]
-              .filter(Boolean)
-              .join(" ")
+            lastAttendee.participant.firstname,
+            lastAttendee.participant.lastname,
+        ]
+            .filter(Boolean)
+            .join(" ")
         : "";
 
     return (
@@ -600,11 +775,21 @@ export default function VerifyTicketPage() {
                             </div>
                         </div>
 
+                        <UnknownAttendeesTable
+                            attendees={unknownAttendees}
+                            onVerify={handleVerify}
+                        />
+
                         <VerifiedAttendeesTable
                             attendees={attendees}
                             loading={loading}
                             ActivityLoading={ActivityLoading}
                             error={error}
+                        />
+
+                        <UnverifiedAttendeesTable
+                            attendees={unverifiedAttendees}
+                            onVerify={handleVerify}
                         />
                     </div>
 
@@ -630,11 +815,10 @@ export default function VerifyTicketPage() {
                                     <span>Last check-in</span>
                                     <span className="text-right text-slate-700">
                                         {lastVerifiedAt
-                                            ? `${lastVerifiedAt}${
-                                                  lastVerifiedName
-                                                      ? ` • ${lastVerifiedName}`
-                                                      : ""
-                                              }`
+                                            ? `${lastVerifiedAt}${lastVerifiedName
+                                                ? ` • ${lastVerifiedName}`
+                                                : ""
+                                            }`
                                             : "Waiting for first check-in"}
                                     </span>
                                 </div>
