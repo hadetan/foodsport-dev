@@ -72,7 +72,17 @@ export async function POST(req) {
 	const successfulTempUsersWithNames = [];
 
 	for (const userRow of users) {
-		const { email, calories, duration } = userRow;
+		const { email, calories, duration, present } = userRow;
+
+		if (present === 0) {
+			results.push({
+				email,
+				success: false,
+				error: 'Skipped: User marked as not present',
+			});
+			continue;
+		}
+
 		if (!email || typeof calories !== 'number') {
 			results.push({
 				email,
@@ -145,6 +155,16 @@ export async function POST(req) {
 						data: { wasPresent: true, totalDuration: validDuration },
 					});
 
+					const ticket = await tx.ticket.findFirst({
+						where: { userId: user.id, activityId, status: 'active' }
+					});
+					if (ticket && !ticket.ticketUsed) {
+						await tx.ticket.update({
+							where: { id: ticket.id },
+							data: { ticketUsed: true, status: 'used', usedAt: new Date() }
+						});
+					}
+
 					await tx.calorieSubmission.create({
 						data: {
 							userId: user.id,
@@ -153,17 +173,17 @@ export async function POST(req) {
 						},
 					});
 
-						postTransactionJobs.push({
-							type: 'activity_badges',
-							userId: user.id,
-							activityId,
-							calories,
-							wasPresent: true,
-							totalCaloriesBurned: updatedUser.totalCaloriesBurned,
-							pointsEarnedThisImport,
-							latestTotalPoints,
-							source: `activity_import:${activityId}`,
-						});
+					postTransactionJobs.push({
+						type: 'activity_badges',
+						userId: user.id,
+						activityId,
+						calories,
+						wasPresent: true,
+						totalCaloriesBurned: updatedUser.totalCaloriesBurned,
+						pointsEarnedThisImport,
+						latestTotalPoints,
+						source: `activity_import:${activityId}`,
+					});
 				} else if (tempUser) {
 					await tx.tempUser.update({
 						where: { id: tempUser.id },
@@ -176,6 +196,16 @@ export async function POST(req) {
 						where: { tempUserId: tempUser.id, activityId },
 						data: { wasPresent: true, totalDuration: validDuration },
 					});
+
+					const ticket = await tx.ticket.findFirst({
+						where: { tempUserId: tempUser.id, activityId, status: 'active' }
+					});
+					if (ticket && !ticket.ticketUsed) {
+						await tx.ticket.update({
+							where: { id: ticket.id },
+							data: { ticketUsed: true, status: 'used', usedAt: new Date() }
+						});
+					}
 				}
 
 				await tx.activity.updateMany({

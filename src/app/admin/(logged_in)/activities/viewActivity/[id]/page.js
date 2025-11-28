@@ -28,6 +28,7 @@ const ActivityDetailPage = () => {
     const [participatingUsers, setParticipatingUsers] = useState([]);
     const params = useParams();
     const router = useRouter();
+    const [unknownCount, setUnknownCount] = useState(0);
 
     const { activities, loading: activitiesLoading } = useAdminActivities();
     const activityId = params?.id;
@@ -70,6 +71,21 @@ const ActivityDetailPage = () => {
         }
     }, [activityId, activities, activitiesLoading]);
 
+    useEffect(() => {
+        if (!activityId) return;
+        const fetchUnknown = async () => {
+            try {
+                const res = await axios.get(`/admin/verifyTicket?activityId=${activityId}`);
+                if (res.data && Array.isArray(res.data.unknown)) {
+                    setUnknownCount(res.data.unknown.length);
+                }
+            } catch (e) {
+                console.error("Failed to fetch unknown attendees", e);
+            }
+        };
+        fetchUnknown();
+    }, [activityId]);
+
     const handleImportClick = () => fileInputRef.current?.click();
 
     const updateUsersAfterImport = (successfulResults) => {
@@ -77,7 +93,6 @@ const ActivityDetailPage = () => {
 
         const updatedUsers = users.map(user => {
             const result = successfulResults.find(r => r.email === user.email);
-            
             if (!result) return user;
 
             const updatedCalories = (user.totalCaloriesBurned || 0) + (result.calories || 0);
@@ -136,6 +151,7 @@ const ActivityDetailPage = () => {
                 ...(Number.isFinite(u.duration)
                     ? { duration: Number(u.duration) }
                     : {}),
+                present: u.present ? 1 : 0,
             }));
 
             const res = await axios.post(
@@ -211,12 +227,9 @@ const ActivityDetailPage = () => {
             toast.error("No activity data to export");
             return;
         }
-        
-        const presentParticipants = participatingUsers.filter((user) => user.joinedActivities.some((a) => {
-            return a.wasPresent === true;
-        }));
+        const usersToExport = participatingUsers;
 
-        if (!presentParticipants || presentParticipants.length === 0) {
+        if (!usersToExport || usersToExport.length === 0) {
             toast.error("No participating users to export");
             return;
         }
@@ -227,13 +240,16 @@ const ActivityDetailPage = () => {
             return `"${s.replace(/"/g, '""')}"`;
         };
 
-        const headers = ["userId", "firstname", "lastname", "email", "Registered", "gender", "height", "weight", "dob", "totalDuration", "totalCaloriesBurned"];
+        const headers = ["userId", "firstname", "lastname", "email", "Registered", "gender", "height", "weight", "dob", "totalDuration", "totalCaloriesBurned", "present"];
         const userHeader = headers.map((h) => `"${h}"`).join(",");
 
-        const userRows = presentParticipants.map((user) => {
+        const userRows = usersToExport.map((user) => {
+            const activityData = user.joinedActivities.find(a => a.id === activityId || a.activityId === activityId);
+            const wasPresent = activityData?.wasPresent ? "1" : "0";
+
             const values = [
                 user.id, user?.firstname ?? "", user?.lastname ?? "", user?.email ?? "", user?.isRegistered ? "Yes" : "No",
-                user?.gender ?? "Not specified", user?.height ?? "", user?.weight ?? "", user?.dateOfBirth ?? "", "", "",
+                user?.gender ?? "Not specified", user?.height ?? "", user?.weight ?? "", user?.dateOfBirth ?? "", "", "", wasPresent
             ];
             return values.map(escapeCsv).join(",");
         }
@@ -401,6 +417,30 @@ const ActivityDetailPage = () => {
                                     Export Users
                                 </button>
                             </div>
+
+                            {unknownCount > 0 && (
+                                <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 flex justify-between items-center">
+                                    <div className="flex">
+                                        <div className="flex-shrink-0">
+                                            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div className="ml-3">
+                                            <p className="text-sm text-yellow-700">
+                                                There are <span className="font-bold">{unknownCount} unknown attendees</span> who cannot be exported because they are missing profile information.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => router.push(`/admin/activities/verifyTicket?activityId=${activityId}`)}
+                                        className="ml-4 px-3 py-1 rounded border border-yellow-500 text-yellow-700 text-sm font-medium hover:bg-yellow-100 transition-colors"
+                                    >
+                                        Verify & Fix
+                                    </button>
+                                </div>
+                            )}
+
                             {/* Participating Users Table */}
                             <div className="bg-white rounded-lg shadow-md overflow-hidden">
                                 <div className="px-6 py-4 border-b border-gray-200">

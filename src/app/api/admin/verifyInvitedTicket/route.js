@@ -173,6 +173,7 @@ export async function POST(request) {
 			}
 		}
 
+		let emailWarning = null;
 		if (result.tempUser && !process.env.USER_DISABLE_OTP) {
 			try {
 				const templateId = process.env.INVITED_USER_TEMPLATE_ID;
@@ -185,11 +186,17 @@ export async function POST(request) {
 				if (!res?.data?.success) throw new Error('Email send failed');
 			} catch (err) {
 				console.error('Failed to send inviting email', err);
-				return NextResponse.json({ error: 'Failed to send inviting email' }, { status: 500 });
+				emailWarning = 'Ticket verified, but failed to send welcome email.';
 			}
 		}
 
-		return NextResponse.json({ success: true, attendee: result.attendee, tempUser: result.tempUser ?? null, userActivity: result.userActivity ?? null });
+		return NextResponse.json({
+			success: true,
+			attendee: result.attendee,
+			tempUser: result.tempUser ?? null,
+			userActivity: result.userActivity ?? null,
+			warning: emailWarning
+		});
 	} catch (err) {
 		return NextResponse.json({ error: 'Failed to verify invited ticket', details: err.message }, { status: 500 });
 	}

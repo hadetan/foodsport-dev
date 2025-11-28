@@ -386,11 +386,14 @@ export default function VerifyTicketPage() {
     }, [activityId, getActivityNameById]);
 
     async function handleVerify(codeOverride) {
-        const codeToVerify = codeOverride || ticketCode;
+        const codeToVerify = ticketCode || codeOverride;
         setVerifying(true);
         setVerifyError(null);
         setVerifySuccess(null);
         try {
+            console.log('trying to do something.');
+            console.log(ticketCode);
+            console.log(codeToVerify);
             if (!activityId || !codeToVerify.trim()) {
                 setVerifyError(
                     "Please provide both Activity ID and Ticket Code."
@@ -475,10 +478,27 @@ export default function VerifyTicketPage() {
             if (res?.data?.attendee) {
                 setAttendees((prev) => [...prev, res.data.attendee]);
                 const userEmail = res.data.attendee?.participant?.email || invitedForm.email;
-                if (userEmail) {
+
+                if (res.data.tempUser) {
+                    const newTempUser = {
+                        ...res.data.tempUser,
+                        joinDate: res.data.tempUser.createdAt || new Date().toISOString(),
+                        lastActive: res.data.tempUser.updatedAt || new Date().toISOString(),
+                        totalActivities: 1,
+                        joinedActivities: [{
+                            id: activityId,
+                            activityId: activityId,
+                            wasPresent: true,
+                            totalDuration: null,
+                        }],
+                        isRegistered: false,
+                        totalCaloriesBurned: 0,
+                    };
+                    setUsers(prevUsers => [...prevUsers, newTempUser]);
+                } else if (userEmail) {
                     updateUserPresentStatus(userEmail, activityId);
                 }
-                // Remove from unknown if present
+
                 setUnknownAttendees(prev => prev.filter(a => a.ticketCode !== res.data.attendee.ticketCode));
             }
         } catch (error) {

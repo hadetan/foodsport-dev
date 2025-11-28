@@ -126,6 +126,12 @@ const parseUsersFromCsv = (text) => {
         "activityduration",
         "timespent",
     ];
+    const presentKeys = [
+        "present",
+        "ispresent",
+        "attended",
+        "ticketverified",
+    ];
 
     const findIdx = (keys, fallback) => {
         const idx = keys.map((k) => headerNorm.indexOf(k)).find((i) => i >= 0);
@@ -135,6 +141,7 @@ const parseUsersFromCsv = (text) => {
     const idxEmail = findIdx(emailKeys, 0);
     const idxCalories = findIdx(calKeys, 1);
     const idxDuration = findIdx(durKeys, 2);
+    const idxPresent = findIdx(presentKeys, -1);
 
     const users = [];
     for (let i = headerIdx + 1; i < lines.length; i++) {
@@ -147,6 +154,7 @@ const parseUsersFromCsv = (text) => {
         const emailRaw = cols[idxEmail] ?? "";
         const caloriesRaw = cols[idxCalories] ?? "";
         const durationRaw = cols[idxDuration];
+        const presentRaw = idxPresent >= 0 ? cols[idxPresent] : undefined;
 
         let calories = parseNumberLoose(caloriesRaw);
         if (!Number.isFinite(calories)) calories = 0;
@@ -159,6 +167,7 @@ const parseUsersFromCsv = (text) => {
             email: emailRaw,
             calories, // normalize to API expected key
             ...(duration !== undefined ? { duration } : {}),
+            present: presentRaw ? ["1", "true", "yes", "y"].includes(String(presentRaw).toLowerCase()) : false,
         });
     }
 
