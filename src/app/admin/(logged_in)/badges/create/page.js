@@ -105,7 +105,9 @@ const CreateBadgePage = () => {
         image: null,
         isSeasonal: false,
         seasonalStartDate: "",
+        seasonalStartTime: "",
         seasonalEndDate: "",
+        seasonalEndTime: "",
         activityId: "",
         isLimitedEdition: false,
         fsPointsCost: "",
@@ -227,11 +229,19 @@ const CreateBadgePage = () => {
             if (!formData.seasonalStartDate) {
                 errors.seasonalStartDate = "Seasonal start date is required.";
             }
+            if (!formData.seasonalStartTime) {
+                errors.seasonalStartTime = "Seasonal start time is required.";
+            }
             if (!formData.seasonalEndDate) {
                 errors.seasonalEndDate = "Seasonal end date is required.";
             }
-            if (formData.seasonalStartDate && formData.seasonalEndDate) {
-                if (new Date(formData.seasonalStartDate) >= new Date(formData.seasonalEndDate)) {
+            if (!formData.seasonalEndTime) {
+                errors.seasonalEndTime = "Seasonal end time is required.";
+            }
+            if (formData.seasonalStartDate && formData.seasonalStartTime && formData.seasonalEndDate && formData.seasonalEndTime) {
+                const startDT = new Date(`${formData.seasonalStartDate}T${formData.seasonalStartTime}`);
+                const endDT = new Date(`${formData.seasonalEndDate}T${formData.seasonalEndTime}`);
+                if (startDT >= endDT) {
                     errors.seasonalEndDate = "End date must be after start date.";
                 }
             }
@@ -393,8 +403,16 @@ const CreateBadgePage = () => {
             formDataToSend.append("isSeasonal", String(formData.isSeasonal));
 
             if (formData.isSeasonal) {
-                formDataToSend.append("seasonalStartDate", formData.seasonalStartDate);
-                formDataToSend.append("seasonalEndDate", formData.seasonalEndDate);
+                // Combine date + time to ISO strings so API can store DateTime
+                // Explicitly interpret date & time as Hong Kong Time (UTC+8)
+                const startISO = formData.seasonalStartDate && formData.seasonalStartTime
+                    ? new Date(`${formData.seasonalStartDate}T${formData.seasonalStartTime}+08:00`).toISOString()
+                    : formData.seasonalStartDate;
+                const endISO = formData.seasonalEndDate && formData.seasonalEndTime
+                    ? new Date(`${formData.seasonalEndDate}T${formData.seasonalEndTime}+08:00`).toISOString()
+                    : formData.seasonalEndDate;
+                if (startISO) formDataToSend.append("seasonalStartDate", startISO);
+                if (endISO) formDataToSend.append("seasonalEndDate", endISO);
             }
 
             if (formData.activityId) {
@@ -751,6 +769,24 @@ const CreateBadgePage = () => {
                                         </span>
                                     </label>
                                 )}
+                                {/* Start Time input */}
+                                <div className="mt-2">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">Start Time *</span>
+                                    </label>
+                                    <input
+                                        type="time"
+                                        name="seasonalStartTime"
+                                        value={formData.seasonalStartTime}
+                                        onChange={handleFormChange}
+                                        className={`input input-bordered w-full ${fieldErrors.seasonalStartTime ? "input-error" : ""}`}
+                                    />
+                                    {fieldErrors.seasonalStartTime && (
+                                        <label className="label">
+                                            <span className="label-text-alt text-error">{fieldErrors.seasonalStartTime}</span>
+                                        </label>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="form-control">
@@ -774,6 +810,24 @@ const CreateBadgePage = () => {
                                         </span>
                                     </label>
                                 )}
+                                {/* End Time input */}
+                                <div className="mt-2">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">End Time *</span>
+                                    </label>
+                                    <input
+                                        type="time"
+                                        name="seasonalEndTime"
+                                        value={formData.seasonalEndTime}
+                                        onChange={handleFormChange}
+                                        className={`input input-bordered w-full ${fieldErrors.seasonalEndTime ? "input-error" : ""}`}
+                                    />
+                                    {fieldErrors.seasonalEndTime && (
+                                        <label className="label">
+                                            <span className="label-text-alt text-error">{fieldErrors.seasonalEndTime}</span>
+                                        </label>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}

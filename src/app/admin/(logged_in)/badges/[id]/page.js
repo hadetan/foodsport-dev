@@ -109,7 +109,9 @@ const EditBadgePage = () => {
         existingImageUrl: "",
         isSeasonal: false,
         seasonalStartDate: "",
+        seasonalStartTime: "",
         seasonalEndDate: "",
+        seasonalEndTime: "",
         activityId: "",
         isLimitedEdition: false,
         fsPointsCost: "",
@@ -162,8 +164,31 @@ const EditBadgePage = () => {
                 image: null,
                 existingImageUrl: badge.imageUrl || "",
                 isSeasonal: badge.isSeasonal || false,
-                seasonalStartDate: badge.seasonalStartDate ? badge.seasonalStartDate.split('T')[0] : "",
-                seasonalEndDate: badge.seasonalEndDate ? badge.seasonalEndDate.split('T')[0] : "",
+                // Convert stored UTC timestamp to HKT for display
+                seasonalStartDate: badge.seasonalStartDate ? (() => {
+                    const d = new Date(badge.seasonalStartDate);
+                    const hk = new Date(d.getTime() + 8 * 60 * 60 * 1000);
+                    const pad = (n) => String(n).padStart(2, '0');
+                    return `${hk.getUTCFullYear()}-${pad(hk.getUTCMonth() + 1)}-${pad(hk.getUTCDate())}`;
+                })() : "",
+                seasonalStartTime: badge.seasonalStartDate ? (() => {
+                    const d = new Date(badge.seasonalStartDate);
+                    const hk = new Date(d.getTime() + 8 * 60 * 60 * 1000);
+                    const pad = (n) => String(n).padStart(2, '0');
+                    return `${pad(hk.getUTCHours())}:${pad(hk.getUTCMinutes())}`;
+                })() : "",
+                seasonalEndDate: badge.seasonalEndDate ? (() => {
+                    const d = new Date(badge.seasonalEndDate);
+                    const hk = new Date(d.getTime() + 8 * 60 * 60 * 1000);
+                    const pad = (n) => String(n).padStart(2, '0');
+                    return `${hk.getUTCFullYear()}-${pad(hk.getUTCMonth() + 1)}-${pad(hk.getUTCDate())}`;
+                })() : "",
+                seasonalEndTime: badge.seasonalEndDate ? (() => {
+                    const d = new Date(badge.seasonalEndDate);
+                    const hk = new Date(d.getTime() + 8 * 60 * 60 * 1000);
+                    const pad = (n) => String(n).padStart(2, '0');
+                    return `${pad(hk.getUTCHours())}:${pad(hk.getUTCMinutes())}`;
+                })() : "",
                 activityId: resolvedActivityId,
                 isLimitedEdition: badge.isLimitedEdition || false,
                 fsPointsCost: badge.fsPointsCost || "",
@@ -318,11 +343,19 @@ const EditBadgePage = () => {
             if (!formData.seasonalStartDate) {
                 errors.seasonalStartDate = "Seasonal start date is required.";
             }
+            if (!formData.seasonalStartTime) {
+                errors.seasonalStartTime = "Seasonal start time is required.";
+            }
             if (!formData.seasonalEndDate) {
                 errors.seasonalEndDate = "Seasonal end date is required.";
             }
-            if (formData.seasonalStartDate && formData.seasonalEndDate) {
-                if (new Date(formData.seasonalStartDate) >= new Date(formData.seasonalEndDate)) {
+            if (!formData.seasonalEndTime) {
+                errors.seasonalEndTime = "Seasonal end time is required.";
+            }
+            if (formData.seasonalStartDate && formData.seasonalStartTime && formData.seasonalEndDate && formData.seasonalEndTime) {
+                const startDT = new Date(`${formData.seasonalStartDate}T${formData.seasonalStartTime}`);
+                const endDT = new Date(`${formData.seasonalEndDate}T${formData.seasonalEndTime}`);
+                if (startDT >= endDT) {
                     errors.seasonalEndDate = "End date must be after start date.";
                 }
             }
@@ -481,8 +514,15 @@ const EditBadgePage = () => {
             formDataToSend.append("isSeasonal", formData.isSeasonal);
 
             if (formData.isSeasonal) {
-                formDataToSend.append("seasonalStartDate", formData.seasonalStartDate);
-                formDataToSend.append("seasonalEndDate", formData.seasonalEndDate);
+                // Treat the date & time as HKT (UTC+8)
+                const startISO = formData.seasonalStartDate && formData.seasonalStartTime
+                    ? new Date(`${formData.seasonalStartDate}T${formData.seasonalStartTime}+08:00`).toISOString()
+                    : formData.seasonalStartDate;
+                const endISO = formData.seasonalEndDate && formData.seasonalEndTime
+                    ? new Date(`${formData.seasonalEndDate}T${formData.seasonalEndTime}+08:00`).toISOString()
+                    : formData.seasonalEndDate;
+                if (startISO) formDataToSend.append("seasonalStartDate", startISO);
+                if (endISO) formDataToSend.append("seasonalEndDate", endISO);
             }
 
             if (formData.activityId) {
@@ -829,6 +869,23 @@ const EditBadgePage = () => {
                                         </span>
                                     </label>
                                 )}
+                                <div className="mt-2">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">Start Time *</span>
+                                    </label>
+                                    <input
+                                        type="time"
+                                        name="seasonalStartTime"
+                                        value={formData.seasonalStartTime}
+                                        onChange={handleFormChange}
+                                        className={`input input-bordered w-full ${fieldErrors.seasonalStartTime ? "input-error" : ""}`}
+                                    />
+                                    {fieldErrors.seasonalStartTime && (
+                                        <label className="label">
+                                            <span className="label-text-alt text-error">{fieldErrors.seasonalStartTime}</span>
+                                        </label>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="form-control">
@@ -852,6 +909,23 @@ const EditBadgePage = () => {
                                         </span>
                                     </label>
                                 )}
+                                <div className="mt-2">
+                                    <label className="label">
+                                        <span className="label-text font-semibold">End Time *</span>
+                                    </label>
+                                    <input
+                                        type="time"
+                                        name="seasonalEndTime"
+                                        value={formData.seasonalEndTime}
+                                        onChange={handleFormChange}
+                                        className={`input input-bordered w-full ${fieldErrors.seasonalEndTime ? "input-error" : ""}`}
+                                    />
+                                    {fieldErrors.seasonalEndTime && (
+                                        <label className="label">
+                                            <span className="label-text-alt text-error">{fieldErrors.seasonalEndTime}</span>
+                                        </label>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
