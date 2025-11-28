@@ -190,7 +190,6 @@ export async function GET(request) {
 			return NextResponse.json({ error: 'Missing activityId' }, { status: 400 });
 		}
 
-		// 1. Verified Attendees (wasPresent: true)
 		const verifiedAttendees = await prisma.userActivity.findMany({
 			where: { activityId, wasPresent: true },
 			include: {
@@ -201,7 +200,6 @@ export async function GET(request) {
 			orderBy: { joinedAt: 'asc' },
 		});
 
-		// 2. Unverified Attendees (wasPresent: false)
 		const unverifiedAttendees = await prisma.userActivity.findMany({
 			where: { activityId, wasPresent: false },
 			include: {
@@ -212,15 +210,13 @@ export async function GET(request) {
 			orderBy: { joinedAt: 'asc' },
 		});
 
-		// 3. Unknown Attendees (Invited but not registered/associated)
-		// These are tickets that have an invitedUserId but NO userId and NO tempUserId
 		const unknownTickets = await prisma.ticket.findMany({
 			where: {
 				activityId,
 				invitedUserId: { not: null },
 				userId: null,
 				tempUserId: null,
-				status: 'active', // Only show active tickets
+				status: 'active',
 			},
 			include: {
 				invitedUser: { select: { email: true } },
@@ -246,7 +242,7 @@ export async function GET(request) {
 		}));
 
 		return NextResponse.json({
-			attendees: verified, // Keep backward compatibility if needed, or just use 'verified'
+			attendees: verified,
 			verified,
 			unverified,
 			unknown,
