@@ -545,6 +545,10 @@ const EditBadgePage = () => {
                 formDataToSend.append("quantity", formData.quantity);
             }
 
+            if (typeof formData.forcePlaceZero !== 'undefined') {
+                formDataToSend.append("forcePlaceZero", String(formData.forcePlaceZero));
+            }
+
             if (typeof formData.disable !== 'undefined') {
                 formDataToSend.append("disable", String(formData.disable));
             }

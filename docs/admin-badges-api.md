@@ -172,7 +172,8 @@ Notes, validation, and server-side rules
 - For `isLimitedEdition`, `fsPointsCost` must be provided and be a positive integer. The API enforces this.
 - Every badge must have at least one rule. Provide multiple rules via the `rules` array; all rules must be satisfied for the badge to be awarded.
 - `imageUrl` should be a relative Supabase path (FE composes the public URL). The API does not upload or validate bucket-level permissions.
-- Default `place` behavior: the server assigns the next highest place if `place` is not provided. Admins can set `place` to reorder badges for UI.
+ - Default `place` behavior: the server assigns the next highest place if `place` is not provided. Admins can set `place` to reorder badges for UI.
+ - New update behavior: when updating a badge via `PUT`, you can also pass `forcePlaceZero` (boolean). If `forcePlaceZero` is toggled from `true` to `false` and the badge was previously at place `0`, the server will move this badge to the last place automatically (it sets `place` to the next highest number). If you want to explicitly set a numeric placement while toggling off, provide `place` in the request body.
 - Awarding is immediate in flows where awarding is expected (e.g., admin import, ticket verification); social share badges are automatically verified when click thresholds are met via the `/share/{token}` redirect.
 
 Response example (201)

@@ -45,6 +45,7 @@ export async function PUT(request, { params }) {
         isLimitedEdition,
         fsPointsCost,
         place,
+        forcePlaceZero,
         disable,
         quantity,
     } = payload;
@@ -72,6 +73,7 @@ export async function PUT(request, { params }) {
     const parsedIsLimitedEdition = parseBooleanInput(isLimitedEdition);
     const parsedDisable = parseBooleanInput(disable);
     const parsedPlace = place !== undefined ? parseIntegerInput(place) : undefined;
+    const parsedForcePlaceZero = forcePlaceZero !== undefined ? parseBooleanInput(forcePlaceZero) : undefined;
     if (parsedPlace !== undefined && typeof parsedPlace !== 'number') {
         return NextResponse.json({ error: 'Place must be a valid integer' }, { status: 400 });
     }
@@ -98,6 +100,7 @@ export async function PUT(request, { params }) {
                 where: { id: badgeId },
                 select: {
                     id: true,
+                    place: true,
                     isSeasonal: true,
                     seasonalStartDate: true,
                     seasonalEndDate: true,
@@ -181,6 +184,14 @@ export async function PUT(request, { params }) {
             if (hasActivityField) data.activityId = normalizedActivityId ?? null;
             if (parsedPlace !== undefined) {
                 data.place = parsedPlace;
+            } else if (parsedForcePlaceZero === false && existing.place === 0) {
+                const lastHighestPlace = await tx.badge.findFirst({
+                    where: { id: { not: badgeId } },
+                    orderBy: { place: 'desc' },
+                    select: { place: true },
+                });
+                const normalizedPlace = (lastHighestPlace?.place ?? 0) + 1;
+                data.place = normalizedPlace;
             }
             if (parsedDisable !== undefined) {
                 data.isActive = !parsedDisable;
