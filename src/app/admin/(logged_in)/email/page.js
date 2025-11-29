@@ -7,6 +7,8 @@ import TiptapEditor from "@/app/shared/components/TiptapEditor";
 import UserPicker from "../components/UserPicker";
 import axios from '@/utils/axios/api';
 import Field from "@/app/shared/components/Field";
+import { useAdminActivities } from "@/app/shared/contexts/AdminActivitiesContext";
+import toast from "@/utils/Toast";
 
 function TemplatePreviewModal({ open, onClose, templateId, params }) {
     const [html, setHtml] = useState("");
@@ -83,10 +85,8 @@ export default function AdminEmailPage() {
 
     const formRef = useRef(null);
 
-    // Tab state: "custom" or "template"
     const [activeTab, setActiveTab] = useState("custom");
 
-    // Template email state
     const [templates, setTemplates] = useState([]);
     const [selectedTemplateId, setSelectedTemplateId] = useState(null);
     const [isTemplatesLoading, setIsTemplatesLoading] = useState(false);
@@ -96,7 +96,6 @@ export default function AdminEmailPage() {
     const [isVarsLoading, setIsVarsLoading] = useState(false);
     const [varsError, setVarsError] = useState("");
 
-    // Add state for template email sending
     const [isTemplateSending, setIsTemplateSending] = useState(false);
     const [templateSendFeedback, setTemplateSendFeedback] = useState({
         show: false,
@@ -104,8 +103,18 @@ export default function AdminEmailPage() {
         message: "",
     });
 
-    // Add state for preview modal
     const [showTemplatePreview, setShowTemplatePreview] = useState(false);
+
+    const { activities, loading: activitiesLoading } = useAdminActivities();
+    const [selectionMode, setSelectionMode] = useState("manual"); // "manual" | "activity"
+    const [selectedActivityId, setSelectedActivityId] = useState("");
+    const [attendeeStats, setAttendeeStats] = useState({
+        verified: [],
+        unverified: [],
+        unknown: [],
+    });
+    const [selectedAttendeeType, setSelectedAttendeeType] = useState("");
+    const [loadingAttendees, setLoadingAttendees] = useState(false);
 
     useEffect(() => {
         if (activeTab === "template") {
@@ -146,7 +155,7 @@ export default function AdminEmailPage() {
                 } catch (err) {
                     setVarsError(
                         err.response?.data?.error ||
-                            "Failed to load template variables"
+                        "Failed to load template variables"
                     );
                 } finally {
                     setIsVarsLoading(false);
@@ -158,11 +167,63 @@ export default function AdminEmailPage() {
         }
     }, [selectedTemplateId]);
 
-    function isRichText(varName) {
-        // You can customize which fields should be rich text editors
-        const richFields = ["description", "body", "content"];
-        return richFields.includes(varName.toLowerCase());
-    }
+    useEffect(() => {
+        if (!selectedActivityId) {
+            setAttendeeStats({ verified: [], unverified: [], unknown: [] });
+            setSelectedAttendeeType("");
+            return;
+        }
+
+        const fetchAttendees = async () => {
+            setLoadingAttendees(true);
+            try {
+                const { data } = await axios.get("/admin/verifyTicket", {
+                    params: { activityId: selectedActivityId },
+                });
+                setAttendeeStats({
+                    verified: data.verified || data.attendees || [],
+                    unverified: data.unverified || [],
+                    unknown: data.unknown || [],
+                });
+            } catch (error) {
+                console.error("Failed to fetch attendees", error);
+                setTemplateSendFeedback({
+                    show: true,
+                    type: "error",
+                    message: "Failed to fetch activity attendees.",
+                });
+            } finally {
+                setLoadingAttendees(false);
+            }
+        };
+
+        fetchAttendees();
+    }, [selectedActivityId]);
+
+    useEffect(() => {
+        if (selectionMode === "activity" && selectedAttendeeType) {
+            let usersToAdd = [];
+            if (selectedAttendeeType === "verified") {
+                usersToAdd = attendeeStats.verified;
+            } else if (selectedAttendeeType === "unverified") {
+                usersToAdd = attendeeStats.unverified;
+            } else if (selectedAttendeeType === "unknown") {
+                usersToAdd = attendeeStats.unknown;
+            }
+
+            const formattedUsers = usersToAdd.map(a => {
+                const p = a.participant || {};
+                return {
+                    id: a.userActivityId || a.ticketCode,
+                    email: p.email || a.email,
+                    firstname: p.firstname,
+                    lastname: p.lastname,
+                };
+            }).filter(u => u.email);
+
+            setSelectedUsers(formattedUsers);
+        }
+    }, [selectionMode, selectedAttendeeType, attendeeStats]);
 
     const validateForm = () => {
         if (selectedUsers.length === 0) {
@@ -221,14 +282,15 @@ export default function AdminEmailPage() {
         setFeedback({ show: false, type: "", message: "" });
 
         try {
-            // Call the backend API to send the email using axios
             const response = await axios.post("/admin/email/custom_email", {
                 to: selectedUsers.map((u) => u.email),
                 subject,
                 html: content,
             });
 
-            const data = response.data;
+            if (response.status === 200) {
+                toast.success('Successfully sent')
+            };
 
             setFeedback({
                 show: true,
@@ -248,12 +310,12 @@ export default function AdminEmailPage() {
                     error.response?.data?.error ||
                     "Failed to send email. Please try again later.",
             });
+            toast.error(`Something went wrong while sending the email`)
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Template email send handler
     const handleTemplateSend = async (e) => {
         e.preventDefault();
         setTemplateSendFeedback({ show: false, type: "", message: "" });
@@ -273,7 +335,6 @@ export default function AdminEmailPage() {
             });
             return;
         }
-        // Validate all required params are filled
         const filledParams = {};
         for (const v of templateVars) {
             if (
@@ -291,7 +352,7 @@ export default function AdminEmailPage() {
         }
         setIsTemplateSending(true);
         try {
-            await axios.post(
+            const response = await axios.post(
                 "/admin/email/template_email",
                 {
                     to: selectedUsers.map((u) => u.email),
@@ -299,6 +360,11 @@ export default function AdminEmailPage() {
                     params: filledParams,
                 }
             );
+
+            if (response.status === 200) {
+                toast.success('Successfully sent');
+            };
+
             setTemplateSendFeedback({
                 show: true,
                 type: "success",
@@ -306,6 +372,9 @@ export default function AdminEmailPage() {
             });
             setParams({});
             setSelectedUsers([]);
+            if (selectionMode === "activity") {
+                setSelectedAttendeeType("");
+            }
         } catch (error) {
             setTemplateSendFeedback({
                 show: true,
@@ -322,6 +391,10 @@ export default function AdminEmailPage() {
     const removeUser = (userId) => {
         setSelectedUsers(selectedUsers.filter((user) => user.id !== userId));
     };
+
+    const sortedActivities = [...activities].sort((a, b) => {
+        return new Date(b.updatedAt) - new Date(a.updatedAt);
+    });
 
     return (
         <div className="h-screen flex flex-col items-stretch justify-start bg-base-100 py-0">
@@ -347,10 +420,9 @@ export default function AdminEmailPage() {
                     <div className="flex gap-2 mb-6">
                         <button
                             className={`px-6 py-2 rounded-lg border-2 font-semibold transition
-                                ${
-                                    activeTab === "custom"
-                                        ? "bg-primary text-white border-primary"
-                                        : "bg-background text-primary border-primary"
+                                ${activeTab === "custom"
+                                    ? "bg-primary text-white border-primary"
+                                    : "bg-background text-primary border-primary"
                                 }
                                 hover:bg-secondary hover:text-white hover:border-primary-light
                             `}
@@ -361,10 +433,9 @@ export default function AdminEmailPage() {
                         </button>
                         <button
                             className={`px-6 py-2 rounded-lg border-2 font-semibold transition
-                                ${
-                                    activeTab === "template"
-                                        ? "bg-primary text-white border-primary"
-                                        : "bg-background text-primary border-primary"
+                                ${activeTab === "template"
+                                    ? "bg-primary text-white border-primary"
+                                    : "bg-background text-primary border-primary"
                                 }
                                 hover:bg-secondary hover:text-white hover:border-primary-light
                             `}
@@ -382,11 +453,10 @@ export default function AdminEmailPage() {
                         <>
                             {feedback.show && (
                                 <div
-                                    className={`alert ${
-                                        feedback.type === "error"
-                                            ? "alert-error"
-                                            : "alert-success"
-                                    } mb-4`}
+                                    className={`alert ${feedback.type === "error"
+                                        ? "alert-error"
+                                        : "alert-success"
+                                        } mb-4`}
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -512,12 +582,11 @@ export default function AdminEmailPage() {
                                 {/* Feedback for template email send */}
                                 {templateSendFeedback.show && (
                                     <div
-                                        className={`alert ${
-                                            templateSendFeedback.type ===
+                                        className={`alert ${templateSendFeedback.type ===
                                             "error"
-                                                ? "alert-error"
-                                                : "alert-success"
-                                        } mb-4`}
+                                            ? "alert-error"
+                                            : "alert-success"
+                                            } mb-4`}
                                     >
                                         <span>
                                             {templateSendFeedback.message}
@@ -534,15 +603,111 @@ export default function AdminEmailPage() {
                                         </button>
                                     </div>
                                 )}
-                                {/* Recipients for template email */}
+
+                                {/* Recipients Selection Mode */}
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="p-1 rounded-lg inline-flex gap-1">
+                                        <button
+                                            type="button"
+                                            className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${selectionMode === "manual"
+                                                ? "bg-white text-primary shadow-md border-2 border-primary"
+                                                : "text-base-content/60 hover:text-base-content hover:bg-base-200"
+                                                }`}
+                                            onClick={() => {
+                                                setSelectionMode("manual");
+                                                setSelectedUsers([]);
+                                            }}
+                                        >
+                                            Manual Selection
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${selectionMode === "activity"
+                                                ? "bg-white text-primary shadow-md border-2 border-primary"
+                                                : "text-base-content/60 hover:text-base-content hover:bg-base-200"
+                                                }`}
+                                            onClick={() => {
+                                                setSelectionMode("activity");
+                                                setSelectedUsers([]);
+                                            }}
+                                        >
+                                            Activity Batch
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Activity Batch Selection UI */}
+                                {selectionMode === "activity" && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-base-200 rounded-lg border border-base-300">
+                                        <div>
+                                            <label className="label">
+                                                <span className="label-text font-medium">Select Activity</span>
+                                            </label>
+                                            <select
+                                                className="select select-bordered w-full"
+                                                value={selectedActivityId}
+                                                onChange={(e) => setSelectedActivityId(e.target.value)}
+                                                disabled={activitiesLoading}
+                                            >
+                                                <option value="">Select an activity...</option>
+                                                {sortedActivities.map((activity) => (
+                                                    <option key={activity.id} value={activity.id}>
+                                                        {activity.name || activity.title}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="label">
+                                                <span className="label-text font-medium">Attendee Type</span>
+                                            </label>
+                                            <select
+                                                className="select select-bordered w-full"
+                                                value={selectedAttendeeType}
+                                                onChange={(e) => setSelectedAttendeeType(e.target.value)}
+                                                disabled={!selectedActivityId || loadingAttendees}
+                                            >
+                                                <option value="">Select type...</option>
+                                                <option
+                                                    value="verified"
+                                                    disabled={attendeeStats.verified.length === 0}
+                                                >
+                                                    Verified Attendees ({attendeeStats.verified.length})
+                                                </option>
+                                                <option
+                                                    value="unverified"
+                                                    disabled={attendeeStats.unverified.length === 0}
+                                                >
+                                                    Unverified Attendees ({attendeeStats.unverified.length})
+                                                </option>
+                                                <option
+                                                    value="unknown"
+                                                    disabled={attendeeStats.unknown.length === 0}
+                                                >
+                                                    Unknown Attendees ({attendeeStats.unknown.length})
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Recipients Display */}
                                 <label className="block text-xl font-medium text-base-content mb-1 pl-2">
                                     To:
                                 </label>
                                 <div className="mb-4">
-                                    <UserPicker
-                                        selectedUsers={selectedUsers}
-                                        setSelectedUsers={setSelectedUsers}
-                                    />
+                                    {selectionMode === "manual" ? (
+                                        <UserPicker
+                                            selectedUsers={selectedUsers}
+                                            setSelectedUsers={setSelectedUsers}
+                                        />
+                                    ) : (
+                                        <div className="text-sm text-base-content/70 mb-2 px-10 italic">
+                                            {selectedUsers.length > 0
+                                                ? `${selectedUsers.length} recipients selected from ${selectedAttendeeType} list.`
+                                                : "Please enter emails or select an activity to send in batch."}
+                                        </div>
+                                    )}
                                     <UsersDropdown
                                         users={selectedUsers}
                                         onRemove={removeUser}
@@ -584,12 +749,6 @@ export default function AdminEmailPage() {
                                     </div>
                                 )}
                                 {selectedTemplateId && (
-                                    <div className="mt-4 text-success">
-                                        Selected template ID:{" "}
-                                        {selectedTemplateId}
-                                    </div>
-                                )}
-                                {selectedTemplateId && (
                                     <form
                                         className="mt-6 flex flex-col gap-4"
                                         onSubmit={handleTemplateSend}
@@ -617,9 +776,9 @@ export default function AdminEmailPage() {
                                             )}
                                         <div className="flex flex-col gap-4">
                                             {templateVars
-                                                .filter(
-                                                    (v) => v !== "description"
-                                                )
+                                                // .filter(
+                                                //     (v) => v !== "description"
+                                                // )
                                                 .map((varName) => (
                                                     <Field
                                                         key={varName}
@@ -638,34 +797,34 @@ export default function AdminEmailPage() {
                                                 ))}
                                             {templateVars.includes(
                                                 "description"
-                                            ) && (
-                                                <div
-                                                    className="flex flex-col gap-1"
-                                                    key="description"
-                                                >
-                                                    <label className="text-base font-medium text-base-content mb-1 pl-1 capitalize">
-                                                        description
-                                                    </label>
-                                                    <div className="rounded-lg border border-base-300 bg-base-100">
-                                                        <TiptapEditor
-                                                            value={
-                                                                params[
+                                            ) && selectionMode === "manual" && (
+                                                    <div
+                                                        className="flex flex-col gap-1"
+                                                        key="description"
+                                                    >
+                                                        <label className="text-base font-medium text-base-content mb-1 pl-1 capitalize">
+                                                            description
+                                                        </label>
+                                                        <div className="rounded-lg border border-base-300 bg-base-100">
+                                                            <TiptapEditor
+                                                                value={
+                                                                    params[
                                                                     "description"
-                                                                ] || ""
-                                                            }
-                                                            onChange={(val) =>
-                                                                setParams(
-                                                                    (p) => ({
-                                                                        ...p,
-                                                                        description:
-                                                                            val,
-                                                                    })
-                                                                )
-                                                            }
-                                                        />
+                                                                    ] || ""
+                                                                }
+                                                                onChange={(val) =>
+                                                                    setParams(
+                                                                        (p) => ({
+                                                                            ...p,
+                                                                            description:
+                                                                                val,
+                                                                        })
+                                                                    )
+                                                                }
+                                                            />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
                                         </div>
                                         <div className="flex flex-row gap-2 mt-4">
                                             <button

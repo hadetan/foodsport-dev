@@ -2,7 +2,6 @@ import axios from 'axios';
 import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
 import { getLocaleFromPath } from '@/i18n/getLocaleFromPath';
 import { setupGlobalLoadingBarForAxios } from '@/utils/loadingBarEvents';
-import toast from '@/utils/Toast';
 
 const api = axios.create({
   baseURL: BASE_URLS.url,
