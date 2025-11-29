@@ -468,5 +468,13 @@
 			"inviteFailed": "Something went wrong while inviting."
 		},
 		"partner": "Partner"
+	},
+	"AccountBanned": {
+		"title": "Account banned",
+		"message": "Your account has been banned. If you believe this is a mistake, please contact our support team for assistance.",
+		"contactSupport": "Contact support",
+		"contactEmail": "foodsport@symbol-of.com",
+		"logout": "Log out",
+		"backHome": "Back to home"
 	}
 }

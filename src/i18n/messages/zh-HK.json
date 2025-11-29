@@ -482,5 +482,13 @@
             "inviteFailed": "邀請時發生錯誤。"
         },
         "partner": "夥伴"
+    },
+    "AccountBanned": {
+        "title": "帳戶已被封鎖",
+        "message": "你的帳戶已被封鎖。如果你認為這是個錯誤，請聯絡我們的支援團隊以獲得協助。",
+        "contactSupport": "聯絡支援",
+        "contactEmail": "foodsport@symbol-of.com",
+        "logout": "登出",
+        "backHome": "回到主頁"
     }
 }

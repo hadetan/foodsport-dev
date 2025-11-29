@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { BASE_URLS, DEFAULT_TIMEOUT } from './config';
+import { getLocaleFromPath } from '@/i18n/getLocaleFromPath';
 import { setupGlobalLoadingBarForAxios } from '@/utils/loadingBarEvents';
+import toast from '@/utils/Toast';
 
 const api = axios.create({
   baseURL: BASE_URLS.url,
@@ -16,7 +18,6 @@ if (typeof window !== 'undefined') {
 }
 
 // Request interceptor is not needed in our app
-
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -94,6 +95,16 @@ api.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
+    try {
+      if ((error?.response?.status === 403 || error?.response?.data?.error === 'user_forbidden') && error?.response?.data?.error === 'user_forbidden') {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
+        await api.delete('/auth/logout');
+        const locale = getLocaleFromPath(window.location.pathname);
+        window.location.href = `/${locale}/error/403`;
+        return Promise.reject(error);
+      }
+    } catch (e) { }
     showApiError(error);
     return Promise.reject(error);
   }
@@ -101,8 +112,12 @@ api.interceptors.response.use(
 
 function showApiError(error) {
   let message = 'An unexpected error occurred.';
-  if (error.response && error.response.data && error.response.data.error) {
-    message = error.response.data.error;
+  if (error.response && error.response.data) {
+    if (error.response.data.message) {
+      message = error.response.data.message;
+    } else if (error.response.data.error) {
+      message = error.response.data.error;
+    }
   } else if (error.message) {
     message = error.message;
   }

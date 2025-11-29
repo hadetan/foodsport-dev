@@ -9,19 +9,13 @@ export function MyBadgesProvider({ children }) {
   const [badges, setBadges] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const abortControllerRef = useRef(null);
 
   const fetchBadges = useCallback(async () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
 
     setLoading(true);
     setError('');
     try {
-      const response = await api.get('/my/badges', { signal: controller.signal });
+      const response = await api.get('/my/badges');
       const payload = response?.data?.badges;
       setBadges(Array.isArray(payload) ? payload : []);
     } catch (err) {
@@ -37,11 +31,6 @@ export function MyBadgesProvider({ children }) {
 
   useEffect(() => {
     fetchBadges();
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
   }, [fetchBadges]);
 
   const updateBadge = useCallback((nextBadge) => {

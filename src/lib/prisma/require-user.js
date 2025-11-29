@@ -69,7 +69,10 @@ export async function requireUser(_ ,NextResponse) {
 		if (!dbUser || dbUser.isActive === false) {
 			return {
 				error: NextResponse.json(
-					{ error: 'user_forbidden' },
+					{
+						error: 'user_forbidden',
+						message: 'Your account has been banned. Please contact support if you think this is a mistake. Contact: foodsport@symbol-of.com'
+					},
 					{ status: 403 }
 				),
 			};
