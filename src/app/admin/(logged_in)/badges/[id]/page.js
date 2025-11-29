@@ -119,6 +119,7 @@ const EditBadgePage = () => {
         quantity: "",
         place: "",
         forcePlaceZero: false,
+        disable: false,
     });
     const [error, setError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
@@ -196,6 +197,7 @@ const EditBadgePage = () => {
                 quantity: (badge.quantity !== null && badge.quantity !== undefined && badge.quantity > 0) ? String(badge.quantity) : "",
                 place: badge.place || "",
                 forcePlaceZero: badge.place === 0 || badge.place === '0',
+                disable: !(badge.isActive ?? true),
             });
 
             // Set image preview to existing image
@@ -541,6 +543,10 @@ const EditBadgePage = () => {
 
             if (formData.isLimited && formData.quantity) {
                 formDataToSend.append("quantity", formData.quantity);
+            }
+
+            if (typeof formData.disable !== 'undefined') {
+                formDataToSend.append("disable", String(formData.disable));
             }
 
             // Add rules
@@ -1038,6 +1044,25 @@ const EditBadgePage = () => {
                                 </span>
                             </label>
                         )}
+                    </div>
+
+                    {/* Disable Toggle - admin UI only to set isActive via `disable` param on PUT */}
+                    <div className="form-control mb-4">
+                        <label className="label cursor-pointer justify-start gap-4">
+                            <input
+                                type="checkbox"
+                                name="disable"
+                                checked={formData.disable}
+                                onChange={handleFormChange}
+                                className="toggle toggle-warning"
+                            />
+                            <span className="label-text font-semibold">
+                                Disable ?
+                            </span>
+                        </label>
+                        <div className="text-sm text-gray-500 mt-1">
+                            Toggle to disable the badge. When checked, the badge will be set to inactive.
+                        </div>
                     </div>
 
                     {/* Badge Rules Section */}

@@ -45,7 +45,7 @@ export async function PUT(request, { params }) {
         isLimitedEdition,
         fsPointsCost,
         place,
-        isActive,
+        disable,
         quantity,
     } = payload;
 
@@ -70,7 +70,7 @@ export async function PUT(request, { params }) {
 
     const parsedIsSeasonal = parseBooleanInput(isSeasonal);
     const parsedIsLimitedEdition = parseBooleanInput(isLimitedEdition);
-    const parsedIsActive = parseBooleanInput(isActive);
+    const parsedDisable = parseBooleanInput(disable);
     const parsedPlace = place !== undefined ? parseIntegerInput(place) : undefined;
     if (parsedPlace !== undefined && typeof parsedPlace !== 'number') {
         return NextResponse.json({ error: 'Place must be a valid integer' }, { status: 400 });
@@ -89,8 +89,6 @@ export async function PUT(request, { params }) {
         }
     }
 
-    // Use preserveUndefined to distinguish between "field not provided" (keep existing)
-    // and "field provided as empty" (clear value) in update operations
     const parsedSeasonalStart = parseDate(seasonalStartDate, { preserveUndefined: true });
     const parsedSeasonalEnd = parseDate(seasonalEndDate, { preserveUndefined: true });
 
@@ -184,8 +182,8 @@ export async function PUT(request, { params }) {
             if (parsedPlace !== undefined) {
                 data.place = parsedPlace;
             }
-            if (parsedIsActive !== undefined) {
-                data.isActive = parsedIsActive;
+            if (parsedDisable !== undefined) {
+                data.isActive = !parsedDisable;
             }
             if (quantity !== undefined) {
                 data.quantity = parseIntegerInput(quantity) ?? null;
