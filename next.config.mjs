@@ -30,6 +30,11 @@ const nextConfig = {
                 hostname: 'lh3.googleusercontent.com',
                 pathname: '/**',
             },
+            {
+                protocol: 'http',
+                hostname: '43.199.233.21',
+                pathname: '/**',
+            },
         ],
     },
     experimental: {
