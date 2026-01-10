@@ -26,17 +26,17 @@ export async function PATCH(req) {
       const buffer = Buffer.from(arrayBuffer);
       const bucket = 'profile-pictures';
       const cleanName = file.name.replace(/\s+/g, '-');
-      const fileName = `${user.id}-${Date.now()}-${cleanName}`;
+      const filePath = `${user.id}/${Date.now()}-${cleanName}`; // keep per-user folder to satisfy RLS policies
       const { error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(fileName, buffer, {
+        .upload(filePath, buffer, {
           upsert: true,
           contentType: file.type,
         });
       if (uploadError) {
         return Response.json({ error: 'Profile picture upload failed', details: uploadError.message }, { status: 500 });
       }
-      const profilePictureUrl = `/storage/v1/object/public/${bucket}/${fileName}`;
+      const profilePictureUrl = `/storage/v1/object/public/${bucket}/${filePath}`;
       try {
         const updatedUser = await prisma.user.update({
           where: { id: user.id },

@@ -22,14 +22,6 @@ export async function POST(_) {
       sameSite: 'lax',
       maxAge: 86400,
     });
-    if (data.session.refresh_token) {
-      cookieStore.set('refresh_token', data.session.refresh_token, {
-        httpOnly: true,
-        path: '/',
-        sameSite: 'lax',
-        maxAge: 60 * 60 * 24 * 30,
-      });
-    }
     return NextResponse.json({ session: data.session });
   } catch (err) {
     return NextResponse.json({ error: err.message || 'Unexpected error.' }, { status: 500 });

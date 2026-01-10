@@ -33,9 +33,9 @@ export async function cacheGoogleAvatar(userId, currentUrl) {
     const buffer = Buffer.from(arrayBuffer);
 
     const bucket = 'profile-pictures';
-    const fileName = `${userId}-google-${Date.now()}.jpg`;
+    const filePath = `${userId}/${Date.now()}-google-avatar.jpg`;
 
-    const { error: uploadError } = await supabase.storage.from(bucket).upload(fileName, buffer, {
+    const { error: uploadError } = await supabase.storage.from(bucket).upload(filePath, buffer, {
       upsert: true,
       contentType: res.headers.get('content-type')?.split(';')[0] || 'image/jpeg',
       cacheControl: '31536000'
@@ -44,7 +44,7 @@ export async function cacheGoogleAvatar(userId, currentUrl) {
       return currentUrl; // fallback silently
     }
 
-    const storedPath = `/storage/v1/object/public/${bucket}/${fileName}`;
+    const storedPath = `/storage/v1/object/public/${bucket}/${filePath}`;
     await prisma.user.update({ where: { id: userId }, data: { profilePictureUrl: storedPath }});
     return storedPath;
   } catch (e) {

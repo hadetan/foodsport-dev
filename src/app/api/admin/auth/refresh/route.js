@@ -21,14 +21,6 @@ export async function POST(_) {
 			sameSite: 'lax',
 			maxAge: 86400,
 		});
-		if (data.session.refresh_token) {
-			cookieStore.set('admin_refresh_token', data.session.refresh_token, {
-				httpOnly: true,
-				path: '/',
-				sameSite: 'lax',
-				maxAge: 60 * 60 * 24 * 30,
-			});
-		}
 		return NextResponse.json({ session: data.session });
 	} catch (err) {
 		return NextResponse.json({ error: 'Server error', details: err.message }, { status: 500 });
