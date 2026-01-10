@@ -136,6 +136,7 @@ server {
 - [scripts/bucket-policies](scripts/bucket-policies) stores Supabase Storage RLS policies used by the app.
 - [scripts/bucket-policies/activities-and-social-media-images.sql](scripts/bucket-policies/activities-and-social-media-images.sql) keeps activity and social media assets world-readable while reserving writes for active admin users.
 - [scripts/bucket-policies/badges-images.sql](scripts/bucket-policies/badges-images.sql) exposes badge artwork publicly and limits uploads, updates, and deletes in the `badges-images` bucket to active admins.
+- [scripts/bucket-policies/product-images.sql](scripts/bucket-policies/product-images.sql) makes product media publicly readable and restricts all mutations in `product-images` to active admin users.
 - [scripts/bucket-policies/profile-picture.sql](scripts/bucket-policies/profile-picture.sql) lets each user manage only their own folder inside `profile-pictures`, keeps avatars public, and allows admins to operate on other buckets.
 - Apply a policy file with `psql "$SUPABASE_DB_URL" -f scripts/bucket-policies/<file>.sql` or paste it into the Supabase SQL editor for the project database.
 
