@@ -66,6 +66,29 @@ scripts/               # DB setup/seed + badge/redemption QA runners
 
 - `supabase/config.toml` contains the CLI config (API 54321, DB 54322). Run `supabase start` to spin up a full stack for offline testing. To open **local supabase UI** visit `http://127.0.0.1:54323/`
 
+### Let's Encrypt certificate (Red Hat)
+
+1. Install Certbot and the nginx plugin.
+
+    ```bash
+    sudo dnf install -y certbot python3-certbot-nginx
+    ```
+
+2. Issue the TLS certificate after confirming that nginx is serving the domain and DNS points to this host.
+
+    ```bash
+    sudo certbot certonly --nginx -d membership.foodsport.com.hk
+    ```
+
+3. Configure unattended renewal and reload nginx on success.
+
+    ```bash
+    sudo dnf install cronie -y
+    sudo systemctl enable --now crond
+    sudo mkdir -p /etc/cron.d
+    echo "0 3 * * * root certbot renew --quiet && systemctl reload nginx" | sudo tee /etc/cron.d/certbot-renew
+    ```
+
 ### Local nginx reverse proxy
 
 1. Install nginx (Ubuntu: `sudo apt install nginx`, Red Hat: `sudo dnf install nginx`).
@@ -74,18 +97,27 @@ scripts/               # DB setup/seed + badge/redemption QA runners
 
 ```nginx
 server {
-  # Global Settings
-  listen 80 default_server;
-  server_name _;
+  listen 80;
+  server_name membership.foodsport.com.hk;
+  return 301 https://$host$request_uri;
+}
+
+server {
+  listen 443 ssl http2;
+  server_name membership.foodsport.com.hk;
+  ssl_certificate /etc/letsencrypt/live/membership.foodsport.com.hk/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/membership.foodsport.com.hk/privkey.pem;
+  include /etc/letsencrypt/options-ssl-nginx.conf;
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
   client_max_body_size 50M;
 
-  # Endpoint to check VM's health
   location /__health {
     return 200 'ok';
     add_header Content-Type text/plain;
   }
 
-  # Supabase Bucket
+  # Supabase (port 54321)
   location /storage/ {
     proxy_pass http://127.0.0.1:54321;
     proxy_http_version 1.1;
@@ -95,7 +127,6 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
   }
 
-  # Supabase Auth
   location /auth/ {
     proxy_pass http://127.0.0.1:54321;
     proxy_http_version 1.1;
@@ -105,7 +136,7 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
   }
 
-  # Supabase Studio UI
+  # Supabase Studio UI (54323)
   location /supabase/ {
     proxy_pass http://127.0.0.1:54323/;
     proxy_http_version 1.1;
@@ -113,10 +144,12 @@ server {
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_redirect off; # Required for Supabase Studio assets + routing
+
+    # Required for Supabase Studio assets + routing
+    proxy_redirect off;
   }
 
-  # Default app
+  # Default app (port 3000) — unchanged
   location / {
     proxy_pass http://127.0.0.1:3000;
     proxy_http_version 1.1;
