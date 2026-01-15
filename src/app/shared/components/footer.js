@@ -19,6 +19,14 @@ export default function Footer() {
     const [galleryImages, setGalleryImages] = useState([]);
     const [hoveredIndex, setHoveredIndex] = useState(null);
 
+    function resolveExternalUrl(url) {
+        if (!url) return "#";
+        const trimmed = url.trim();
+        if (!trimmed) return "#";
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        return `https://${trimmed.replace(/^\/+/, "")}`;
+    }
+
     useEffect(() => {
         fetchImages();
 
@@ -49,7 +57,7 @@ export default function Footer() {
                             {galleryImages.map((img, index) => (
                                 <a
                                     key={index}
-                                    href={img.socialMediaUrl || "#"}
+                                    href={resolveExternalUrl(img.socialMediaUrl)}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className={styles.galleryItem}
