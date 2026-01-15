@@ -1,5 +1,6 @@
 'use client';
 
+import DOMPurify from 'dompurify';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -369,6 +370,12 @@ function BadgeDetailsPage({ badgeId, viewerContext = null }) {
         };
     }, [badge, locale]);
 
+    const sanitizedActivitySummary = useMemo(() => {
+        if (!localized.activitySummary) return '';
+        const clean = DOMPurify.sanitize(localized.activitySummary, { USE_PROFILES: { html: true } });
+        return clean.replace(/<p([^>]*)>(?:\s|&nbsp;|\u00A0)*<\/p>/gi, (match, attrs) => `<p${attrs || ''}>&nbsp;</p>`);
+    }, [localized.activitySummary]);
+
     const otherBadges = useMemo(
         () => badges.filter((entry) => entry.id !== badgeId).slice(0, 4),
         [badges, badgeId],
@@ -704,7 +711,12 @@ function BadgeDetailsPage({ badgeId, viewerContext = null }) {
                             <div className="badge-activity__details">
                                 <p className="badge-panel__kicker">{t('activity.title')}</p>
                                 <h2>{localized.activityTitle || t('activity.untitled')}</h2>
-                                {localized.activitySummary && <p>{localized.activitySummary}</p>}
+                                {sanitizedActivitySummary && (
+                                    <div
+                                        className="badge-activity__summary"
+                                        dangerouslySetInnerHTML={{ __html: sanitizedActivitySummary }}
+                                    />
+                                )}
                                 <ul>
                                     <li>
                                         <MapPin size={16} aria-hidden="true" />
