@@ -98,26 +98,28 @@ scripts/               # DB setup/seed + badge/redemption QA runners
 ```nginx
 server {
   listen 80;
-  server_name membership.foodsport.com.hk;
+  server_name dev.foodsport.com.hk;
   return 301 https://$host$request_uri;
 }
 
 server {
-  listen 443 ssl http2;
-  server_name membership.foodsport.com.hk;
-  ssl_certificate /etc/letsencrypt/live/membership.foodsport.com.hk/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/membership.foodsport.com.hk/privkey.pem;
+  listen 443 ssl;
+  http2 on;
+  server_name dev.foodsport.com.hk;
+  ssl_certificate /etc/letsencrypt/live/dev.foodsport.com.hk/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/dev.foodsport.com.hk/privkey.pem;
   include /etc/letsencrypt/options-ssl-nginx.conf;
   ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
-
+  
   client_max_body_size 50M;
 
+  # Endpoint to check VM's health
   location /__health {
     return 200 'ok';
     add_header Content-Type text/plain;
   }
 
-  # Supabase (port 54321)
+  # Supabase Bucket
   location /storage/ {
     proxy_pass http://127.0.0.1:54321;
     proxy_http_version 1.1;
@@ -127,6 +129,7 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
   }
 
+  # Supabase Auth
   location /auth/ {
     proxy_pass http://127.0.0.1:54321;
     proxy_http_version 1.1;
@@ -136,20 +139,7 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
   }
 
-  # Supabase Studio UI (54323)
-  location /supabase/ {
-    proxy_pass http://127.0.0.1:54323/;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-
-    # Required for Supabase Studio assets + routing
-    proxy_redirect off;
-  }
-
-  # Default app (port 3000) — unchanged
+  # Default app
   location / {
     proxy_pass http://127.0.0.1:3000;
     proxy_http_version 1.1;
@@ -160,6 +150,36 @@ server {
     proxy_buffer_size 64k;
     proxy_buffers 16 32k;
     proxy_busy_buffers_size 64k;
+  }
+}
+
+# =============== SUPABASE STUDIO SUBDOMAIN ===============
+server {
+  listen 80;
+  server_name studio.foodsport.com.hk;
+  return 301 https://$host$request_uri;
+}
+
+server {
+  listen 443 ssl http2;
+  server_name studio.foodsport.com.hk;
+
+  ssl_certificate /etc/letsencrypt/live/dev.foodsport.com.hk/fullchain.pem; 
+  ssl_certificate_key /etc/letsencrypt/live/dev.foodsport.com.hk/privkey.pem;
+  include /etc/letsencrypt/options-ssl-nginx.conf;
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+  auth_basic "Restricted Access - Supabase Studio";
+  auth_basic_user_file /etc/nginx/.supabase_studio_htpasswd;
+
+  location / {
+    proxy_pass http://127.0.0.1:54323;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_redirect off;
   }
 }
 ```
