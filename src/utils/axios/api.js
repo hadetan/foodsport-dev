@@ -89,7 +89,9 @@ api.interceptors.response.use(
           await api.delete('/auth/logout');
           localStorage.removeItem('auth_token');
           localStorage.removeItem('refresh_token');
-          window.location.href = '/auth/login';
+          const path = typeof window !== 'undefined' ? window.location.pathname : '';
+          const locale = getLocaleFromPath(path);
+          window.location.href = `/${locale}/auth/login`;
         }
         return Promise.reject(refreshError);
       }
