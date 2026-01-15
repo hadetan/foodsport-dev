@@ -28,13 +28,27 @@ const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=fal
         return url + '=s128-c';
     };
 
-    const avatarUrl = useMemo(() => {
-        if (!srcAvatar || broken) return null;
+    const { avatarUrl, disableOptimization } = useMemo(() => {
+        if (!srcAvatar || broken) return { avatarUrl: null, disableOptimization: false };
+
         if (srcAvatar.includes('googleusercontent')) {
-            return normalizeGoogle(srcAvatar);
+            return {
+                avatarUrl: normalizeGoogle(srcAvatar),
+                disableOptimization: true,
+            };
         }
-        if (/^https?:\/\//i.test(srcAvatar)) return srcAvatar;
-        return `${process.env.NEXT_PUBLIC_SUPABASE_URL}${srcAvatar}`;
+
+        if (/^https?:\/\//i.test(srcAvatar)) {
+            return {
+                avatarUrl: srcAvatar,
+                disableOptimization: false,
+            };
+        }
+
+        return {
+            avatarUrl: `${process.env.NEXT_PUBLIC_SUPABASE_URL}${srcAvatar}`,
+            disableOptimization: false,
+        };
     }, [srcAvatar, broken]);
 
     return (
@@ -57,6 +71,7 @@ const Avatar = ({ srcAvatar, firstName='', lastName='', isNav=false, pointer=fal
                             loading={'eager'}
                             decoding="async"
                             onError={() => setBroken(true)}
+                            unoptimized={disableOptimization}
                             priority
                         />
                     </div>
