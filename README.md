@@ -74,11 +74,11 @@ scripts/               # DB setup/seed + badge/redemption QA runners
     sudo dnf install -y certbot python3-certbot-nginx
     ```
 
-2. Issue the TLS certificate after confirming that nginx is serving the domain and DNS points to this host.
+2. Issue the TLS certificate after confirming that nginx is serving the domains and DNS points to this host.
 
-    ```bash
-    sudo certbot certonly --nginx -d membership.foodsport.com.hk
-    ```
+  ```bash
+  sudo certbot certonly --expand -d dev.foodsport.com.hk -d studio.foodsport.com.hk
+  ```
 
 3. Configure unattended renewal and reload nginx on success.
 
@@ -184,6 +184,22 @@ server {
   }
 }
 ```
+
+### Supabase Studio basic auth setup
+
+1. Install the Apache tools package that provides `htpasswd`.
+
+  ```bash
+  sudo dnf install httpd-tools
+  ```
+
+2. Create or replace the credentials file used by the nginx `auth_basic_user_file` directive.
+
+  ```bash
+  sudo htpasswd -c /etc/nginx/.supabase_studio_htpasswd username
+  ```
+
+3. After reloading nginx, you can verify access with the credential-in-url form: `https://username:password@studio.foodsport.com.hk` (replace with your actual username and password).
 
 ### Supabase bucket policies
 

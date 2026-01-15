@@ -1,4 +1,7 @@
+import dns from 'node:dns';
 import createNextIntlPlugin from 'next-intl/plugin';
+
+dns.setDefaultResultOrder('ipv4first');
 
 /** @type {import('next').ImageRemotePattern[]} */
 const remotePatterns = [
