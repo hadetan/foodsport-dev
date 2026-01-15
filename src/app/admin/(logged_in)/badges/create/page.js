@@ -54,11 +54,30 @@ const ALLOWED_RULE_COMBINATIONS = {
     redeem_purchase: new Set([]),
 };
 
+function allowsCombination(ruleTypeA, ruleTypeB) {
+    if (ruleTypeA === ruleTypeB) {
+        return true;
+    }
+
+    const allowedForA = ALLOWED_RULE_COMBINATIONS[ruleTypeA];
+    const allowedForB = ALLOWED_RULE_COMBINATIONS[ruleTypeB];
+
+    if (!allowedForA || !allowedForA.has(ruleTypeB)) {
+        return false;
+    }
+
+    if (!allowedForB || !allowedForB.has(ruleTypeA)) {
+        return false;
+    }
+
+    return true;
+}
+
 // Helper function to check if a rule can be combined with currently selected rules
 function canSelectRule(ruleType, currentRules) {
     // If no rules selected yet, any rule can be selected
     if (currentRules.length === 0) {
-        return { canSelect: true, reason: null };
+        return { canSelect: true, reason: null, conflictsWith: null };
     }
 
     // Check if this rule can be combined with all currently selected rules
@@ -76,7 +95,8 @@ function canSelectRule(ruleType, currentRules) {
         if (!allowedCombinations || !allowedCombinations.has(existingRuleType)) {
             return {
                 canSelect: false,
-                reason: `Cannot combine with "${existingRuleType.replace(/_/g, ' ')}"`
+                reason: `Cannot combine with "${existingRuleType.replace(/_/g, ' ')}"`,
+                conflictsWith: existingRuleType,
             };
         }
 
@@ -85,12 +105,13 @@ function canSelectRule(ruleType, currentRules) {
         if (!existingAllowed || !existingAllowed.has(ruleType)) {
             return {
                 canSelect: false,
-                reason: `Cannot combine with "${existingRuleType.replace(/_/g, ' ')}"`
+                reason: `Cannot combine with "${existingRuleType.replace(/_/g, ' ')}"`,
+                conflictsWith: existingRuleType,
             };
         }
     }
 
-    return { canSelect: true, reason: null };
+    return { canSelect: true, reason: null, conflictsWith: null };
 }
 
 const CreateBadgePage = () => {
@@ -126,73 +147,118 @@ const CreateBadgePage = () => {
     const activityDropdownRef = useRef(null);
     const [showRulesDialog, setShowRulesDialog] = useState(false);
     const [rules, setRules] = useState([]);
+    const hasNonRedeemRules = rules.some(rule => rule.ruleType !== 'redeem_purchase');
+    const ruleTypesSignature = rules
+        .map(rule => rule.ruleType)
+        .sort()
+        .join('|');
+    const redeemToggleDisabled = !formData.isLimitedEdition && hasNonRedeemRules;
+    const hasStandaloneRedeemRule = rules.some(rule => ['redeem_points_cumulative', 'redeem_first'].includes(rule.ruleType));
+    const disableRuleSelection = formData.isLimitedEdition || hasStandaloneRedeemRule;
+    const activityCombinationBlocked = rules
+        .filter(rule => rule.ruleType !== 'activity_specific_participation')
+        .some(rule => !allowsCombination(rule.ruleType, 'activity_specific_participation'));
+    const activitySelectionDisabled = formData.isLimitedEdition || activityCombinationBlocked;
+    const activityDisableReason = formData.isLimitedEdition
+        ? "Redeemable badges cannot link to activities."
+        : activityCombinationBlocked
+            ? "Current rule selection cannot pair with Activity Specific Participation."
+            : null;
 
     // Auto-add rules based on toggles and activityId
     useEffect(() => {
-        const autoRules = [];
+        setRules(prevRules => {
+            let changed = false;
 
-        // Auto-add redeem_purchase if isLimitedEdition is true
-        if (formData.isLimitedEdition) {
-            const hasRedeemPurchase = rules.some(r => r.ruleType === 'redeem_purchase');
-            if (!hasRedeemPurchase) {
-                autoRules.push({
-                    ruleType: 'redeem_purchase',
-                    targetValue: null,
-                    params: null,
-                    isAuto: true
-                });
+            if (formData.isLimitedEdition) {
+                let nextRules = prevRules.filter(rule => rule.ruleType === 'redeem_purchase');
+                if (!nextRules.some(rule => rule.ruleType === 'redeem_purchase')) {
+                    nextRules = [
+                        ...nextRules,
+                        {
+                            ruleType: 'redeem_purchase',
+                            targetValue: null,
+                            params: null,
+                            isAuto: true,
+                        },
+                    ];
+                }
+
+                if (nextRules.length !== prevRules.length || !nextRules.every((rule, index) => rule === prevRules[index])) {
+                    changed = true;
+                    return nextRules;
+                }
+
+                return prevRules;
             }
+
+            const standaloneIndex = prevRules.findIndex(rule => ['redeem_points_cumulative', 'redeem_first'].includes(rule.ruleType));
+            if (standaloneIndex !== -1) {
+                if (prevRules.length !== 1 || standaloneIndex !== 0) {
+                    const exclusiveRule = prevRules[standaloneIndex];
+                    return [exclusiveRule];
+                }
+
+                return prevRules;
+            }
+
+            let nextRules = prevRules;
+
+            if (prevRules.some(rule => rule.ruleType === 'redeem_purchase')) {
+                nextRules = prevRules.filter(rule => rule.ruleType !== 'redeem_purchase');
+                changed = true;
+            }
+
+            const withoutActivityRule = nextRules.filter(rule => rule.ruleType !== 'activity_specific_participation');
+            const canAttachActivityRule = Boolean(formData.activityId) && withoutActivityRule.every(rule => allowsCombination(rule.ruleType, 'activity_specific_participation'));
+
+            if (!canAttachActivityRule && withoutActivityRule.length !== nextRules.length) {
+                nextRules = withoutActivityRule;
+                changed = true;
+            }
+
+            if (!formData.activityId && withoutActivityRule.length !== nextRules.length) {
+                nextRules = withoutActivityRule;
+                changed = true;
+            }
+
+            if (canAttachActivityRule && withoutActivityRule.length === nextRules.length) {
+                nextRules = [
+                    ...nextRules,
+                    {
+                        ruleType: 'activity_specific_participation',
+                        targetValue: null,
+                        params: null,
+                        isAuto: false,
+                    },
+                ];
+                changed = true;
+            }
+
+            return changed ? nextRules : prevRules;
+        });
+    }, [formData.isLimitedEdition, formData.activityId, ruleTypesSignature]);
+
+    useEffect(() => {
+        if (!activitySelectionDisabled) {
+            return;
         }
 
-        // Auto-add activity_specific_participation if activityId is given
         if (formData.activityId) {
-            const hasActivityParticipation = rules.some(r => r.ruleType === 'activity_specific_participation');
-            if (!hasActivityParticipation) {
-                autoRules.push({
-                    ruleType: 'activity_specific_participation',
-                    targetValue: null,
-                    params: null,
-                    isAuto: false // Changed to false so it appears as checked in the dialog
-                });
-            }
-        }
-
-        if (autoRules.length > 0) {
-            setRules(prev => {
-                // Remove auto rules that are no longer applicable
-                const filtered = prev.filter(r => {
-                    if (r.ruleType === 'redeem_purchase' && r.isAuto && !formData.isLimitedEdition) {
-                        return false;
-                    }
-                    if (r.ruleType === 'activity_specific_participation' && !formData.activityId) {
-                        return false;
-                    }
-                    return true;
-                });
-
-                // Add new auto rules that don't exist
-                const newRules = [...filtered];
-                autoRules.forEach(autoRule => {
-                    if (!newRules.some(r => r.ruleType === autoRule.ruleType)) {
-                        newRules.push(autoRule);
-                    }
-                });
-
-                return newRules;
-            });
-        } else {
-            // Remove auto rules when conditions are no longer met
-            setRules(prev => prev.filter(r => {
-                if (r.ruleType === 'redeem_purchase' && r.isAuto && !formData.isLimitedEdition) {
-                    return false;
-                }
-                if (r.ruleType === 'activity_specific_participation' && !formData.activityId) {
-                    return false;
-                }
-                return true;
+            setFormData(prev => ({
+                ...prev,
+                activityId: "",
             }));
         }
-    }, [formData.isLimitedEdition, formData.activityId]);
+
+        if (activitySearchTerm) {
+            setActivitySearchTerm("");
+        }
+
+        if (showActivityDropdown) {
+            setShowActivityDropdown(false);
+        }
+    }, [activitySelectionDisabled, formData.activityId, activitySearchTerm, showActivityDropdown]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -264,7 +330,7 @@ const CreateBadgePage = () => {
         }
 
         const hasActivitySpecificRule = rules.some(r => r.ruleType === 'activity_specific_participation');
-        if (hasActivitySpecificRule && !formData.activityId) {
+        if (hasActivitySpecificRule && !formData.activityId && !activitySelectionDisabled) {
             errors.activityId = "You must select an activity when using 'Activity Specific Participation' rule.";
         }
 
@@ -278,11 +344,49 @@ const CreateBadgePage = () => {
 
     const handleFormChange = (e) => {
         const { name, value, type, checked } = e.target;
+        setError("");
+
+        if (name === "isLimitedEdition") {
+            setFieldErrors((prev) => ({
+                ...prev,
+                [name]: undefined,
+            }));
+
+            if (checked && hasNonRedeemRules) {
+                setError("Remove other rules before enabling Redeemable.");
+                return;
+            }
+
+            if (!checked) {
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    fsPointsCost: undefined,
+                }));
+            }
+
+            setFormData((prev) => ({
+                ...prev,
+                isLimitedEdition: checked,
+                fsPointsCost: checked ? prev.fsPointsCost : "",
+                activityId: checked ? "" : prev.activityId,
+            }));
+
+            if (checked) {
+                setActivitySearchTerm("");
+                setShowActivityDropdown(false);
+            }
+
+            if (!checked) {
+                setRules((prev) => prev.filter((rule) => rule.ruleType !== 'redeem_purchase'));
+            }
+
+            return;
+        }
+
         setFieldErrors((prev) => ({
             ...prev,
             [name]: undefined,
         }));
-        setError("");
 
         let finalValue = value;
 
@@ -316,6 +420,9 @@ const CreateBadgePage = () => {
     };
 
     const handleActivitySelect = (activity) => {
+        if (activitySelectionDisabled) {
+            return;
+        }
         setFormData((prev) => ({
             ...prev,
             activityId: activity.id,
@@ -658,20 +765,30 @@ const CreateBadgePage = () => {
                                 type="text"
                                 value={activitySearchTerm}
                                 onChange={(e) => {
+                                    if (activitySelectionDisabled) {
+                                        return;
+                                    }
                                     setActivitySearchTerm(e.target.value);
                                     setShowActivityDropdown(true);
                                 }}
-                                onFocus={() => setShowActivityDropdown(true)}
+                                onFocus={() => {
+                                    if (activitySelectionDisabled) {
+                                        return;
+                                    }
+                                    setShowActivityDropdown(true);
+                                }}
                                 placeholder={
                                     activitiesLoading
                                         ? "Loading activities..."
-                                        : "Search for an activity..."
+                                        : activitySelectionDisabled
+                                            ? activityDisableReason || "Activity selection is disabled."
+                                            : "Search for an activity..."
                                 }
-                                disabled={activitiesLoading}
+                                disabled={activitiesLoading || activitySelectionDisabled}
                                 className={`input input-bordered w-full ${fieldErrors.activityId ? "input-error" : ""
                                     }`}
                             />
-                            {showActivityDropdown && !activitiesLoading && (
+                            {showActivityDropdown && !activitiesLoading && !activitySelectionDisabled && (
                                 <div className="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                                     {filteredActivities.length > 0 ? (
                                         <ul className="menu p-2">
@@ -704,7 +821,7 @@ const CreateBadgePage = () => {
                                     )}
                                 </div>
                             )}
-                            {formData.activityId && (
+                            {formData.activityId && !activitySelectionDisabled && (
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -726,6 +843,11 @@ const CreateBadgePage = () => {
                                     {fieldErrors.activityId}
                                 </span>
                             </label>
+                        )}
+                        {activitySelectionDisabled && (
+                            <p className="text-xs text-info mt-2">
+                                {activityDisableReason || "Activity selection is currently disabled due to rule conflicts."}
+                            </p>
                         )}
                     </div>
 
@@ -841,11 +963,18 @@ const CreateBadgePage = () => {
                                 checked={formData.isLimitedEdition}
                                 onChange={handleFormChange}
                                 className="toggle toggle-primary"
+                                disabled={redeemToggleDisabled}
+                                title={redeemToggleDisabled ? "Remove other badge rules before enabling Redeemable." : undefined}
                             />
                             <span className="label-text font-semibold">
                                 Is Redeemable ?
                             </span>
                         </label>
+                        {redeemToggleDisabled && (
+                            <p className="text-xs text-warning mt-2">
+                                Remove other badge rules before enabling Redeemable.
+                            </p>
+                        )}
                     </div>
 
                     {/* FS Points Cost - Only shown when isLimitedEdition is true */}
@@ -959,12 +1088,24 @@ const CreateBadgePage = () => {
                                         rules: undefined,
                                     }));
                                 }}
-                                className="btn btn-sm btn-outline btn-primary gap-2"
+                                className={`btn btn-sm btn-outline btn-primary gap-2 ${disableRuleSelection ? 'btn-disabled' : ''}`}
+                                disabled={disableRuleSelection}
                             >
                                 <Plus size={16} />
                                 Add Rules
                             </button>
                         </div>
+
+                        {formData.isLimitedEdition && (
+                            <p className="text-sm text-info mb-3">
+                                Redeem purchase badges cannot combine with other rules. Turn off "Is Redeemable" to adjust badge rules.
+                            </p>
+                        )}
+                        {hasStandaloneRedeemRule && !formData.isLimitedEdition && (
+                            <p className="text-sm text-info mb-3">
+                                Redeem-based badges cannot combine with additional rules. Remove the redeem rule to adjust badge rules.
+                            </p>
+                        )}
 
                         {/* Display current rules */}
                         {rules.length > 0 ? (
@@ -1096,13 +1237,15 @@ const CreateBadgePage = () => {
                                 const isActivityLinked = (ruleType === 'activity_specific_participation' && formData.activityId);
 
                                 const isAlreadyAdded = rules.some(r => r.ruleType === ruleType);
+                                const requiresRedeemToggle = ruleType === 'redeem_purchase' && !formData.isLimitedEdition && !isAlreadyAdded;
 
                                 // Check if this rule can be combined with currently selected rules
                                 const combinationCheck = canSelectRule(ruleType, rules.filter(r => r.ruleType !== ruleType));
                                 const canCombine = combinationCheck.canSelect;
                                 const incompatibilityReason = combinationCheck.reason;
+                                const conflictsWithActivitySpecific = !isAlreadyAdded && combinationCheck.conflictsWith === 'activity_specific_participation';
 
-                                const isDisabled = isAutoSelected || (!isAlreadyAdded && !canCombine);
+                                const isDisabled = isAutoSelected || requiresRedeemToggle || (!isAlreadyAdded && !canCombine && !conflictsWithActivitySpecific);
 
                                 return (
                                     <div
@@ -1121,15 +1264,36 @@ const CreateBadgePage = () => {
                                                 disabled={isDisabled}
                                                 onChange={(e) => {
                                                     if (e.target.checked) {
-                                                        setRules(prev => [
-                                                            ...prev,
-                                                            {
-                                                                ruleType,
-                                                                targetValue: null,
-                                                                params: null,
-                                                                isAuto: false
+                                                        setRules(prev => {
+                                                            if (isAlreadyAdded) {
+                                                                return prev;
                                                             }
-                                                        ]);
+
+                                                            let updated = prev.filter(r => r.ruleType !== ruleType);
+
+                                                            if (conflictsWithActivitySpecific) {
+                                                                updated = updated.filter(r => r.ruleType !== 'activity_specific_participation');
+                                                            }
+
+                                                            return [
+                                                                ...updated,
+                                                                {
+                                                                    ruleType,
+                                                                    targetValue: null,
+                                                                    params: null,
+                                                                    isAuto: false,
+                                                                },
+                                                            ];
+                                                        });
+
+                                                        if (conflictsWithActivitySpecific) {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                activityId: '',
+                                                            }));
+                                                            setActivitySearchTerm('');
+                                                            setShowActivityDropdown(false);
+                                                        }
 
                                                         if (ruleType === 'redeem_purchase') {
                                                             setFormData(prev => ({
@@ -1178,9 +1342,19 @@ const CreateBadgePage = () => {
                                                         ℹ️ Linked to selected activity (uncheck to remove activity)
                                                     </div>
                                                 )}
-                                                {!isAlreadyAdded && !canCombine && (
+                                                {requiresRedeemToggle && (
+                                                    <div className="text-xs text-info mt-2 font-medium">
+                                                        Enable "Is Redeemable" to add this rule.
+                                                    </div>
+                                                )}
+                                                {!isAlreadyAdded && !canCombine && !conflictsWithActivitySpecific && (
                                                     <div className="text-xs text-error mt-2 font-medium">
                                                         ✗ {incompatibilityReason}
+                                                    </div>
+                                                )}
+                                                {conflictsWithActivitySpecific && (
+                                                    <div className="text-xs text-warning mt-2 font-medium">
+                                                        Warning: Selecting this removes the activity link.
                                                     </div>
                                                 )}
                                             </div>
