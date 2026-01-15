@@ -161,7 +161,8 @@ server {
 }
 
 server {
-  listen 443 ssl http2;
+  listen 443 ssl;
+  http2 on;
   server_name studio.foodsport.com.hk;
 
   ssl_certificate /etc/letsencrypt/live/dev.foodsport.com.hk/fullchain.pem; 
