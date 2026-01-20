@@ -22,8 +22,9 @@
 		"dateOfBirth": "Date of Birth",
 		"weight": "Weight (kg)",
 		"height": "Height (cm)",
-		"district": "District",
-		"selectDistrict": "Select a district (optional)",
+		"country": "Country (optional)",
+		"selectCountry": "Select a country",
+		"failedToLoadCountries": "Unable to load countries right now.",
 		"finish": "Finish",
 		"failedToComplete": "Failed to complete onboarding."
 	},
@@ -193,7 +194,7 @@
 		},
 		"stats": {
 			"caloriesLabel": "#Calories (Kcal) Donated",
-			"fsPointsLabel": "FS POINTS (500kcal = 1 FS Points)",
+			"fsPointsLabel": "FS POINTS (1kcal = 1 FS Point)",
 			"activitiesLabel": "#Activities Joined",
 			"badgesLabel": "Achievement e-badges"
 		},
@@ -417,8 +418,8 @@
 			"height": "Height",
 			"contact": "Contact No.",
 			"dateOfBirth": "Date of Birth",
-			"selectDistrict": "Select your district",
-			"bio": "Bio"
+			"bio": "Bio",
+			"selectCountry": "Select country (optional)"
 		},
 		"gender": {
 			"label": "Gender:",
@@ -449,7 +450,8 @@
 		"errors": {
 			"invalidCrop": "Invalid crop dimensions",
 			"failedProcessImage": "Failed to process image",
-			"generic": "Something went wrong, please try again."
+			"generic": "Something went wrong, please try again.",
+			"countries": "We couldn't load countries. Please refresh and try again."
 		}
 	},
 	"InvitePartnersDialog": {

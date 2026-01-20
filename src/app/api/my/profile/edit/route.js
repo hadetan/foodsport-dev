@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma/db';
 import { createServerClient } from '@/lib/supabase/server-only';
 import { requireUser } from '@/lib/prisma/require-user';
+import { isValidCountry } from '@/lib/prisma/country-constants';
 
 // PATCH /api/my/profile/edit - Update user profile fields
 export async function PATCH(req) {
@@ -52,7 +53,7 @@ export async function PATCH(req) {
   }
 
   const body = await req.json();
-  const fields = [ 'firstname', 'lastname', 'dateOfBirth', 'weight', 'height', 'gender', 'district', 'phoneNumber', 'title', 'bio' ];
+  const fields = [ 'firstname', 'lastname', 'dateOfBirth', 'weight', 'height', 'gender', 'phoneNumber', 'title', 'bio', 'country' ];
   let updateData = {};
   for (const field of fields) {
     let value = body[field];
@@ -65,7 +66,14 @@ export async function PATCH(req) {
         value = new Date(value);
         if (isNaN(value.getTime())) continue;
       }
+      if (field === 'country') {
+        if (!isValidCountry(value)) {
+          continue;
+        }
+      }
       updateData[field] = value;
+    } else if (field === 'country' && value === '') {
+      updateData[field] = null;
     }
   }
 

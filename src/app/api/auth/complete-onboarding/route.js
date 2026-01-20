@@ -1,11 +1,11 @@
 import { createServerClient } from '@/lib/supabase/server-only';
 import { prisma } from '@/lib/prisma/db';
-import { cookies } from 'next/headers';
+import { isValidCountry } from '@/lib/prisma/country-constants';
 
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { dateOfBirth, weight, height, district } = body;
+    const { dateOfBirth, weight, height, country } = body;
     if (!dateOfBirth) {
       return Response.json({ error: 'Missing required fields.' }, { status: 400 });
     }
@@ -29,6 +29,8 @@ export async function POST(req) {
     }
 
     // Create user with id set to supabase user id OR use generated id
+    const normalizedCountry = typeof country === 'string' && isValidCountry(country) ? country : undefined;
+
     const created = await prisma.user.create({
       data: {
         id: user.id, // set canonical id to supabase user id
@@ -38,7 +40,7 @@ export async function POST(req) {
         dateOfBirth: new Date(dateOfBirth),
         weight: weight ? Number(weight) : undefined,
         height: height ? Number(height) : undefined,
-        district: district || undefined,
+        country: normalizedCountry,
         profilePictureUrl: pre.pictureUrl || undefined,
         googleId: user.id,
         emailVerified: pre.emailVerified || false,

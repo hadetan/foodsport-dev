@@ -16,16 +16,17 @@
         "genericError": "發生錯誤，請稍後再試。"
     },
     "OnboardPage": {
-        "title": "新手設定",
+        "title": "啟動",
         "loading": "載入中…",
         "failedToLoad": "載入失敗。",
         "dateOfBirth": "出生日期",
         "weight": "體重（公斤）",
         "height": "身高（厘米）",
-        "district": "地區",
-        "selectDistrict": "選擇地區（可選）",
+        "country": "國家（可選）",
+        "selectCountry": "選擇國家",
+        "failedToLoadCountries": "目前無法載入國家清單。",
         "finish": "完成",
-        "failedToComplete": "完成新手設定失敗。"
+        "failedToComplete": "未能完成啟動。"
     },
     "LoginPage": {
         "title": "登入",
@@ -207,7 +208,7 @@
         },
         "stats": {
             "caloriesLabel": "已捐贈卡路里（Kcal）",
-            "fsPointsLabel": "FOODSPORT 積分（500kcal = 1 積分）",
+            "fsPointsLabel": "FOODSPORT 積分（1kcal = 1 積分）",
             "activitiesLabel": "已參與活動數目",
             "badgesLabel": "成就電子徽章"
         },
@@ -425,14 +426,14 @@
             "tooltip": "提供你的體重和身高可讓我們更準確地計算每項活動的卡路里消耗，從而提供更好的洞察和個人化結果。"
         },
         "placeholders": {
-            "firstName": "名",
-            "lastName": "姓",
+            "firstName": "名字",
+            "lastName": "姓氏",
             "weight": "體重",
             "height": "身高",
             "contact": "聯絡電話",
             "dateOfBirth": "出生日期",
-            "selectDistrict": "請選擇地區",
-            "bio": "個人簡介"
+            "bio": "個人簡介",
+            "selectCountry": "選擇國家（可選）"
         },
         "gender": {
             "label": "性別：",
@@ -463,7 +464,8 @@
         "errors": {
             "invalidCrop": "無效的裁剪大小",
             "failedProcessImage": "處理圖片失敗",
-            "generic": "發生錯誤，請再試一次。"
+            "generic": "發生錯誤，請再試一次。",
+            "countries": "無法載入國家清單，請稍後再試。"
         }
     },
     "InvitePartnersDialog": {

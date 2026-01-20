@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import api from '@/utils/axios/api';
-import { DISTRICTS } from '@/app/constants/constants';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/shared/contexts/authContext';
 import DobPickerClient from '@/app/shared/components/DobPickerClient';
@@ -15,12 +14,16 @@ export default function OnboardPage() {
 		dateOfBirth: '',
 		weight: '',
 		height: '',
-		district: '',
+		country: '',
 	});
+	const [countries, setCountries] = useState([]);
+	const [countriesError, setCountriesError] = useState('');
 	const [error, setError] = useState('');
 	const t = useTranslations();
 	const locale = useLocale();
 	const router = useRouter();
+	const baseFieldClasses =
+		'w-full rounded-xl border border-[#e5e7eb] bg-[#f9fbff] px-4 py-3 text-base text-gray-900 shadow-sm transition focus:border-[#00bbbb] focus:outline-none focus:ring-2 focus:ring-[#00bbbb33]';
 
 	useEffect(() => {
 		(async () => {
@@ -39,10 +42,22 @@ export default function OnboardPage() {
 		})();
 	}, []);
 
+	useEffect(() => {
+		(async () => {
+			try {
+				const res = await api.get('/constants/countries');
+				setCountries(Array.isArray(res.data?.countries) ? res.data.countries : []);
+			} catch (err) {
+				setCountriesError(t('OnboardPage.failedToLoadCountries'));
+			}
+		})();
+	}, [t]);
+
 	const onSubmit = async (e) => {
 		e.preventDefault();
 		try {
 			const payload = { ...form };
+			if (!payload.country) delete payload.country;
 			await onboard({ payload })
 			router.replace(`/${locale}/my`);
 		} catch (e) {
@@ -60,6 +75,7 @@ export default function OnboardPage() {
 				{t('OnboardPage.title')}
 			</h1>
 			{error && <div className='alert alert-error mb-4'>{error}</div>}
+			{countriesError && <div className='alert alert-warning mb-4'>{countriesError}</div>}
 			<form onSubmit={onSubmit} className='space-y-3'>
 				<div>
 					<DobPickerClient
@@ -80,7 +96,7 @@ export default function OnboardPage() {
 						<input
 							type='number'
 							step='0.01'
-							className='input input-bordered w-full'
+							className={baseFieldClasses}
 							value={form.weight}
 							onChange={(e) =>
 								setForm((f) => ({
@@ -99,7 +115,7 @@ export default function OnboardPage() {
 						<input
 							type='number'
 							step='0.01'
-							className='input input-bordered w-full'
+							className={baseFieldClasses}
 							value={form.height}
 							onChange={(e) =>
 								setForm((f) => ({
@@ -113,29 +129,22 @@ export default function OnboardPage() {
 				<div>
 					<label className='label'>
 						<span className='label-text'>
-							{t('OnboardPage.district')}
+							{t('OnboardPage.country')}
 						</span>
 					</label>
 					<select
-						className='select select-bordered w-full'
-						value={form.district}
+						className={baseFieldClasses}
+						value={form.country}
 						onChange={(e) =>
-							setForm((f) => ({ ...f, district: e.target.value }))
+							setForm((f) => ({ ...f, country: e.target.value }))
 						}
 					>
 						<option value=''>
-							{t('OnboardPage.selectDistrict')}
+							{t('OnboardPage.selectCountry')}
 						</option>
-						{DISTRICTS.map((d) => (
-							<option key={d} value={d}>
-								{d
-									.split('_')
-									.map(
-										(w) =>
-											w.charAt(0).toUpperCase() +
-											w.slice(1).toLowerCase()
-									)
-									.join(' ')}
+						{countries.map((option) => (
+							<option key={option.value} value={option.value}>
+								{option.label}
 							</option>
 						))}
 					</select>
