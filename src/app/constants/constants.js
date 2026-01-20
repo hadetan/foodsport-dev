@@ -1,23 +1,3 @@
-export const DISTRICTS = [
-  "Central_and_Western",
-  "Eastern",
-  "Southern",
-  "Wan_Chai",
-  "Kowloon_City",
-  "Kwun_Tong",
-  "Sham_Shui_Po",
-  "Wong_Tai_Sin",
-  "Yau_Tsim_Mong",
-  "Islands",
-  "Kwai_Tsing",
-  "North",
-  "Sai_Kung",
-  "Sha_Tin",
-  "Tai_Po",
-  "Tsuen_Wan",
-  "Tuen_Mun",
-  "Yuen_Long",
-];
 const ACTIVITY_STATUSES = ["active", "draft", "cancelled", "closed"];
 export default ACTIVITY_STATUSES;
 export const ACTIVITY_TYPES = [
@@ -96,4 +76,4 @@ export const POINT_RULE_TYPES = ['points_cumulative'];
 
 export const REDEMPTION_RULE_TYPES = ['redeem_first', 'redeem_points_cumulative', 'redeem_purchase'];
 
-export const CALORIES_PER_POINT = 500;
+export const CALORIES_PER_POINT = 1;

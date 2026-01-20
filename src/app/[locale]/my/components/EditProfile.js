@@ -9,7 +9,6 @@ import 'react-image-crop/dist/ReactCrop.css';
 import '@/app/[locale]/my/css/EditProfile.css';
 import { LiaUserEditSolid } from 'react-icons/lia';
 import { IoIosFemale, IoIosMale } from 'react-icons/io';
-import { DISTRICTS } from '@/app/constants/constants';
 import { useTranslations } from 'next-intl';
 import Tooltip from '@/app/shared/components/Tooltip';
 import DobPickerClient from '@/app/shared/components/DobPickerClient';
@@ -28,7 +27,7 @@ export default function EditProfile() {
 		height: user.height || '',
 		gender: user.gender || '',
 		phoneNumber: user.phoneNumber || '',
-		district: user.district || '',
+		country: user.country || '',
 		bio: user.bio || '',
 	});
 	const [initialValues, setInitialValues] = useState(form);
@@ -49,6 +48,8 @@ export default function EditProfile() {
 	const imgRef = useRef(null);
 	const fileRef = useRef(null);
 	const [linking, setLinking] = useState(false);
+	const [countries, setCountries] = useState([]);
+	const [countryError, setCountryError] = useState('');
 
 	useEffect(() => {
 		if (!searchParams?.has || !searchParams.has('editProfile')) {
@@ -88,6 +89,17 @@ export default function EditProfile() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [searchParams]);
 
+	useEffect(() => {
+		(async () => {
+			try {
+				const res = await api.get('/constants/countries');
+				setCountries(Array.isArray(res.data?.countries) ? res.data.countries : []);
+			} catch (err) {
+				setCountryError(t('errors.countries'));
+			}
+		})();
+	}, [t]);
+
 	const handleChange = (e) => {
 		const { name, value } = e.target;
 		setForm((f) => ({ ...f, [name]: value }));
@@ -120,8 +132,9 @@ export default function EditProfile() {
 		setForm((f) => ({ ...f, [name]: digits }));
 	};
 
-	const handleDistrictChange = (e) => {
-		setForm((f) => ({ ...f, district: e.target.value }));
+	const handleCountryChange = (e) => {
+		setForm((f) => ({ ...f, country: e.target.value }));
+		if (countryError) setCountryError('');
 	};
 
 	const handleGender = (gender) => setForm((f) => ({ ...f, gender }));
@@ -203,8 +216,9 @@ export default function EditProfile() {
 			const changedFields = {};
 			let res = { ...user };
 			Object.keys(form).forEach((key) => {
-				if (form[key] !== initialValues[key])
-					changedFields[key] = form[key];
+				if (form[key] !== initialValues[key]) {
+					changedFields[key] = key === 'country' && form[key] === '' ? null : form[key];
+				}
 			});
 			if (Object.keys(changedFields).length > 0) {
 				const data = await api.patch('/my/profile/edit', changedFields);
@@ -218,12 +232,11 @@ export default function EditProfile() {
 				});
 				res = { ...res, ...data.data.user };
 			}
-			setUser({
-				...user,
-				...form,
-				profilePictureUrl: res.profilePictureUrl,
-			});
-			setInitialValues(form);
+			setUser(res);
+			const nextInitials = Object.fromEntries(
+				Object.keys(form).map((key) => [key, form[key] ?? ''])
+			);
+			setInitialValues(nextInitials);
 			toast.info(t('success.profileUpdated'));
 			const returnTo = searchParams.get('returnTo');
 			if (returnTo) {
@@ -239,8 +252,9 @@ export default function EditProfile() {
 
 	const isFormDirty = () => {
 		if (croppedImg) return true;
+		const normalize = (value) => (value === null || value === undefined ? '' : value);
 		for (const key of Object.keys(form)) {
-			if (form[key] !== initialValues[key]) return true;
+			if (normalize(form[key]) !== normalize(initialValues[key])) return true;
 		}
 		return false;
 	};
@@ -527,22 +541,29 @@ export default function EditProfile() {
 					disableLabel
 					hFull
 				/>
-				<div className='edit-profile-district-bio-row'>
-					<div>
+				<div className='edit-profile-country-bio-row'>
+					<div className='edit-profile-country-wrapper'>
 						<select
-							id='district'
-							name='district'
-							value={form.district}
-							onChange={handleDistrictChange}
-							className='edit-profile-district-dropdown'
+							id='country'
+							name='country'
+							value={form.country}
+							onChange={handleCountryChange}
+							aria-label={t('placeholders.selectCountry')}
 						>
-							<option value='' disabled>{t('placeholders.selectDistrict')}</option>
-							{DISTRICTS.map((d) => (
-								<option key={d} value={d}>{d.replace(/_/g, ' ')}</option>
+							<option value=''>
+								{t('placeholders.selectCountry')}
+							</option>
+							{countries.map((option) => (
+								<option key={option.value} value={option.value}>
+									{option.label}
+								</option>
 							))}
 						</select>
+						{countryError && (
+							<p className='edit-profile-inline-error'>{countryError}</p>
+						)}
 					</div>
-					<div>
+					<div className='edit-profile-bio-wrapper'>
 						<textarea
 							id='bio'
 							name='bio'
